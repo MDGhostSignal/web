@@ -6,6 +6,8 @@
 <script>
 (() => {
   try {
+    // For live Squarespace usage, set this before the snippet if needed:
+    // window.GHOSTSIGNAL_RQ_ENDPOINT = "https://YOUR_DEPLOYED_NEXT_SITE/api/rq-submissions";
     /* =========================
        1) BRAND / COPY SETTINGS
        ========================= */
@@ -197,6 +199,10 @@
         .rq-profile p{margin:10px 0; color:var(--rq-text); line-height:1.45;}
         .rq-mini{font-size:12px; color:var(--rq-muted); margin-top:10px; line-height:1.35; white-space:pre-line;}
         .rq-error{display:none; margin-top:12px; color:#ffb4b4;}
+        .rq-status{display:none; margin-top:12px; padding:12px 14px; border-radius:12px; border:1px solid var(--rq-line); font-size:13px; line-height:1.4;}
+        .rq-status.success{display:block; border-color:rgba(128,255,198,.42); background:rgba(50,120,88,.18); color:#d7ffe9;}
+        .rq-status.error{display:block; border-color:rgba(255,137,137,.42); background:rgba(120,44,44,.20); color:#ffd7d7;}
+        .rq-status.info{display:block; border-color:rgba(199,249,255,.30); background:rgba(199,249,255,.08); color:var(--rq-text);}
 
         .rq-input{
           width:100%;
@@ -296,6 +302,7 @@
         </div>
 
         <div class="rq-error" id="rqError">Please answer all required fields and questions before generating your RQ.</div>
+        <div class="rq-status" id="rqStatus"></div>
 
         <div class="rq-actions">
           <button class="rq-btn primary" id="rqGo">${BRAND.cta}</button>
@@ -384,11 +391,18 @@
     const rqProfileEl = document.getElementById("rqProfile");
     const rqMetaEl = document.getElementById("rqMeta");
     const rqError = document.getElementById("rqError");
+    const rqStatus = document.getElementById("rqStatus");
 
     let lastComputed = null;
 
     function getCaptureEndpoint() {
       return (BRAND.captureEndpoint || "").trim();
+    }
+
+    function setStatus(kind, message) {
+      rqStatus.className = "rq-status" + (kind ? ` ${kind}` : "");
+      rqStatus.textContent = message || "";
+      rqStatus.style.display = message ? "block" : "none";
     }
 
     function buildSubmissionPayload(answers, computed) {
@@ -447,7 +461,7 @@
 
     async function submitCapture(payload) {
       const endpoint = getCaptureEndpoint();
-      if (!endpoint) return { skipped: true };
+      if (!endpoint) return { skipped: true, reason: "No capture endpoint configured." };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -533,9 +547,11 @@
 
     btnGo.addEventListener("click", async () => {
       rqError.style.display = "none";
+      setStatus("", "");
       const answers = readAnswers();
       if (!answers) {
         rqError.style.display = "block";
+        setStatus("error", "Please complete all required fields before generating your RQ.");
         return;
       }
 
@@ -586,9 +602,29 @@
       try {
         btnGo.disabled = true;
         btnGo.textContent = "Saving...";
-        await submitCapture(buildSubmissionPayload(answers, lastComputed));
+        const capture = await submitCapture(buildSubmissionPayload(answers, lastComputed));
+
+        if (capture?.skipped) {
+          setStatus(
+            "error",
+            "Your RQ was generated, but submission capture is not configured yet. Set window.GHOSTSIGNAL_RQ_ENDPOINT in Squarespace before publishing."
+          );
+        } else if (capture?.ok) {
+          setStatus(
+            "success",
+            capture?.emailNotified
+              ? "Your RQ has been saved successfully. GhostSignal has been notified by email."
+              : "Your RQ has been saved successfully."
+          );
+        } else {
+          setStatus("info", "Your RQ was generated.");
+        }
       } catch (err) {
         console.error("GhostSignal RQ submission capture failed.", err);
+        setStatus(
+          "error",
+          `Your RQ was generated, but saving failed. ${err?.message || "Please try again."}`
+        );
       } finally {
         btnGo.disabled = false;
         btnGo.textContent = BRAND.cta;

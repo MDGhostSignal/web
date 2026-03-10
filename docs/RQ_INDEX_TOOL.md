@@ -27,6 +27,10 @@ This tool is part of GhostSignal's broader values-based matching and partnership
 - Preferred storage target is **Supabase** using the environment variables documented in `apps/web/.env.example`.
 - Suggested Supabase table schema lives at:
   - `docs/RQ_SUBMISSIONS_SCHEMA.sql`
+- Supabase setup instructions live at:
+  - `docs/RQ_SUPABASE_SETUP.md`
+- Notification emails for new RQ submissions should route to:
+  - `hello@ghostsignal.cloud`
 
 ## Product Intent
 
