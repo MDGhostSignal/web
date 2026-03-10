@@ -10,6 +10,15 @@ import { useGsapContext } from "@/motion/useGsapContext";
 
 type NavLink = { href: string; label: string };
 
+const linkFrameWidths: Record<string, number> = {
+  "/what-is-this": 169,
+  "/for-creators": 174,
+  "/for-advertisers": 200,
+  "/who-are-we": 173,
+  "/get-in-touch": 175,
+  "/snowdrift": 174,
+};
+
 /**
  * Mirrors `wearemotto.com`'s site header collapse behavior:
  * - When scrollY > 100: links animate out (yPercent:-100, alpha:0, stagger:-.035),
@@ -149,38 +158,42 @@ export function SiteHeader({
   }, [THRESHOLD_Y, contextRef, rootRef]);
 
   return (
-    <div ref={rootRef} style={{ position: "sticky", top: 0, zIndex: 50 }}>
+    <div ref={rootRef} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
       <header
         className="js-sh"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          height: "140px",
+          minHeight: "140px",
           paddingLeft: n(48),
           paddingRight: n(48),
-          background: "var(--gs-background)",
+          background: "#f2f2f2",
         }}
       >
         <div
+          className="js-sh-logo-wrap"
           style={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: n(8),
+            width: n(185),
+            height: n(80),
             paddingTop: n(16),
             paddingBottom: n(16),
             paddingLeft: n(64),
             paddingRight: n(64),
+            overflow: "hidden",
           }}
         >
           <Image
-            src="/images/home/onwhite.gif"
+            src="/images/home/figma/logo-black-1.svg"
             alt="Ghost Signal"
-            width={80}
-            height={69}
+            width={57}
+            height={48}
             priority
-            unoptimized
-            style={{ display: "block" }}
+            style={{ display: "block", width: n(57), height: n(48) }}
           />
         </div>
 
@@ -198,7 +211,10 @@ export function SiteHeader({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: n(64),
+              width: n(1385),
+              height: n(60),
+              justifyContent: "flex-start",
+              columnGap: n(64),
             }}
           >
             {links.map((l) => (
@@ -208,10 +224,13 @@ export function SiteHeader({
                 className="js-sh-main-link"
                 data-sh-link
                 data-sh-key={l.href}
+                data-sh-role={l.href === "/get-in-touch" ? "keep" : "hide"}
                 style={{
                   display: "inline-flex",
                   justifyContent: "center",
                   alignItems: "center",
+                  width: n(linkFrameWidths[l.href] ?? 174),
+                  height: n(60),
                   gap: n(8),
                   paddingTop: n(16),
                   paddingBottom: n(16),

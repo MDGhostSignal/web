@@ -27,15 +27,33 @@ body {
 }
 
 body.is-head-active .js-sh {
-  background: var(--gs-background);
+  background: transparent !important;
+  background-color: transparent !important;
   box-shadow: none;
   backdrop-filter: none;
+  justify-content: flex-end !important;
+}
+
+body.is-head-active .js-sh-logo-wrap {
+  width: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  overflow: hidden !important;
+}
+
+body.is-head-active .js-sh-main-links {
+  width: auto !important;
+  column-gap: 0 !important;
+}
+
+body.is-head-active .js-sh-main-link[data-sh-role="hide"] {
+  display: none !important;
 }
 
 @supports not (backdrop-filter: blur(1px)) {
   body.is-head-active .js-sh {
-    /* Fallback if blur isn't supported. */
-    background: color-mix(in srgb, var(--gs-background) 92%, transparent);
+    background: transparent !important;
+    background-color: transparent !important;
   }
 }
 
@@ -54,5 +72,13 @@ body.is-head-active .js-sh {
 @media (max-width: 991px) {
   .js-sh-cta {
     display: none !important;
+  }
+
+  .js-sh-main-links {
+    display: none !important;
+  }
+
+  .js-sh {
+    padding-inline: calc(var(--gs-n-24) * var(--gs-px)) !important;
   }
 }

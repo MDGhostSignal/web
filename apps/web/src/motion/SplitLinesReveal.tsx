@@ -21,6 +21,7 @@ type Props = {
    * Useful for sequencing multiple SplitLinesReveal blocks.
    */
   delay?: number;
+  start?: string;
 };
 
 /**
@@ -31,10 +32,11 @@ type Props = {
  */
 export function SplitLinesReveal({
   children,
-  duration = 1.25,
-  stagger = 0.2,
+  duration = 1.9,
+  stagger = 0.28,
   ease = "expo",
   delay = 0,
+  start = "top 76%",
 }: Props) {
   const id = useId();
 
@@ -66,7 +68,7 @@ export function SplitLinesReveal({
         stagger,
         ease,
         delay,
-        scrollTrigger: { trigger: el },
+        scrollTrigger: { trigger: el, start },
       },
     );
 
@@ -76,7 +78,7 @@ export function SplitLinesReveal({
       splitInner.revert();
       splitOuter.revert();
     };
-  }, [delay, duration, ease, id, stagger]);
+  }, [delay, duration, ease, id, stagger, start]);
 
   return <div data-gs-split={id}>{children}</div>;
 }

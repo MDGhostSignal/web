@@ -1,0 +1,699 @@
+<div id="ghostsignal-rq"></div>
+
+<!-- PDF generator (jsPDF) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(() => {
+  try {
+    /* =========================
+       1) BRAND / COPY SETTINGS
+       ========================= */
+    const BRAND = {
+      company: "GHOSTSignal",
+      acronym: "RQ",
+      title: "Resonance Index",
+      subtitle: "Find your signal. Name your resonance.",
+      cta: "Generate My RQ",
+      pdfTitle: "Resonance Quotient Report",
+      accent: "#C7F9FF",
+      captureEndpoint:
+        window.GHOSTSIGNAL_RQ_ENDPOINT ||
+        ((window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+          ? `${window.location.origin}/api/rq-submissions`
+          : "")
+    };
+
+    /* =========================
+       2) AXIS WORD POOLS (RQ Name)
+       Strength bands: 0=1-3, 1=4-5, 2=6-10
+       ========================= */
+    const WORDS = {
+      Values: {
+        F: ["Quiet", "Grounded", "Beacon"],
+        I: ["Subtle", "Embodied", "Veiled"]
+      },
+      Authenticity: {
+        R: ["Soft", "Warm", "Intimate"],
+        S: ["Clear", "Ordered", "Architected"]
+      },
+      Horizon: {
+        L: ["Patient", "Seasoned", "Enduring"],
+        C: ["Quick", "Kinetic", "Igniting"]
+      }
+    };
+
+    /* =========================
+       3) 18 PARAGRAPH DESCRIPTIONS
+       ========================= */
+    const DESC = {
+      Values: {
+        F: [
+          "F (1–3) — Quietly Convicted. You have real convictions, but you tend to live them more than declare them. The upside is approachability and wide welcome—your signal doesn’t need a banner to be felt. You likely want partnerships that respect nuance and don’t force your voice into slogans. Look for matches that honor subtle integrity, speak with humility, and can align without demanding constant public value-signaling.",
+          "F (4–5) — Intentionally Grounded. You can name your values clearly when it matters, but you don’t lead with them at every turn. The upside is balance: enough clarity to anchor trust without narrowing your audience unnecessarily. You want partners who “get it” without performative agreement. Look for matches who can articulate alignment in context, keep messaging natural, and treat your values as a compass—not a costume.",
+          "F (6–10) — Explicitly Formative. Your convictions are central to your identity and impact, and you’re comfortable naming them. The upside is deep resonance with the people you’re meant to serve; the tradeoff is selectivity. You want partners who are unembarrassed about what they stand for and who won’t dilute shared convictions for convenience. Look for matches with clear principles, honest boundaries, and a desire to build trust through clarity."
+        ],
+        I: [
+          "I (1–3) — Minimally Implicit. You don’t rely much on values-language to do good work. Your orientation is practical: what serves, what works, what helps people. The upside is flexibility and ease across difference. You want low-friction partnerships and may find heavy moral framing distracting. Look for matches who respect action over rhetoric, keep things straightforward, and don’t require shared philosophical language to collaborate well.",
+          "I (4–5) — Practically Implicit. Your values are consistent in practice, even if you don’t constantly name them. The upside is steadiness—people sense integrity without needing a manifesto. You want partners who value coherence, reliability, and outcomes that feel human. Look for matches who align on behavior and tone, respect your preference for understated conviction, and contribute meaning without demanding constant explanation.",
+          "I (6–10) — Deeply Embodied. Your values are so integrated that naming them can feel reductive. People trust you because your integrity is felt before it’s explained. The upside is profound authenticity; the risk is mismatch with partners who need explicit framing. You want collaborators who can read between the lines and honor lived conviction. Look for matches who respect embodiment, communicate with care, and let alignment show itself over time."
+        ]
+      },
+      Authenticity: {
+        R: [
+          "R (1–3) — Lightly Relational. You value warmth and trust, but you don’t build authenticity primarily through personal disclosure. The upside is professionalism and healthy boundaries. You want partnerships that respect distance where needed and don’t require emotional intimacy to feel real. Look for matches who communicate cleanly, avoid oversharing, and can integrate without pushing your voice into a more confessional register than you prefer.",
+          "R (4–5) — Naturally Relational. You build trust through story, conversation, and lived experience—without making it all about you. The upside is a human signal that feels both grounded and inviting. You want partners who can speak naturally, adapt tone, and honor the relational fabric of your audience. Look for matches that feel conversational, non-performative, and comfortable being introduced through real-life testimony.",
+          "R (6–10) — Deeply Relational. Your signal travels through closeness: personal voice, lived experience, and an audience bond that’s earned. The upside is powerful resonance; the risk is dissonance when messaging feels forced or overly structured. You want partners who respect the trust you steward and who can blend seamlessly into your cadence. Look for matches that feel like trusted friends—credible, humble, and genuinely aligned."
+        ],
+        S: [
+          "S (1–3) — Minimally Structural. You’re flexible and improvisational; structure exists, but loosely. The upside is creativity and adaptability. You want partners who can flow with spontaneity and don’t require strict scripts. Look for matches who are comfortable with iteration, can keep promises without micromanaging the message, and value authenticity as presence rather than polish.",
+          "S (4–5) — Intentionally Structured. You value coherence and clarity, but you’re not rigid. The upside is trust through consistency—people know what to expect from you. You want partners who respect tone and framing without sounding scripted. Look for matches who can align to your structure, keep messaging clean, and treat consistency as a form of care for your audience.",
+          "S (6–10) — Highly Structural. You steward voice and messaging with precision; authenticity comes through coherence, craft, and intentionality. The upside is clarity and integrity at scale; the risk is stiffness if partners can’t fit the frame. You want collaborators who appreciate structure as respect, not control. Look for matches who can operate within clear guardrails, communicate with rigor, and help your signal stay unmistakably yours."
+        ]
+      },
+      Horizon: {
+        L: [
+          "L (1–3) — Lightly Long-Arc. You appreciate continuity, but you don’t require permanence for a partnership to be worthwhile. The upside is flexibility and experimentation. You want partners who can test and learn without overcommitting too soon. Look for matches who are steady and respectful, even in shorter engagements, and who leave the relationship stronger than they found it.",
+          "L (4–5) — Seasonally Long-Arc. You value trust-building over time, but in defined seasons. The upside is realism: relationships deepen without forcing forever. You want partners who think beyond a single moment while respecting natural cycles. Look for matches who can build chapter by chapter, communicate clearly, and treat partnership like a craft—not a one-off transaction.",
+          "L (6–10) — Deeply Long-Arc. You think in years, not quarters. You prioritize durability, legacy, and mutual formation. The upside is compounding trust and coherence; the cost is patience. You want partners willing to invest slowly and build with care. Look for matches who value long-term reputation, shared story, and alignment that deepens instead of decays."
+        ],
+        C: [
+          "C (1–3) — Lightly Catalytic. You like momentum, but not at the cost of meaning. The upside is responsiveness without frenzy. You want partners who can move decisively when needed while staying human. Look for matches who respect your pace, communicate clearly, and don’t mistake urgency for importance.",
+          "C (4–5) — Strategically Catalytic. You value focused bursts of energy that serve a bigger mission. The upside is intentional activation without becoming shallow. You want partners who can execute, measure, and reflect. Look for matches who can translate alignment into action, honor clear goals, and keep the signal clean while the work moves quickly.",
+          "C (6–10) — Highly Catalytic. You thrive on momentum, activation, and visible lift. The upside is energy and reach; the risk is burnout or mismatch with slow builders. You want partners who can keep pace without cutting corners on integrity. Look for matches who share urgency, iterate fast, and still protect trust as the foundation of conversion."
+        ]
+      }
+    };
+
+    /* =========================
+       4) HELPERS
+       ========================= */
+    const bandIndex = (n) => (n <= 3 ? 0 : (n <= 5 ? 1 : 2));
+    const bandLabel = (n) => (n <= 3 ? "1–3" : (n <= 5 ? "4–5" : "6–10"));
+    const clamp1to10 = (n) => Math.max(1, Math.min(10, n));
+    const round = (n) => Math.round(n);
+    const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+    function computeSignalClarity(npCount, totalCount) {
+      const pct = totalCount ? (npCount / totalCount) : 0;
+      if (pct <= 0.20) return { label: "High", note: "Your signal is well-defined—clear preferences give us sharper matching." };
+      if (pct <= 0.45) return { label: "Medium", note: "Your signal is taking shape—some preferences are clear, others are open." };
+      return { label: "Low", note: "Your signal is intentionally open—great for exploration, less precise for matching." };
+    }
+
+    /* =========================
+       5) SCORING (NP neutral)
+       ========================= */
+    function computeRQ(answers) {
+      // Values
+      const VO3_pts = (answers.VO3 === "Yes") ? 2 : 0; // NP -> 0
+      const VO4_pts = (answers.VO4.includes("(Formative)")) ? 2 : 0; // NP -> 0
+      const F_score = clamp1to10(round(avg([answers.VO1, answers.VO2, answers.VO5, 5 + VO3_pts, 5 + VO4_pts])));
+      const V_letter = (F_score >= 6) ? "F" : "I";
+
+      // Authenticity
+      const AE1_pts_S = answers.AE1.includes("(Structural)") ? 2 : (answers.AE1 === "No preference" ? 0 : -2);
+      const AE3_pts_S = answers.AE3.includes("(Structural)") ? 2 : (answers.AE3 === "No preference" ? 0 : -2);
+      const S_score = clamp1to10(round(avg([answers.AE2, answers.AE4, answers.AE5, 5 + AE1_pts_S, 5 + AE3_pts_S])));
+      const A_letter = (S_score >= 6) ? "S" : "R";
+      const A_strength = (S_score >= 6) ? S_score : (11 - S_score);
+
+      // Horizon
+      const FH1_pts_L = answers.FH1.includes("(Long-Arc)") ? 2 : 0; // NP -> 0
+      const FH3_pts_L = answers.FH3.includes("(Long-Arc)") ? 2 : 0;
+      const FH4_pts_L = answers.FH4.includes("(Long-Arc)") ? 2 : 0;
+      const L_score = clamp1to10(round(avg([answers.FH2, answers.FH5, 5 + FH1_pts_L, 5 + FH3_pts_L, 5 + FH4_pts_L])));
+      const H_letter = (L_score >= 6) ? "L" : "C";
+      const H_strength = (L_score >= 6) ? L_score : (11 - L_score);
+
+      const rq = `${V_letter}(${F_score})-${A_letter}(${A_strength})-${H_letter}(${H_strength})`; // ✅ fixed
+      const rqName =
+        `${WORDS.Values[V_letter][bandIndex(F_score)]} ` +
+        `${WORDS.Authenticity[A_letter][bandIndex(A_strength)]} ` +
+        `${WORDS.Horizon[H_letter][bandIndex(H_strength)]}`;
+
+      const profile = {
+        values: DESC.Values[V_letter][bandIndex(F_score)],
+        authenticity: DESC.Authenticity[A_letter][bandIndex(A_strength)],
+        horizon: DESC.Horizon[H_letter][bandIndex(H_strength)]
+      };
+
+      return {
+        rq,
+        rqName,
+        details: {
+          values: { letter: V_letter, score: F_score, band: bandLabel(F_score) },
+          authenticity: { letter: A_letter, score: A_strength, band: bandLabel(A_strength) },
+          horizon: { letter: H_letter, score: H_strength, band: bandLabel(H_strength) }
+        },
+        profile
+      };
+    }
+
+    /* =========================
+       6) UI RENDER
+       ========================= */
+    const root = document.getElementById("ghostsignal-rq");
+    root.innerHTML = `
+      <style>
+        :root{
+          --rq-accent:${BRAND.accent};
+          --rq-bg:#0b0f12;
+          --rq-card:#10171c;
+          --rq-text:#e7eef3;
+          --rq-muted:#a7b6c2;
+          --rq-line:rgba(199,249,255,.18);
+          --rq-shadow: 0 12px 40px rgba(0,0,0,.35);
+          --rq-radius: 18px;
+          --rq-font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          --rq-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .rq-wrap{font-family:var(--rq-font); color:var(--rq-text); background:var(--rq-bg); border:1px solid var(--rq-line); border-radius:var(--rq-radius); box-shadow:var(--rq-shadow); padding:22px; max-width:900px; margin:0 auto;}
+        .rq-head{display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:16px;}
+        .rq-title{margin:0; font-size:22px; letter-spacing:.4px;}
+        .rq-sub{margin:6px 0 0; color:var(--rq-muted); line-height:1.35;}
+        .rq-badge{font-family:var(--rq-mono); font-size:12px; color:var(--rq-accent); border:1px solid var(--rq-line); border-radius:999px; padding:6px 10px; white-space:nowrap;}
+        .rq-hr{height:1px; background:var(--rq-line); margin:16px 0;}
+        .rq-grid{display:grid; grid-template-columns:1fr; gap:14px;}
+        @media(min-width:820px){.rq-grid{grid-template-columns:1fr 1fr;}}
+        .rq-card{background:var(--rq-card); border:1px solid var(--rq-line); border-radius:14px; padding:14px;}
+        .rq-card h3{margin:0 0 8px; font-size:14px; letter-spacing:.6px; text-transform:uppercase; color:var(--rq-accent); font-family:var(--rq-mono);}
+        .rq-q{margin:10px 0; padding:10px; border:1px solid var(--rq-line); border-radius:12px; background:rgba(255,255,255,.02); overflow:hidden;}
+        .rq-q label{display:block; font-size:13px; color:var(--rq-text); margin-bottom:8px;}
+        .rq-scale{display:flex; gap:10px; align-items:center;}
+        .rq-scale input[type="range"]{width:100%;}
+        .rq-scale .rq-num{font-family:var(--rq-mono); color:var(--rq-accent); min-width:40px; text-align:right;}
+        .rq-choices{display:grid; gap:8px;}
+        .rq-choices label{display:flex; gap:10px; align-items:flex-start; cursor:pointer; color:var(--rq-muted); font-size:13px; line-height:1.35;}
+        .rq-choices input{margin-top:2px;}
+        .rq-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+        .rq-btn{appearance:none; border:1px solid var(--rq-line); background:rgba(199,249,255,.06); color:var(--rq-text); border-radius:12px; padding:10px 12px; cursor:pointer; font-weight:600;}
+        .rq-btn:hover{border-color:rgba(199,249,255,.42);}
+        .rq-btn.primary{background:var(--rq-accent); color:#081014; border-color:transparent;}
+        .rq-result{margin-top:18px; padding:16px; border-radius:14px; border:1px solid var(--rq-line); background:linear-gradient(180deg, rgba(199,249,255,.08), rgba(255,255,255,.02)); display:none;}
+        .rq-result h2{margin:0 0 6px; font-size:18px;}
+        .rq-code{font-family:var(--rq-mono); font-size:14px; color:var(--rq-accent); margin:6px 0 10px;}
+        .rq-name{font-family:var(--rq-mono); color:var(--rq-muted); margin:0 0 12px;}
+        .rq-profile p{margin:10px 0; color:var(--rq-text); line-height:1.45;}
+        .rq-mini{font-size:12px; color:var(--rq-muted); margin-top:10px; line-height:1.35; white-space:pre-line;}
+        .rq-error{display:none; margin-top:12px; color:#ffb4b4;}
+
+        .rq-input{
+          width:100%;
+          max-width:100%;
+          box-sizing:border-box;
+          display:block;
+          border-radius:12px;
+          border:1px solid var(--rq-line);
+          background:rgba(0,0,0,.2);
+          color:var(--rq-text);
+          padding:10px;
+          font-family:var(--rq-font);
+        }
+        .rq-input::placeholder{ color: rgba(167,182,194,.75); }
+        .rq-np{display:flex; align-items:center; gap:8px; margin-top:8px; color:var(--rq-muted); font-size:12px; user-select:none;}
+        .rq-np input{margin:0;}
+      </style>
+
+      <div class="rq-wrap">
+        <div class="rq-head">
+          <div>
+            <h1 class="rq-title">${BRAND.title}</h1>
+            <p class="rq-sub">${BRAND.subtitle}</p>
+          </div>
+          <div class="rq-badge">${BRAND.company} • ${BRAND.acronym}</div>
+        </div>
+
+        <div class="rq-hr"></div>
+
+        <div class="rq-grid">
+          <div class="rq-card">
+            <h3>Basics</h3>
+            ${choiceQ("TYPE","I am a…",["Creator / Podcaster","Brand / Advertiser"], false)}
+            <div class="rq-q"><label for="FIRST">First name</label><input id="FIRST" class="rq-input" placeholder="First name"/></div>
+            <div class="rq-q"><label for="LAST">Last name</label><input id="LAST" class="rq-input" placeholder="Last name"/></div>
+            <div class="rq-q"><label for="ROLE">Role / Title (optional)</label><input id="ROLE" class="rq-input" placeholder="Role / Title"/></div>
+            <div class="rq-q"><label for="ORG">Organization / Podcast name</label><input id="ORG" class="rq-input" placeholder="Organization / Podcast"/></div>
+            <div class="rq-q"><label for="INDUSTRY">Industry (optional)</label><input id="INDUSTRY" class="rq-input" placeholder="Industry"/></div>
+            <div class="rq-q"><label for="WEBSITE">Website (optional)</label><input id="WEBSITE" class="rq-input" placeholder="https://…"/></div>
+            <div class="rq-q"><label for="EMAIL">Email</label><input id="EMAIL" type="email" class="rq-input" placeholder="name@company.com"/></div>
+            <div class="rq-mini">We use this to label your report and follow up. We don’t sell it. Ever.</div>
+          </div>
+
+          <div class="rq-card">
+            <h3>Values Orientation</h3>
+            ${scaleQ("VO1","How explicitly do you communicate your core values in public-facing messaging?",1,10,5)}
+            ${scaleQ("VO2","How important is it that your audience clearly understands your worldview or moral framework?",1,10,5)}
+            ${choiceQ("VO3","Have you ever declined revenue or an opportunity because it conflicted with your values?",["Yes","No"], true)}
+            ${choiceQ("VO4","When you describe your mission, it is usually…",[
+              "A clearly stated “why” we return to often (Formative)",
+              "Mostly expressed through tone, behavior, and outcomes (Implicit)"
+            ], true)}
+            ${scaleQ("VO5","I’m comfortable being clearly identified with a set of convictions, even if it narrows the audience.",1,10,5)}
+          </div>
+
+          <div class="rq-card">
+            <h3>Authenticity Expression</h3>
+            ${choiceQ("AE1","When explaining what you stand for, what feels most natural?",[
+              "Story, lived experience, testimony (Relational)",
+              "Framing, principles, reasoning, clarity (Structural)"
+            ], true)}
+            ${scaleQ("AE2","Our voice is primarily… (1=personal/conversational, 10=structured/intentional)",1,10,5)}
+            ${choiceQ("AE3","A partnership message feels most authentic when it is…",[
+              "Woven into narrative and conversation (Relational)",
+              "Clearly defined, concise, and well-framed (Structural)"
+            ], true)}
+            ${scaleQ("AE4","How important is tonal consistency across your content or brand?",1,10,5)}
+            ${scaleQ("AE5","If an endorsement disrupted your usual tone, how uncomfortable would that feel?",1,10,5)}
+          </div>
+
+          <div class="rq-card">
+            <h3>Flourishing Horizon</h3>
+            ${choiceQ("FH1","Partnerships should develop…",[
+              "Slowly over time, trust first (Long-Arc)",
+              "Quickly with clear goals and momentum (Catalytic)"
+            ], true)}
+            ${scaleQ("FH2","How important is long-term continuity vs short-term impact? (1=short-term, 10=long-term)",1,10,5)}
+            ${choiceQ("FH3","I prefer…",[
+              "Fewer partnerships that last longer (Long-Arc)",
+              "More partnerships that run in seasons (Catalytic)"
+            ], true)}
+            ${choiceQ("FH4","Success in collaboration looks like…",[
+              "Depth, durability, shared legacy (Long-Arc)",
+              "Activation, lift, measurable outcomes (Catalytic)"
+            ], true)}
+            ${scaleQ("FH5","How patient are you with slower growth if alignment is strong?",1,10,5)}
+          </div>
+
+          <div class="rq-card">
+            <h3>Undertone</h3>
+            <div class="rq-q">
+              <label for="U1">Anything we should know that no index could capture? (optional)</label>
+              <textarea id="U1" rows="8" class="rq-input" style="resize:vertical;"></textarea>
+            </div>
+            <div class="rq-mini">Your RQ is a tuning tool—clarity, not a box.</div>
+          </div>
+        </div>
+
+        <div class="rq-error" id="rqError">Please answer all required fields and questions before generating your RQ.</div>
+
+        <div class="rq-actions">
+          <button class="rq-btn primary" id="rqGo">${BRAND.cta}</button>
+          <button class="rq-btn" id="rqPdf" disabled>Download PDF</button>
+          <button class="rq-btn" id="rqCopy" disabled>Copy RQ</button>
+        </div>
+
+        <div class="rq-result" id="rqResult">
+          <h2>Your ${BRAND.acronym}</h2>
+          <div class="rq-code" id="rqCode"></div>
+          <div class="rq-name" id="rqName"></div>
+          <div class="rq-profile" id="rqProfile"></div>
+          <div class="rq-mini" id="rqMeta"></div>
+        </div>
+      </div>
+    `;
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    // allowNP toggles whether to append "No preference"
+    function choiceQ(id, label, options, allowNP) {
+      const opts = allowNP ? [...options, "No preference"] : [...options];
+      const html = opts.map(o => `
+        <label><input type="radio" name="${id}" value="${escapeHtml(o)}" /> <span>${escapeHtml(o)}</span></label>
+      `).join("");
+      return `
+        <div class="rq-q">
+          <label>${label}</label>
+          <div class="rq-choices">${html}</div>
+        </div>
+      `;
+    }
+
+    function scaleQ(id, label, min, max, def) {
+      return `
+        <div class="rq-q">
+          <label for="${id}">${label}</label>
+          <div class="rq-scale">
+            <input id="${id}" type="range" min="${min}" max="${max}" value="${def}" />
+            <div class="rq-num" id="${id}_num">${def}</div>
+          </div>
+          <label class="rq-np">
+            <input id="${id}_NP" type="checkbox" />
+            <span>No preference</span>
+          </label>
+        </div>
+      `;
+    }
+
+    function checked(name) {
+      const el = document.querySelector(`input[name="${name}"]:checked`);
+      return el ? el.value : "";
+    }
+
+    function wireNoPreferenceForSlider(id) {
+      const slider = document.getElementById(id);
+      const out = document.getElementById(id + "_num");
+      const np = document.getElementById(id + "_NP");
+
+      np.addEventListener("change", () => {
+        if (np.checked) {
+          slider.value = 5;
+          slider.disabled = true;
+          out.textContent = "NP";
+        } else {
+          slider.disabled = false;
+          out.textContent = slider.value;
+        }
+      });
+
+      slider.addEventListener("input", () => {
+        if (!np.checked) out.textContent = slider.value;
+      });
+    }
+
+    ["VO1", "VO2", "VO5", "AE2", "AE4", "AE5", "FH2", "FH5"].forEach(wireNoPreferenceForSlider);
+
+    const btnGo = document.getElementById("rqGo");
+    const btnPdf = document.getElementById("rqPdf");
+    const btnCopy = document.getElementById("rqCopy");
+    const result = document.getElementById("rqResult");
+    const rqCodeEl = document.getElementById("rqCode");
+    const rqNameEl = document.getElementById("rqName");
+    const rqProfileEl = document.getElementById("rqProfile");
+    const rqMetaEl = document.getElementById("rqMeta");
+    const rqError = document.getElementById("rqError");
+
+    let lastComputed = null;
+
+    function getCaptureEndpoint() {
+      return (BRAND.captureEndpoint || "").trim();
+    }
+
+    function buildSubmissionPayload(answers, computed) {
+      return {
+        source: "squarespace-rq-snippet",
+        submittedAt: new Date().toISOString(),
+        brand: {
+          company: BRAND.company,
+          acronym: BRAND.acronym,
+          title: BRAND.title
+        },
+        basics: {
+          type: answers.TYPE,
+          first: answers.FIRST,
+          last: answers.LAST,
+          role: answers.ROLE,
+          org: answers.ORG,
+          industry: answers.INDUSTRY,
+          website: answers.WEBSITE,
+          email: answers.EMAIL
+        },
+        answers: {
+          VO1: answers.VO1,
+          VO2: answers.VO2,
+          VO3: answers.VO3,
+          VO4: answers.VO4,
+          VO5: answers.VO5,
+          AE1: answers.AE1,
+          AE2: answers.AE2,
+          AE3: answers.AE3,
+          AE4: answers.AE4,
+          AE5: answers.AE5,
+          FH1: answers.FH1,
+          FH2: answers.FH2,
+          FH3: answers.FH3,
+          FH4: answers.FH4,
+          FH5: answers.FH5,
+          npCount: answers.npCount,
+          totalCount: answers.totalCount
+        },
+        result: {
+          rq: computed.rq,
+          rqName: computed.rqName,
+          profile: computed.profile,
+          details: computed.details,
+          clarity: computed.clarity,
+          undertone: computed.undertone
+        },
+        meta: {
+          pageUrl: window.location.href,
+          referrer: document.referrer || "",
+          userAgent: navigator.userAgent
+        }
+      };
+    }
+
+    async function submitCapture(payload) {
+      const endpoint = getCaptureEndpoint();
+      if (!endpoint) return { skipped: true };
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let detail = "";
+        try {
+          const data = await res.json();
+          detail = data?.error || "";
+        } catch {
+          detail = "";
+        }
+        throw new Error(detail || `Capture request failed (${res.status})`);
+      }
+
+      return res.json().catch(() => ({ ok: true }));
+    }
+
+    function readAnswers() {
+      // Basics required
+      const TYPE = checked("TYPE");
+      const FIRST = (document.getElementById("FIRST").value || "").trim();
+      const LAST = (document.getElementById("LAST").value || "").trim();
+      const ROLE = (document.getElementById("ROLE").value || "").trim();
+      const ORG = (document.getElementById("ORG").value || "").trim();
+      const INDUSTRY = (document.getElementById("INDUSTRY").value || "").trim();
+      const WEBSITE = (document.getElementById("WEBSITE").value || "").trim();
+      const EMAIL = (document.getElementById("EMAIL").value || "").trim();
+
+      const basicsOk = TYPE && FIRST && LAST && ORG && EMAIL;
+      if (!basicsOk) return null;
+
+      // slider returns 5 if NP
+      const scaleVal = (id) => {
+        const np = document.getElementById(id + "_NP");
+        if (np && np.checked) return 5;
+        return +document.getElementById(id).value;
+      };
+
+      const VO1 = scaleVal("VO1");
+      const VO2 = scaleVal("VO2");
+      const VO5 = scaleVal("VO5");
+      const AE2 = scaleVal("AE2");
+      const AE4 = scaleVal("AE4");
+      const AE5 = scaleVal("AE5");
+      const FH2 = scaleVal("FH2");
+      const FH5 = scaleVal("FH5");
+
+      const VO3 = checked("VO3");
+      const VO4 = checked("VO4");
+      const AE1 = checked("AE1");
+      const AE3 = checked("AE3");
+      const FH1 = checked("FH1");
+      const FH3 = checked("FH3");
+      const FH4 = checked("FH4");
+
+      const required = [VO3, VO4, AE1, AE3, FH1, FH3, FH4].every(Boolean);
+      if (!required) return null;
+
+      // Signal clarity counts (8 sliders + 7 radios = 15)
+      let npCount = 0;
+      const totalCount = 15;
+
+      ["VO1","VO2","VO5","AE2","AE4","AE5","FH2","FH5"].forEach(id => {
+        if (document.getElementById(id + "_NP")?.checked) npCount++;
+      });
+
+      [VO3, VO4, AE1, AE3, FH1, FH3, FH4].forEach(v => {
+        if (v === "No preference") npCount++;
+      });
+
+      return {
+        TYPE, FIRST, LAST, ROLE, ORG, INDUSTRY, WEBSITE, EMAIL,
+        VO1, VO2, VO3, VO4, VO5, AE1, AE2, AE3, AE4, AE5, FH1, FH2, FH3, FH4, FH5,
+        npCount, totalCount
+      };
+    }
+
+    btnGo.addEventListener("click", async () => {
+      rqError.style.display = "none";
+      const answers = readAnswers();
+      if (!answers) {
+        rqError.style.display = "block";
+        return;
+      }
+
+      const out = computeRQ(answers);
+      const clarity = computeSignalClarity(answers.npCount, answers.totalCount);
+
+      lastComputed = {
+        ...out,
+        basics: {
+          type: answers.TYPE,
+          first: answers.FIRST,
+          last: answers.LAST,
+          role: answers.ROLE,
+          org: answers.ORG,
+          industry: answers.INDUSTRY,
+          website: answers.WEBSITE,
+          email: answers.EMAIL
+        },
+        undertone: (document.getElementById("U1").value || "").trim(),
+        clarity
+      };
+
+      rqCodeEl.textContent = `${BRAND.acronym}: ${out.rq}`;
+      rqNameEl.textContent = `Name: ${out.rqName}`;
+
+      rqProfileEl.innerHTML = `
+        <p>${out.profile.values}</p>
+        <p>${out.profile.authenticity}</p>
+        <p>${out.profile.horizon}</p>
+      `;
+
+      const b = lastComputed.basics;
+      rqMetaEl.textContent =
+        `${b.first} ${b.last} · ${b.type} · ${b.org}` +
+        (b.role ? ` · ${b.role}` : "") +
+        (b.industry ? ` · ${b.industry}` : "") +
+        (b.website ? ` · ${b.website}` : "") +
+        `\nSignal Clarity: ${clarity.label} — ${clarity.note}` +
+        `\nValues: ${out.details.values.letter} (${out.details.values.score}, band ${out.details.values.band}) · ` +
+        `Authenticity: ${out.details.authenticity.letter} (${out.details.authenticity.score}, band ${out.details.authenticity.band}) · ` +
+        `Horizon: ${out.details.horizon.letter} (${out.details.horizon.score}, band ${out.details.horizon.band})`;
+
+      result.style.display = "block";
+      btnPdf.disabled = false;
+      btnCopy.disabled = false;
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      try {
+        btnGo.disabled = true;
+        btnGo.textContent = "Saving...";
+        await submitCapture(buildSubmissionPayload(answers, lastComputed));
+      } catch (err) {
+        console.error("GhostSignal RQ submission capture failed.", err);
+      } finally {
+        btnGo.disabled = false;
+        btnGo.textContent = BRAND.cta;
+      }
+    });
+
+    btnCopy.addEventListener("click", async () => {
+      if (!lastComputed) return;
+      try {
+        await navigator.clipboard.writeText(`${BRAND.acronym}: ${lastComputed.rq} — ${lastComputed.rqName}`);
+        btnCopy.textContent = "Copied";
+        setTimeout(() => btnCopy.textContent = "Copy RQ", 1200);
+      } catch {
+        btnCopy.textContent = "Copy failed";
+        setTimeout(() => btnCopy.textContent = "Copy RQ", 1200);
+      }
+    });
+
+    btnPdf.addEventListener("click", () => {
+      if (!lastComputed) return;
+      generatePDF(lastComputed);
+    });
+
+    function generatePDF(out) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+      const margin = 54;
+      let y = 72;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(`${BRAND.company} — ${BRAND.pdfTitle}`, margin, y);
+      y += 18;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+      y += 18;
+
+      const b = out.basics || {};
+      const idLine =
+        `${(b.first || "")} ${(b.last || "")}`.trim() +
+        (b.type ? ` · ${b.type}` : "") +
+        (b.org ? ` · ${b.org}` : "");
+      doc.text(idLine || "—", margin, y); y += 14;
+
+      const line2 =
+        (b.role ? `Role: ${b.role}   ` : "") +
+        (b.industry ? `Industry: ${b.industry}` : "");
+      if (line2.trim()) { doc.text(line2.trim(), margin, y); y += 14; }
+      if (b.website) { doc.text(`Website: ${b.website}`, margin, y); y += 14; }
+      if (b.email) { doc.text(`Email: ${b.email}`, margin, y); y += 14; }
+
+      doc.text(`Signal Clarity: ${out.clarity?.label || "—"}`, margin, y);
+      y += 18;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text(`${BRAND.acronym}: ${out.rq}`, margin, y);
+      y += 16;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(`Name: ${out.rqName}`, margin, y);
+      y += 18;
+
+      doc.setDrawColor(180);
+      doc.line(margin, y, 612 - margin, y);
+      y += 18;
+
+      const wrap = (text, width = 504) => doc.splitTextToSize(text, width);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Resonance Profile", margin, y);
+      y += 14;
+
+      doc.setFont("helvetica", "normal");
+      doc.text(wrap(out.profile.values), margin, y); y += wrap(out.profile.values).length * 13 + 10;
+      doc.text(wrap(out.profile.authenticity), margin, y); y += wrap(out.profile.authenticity).length * 13 + 10;
+      doc.text(wrap(out.profile.horizon), margin, y); y += wrap(out.profile.horizon).length * 13 + 10;
+
+      if (out.undertone) {
+        doc.setFont("helvetica", "bold");
+        doc.text("Undertone (Optional)", margin, y);
+        y += 14;
+        doc.setFont("helvetica", "normal");
+        doc.text(wrap(out.undertone), margin, y);
+        y += wrap(out.undertone).length * 13 + 10;
+      }
+
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(90);
+      doc.text("This report is a tuning tool: clarity, not a box.", margin, 760);
+
+      const who = ((b.first || "") + "_" + (b.last || "")).replace(/\W+/g, "_");
+      const safeName = `${BRAND.company}_${BRAND.acronym}_${who}_${out.rq.replace(/[^\w()-]/g, "")}`.replace(/_+/g, "_");
+      doc.save(`${safeName}.pdf`);
+    }
+
+  } catch (e) {
+    const root = document.getElementById("ghostsignal-rq");
+    if (root) {
+      root.innerHTML = "<div style='padding:16px;border:1px solid #333;color:#fff;background:#111;border-radius:12px;'>Resonance Index failed to load. Open the browser console to see the error.</div>";
+    }
+    console.error(e);
+  }
+})();
+</script>

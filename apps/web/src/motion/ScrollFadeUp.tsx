@@ -16,13 +16,14 @@ type Props = {
    * Motto uses `start: "top bottom"` for many reveals.
    */
   start?: string;
+  duration?: number;
 };
 
 /**
  * Mirrors Motto's common scroll entrance animation:
  * `fromTo(el, { y:60, opacity:0 }, { y:0, opacity:1, duration:1, ease:"power2.out", delay: 0.1*index, scrollTrigger:{trigger: el, start:"top bottom"} })`
  */
-export function ScrollFadeUp({ children, index = 0, start = "top bottom" }: Props) {
+export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration = 1.7 }: Props) {
   const id = useId();
 
   useIsomorphicLayoutEffect(() => {
@@ -36,9 +37,9 @@ export function ScrollFadeUp({ children, index = 0, start = "top bottom" }: Prop
       {
         y: 0,
         opacity: 1,
-        duration: 1,
+        duration,
         ease: "power2.out",
-        delay: 0.1 * index,
+        delay: 0.14 * index,
         scrollTrigger: { trigger: el, start },
       },
     );
@@ -47,7 +48,7 @@ export function ScrollFadeUp({ children, index = 0, start = "top bottom" }: Prop
       tween.scrollTrigger?.kill();
       tween.kill();
     };
-  }, [id, index, start]);
+  }, [duration, id, index, start]);
 
   return <div data-gs-sfu={id}>{children}</div>;
 }

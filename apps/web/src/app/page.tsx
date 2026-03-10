@@ -1,242 +1,104 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { GhostSignalLiquidWordmark } from "@/components/GhostSignalLiquidWordmark";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { ScrollGrowDockPin } from "@/motion/ScrollGrowDockPin";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
+
+import styles from "./page.module.css";
 
 const navLinks = [
   { href: "/what-is-this", label: "What is this" },
   { href: "/for-creators", label: "For Creators" },
   { href: "/for-advertisers", label: "For Advertisers" },
   { href: "/who-are-we", label: "Who Are We" },
-  { href: "/get-in-touch", label: "Get In Touch" },
   { href: "/snowdrift", label: "SNOWDRIFT" },
+  { href: "/get-in-touch", label: "Get In Touch" },
 ] as const;
 
-export default function HomePage() {
-  const px = "var(--gs-px)";
-  const n = (value: number) => `calc(var(--gs-n-${value}) * ${px})`;
-  const fontSize = (token: string) => `calc(var(--gs-font-size-${token}) * ${px})`;
+const exploreLinks = [
+  { href: "/for-brands", label: "Explore For Brands" },
+  { href: "/for-advertisers", label: "Explore For Advertisers" },
+  { href: "/who-are-we", label: "Who Are We" },
+] as const;
 
+const trustedRows = new Array(6).fill(null);
+
+export default function HomePage() {
   return (
-    <main className="min-h-dvh bg-background">
-      {/* B1: Home frame (node 3002:370) */}
+    <main className={styles.home}>
       <SiteHeader links={navLinks} />
 
-      <section
-        style={{
-          paddingTop: n(112),
-          paddingBottom: n(112),
-          paddingLeft: n(112),
-          paddingRight: n(112),
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-          }}
-        >
-          {/* hero headline (node 3003:2077) */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              alignSelf: "stretch",
-              rowGap: n(44),
-              paddingTop: n(24),
-              paddingBottom: n(24),
-              color: "var(--gs-tw-gray-950)", // fill #030712 in Figma
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                alignSelf: "stretch",
-                rowGap: n(24),
-              }}
-            >
-              {/* line1 (node 3006:2096) */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  columnGap: n(44),
-                  flexWrap: "wrap",
-                }}
-              >
-                <Image
-                  src="/images/home/home-cloud-1.png"
-                  alt=""
-                  aria-hidden="true"
-                  width={183}
-                  height={119}
-                  priority
-                  style={{ width: 183, height: 119, maxWidth: "100%" }}
-                />
-                <SplitLinesReveal delay={0}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-extrabold)", // Text-8xl/Extra Bold
-                      fontSize: fontSize("8xl"),
-                      lineHeight: "1em",
-                    }}
-                  >
-                    GHOSTSignal
-                  </div>
+      <section className={styles.heroDark}>
+        <div className={styles.heroSky} aria-hidden="true" />
+        <div className={styles.heroLiquidWordmark}>
+          <h1 className={styles.heroGhostSignalBase}>
+            <span className={styles.heroGhostWord}>GHOST</span>
+            <span className={styles.heroSignalWord}>Signal</span>
+          </h1>
+          <div className={styles.heroGhostSignalFx} aria-hidden="true">
+            <GhostSignalLiquidWordmark />
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.contentSection}>
+        <div className={styles.frame}>
+          <div className={styles.heroLines}>
+            <div className={styles.hero2Left}>
+              <ScrollFadeUp index={0} duration={2.2} start="top 74%">
+                <p className={styles.hero2Asterisk}>*</p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={1} duration={2.2} start="top 74%">
+                <p className={styles.hero2Lead}>{`We are a values-based\nadvertising network.\nAnd so much more.`}</p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={2} duration={2.2} start="top 74%">
+                <Image src="/images/home/figma/arrow-down.svg" alt="" width={242} height={242} className={styles.hero2ArrowDown} />
+              </ScrollFadeUp>
+            </div>
+
+            <div className={styles.hero2Right}>
+              <div className={styles.hero2Line2}>
+                <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%">
+                  <h1 className={styles.hero2DisplayLine2}>IS FOR PEOPLE</h1>
                 </SplitLinesReveal>
               </div>
 
-              {/* line2 (node 3006:2094) */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  columnGap: n(44),
-                  flexWrap: "wrap",
-                }}
-              >
-                <SplitLinesReveal delay={0.1}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-bold)", // Text-xl/Bold
-                      fontSize: fontSize("xl"),
-                      lineHeight: "1.4em",
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {"Soulful partnerships for podcasters\nand advertisers who care."}
-                  </div>
-                </SplitLinesReveal>
-                <SplitLinesReveal delay={0.1}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-bold)", // Text-8xl/Bold
-                      fontSize: fontSize("8xl"),
-                      lineHeight: "1em",
-                    }}
-                  >
-                    is for people
-                  </div>
+              <div className={styles.hero2Line3}>
+                <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%">
+                  <h2 className={styles.hero2DisplayLine3}>WHO ARE MAKING</h2>
                 </SplitLinesReveal>
               </div>
 
-              {/* line3 (node 3006:2095) */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  alignSelf: "stretch",
-                  columnGap: n(24),
-                  flexWrap: "wrap",
-                }}
-              >
-                <Image
-                  src="/images/home/icon-arrow-down.svg"
-                  alt=""
-                  aria-hidden="true"
-                  width={112}
-                  height={112}
-                  style={{ width: 112, height: 112 }}
-                />
-                <SplitLinesReveal delay={0.2}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-bold)", // Text-8xl/Bold
-                      fontSize: fontSize("8xl"),
-                      lineHeight: "1em",
-                    }}
-                  >
-                    who are making
-                  </div>
-                </SplitLinesReveal>
-                <SplitLinesReveal delay={0.2}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-bold)", // Text-8xl/Bold
-                      fontSize: fontSize("8xl"),
-                      lineHeight: "1em",
-                    }}
-                  >
-                    the world.
-                  </div>
+              <div className={styles.hero2Line4}>
+                <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%">
+                  <h2 className={styles.hero2DisplayLine4}>THE WORLD.</h2>
                 </SplitLinesReveal>
               </div>
             </div>
           </div>
 
-          {/* hero nav (node 3006:2084) */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              alignSelf: "stretch",
-              columnGap: n(24),
-              color: "var(--gs-tw-gray-950)", // fill #030712 in Figma
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "var(--font-body)",
-                fontWeight: "var(--gs-font-weight-normal)", // Text-xl/Regular
-                fontSize: fontSize("xl"),
-                lineHeight: "1.4em",
-              }}
-            >
-              Discover our engagements
-            </div>
-            <div
-              style={{
-                fontFamily: "var(--font-body)",
-                fontWeight: "var(--gs-font-weight-normal)", // Text-xl/Regular
-                fontSize: fontSize("xl"),
-                lineHeight: "1.4em",
-              }}
-            >
-              (SCROLL)
-            </div>
+          <div className={styles.scrollRow}>
+            <p className={styles.bodyXl}>Discover what we can do for you</p>
+            <p className={styles.bodyXl}>(SCROLL)</p>
           </div>
 
-          {/* content block (node 3006:2130) */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              alignSelf: "stretch",
-              rowGap: n(44),
-              paddingTop: n(112),
-              paddingBottom: n(112),
-            }}
-          >
+          <div className={styles.videoBlock}>
             <ScrollGrowDockPin
-              dockTargetSelector="[data-gs-home-media-target]"
-              pinUntilSelector="[data-gs-home-harmony]"
-              start="top center"
-              dockAt="top center"
-              lockX
+              dockTargetSelector="[data-gs-home-media-final-target]"
+              pinUntilSelector="[data-gs-home-media-pin-end]"
+              startScale={1}
+              holdBefore={0.2}
+              start="center center"
+              dockAt="top 68%"
+              dockOffsetY={-400}
             >
               <ScrollFadeUp index={0}>
                 <video
                   data-gs-home-media-source
-                  src="/images/home/desktopblankcloud2.mp4"
+                  src="/images/home/ship2.mp4"
                   autoPlay
                   muted
                   loop
@@ -244,266 +106,155 @@ export default function HomePage() {
                   controls={false}
                   preload="auto"
                   disablePictureInPicture
-                  style={{
-                    width: 825,
-                    height: "auto",
-                    maxWidth: "100%",
-                    display: "block",
-                    objectFit: "cover",
-                  }}
+                  className={styles.heroVideo}
                 />
               </ScrollFadeUp>
             </ScrollGrowDockPin>
 
-            <div
-              style={{
-                width: 753,
-                fontFamily: "var(--font-body)",
-                fontWeight: "var(--gs-font-weight-normal)", // Text-xl/Regular
-                fontSize: fontSize("xl"),
-                lineHeight: "1.4em",
-                color: "var(--gs-tw-black)", // fill #000000 in Figma
-                textAlign: "center",
-              }}
-            >
-              Business Strategy • Brand Positioning • Category Definition • Brand Design • Brand
-              Transformation
-            </div>
+            <p className={styles.videoCaption}>
+              If you&apos;re looking for
+              <br />
+              A signal in the noise
+              <br />
+              this is it.
+            </p>
           </div>
 
-          {/* harmony section (node 3006:2135) */}
-          <div
-            data-gs-home-harmony
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignSelf: "stretch",
-              rowGap: n(144),
-              paddingTop: n(24),
-              paddingBottom: n(24),
-              color: "var(--gs-tw-gray-950)", // fill #030712 in Figma
-            }}
-          >
-            {/* headline (node 3006:2156) */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                alignSelf: "stretch",
-                columnGap: n(44),
-                position: "relative",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", rowGap: n(44), flex: "0 0 auto" }}>
-                {/* Centered dock target at Harmony headline height (invisible). */}
-                <div
-                  data-gs-home-media-target
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    marginLeft: "auto",
-                    marginRight: "auto",
-                    top: 0,
-                    width: "66.6666667%",
-                    aspectRatio: "16 / 9",
-                    pointerEvents: "none",
-                  }}
-                />
-
-                <div style={{ display: "flex", alignItems: "center", columnGap: n(44), flexWrap: "wrap" }}>
+          <div data-gs-home-harmony className={styles.harmony}>
+            <div className={styles.harmonyHeadline}>
+              <div className={styles.harmonyTextBlock}>
+                <SplitLinesReveal>
+                  <h2 className={styles.harmonyH9}>HARMONY</h2>
+                </SplitLinesReveal>
+                <div className={styles.harmonySecondLine}>
                   <SplitLinesReveal>
-                    <div
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontWeight: "var(--gs-font-weight-bold)", // Text-9xl/Bold
-                        fontSize: fontSize("9xl"),
-                        lineHeight: "1em",
-                      }}
-                    >
-                      HARMONY
-                    </div>
+                    <h2 className={styles.harmonyH9}>NOT</h2>
+                  </SplitLinesReveal>
+                  <SplitLinesReveal>
+                    <h2 className={styles.harmonyH9}>HYPE</h2>
                   </SplitLinesReveal>
                 </div>
+              </div>
+              <div data-gs-home-media-target className={styles.redTarget} />
+            </div>
 
-                <div style={{ display: "flex", alignItems: "center", columnGap: n(24), flexWrap: "wrap" }}>
-                  <SplitLinesReveal>
-                    <div
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontWeight: "var(--gs-font-weight-bold)", // Text-9xl/Bold
-                        fontSize: fontSize("9xl"),
-                        lineHeight: "1em",
-                      }}
-                    >
-                      NOT
-                    </div>
-                  </SplitLinesReveal>
-                  <SplitLinesReveal>
-                    <div
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontWeight: "var(--gs-font-weight-bold)", // Text-9xl/Bold
-                        fontSize: fontSize("9xl"),
-                        lineHeight: "1em",
-                      }}
-                    >
-                      HYPE
-                    </div>
-                  </SplitLinesReveal>
-                </div>
+            <div className={styles.twoCol}>
+              <div className={styles.thinkBigCol}>
+                <p className={styles.bodyXl}>Think big with us.</p>
+                <div data-gs-home-media-final-target className={styles.mediaFinalTarget} />
+              </div>
+              <div className={styles.stack44}>
+                <SplitLinesReveal>
+                  <h3 className={styles.harmonyLead}>Great connections are more than contacts, they&apos;re Ideas aligning in Harmony.</h3>
+                </SplitLinesReveal>
+                <p className={styles.body2xl}>
+                  We partner with soul-aligned companies to create impactful, future-ready partnerships. We collaborate with visionary teams and design-led companies that require support in company positioning, category definition, and brand expression to unify their team, drive growth, and amplify brand influence in modern culture.
+                </p>
               </div>
             </div>
 
-            {/* text1 (node 3006:2150) */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "stretch",
-                alignSelf: "stretch",
-                columnGap: `calc((var(--gs-n-256) + var(--gs-n-128)) * ${px})`,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontWeight: "var(--gs-font-weight-normal)", // Text-xl/Regular
-                  fontSize: fontSize("xl"),
-                  lineHeight: "1.4em",
-                  flex: "0 0 auto",
-                }}
-              >
-                Think big with us.
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", rowGap: n(44), flex: 1 }}>
+            <div data-gs-home-media-pin-end className={styles.twoCol}>
+              <p className={styles.bodyXl}>Explore Us.</p>
+              <div className={styles.exploreCol}>
                 <SplitLinesReveal>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-medium)", // Text-7xl/Medium
-                      fontSize: fontSize("7xl"),
-                      lineHeight: "1em",
-                    }}
-                  >
-                    Great connections are more than contacts, they’re Ideas aligning in Harmony.
-                  </div>
+                  <p className={styles.bodyXl}>(CHOOSE YOUR PURPOSE)</p>
                 </SplitLinesReveal>
-
-                <div
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontWeight: "var(--gs-font-weight-normal)", // Text-2xl/Regular
-                    fontSize: fontSize("2xl"),
-                    lineHeight: "1.3333333333333333em",
-                  }}
-                >
-                  We partner with soul-aligned companies to create impactful, future-ready partnerships. We
-                  collaborate with visionary teams and design-led companies that require support in company
-                  positioning, category definition, and brand expression to unify their team, drive growth,
-                  and amplify brand influence in modern culture.
-                </div>
-              </div>
-            </div>
-
-            {/* text2 (node 3006:2157) */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "stretch",
-                alignSelf: "stretch",
-                columnGap: `calc((var(--gs-n-256) + var(--gs-n-128)) * ${px})`,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontWeight: "var(--gs-font-weight-normal)", // Text-xl/Regular
-                  fontSize: fontSize("xl"),
-                  lineHeight: "1.4em",
-                  flex: "0 0 auto",
-                }}
-              >
-                Explore Us.
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", rowGap: n(44), flex: 1 }}>
-                <SplitLinesReveal>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontWeight: "var(--gs-font-weight-normal)", // Text-4xl/Regular
-                      fontSize: fontSize("4xl"),
-                      lineHeight: "1.1111111111111112em",
-                    }}
-                  >
-                    (CHOOSE YOUR PURPOSE)
-                  </div>
-                </SplitLinesReveal>
-
-                <div style={{ display: "flex", flexDirection: "column", rowGap: n(24) }}>
-                  {[
-                    { href: "/for-advertisers", label: "Explore For Brands" },
-                    { href: "/for-advertisers", label: "Explore For Advertisers" },
-                    { href: "/who-are-we", label: "Who Are We" },
-                  ].map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        columnGap: n(24),
-                        textDecoration: "none",
-                        color: "var(--gs-tw-gray-950)",
-                        fontFamily: "var(--font-body)",
-                        fontWeight: "var(--gs-font-weight-normal)", // Text-3xl/Regular
-                        fontSize: fontSize("3xl"),
-                        lineHeight: "1.2em",
-                      }}
-                    >
+                <div className={styles.exploreLinks}>
+                  {exploreLinks.map((item) => (
+                    <Link key={item.label} href={item.href} className={styles.exploreLink}>
                       <span>{item.label}</span>
-                      <span style={{ marginLeft: "auto", display: "inline-flex" }} aria-hidden="true">
-                        <Image
-                          src="/images/home/icon-arrow-right.svg"
-                          alt=""
-                          width={40}
-                          height={40}
-                          style={{ width: 40, height: 40 }}
-                        />
-                      </span>
+                      <Image src="/images/home/icon-arrow-right.svg" alt="" width={40} height={40} className={styles.arrowRight} />
                     </Link>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* trusted (node 3006:2174) */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "stretch",
-                alignSelf: "stretch",
-                columnGap: `calc((var(--gs-n-256) + var(--gs-n-128)) * ${px})`,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontWeight: "var(--gs-font-weight-normal)", // Text-xl/Regular
-                  fontSize: fontSize("xl"),
-                  lineHeight: "1.4em",
-                }}
-              >
-                (TRUSTED BY)
+            <div className={styles.trustedWrap}>
+              <p className={styles.bodyXl}>(TRUSTED BY)</p>
+              <div className={styles.trustedGrid}>
+                {trustedRows.map((_, index) => (
+                  <div key={index} className={styles.trustedItem}>
+                    <Image src="/images/home/figma/trusted-logo-mark.svg" alt="" width={73} height={59} className={styles.trustedMark} />
+                    <Image src="/images/home/figma/trusted-logo-wordmark.svg" alt="" width={106} height={58} className={styles.trustedWordmark} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.impactWrap}>
+              <SplitLinesReveal>
+                <h2 className={styles.impactHeadline}>{`THE RIGHT AUDIENCE\nCHANGES EVERYTHING`}</h2>
+              </SplitLinesReveal>
+              <div className={styles.impactBody}>
+                <div className={styles.impactImageWrap}>
+                  <Image
+                    src="/images/home/figma/mariah.png"
+                    alt="Classical sculpture"
+                    width={848}
+                    height={940}
+                    className={styles.impactImage}
+                  />
+                </div>
+                <div className={styles.impactTextWrap}>
+                  <SplitLinesReveal>
+                    <h3 className={styles.harmonyLead}>Turn aligned values into orchestral impact.</h3>
+                  </SplitLinesReveal>
+                  <SplitLinesReveal>
+                    <p className={styles.body2xl}>
+                      Traditional advertising falls short because it stops at the surface, logos, taglines, campaigns. We go deeper, aligning your business around underlying and shared values. The result? A brand your people will champion and your audience will love.
+                    </p>
+                  </SplitLinesReveal>
+                  <SplitLinesReveal>
+                    <Link href="/what-is-this" className={styles.learnMore}>
+                      LEARN MORE
+                    </Link>
+                  </SplitLinesReveal>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerTop}>
+          <Image src="/images/home/figma/footer-mark-dark.gif" alt="Ghost Signal mark" width={155} height={145} unoptimized className={styles.footerMark} />
+          <div className={styles.footerWordmark}>
+            <Image src="/images/home/figma/footer-wordmark-ghost.svg" alt="Ghost" width={289.978} height={57.7955} className={styles.footerWordmarkLeft} />
+            <Image src="/images/home/figma/footer-wordmark-signal.svg" alt="Signal" width={219.702} height={71.9804} className={styles.footerWordmarkRight} />
+          </div>
+        </div>
+
+        <div className={styles.footerNav}>
+          <div className={styles.footerCol}>
+            <h4 className={styles.footerColTitle}>Discover</h4>
+            <div className={styles.footerColLinks}>
+              <Link href="/for-creators">FOR CREATORS</Link>
+              <Link href="/for-brands">FOR BRANDS</Link>
+            </div>
+          </div>
+          <div className={styles.footerCol}>
+            <h4 className={styles.footerColTitle}>Company</h4>
+            <div className={styles.footerColLinks}>
+              <Link href="/who-are-we">WHO WE ARE</Link>
+              <Link href="/what-is-this">WHAT IS THIS</Link>
+            </div>
+          </div>
+          <div className={styles.footerCol}>
+            <h4 className={styles.footerColTitle}>Learn</h4>
+            <div className={styles.footerColLinks}>
+              <Link href="/snowdrift">SNOWDRIFT</Link>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.footerSocial}>
+          <Image src="/images/home/figma/social-linkedin-outline.svg" alt="LinkedIn" width={24} height={24} className={styles.socialIcon} />
+          <Image src="/images/home/figma/social-facebook.svg" alt="Facebook" width={24} height={24} className={styles.socialIcon} />
+          <Image src="/images/home/figma/social-instagram.svg" alt="Instagram" width={24} height={24} className={styles.socialIcon} />
+        </div>
+      </footer>
     </main>
   );
 }
