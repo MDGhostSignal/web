@@ -32,6 +32,7 @@ varying vec2 vUv;
 uniform float uTime;
 uniform vec2 uResolution;
 uniform vec2 uMouse;
+uniform vec2 uMousePrev;
 uniform vec2 uMouseVelocity;
 
 // ============================================
@@ -143,28 +144,52 @@ float hash(vec2 p) {
 // Returns fog density at a 3D point
 // ============================================
 
-float fogDensity(vec3 pos, float time, vec3 mousePos, vec2 mouseVel) {
+float fogDensity(vec3 pos, float time, vec3 mousePos, vec3 mousePrevPos, vec2 mouseVel, float mouseSpeed) {
   // Slow horizontal drift (right to left)
   pos.x += time * 0.015;
 
-  // Mouse interaction - fog displacement and swirl
+  // Physical displacement - mouse as solid object
   vec3 toMouse = pos - mousePos;
   float mouseDist = length(toMouse);
-  float mouseInfluence = exp(-mouseDist * 0.8);
 
-  // Swirl effect around mouse
-  float mouseSpeed = length(mouseVel);
-  float swirlAngle = mouseInfluence * mouseSpeed * 8.0;
-  mat2 swirl = mat2(cos(swirlAngle), -sin(swirlAngle), sin(swirlAngle), cos(swirlAngle));
-  pos.xz += swirl * toMouse.xz * mouseInfluence * 0.35;
+  // Very localized influence (small area like a physical object)
+  float mouseRadius = 0.4; // Small radius
+  float mouseInfluence = smoothstep(mouseRadius, 0.0, mouseDist);
 
-  // Turbulence from mouse movement
-  pos += vec3(mouseVel.x, 0.0, mouseVel.y) * mouseInfluence * 2.5;
+  // Direction of mouse movement in 3D
+  vec3 mouseDir3D = normalize(vec3(mouseVel.x, 0.0, mouseVel.y) + vec3(0.001));
+
+  // Displacement: push fog away in direction of motion
+  // Create a wake - fog gets pushed aside
+  vec3 displacement = vec3(0.0);
+
+  if (mouseInfluence > 0.0) {
+    // Calculate how much this point is "in front of" the mouse
+    vec3 mouseToPoint = normalize(toMouse + vec3(0.001));
+    float alignment = dot(mouseToPoint, mouseDir3D);
+
+    // Points in front get pushed forward, points behind create wake
+    float wakeFactor = smoothstep(-0.3, 0.8, alignment);
+
+    // Displacement magnitude based on speed and influence
+    float displacementMag = mouseInfluence * mouseSpeed * 3.5 * wakeFactor;
+
+    // Push fog away from mouse position
+    displacement = mouseToPoint * displacementMag;
+
+    // Add lateral displacement (fog spreads to the sides)
+    vec3 lateral = cross(mouseDir3D, vec3(0.0, 1.0, 0.0));
+    float lateralAmount = mouseInfluence * mouseSpeed * 1.2;
+    displacement += lateral * lateralAmount * sin(mouseDist * 8.0);
+  }
+
+  // Apply displacement to sampling position
+  vec3 displacedPos = pos + displacement;
 
   // Multiple layers of 3D noise for realistic fog
-  float noise1 = fbm(pos * 1.8);
-  float noise2 = fbm(pos * 0.9 + vec3(100.0, 50.0, 200.0));
-  float noise3 = fbm(pos * 2.4 + vec3(50.0, 150.0, 75.0));
+  float noise1 = fbm(displacedPos * 1.8);
+  float noise2 = fbm(displacedPos * 0.9 + vec3(100.0, 50.0, 200.0));
+  float noise3 = fbm(displacedPos * 2.4 + vec3(50.0, 150.0, 75.0));
 
   // Combine noise layers with higher density
   float density = noise1 * 0.5 + noise2 * 0.35 + noise3 * 0.25;
@@ -174,15 +199,16 @@ float fogDensity(vec3 pos, float time, vec3 mousePos, vec2 mouseVel) {
   density = pow(density, 0.7) * 1.6;
 
   // Exponential height falloff (more fog at bottom)
-  float heightFalloff = exp(-pos.y * 1.2);
+  float heightFalloff = exp(-displacedPos.y * 1.2);
   density *= heightFalloff;
 
   // Distance from center for natural dissipation
-  float centerDist = length(pos.xz);
+  float centerDist = length(displacedPos.xz);
   density *= exp(-centerDist * 0.08);
 
-  // Reduce fog density near mouse (parting effect)
-  density *= 1.0 - mouseInfluence * 0.5;
+  // Strong clearing at mouse position (object displaces fog)
+  float clearing = mouseInfluence * (0.7 + mouseSpeed * 0.3);
+  density *= 1.0 - clearing;
 
   return clamp(density, 0.0, 1.0);
 }
@@ -192,13 +218,16 @@ float fogDensity(vec3 pos, float time, vec3 mousePos, vec2 mouseVel) {
 // Steps through 3D space accumulating fog
 // ============================================
 
-vec4 raymarchFog(vec3 rayOrigin, vec3 rayDir, float time, vec2 mouse, vec2 mouseVel) {
+vec4 raymarchFog(vec3 rayOrigin, vec3 rayDir, float time, vec2 mouse, vec2 mousePrev, vec2 mouseVel) {
   const int MAX_STEPS = 48; // High quality
   const float MAX_DIST = 12.0;
   const float STEP_SIZE = MAX_DIST / float(MAX_STEPS);
 
   vec3 pos = rayOrigin;
   vec3 mousePos = vec3(mouse.x * 8.0 - 4.0, 1.5, mouse.y * 6.0);
+  vec3 mousePrevPos = vec3(mousePrev.x * 8.0 - 4.0, 1.5, mousePrev.y * 6.0);
+  float mouseSpeed = clamp(length(mouseVel) * 15.0, 0.0, 1.0);
+
   float totalDensity = 0.0;
   float transmittance = 1.0; // Beer's Law
   vec3 scatteredLight = vec3(0.0);
@@ -208,7 +237,7 @@ vec4 raymarchFog(vec3 rayOrigin, vec3 rayDir, float time, vec2 mouse, vec2 mouse
   pos += rayDir * dither;
 
   for (int i = 0; i < MAX_STEPS; i++) {
-    float density = fogDensity(pos, time, mousePos, mouseVel);
+    float density = fogDensity(pos, time, mousePos, mousePrevPos, mouseVel, mouseSpeed);
 
     if (density > 0.01) {
       // Beer's Law: exponential light absorption (increased multiplier for denser fog)
@@ -224,7 +253,6 @@ vec4 raymarchFog(vec3 rayOrigin, vec3 rayDir, float time, vec2 mouse, vec2 mouse
 
       // Mouse interaction - enhanced light source at cursor
       float mouseDist = length(pos - mousePos);
-      float mouseSpeed = length(mouseVel);
       float mouseLight = exp(-mouseDist * 0.5) * (1.0 + mouseSpeed * 3.0);
 
       vec3 lighting = lightColor * (ambient + mouseLight);
@@ -268,7 +296,7 @@ void main() {
   vec3 rayDir = normalize(cameraDir + uv.x * cameraRight * fov + uv.y * cameraUp * fov);
 
   // Raymarch fog
-  vec4 fog = raymarchFog(cameraPos, rayDir, uTime, uMouse, uMouseVelocity);
+  vec4 fog = raymarchFog(cameraPos, rayDir, uTime, uMouse, uMousePrev, uMouseVelocity);
 
   // Background gradient (dark to slightly lighter at top)
   vec3 bgColor = mix(
@@ -373,6 +401,7 @@ export default function VolumetricFog() {
     const uTime = gl.getUniformLocation(program, "uTime");
     const uResolution = gl.getUniformLocation(program, "uResolution");
     const uMouse = gl.getUniformLocation(program, "uMouse");
+    const uMousePrev = gl.getUniformLocation(program, "uMousePrev");
     const uMouseVelocity = gl.getUniformLocation(program, "uMouseVelocity");
 
     // Handle resize
@@ -417,11 +446,12 @@ export default function VolumetricFog() {
       gl.uniform1f(uTime, currentTime);
       gl.uniform2f(uResolution, canvas.width, canvas.height);
       gl.uniform2f(uMouse, mouseRef.current.x, mouseRef.current.y);
+      gl.uniform2f(uMousePrev, mouseRef.current.prevX, mouseRef.current.prevY);
       gl.uniform2f(uMouseVelocity, mouseRef.current.vx, mouseRef.current.vy);
 
-      // Decay mouse velocity (slower decay for lingering effect)
-      mouseRef.current.vx *= 0.85;
-      mouseRef.current.vy *= 0.85;
+      // Decay mouse velocity (very slow decay for lingering momentum)
+      mouseRef.current.vx *= 0.92;
+      mouseRef.current.vy *= 0.92;
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
