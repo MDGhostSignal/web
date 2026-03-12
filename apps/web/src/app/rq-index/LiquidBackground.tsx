@@ -99,16 +99,16 @@ void main() {
   float combined = turbulence1 * 0.5 + turbulence2 * 0.3 + turbulence3 * 0.2;
 
   // Slow upward drift like classic London fog
-  // Positive y in flow = upward movement (from high vUv.y toward low vUv.y)
-  vec2 flow = vec2(0.0, -0.0015); // Moves fog upward on screen
+  // Positive y in flow = upward movement (from low vUv.y toward high vUv.y)
+  vec2 flow = vec2(0.0, 0.0015); // Moves fog upward on screen
 
   // Add subtle horizontal drift for atmospheric effect
   flow.x += sin(uTime * 0.02 + p.y * 2.0) * 0.0003;
 
   // Fog generation at the bottom of screen
-  // In UV space: vUv.y = 0 is top, vUv.y = 1 is bottom
-  // We want MORE fog at bottom (high vUv.y values)
-  float bottomGradient = smoothstep(0.3, 1.0, vUv.y); // Dense at bottom (vUv.y = 1)
+  // In UV space: vUv.y = 0 is BOTTOM, vUv.y = 1 is TOP (standard GL coordinates)
+  // We want MORE fog at bottom (low vUv.y values)
+  float bottomGradient = smoothstep(1.0, 0.3, vUv.y); // Dense at bottom (vUv.y = 0)
 
   // Add some variation to the fog generation
   float fogVariation = 0.7 + 0.3 * sin(uTime * 0.03 + p.x * 3.0);
@@ -230,8 +230,8 @@ void main() {
   }
   val /= totalWeight;
 
-  // Star field in upper portion of screen
-  float starFade = smoothstep(0.3, 0.0, vUv.y);
+  // Star field in upper portion of screen (top = vUv.y = 1)
+  float starFade = smoothstep(0.3, 1.0, vUv.y);
   float starField = stars(vUv, uTime * 0.2) * starFade;
 
   // Star color (dim white/cyan)
@@ -372,8 +372,9 @@ export function LiquidBackground() {
         const ny = (y / canvas.height) * 2 - 1;
 
         // Create dense fog at bottom, lighter at top - London street scene
-        const bottomPosition = y / canvas.height; // 0 at top, 1 at bottom
-        const bottomFog = Math.pow(bottomPosition, 0.8); // Dense at bottom, fade toward top
+        // In texture upload: y=0 in loop = bottom of screen (vUv.y=0)
+        const heightPosition = y / canvas.height; // 0 = bottom, 1 = top
+        const bottomFog = Math.pow(1.0 - heightPosition, 0.8); // Dense at bottom (y=0)
         const centerDist = Math.abs(nx) * 0.3; // Side to center
         const fog = bottomFog * (1.0 - centerDist) * 0.5; // 50% opacity at bottom
 
