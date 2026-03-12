@@ -98,35 +98,34 @@ void main() {
   // Combine multiple scales for depth
   float combined = turbulence1 * 0.5 + turbulence2 * 0.3 + turbulence3 * 0.2;
 
-  // Smooth, organic flow field
-  vec2 flow = curl * 0.003;
+  // Atmospheric drift - more vertical, less swirling
+  vec2 flow = curl * 0.0015; // Reduced curl influence
   flow += vec2(
-    sin(uTime * 0.1 + p.y * 2.0) * 0.0008,
-    cos(uTime * 0.08 + p.x * 1.5) * 0.0008
+    sin(uTime * 0.05 + p.y * 1.2) * 0.0005,
+    cos(uTime * 0.04 + p.x * 0.8) * 0.0012  // More vertical movement
   );
 
-  // Gentle directional drift
-  flow += vec2(-0.0008, 0.0003);
+  // Gentle upward drift like rising fog
+  flow += vec2(0.0002, 0.0015);
 
-  // Soft, billowing fog injection
-  float centerDist = length(p);
-  float fogSource = exp(-centerDist * 0.5) * (0.5 + 0.5 * combined);
-  fogSource *= 0.0008;
+  // Ambient fog generation - always present
+  float fogSource = combined * 0.003; // Constant ambient fog
 
-  // Mouse interaction with smooth falloff - reduced intensity
+  // Mouse interaction - immediate fog creation
   vec2 mouseP = uMouse * 2.0 - 1.0;
   mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
   vec2 mouseDelta = p - mouseP;
   float mouseDist = length(mouseDelta);
-  float mouseInfluence = exp(-mouseDist * 4.0); // Tighter falloff
-  float mouseSpeed = clamp(length(uMouseVelocity) * 80.0, 0.0, 1.0); // Much slower response
+  float mouseInfluence = exp(-mouseDist * 2.5); // Wider influence area
+  float mouseSpeed = clamp(length(uMouseVelocity) * 150.0, 0.0, 1.0);
 
-  // Gentle swirling mouse effect - reduced strength
-  float angle = atan(mouseDelta.y, mouseDelta.x) + uTime * 0.15;
-  vec2 mouseSwirl = vec2(cos(angle), sin(angle)) * 0.02 * mouseSpeed; // Reduced from 0.05 to 0.02
-  flow += mouseSwirl * mouseInfluence;
+  // Gentle atmospheric disturbance - no swirl, just drift
+  vec2 mouseDrift = normalize(mouseDelta) * 0.005 * mouseSpeed;
+  flow += mouseDrift * mouseInfluence;
 
-  float mouseInject = mouseInfluence * mouseSpeed * 0.003; // Reduced from 0.008 to 0.003
+  // Immediate fog creation on mouse presence
+  float mouseInject = mouseInfluence * 0.008; // Always creates fog, not dependent on speed
+  mouseInject += mouseInfluence * mouseSpeed * 0.012; // Extra on movement
 
   // Multi-sample for smoother advection
   vec2 sampleUv1 = uv + flow;
@@ -139,9 +138,12 @@ void main() {
 
   float prevSmooth = (prev1 * 0.5 + prev2 * 0.3 + prev3 * 0.2);
 
-  // Smooth decay for persistence
-  float decay = 0.996;
+  // Faster decay for more atmospheric fog (dissipates naturally)
+  float decay = 0.992;
   float val = prevSmooth * decay + fogSource + mouseInject;
+
+  // Clamp to prevent over-saturation
+  val = clamp(val, 0.0, 1.2);
 
   gl_FragColor = vec4(val, val, val, 1.0);
 }
@@ -358,11 +360,32 @@ export function LiquidBackground() {
       trailTextures = [];
       trailFbos = [];
 
+      // Create initial fog data
+      const size = canvas.width * canvas.height * 4;
+      const initialData = new Uint8Array(size);
+      for (let i = 0; i < size; i += 4) {
+        const x = (i / 4) % canvas.width;
+        const y = Math.floor((i / 4) / canvas.width);
+        const nx = (x / canvas.width) * 2 - 1;
+        const ny = (y / canvas.height) * 2 - 1;
+
+        // Create some initial ambient fog
+        const dist = Math.sqrt(nx * nx + ny * ny);
+        const fog = Math.max(0, (1.0 - dist * 0.5) * 0.15); // 15% opacity fog
+
+        const value = Math.floor(fog * 255);
+        initialData[i] = value;     // R
+        initialData[i + 1] = value; // G
+        initialData[i + 2] = value; // B
+        initialData[i + 3] = 255;   // A
+      }
+
       for (let i = 0; i < 2; i++) {
         const tex = gl.createTexture();
         if (!tex) continue;
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        // Initialize with fog data instead of null
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, initialData);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
