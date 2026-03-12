@@ -98,18 +98,11 @@ void main() {
   // Combine multiple scales for depth
   float combined = turbulence1 * 0.5 + turbulence2 * 0.3 + turbulence3 * 0.2;
 
-  // Atmospheric drift - more vertical, less swirling
-  vec2 flow = curl * 0.0015; // Reduced curl influence
-  flow += vec2(
-    sin(uTime * 0.05 + p.y * 1.2) * 0.0005,
-    cos(uTime * 0.04 + p.x * 0.8) * 0.0012  // More vertical movement
-  );
+  // Minimal flow - almost static
+  vec2 flow = vec2(0.0, 0.0);
 
-  // Gentle upward drift like rising fog
-  flow += vec2(0.0002, 0.0015);
-
-  // Ambient fog generation - visible but gentle
-  float fogSource = combined * 0.005; // Constant ambient fog
+  // No ambient fog generation - only mouse interaction
+  float fogSource = 0.0;
 
   // Mouse interaction - subtle but visible and localized
   vec2 mouseP = uMouse * 2.0 - 1.0;
@@ -138,8 +131,8 @@ void main() {
 
   float prevSmooth = (prev1 * 0.5 + prev2 * 0.3 + prev3 * 0.2);
 
-  // Faster decay for more atmospheric fog (dissipates naturally)
-  float decay = 0.992;
+  // Very slow decay - fog persists
+  float decay = 0.998;
   float val = prevSmooth * decay + fogSource + mouseInject;
 
   // Clamp to prevent over-saturation
