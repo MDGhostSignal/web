@@ -64,46 +64,96 @@ void main() {
   // Slow right-to-left drift
   float driftTime = uTime * 0.01;
 
-  // Three layers of fog at different scales for more density
-  float fog1 = fbm(vec2(uv.x * 2.0 + driftTime, uv.y * 2.0));
-  float fog2 = fbm(vec2(uv.x * 1.0 + driftTime * 0.7, uv.y * 1.2));
-  float fog3 = fbm(vec2(uv.x * 1.5 + driftTime * 0.5, uv.y * 1.6));
+  // Five layers of fog at different scales and speeds for depth
+  // Layer 1: Closest, fastest, most detailed
+  float fog1 = fbm(vec2(uv.x * 2.5 + driftTime * 1.2, uv.y * 2.5));
+  float heightFalloff1 = smoothstep(0.4, 0.0, uv.y);
+  fog1 *= heightFalloff1;
 
-  // Combine layers with higher weights
-  float fog = fog1 * 0.5 + fog2 * 0.35 + fog3 * 0.25;
+  // Layer 2: Mid-close
+  float fog2 = fbm(vec2(uv.x * 1.8 + driftTime, uv.y * 1.8));
+  float heightFalloff2 = smoothstep(0.5, 0.0, uv.y);
+  fog2 *= heightFalloff2;
 
-  // Height-based gradient (more fog at bottom, less aggressive)
-  float heightFalloff = smoothstep(0.6, 0.0, uv.y);
-  fog *= heightFalloff;
+  // Layer 3: Middle
+  float fog3 = fbm(vec2(uv.x * 1.2 + driftTime * 0.8, uv.y * 1.3));
+  float heightFalloff3 = smoothstep(0.6, 0.0, uv.y);
+  fog3 *= heightFalloff3;
 
-  // Mouse interaction - stronger displacement
+  // Layer 4: Mid-far
+  float fog4 = fbm(vec2(uv.x * 0.9 + driftTime * 0.6, uv.y * 1.0));
+  float heightFalloff4 = smoothstep(0.7, 0.0, uv.y);
+  fog4 *= heightFalloff4;
+
+  // Layer 5: Farthest, slowest, most diffuse
+  float fog5 = fbm(vec2(uv.x * 0.6 + driftTime * 0.4, uv.y * 0.8));
+  float heightFalloff5 = smoothstep(0.8, 0.0, uv.y);
+  fog5 *= heightFalloff5;
+
+  // Combine layers with depth-based weights (closer = more opaque)
+  float fog = fog1 * 0.35 + fog2 * 0.25 + fog3 * 0.20 + fog4 * 0.12 + fog5 * 0.08;
+
+  // Mouse interaction
   vec2 toMouse = uv - uMouse;
   float mouseDist = length(toMouse);
   float mouseSpeed = length(uMouseVelocity);
 
-  // Larger area of effect for more visible interaction
-  float mouseInfluence = smoothstep(0.25, 0.0, mouseDist);
+  // Fog emission from mouse with gravity
+  // Create multiple "fog particles" at different ages that fall
+  float emittedFog = 0.0;
+  float gravitySpeed = 0.08; // How fast fog falls
 
-  // Displace fog sampling based on mouse movement
-  if (mouseInfluence > 0.0) {
-    vec2 displacement = normalize(uMouseVelocity) * mouseInfluence * mouseSpeed * 1.2;
-    vec2 displacedUv = uv + displacement;
+  for (float i = 0.0; i < 8.0; i += 1.0) {
+    // Time offset for each particle
+    float age = mod(uTime * 2.0 + i * 0.3, 2.5);
 
-    // Resample fog at displaced position
-    float fog1Displaced = fbm(vec2(displacedUv.x * 2.0 + driftTime, displacedUv.y * 2.0));
-    float fog2Displaced = fbm(vec2(displacedUv.x * 1.0 + driftTime * 0.7, displacedUv.y * 1.2));
-    float fog3Displaced = fbm(vec2(displacedUv.x * 1.5 + driftTime * 0.5, displacedUv.y * 1.6));
-    float fogDisplaced = fog1Displaced * 0.5 + fog2Displaced * 0.35 + fog3Displaced * 0.25;
-    fogDisplaced *= smoothstep(0.6, 0.0, displacedUv.y);
+    // Mouse position at this time offset (simulated trail)
+    float trailOffset = i * 0.015;
+    vec2 mouseTrailPos = uMouse;
 
-    fog = mix(fog, fogDisplaced, mouseInfluence);
+    // Gravity: fog falls down over time
+    float fallDistance = age * gravitySpeed;
+    mouseTrailPos.y -= fallDistance;
 
-    // Stronger clearing at mouse position
-    fog *= 1.0 - mouseInfluence * 0.85;
+    // Slight horizontal drift as fog falls
+    mouseTrailPos.x += sin(age * 2.0 + i) * 0.02;
+
+    // Distance from this fog particle
+    float distToTrail = length(uv - mouseTrailPos);
+
+    // Fog particle size and intensity (fades with age)
+    float particleLife = 1.0 - (age / 2.5);
+    float particleSize = 0.08 + age * 0.03; // Expands as it falls
+    float particle = exp(-distToTrail / particleSize) * particleLife;
+
+    // Only add if mouse is moving
+    particle *= smoothstep(0.0, 0.3, mouseSpeed);
+
+    emittedFog += particle * 0.15;
   }
 
-  // Adjust fog density - much higher for more visibility
-  fog = pow(fog, 0.65) * 2.0;
+  // Add emitted fog to base fog
+  fog = clamp(fog + emittedFog, 0.0, 1.0);
+
+  // Displacement effect (fog parts around mouse)
+  float mouseInfluence = smoothstep(0.2, 0.0, mouseDist);
+
+  if (mouseInfluence > 0.0) {
+    vec2 displacement = normalize(uMouseVelocity) * mouseInfluence * mouseSpeed * 1.0;
+    vec2 displacedUv = uv + displacement;
+
+    // Sample fog at displaced position
+    float fog1Displaced = fbm(vec2(displacedUv.x * 2.5 + driftTime * 1.2, displacedUv.y * 2.5));
+    fog1Displaced *= smoothstep(0.4, 0.0, displacedUv.y);
+
+    fog = mix(fog, fog1Displaced, mouseInfluence * 0.6);
+
+    // Clearing at mouse position
+    fog *= 1.0 - mouseInfluence * 0.7;
+  }
+
+  // Adjust fog density for layered system
+  fog = pow(fog, 0.7) * 1.8;
   fog = clamp(fog, 0.0, 1.0);
 
   // Dark background with gradient
@@ -123,12 +173,18 @@ void main() {
   }
   bgColor += vec3(star) * 0.3;
 
-  // Fog color
-  vec3 fogColor = vec3(0.25, 0.27, 0.3);
+  // Fog color with depth variation
+  // Closer layers are lighter, farther layers are darker
+  vec3 fogColorNear = vec3(0.30, 0.32, 0.35);
+  vec3 fogColorFar = vec3(0.18, 0.20, 0.23);
+  vec3 fogColor = mix(fogColorFar, fogColorNear, fog);
 
   // Mouse light - stronger and more visible
   float mouseLight = exp(-mouseDist * 2.0) * mouseSpeed * 5.0;
   fogColor += vec3(0.4, 0.45, 0.5) * mouseLight * fog;
+
+  // Emitted fog glow (brighter where fog is fresh from mouse)
+  fogColor += vec3(0.25, 0.28, 0.32) * emittedFog * 2.0;
 
   // Mix fog with background
   vec3 color = mix(bgColor, fogColor, fog);
