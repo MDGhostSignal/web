@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 /**
  * Liquid Background Animation for RQ Index
  * Based on GhostSignalLiquidWordmark but without text mask
- * Pure liquid fog animation for background use
+ * Sophisticated fog that rises from bottom third of screen
  */
 
 const VERTEX_SHADER = `
@@ -33,55 +33,39 @@ uniform sampler2D uPrevTrail;
 uniform vec2 uMouse;
 uniform vec2 uMouseVelocity;
 
-// High-quality hash function
-vec3 hash3(vec2 p) {
-  vec3 p3 = fract(vec3(p.xyx) * vec3(443.897, 441.423, 437.195));
-  p3 += dot(p3, p3.yxz + 19.19);
-  return fract((p3.xxy + p3.yxx) * p3.zyx);
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
 
-// Smooth value noise
 float noise(vec2 p) {
   vec2 i = floor(p);
   vec2 f = fract(p);
 
-  // Quintic interpolation for smoother results
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+
+  // Quintic smoothing reduces grid/diamond interpolation artifacts
   vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
 
-  float a = hash3(i).x;
-  float b = hash3(i + vec2(1.0, 0.0)).x;
-  float c = hash3(i + vec2(0.0, 1.0)).x;
-  float d = hash3(i + vec2(1.0, 1.0)).x;
-
-  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+  return mix(a, b, u.x) +
+    (c - a) * u.y * (1.0 - u.x) +
+    (d - b) * u.x * u.y;
 }
 
-// Multi-octave fractal Brownian motion - more octaves for smoother fog
 float fbm(vec2 p) {
   float value = 0.0;
-  float amplitude = 0.5;
-  float frequency = 1.0;
-  mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);
+  float amp = 0.5;
+  mat2 rot = mat2(0.82, -0.57, 0.57, 0.82);
 
-  for (int i = 0; i < 8; i++) {
-    value += amplitude * noise(p * frequency);
-    p = rot * p * 2.0 + vec2(0.5);
-    amplitude *= 0.5;
-    frequency *= 2.0;
+  for (int i = 0; i < 5; i++) {
+    value += amp * noise(p);
+    p = rot * p * 2.02 + vec2(5.43, 3.17);
+    amp *= 0.52;
   }
 
   return value;
-}
-
-// Curl noise for fluid-like flow
-vec2 curlNoise(vec2 p, float t) {
-  float eps = 0.1;
-  float n1 = fbm(p + vec2(0.0, eps) + vec2(t * 0.02, t * 0.015));
-  float n2 = fbm(p - vec2(0.0, eps) + vec2(t * 0.02, t * 0.015));
-  float n3 = fbm(p + vec2(eps, 0.0) + vec2(t * 0.018, -t * 0.012));
-  float n4 = fbm(p - vec2(eps, 0.0) + vec2(t * 0.018, -t * 0.012));
-
-  return vec2((n1 - n2) / (2.0 * eps), (n4 - n3) / (2.0 * eps));
 }
 
 void main() {
@@ -89,68 +73,71 @@ void main() {
   vec2 p = uv * 2.0 - 1.0;
   p.x *= uResolution.x / max(uResolution.y, 1.0);
 
-  // Multi-scale noise for organic fog movement
-  vec2 curl = curlNoise(p * 0.8, uTime);
-  float turbulence1 = fbm(p * 1.2 + uTime * 0.03 + curl * 0.3);
-  float turbulence2 = fbm(p * 2.4 - uTime * 0.02 + curl * 0.2);
-  float turbulence3 = fbm(p * 4.8 + uTime * 0.015);
+  // FBM-based flow
+  float n1 = fbm(vec2(p.x * 1.8 - uTime * 0.042, p.y * 2.3 + uTime * 0.020));
+  float n2 = fbm(vec2(p.x * 3.1 + uTime * 0.031, p.y * 3.9 - uTime * 0.016));
 
-  // Combine multiple scales for depth
-  float combined = turbulence1 * 0.5 + turbulence2 * 0.3 + turbulence3 * 0.2;
+  vec2 flow = vec2(-0.0014, 0.0);
+  flow += 0.0020 * vec2(n1 - 0.5, n2 - 0.5);
 
-  // Slow upward drift like classic London fog
-  // Positive y in flow = upward movement (from low vUv.y toward high vUv.y)
-  vec2 flow = vec2(0.0, 0.0015); // Moves fog upward on screen
+  // Horizontal band that generates fog at bottom
+  float right = smoothstep(-0.20, 1.15, p.x);
 
-  // Add subtle horizontal drift for atmospheric effect
-  flow.x += sin(uTime * 0.02 + p.y * 2.0) * 0.0003;
+  // Bottom-third fog generation (vUv.y = 0 is bottom)
+  float bottomMask = smoothstep(0.35, 0.0, vUv.y);
+  float band = exp(-pow((p.y + 0.08 * sin(uTime * 0.15 + p.x * 3.6)) * 1.25, 2.0) * 8.0) * bottomMask;
 
-  // Fog generation ONLY in bottom third of screen
-  // In UV space: vUv.y = 0 is BOTTOM, vUv.y = 1 is TOP
-  // We want fog only from 0 to ~0.33 (bottom third)
-  float bottomGradient = smoothstep(0.35, 0.0, vUv.y); // Dense at bottom, fades out by 1/3 height
-
-  // Add some variation to the fog generation
-  float fogVariation = 0.7 + 0.3 * sin(uTime * 0.03 + p.x * 3.0);
-
-  // Generate dense fog from the bottom
-  float fogSource = bottomGradient * fogVariation * 0.015;
-
-  // Mouse interaction - subtle but visible and localized
+  // Mouse interaction with swirling
   vec2 mouseP = uMouse * 2.0 - 1.0;
   mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
   vec2 mouseDelta = p - mouseP;
-  float mouseDist = length(mouseDelta);
-  float mouseInfluence = exp(-mouseDist * 8.0); // Localized but visible area
-  float mouseSpeed = clamp(length(uMouseVelocity) * 120.0, 0.0, 1.0);
+  float mouseDist = length(p - mouseP);
+  float mouseInfluence = exp(-mouseDist * 5.2);
+  float mouseSpeed = clamp(length(uMouseVelocity) * 270.0, 0.0, 1.0);
 
-  // Gentle atmospheric disturbance
-  vec2 mouseDrift = normalize(mouseDelta) * 0.003 * mouseSpeed;
-  flow += mouseDrift * mouseInfluence;
+  // Swirl system from original
+  float swirlPhase = uTime * 0.12;
+  float swirlStep = floor(swirlPhase);
+  float swirlMix = smoothstep(0.18, 0.82, fract(swirlPhase));
+  float swirlAngleA = mix(-1.05, 1.05, hash(vec2(swirlStep, 19.7)));
+  float swirlAngleB = mix(-1.05, 1.05, hash(vec2(swirlStep + 1.0, 19.7)));
+  float swirlAngle = mix(swirlAngleA, swirlAngleB, swirlMix);
+  float swirlDirA = mix(-1.0, 1.0, step(0.5, hash(vec2(swirlStep, 53.1))));
+  float swirlDirB = mix(-1.0, 1.0, step(0.5, hash(vec2(swirlStep + 1.0, 53.1))));
+  float swirlDir = mix(swirlDirA, swirlDirB, swirlMix);
+  mat2 swirlRot = mat2(cos(swirlAngle), -sin(swirlAngle), sin(swirlAngle), cos(swirlAngle));
+  vec2 swirlVec = swirlRot * vec2(-mouseDelta.y, mouseDelta.x) * swirlDir;
 
-  // Subtle fog creation - visible on hover
-  float mouseInject = mouseInfluence * 0.004; // Subtle presence
-  mouseInject += mouseInfluence * mouseSpeed * 0.008; // Extra on movement
+  flow += normalize(swirlVec + vec2(1e-6))
+    * mouseInfluence
+    * (0.007 + 0.016 * mouseSpeed);
 
-  // Multi-sample for smoother advection
-  vec2 sampleUv1 = uv + flow;
-  vec2 sampleUv2 = uv + flow * 0.8;
-  vec2 sampleUv3 = uv + flow * 0.6;
+  vec2 uvFlow = uv - flow;
 
-  float prev1 = texture2D(uPrevTrail, sampleUv1).r;
-  float prev2 = texture2D(uPrevTrail, sampleUv2).r;
-  float prev3 = texture2D(uPrevTrail, sampleUv3).r;
+  // Isotropic sampling (60° angles) to avoid square artifacts
+  vec2 t = uTexel;
+  vec2 d1 = vec2(0.8660254 * t.x, 0.5000000 * t.y);
+  vec2 d2 = vec2(-0.5000000 * t.x, 0.8660254 * t.y);
+  vec2 d3 = vec2(-0.8660254 * t.x, -0.5000000 * t.y);
+  vec2 d4 = vec2(0.5000000 * t.x, -0.8660254 * t.y);
 
-  float prevSmooth = (prev1 * 0.5 + prev2 * 0.3 + prev3 * 0.2);
+  vec3 prev = texture2D(uPrevTrail, uvFlow).rgb * 0.46;
+  prev += texture2D(uPrevTrail, uvFlow + d1).rgb * 0.10;
+  prev += texture2D(uPrevTrail, uvFlow + d2).rgb * 0.10;
+  prev += texture2D(uPrevTrail, uvFlow + d3).rgb * 0.10;
+  prev += texture2D(uPrevTrail, uvFlow + d4).rgb * 0.10;
+  prev += texture2D(uPrevTrail, uvFlow + (d1 + d2) * 0.5).rgb * 0.035;
+  prev += texture2D(uPrevTrail, uvFlow + (d2 + d3) * 0.5).rgb * 0.035;
+  prev += texture2D(uPrevTrail, uvFlow + (d3 + d4) * 0.5).rgb * 0.035;
+  prev += texture2D(uPrevTrail, uvFlow + (d4 + d1) * 0.5).rgb * 0.035;
 
-  // Very slow decay - dense fog lingers
-  float decay = 0.9985;
-  float val = prevSmooth * decay + fogSource + mouseInject;
+  float source = (0.010 + 0.052 * n1) * right * (0.38 + 0.84 * band);
+  source += mouseInfluence * (0.020 + 0.056 * mouseSpeed) * right;
 
-  // Clamp to prevent over-saturation
-  val = clamp(val, 0.0, 1.2);
+  vec3 trail = prev * 0.982 + vec3(source);
+  trail *= 0.9993;
 
-  gl_FragColor = vec4(val, val, val, 1.0);
+  gl_FragColor = vec4(clamp(trail, 0.0, 1.0), 1.0);
 }
 `;
 
@@ -162,48 +149,73 @@ precision mediump float;
 #endif
 
 varying vec2 vUv;
-uniform sampler2D uTrail;
-uniform vec2 uTexel;
 uniform float uTime;
+uniform vec2 uResolution;
+uniform vec2 uTexel;
+uniform sampler2D uTrailTexture;
+uniform vec2 uMouse;
+uniform vec2 uMouseVelocity;
 
-// Hash for star field generation
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
 
-// Generate star field
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+
+  vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+
+  return mix(a, b, u.x) +
+    (c - a) * u.y * (1.0 - u.x) +
+    (d - b) * u.x * u.y;
+}
+
+float fbm(vec2 p) {
+  float value = 0.0;
+  float amp = 0.5;
+  mat2 rot = mat2(0.79, -0.61, 0.61, 0.79);
+
+  for (int i = 0; i < 6; i++) {
+    value += amp * noise(p);
+    p = rot * p * 2.04 + vec2(7.11, 2.39);
+    amp *= 0.52;
+  }
+
+  return value;
+}
+
+// Star field generation
 float stars(vec2 uv, float time) {
-  // Scale UV to create star grid
   vec2 starUv = uv * 200.0;
   vec2 starId = floor(starUv);
   vec2 starLocal = fract(starUv);
 
   float brightness = 0.0;
 
-  // Check 3x3 grid for stars
   for (float y = -1.0; y <= 1.0; y += 1.0) {
     for (float x = -1.0; x <= 1.0; x += 1.0) {
       vec2 offset = vec2(x, y);
       vec2 cellId = starId + offset;
 
-      // Random position within cell
       float starRandom = hash(cellId);
 
-      // Only some cells have stars
       if (starRandom > 0.95) {
         vec2 starPos = offset + vec2(hash(cellId + vec2(1.0, 0.0)), hash(cellId + vec2(0.0, 1.0)));
         vec2 toStar = starLocal - starPos;
         float dist = length(toStar);
 
-        // Very small star size (single pixel)
         float starSize = 0.02 + hash(cellId + vec2(2.0, 3.0)) * 0.01;
 
         if (dist < starSize) {
-          // Slow twinkle effect
           float twinkleSpeed = 0.5 + hash(cellId + vec2(4.0, 5.0)) * 1.5;
           float twinkle = 0.3 + 0.7 * (0.5 + 0.5 * sin(time * twinkleSpeed + starRandom * 6.28));
 
-          // Brighter in center, fade at edges
           float star = (1.0 - smoothstep(0.0, starSize, dist)) * twinkle;
           brightness += star;
         }
@@ -215,280 +227,325 @@ float stars(vec2 uv, float time) {
 }
 
 void main() {
-  float val = 0.0;
+  vec2 uv = vUv;
+  vec2 p = uv * 2.0 - 1.0;
+  p.x *= uResolution.x / max(uResolution.y, 1.0);
 
-  // Larger, more diffuse blur for soft mist-like appearance
-  float totalWeight = 0.0;
-  for (float x = -2.0; x <= 2.0; x += 1.0) {
-    for (float y = -2.0; y <= 2.0; y += 1.0) {
-      float dist = length(vec2(x, y));
-      // Gaussian-like falloff for natural diffusion
-      float weight = exp(-dist * 0.5);
-      val += texture2D(uTrail, vUv + vec2(x, y) * uTexel * 3.0).r * weight;
-      totalWeight += weight;
-    }
-  }
-  val /= totalWeight;
+  // Isotropic trail blur
+  vec2 t = uTexel;
+  vec2 d1 = vec2(0.8660254 * t.x, 0.5000000 * t.y);
+  vec2 d2 = vec2(-0.5000000 * t.x, 0.8660254 * t.y);
+  vec2 d3 = vec2(-0.8660254 * t.x, -0.5000000 * t.y);
+  vec2 d4 = vec2(0.5000000 * t.x, -0.8660254 * t.y);
 
-  // Star field in upper portion of screen (top = vUv.y = 1)
+  float trail = texture2D(uTrailTexture, uv).r * 0.46;
+  trail += texture2D(uTrailTexture, uv + d1).r * 0.10;
+  trail += texture2D(uTrailTexture, uv + d2).r * 0.10;
+  trail += texture2D(uTrailTexture, uv + d3).r * 0.10;
+  trail += texture2D(uTrailTexture, uv + d4).r * 0.10;
+  trail += texture2D(uTrailTexture, uv + (d1 + d2) * 0.5).r * 0.035;
+  trail += texture2D(uTrailTexture, uv + (d2 + d3) * 0.5).r * 0.035;
+  trail += texture2D(uTrailTexture, uv + (d3 + d4) * 0.5).r * 0.035;
+  trail += texture2D(uTrailTexture, uv + (d4 + d1) * 0.5).r * 0.035;
+
+  vec2 flowUv = uv + vec2(trail * 0.010, 0.0);
+
+  float n1 = fbm(vec2(flowUv.x * 1.9 - uTime * 0.026, flowUv.y * 2.2 + uTime * 0.013));
+  float n2 = fbm(vec2(flowUv.x * 3.5 + uTime * 0.017, flowUv.y * 4.6 - uTime * 0.021));
+
+  float right = smoothstep(-0.10, 1.10, p.x);
+  float rightGlow = pow(max(p.x + 0.18, 0.0), 1.3);
+  float verticalBand = exp(-pow((p.y + 0.10 * sin(uTime * 0.10 + p.x * 2.4)) * 1.28, 2.0) * 7.0);
+  float leftFade = smoothstep(-1.05, 0.50, p.x);
+
+  float baseFog = smoothstep(0.00, 0.80, n1 * 0.79 + n2 * 0.40 + trail * 1.22);
+
+  // Cloud masses for thicker fog
+  float cloudMassNoise = fbm(vec2(flowUv.x * 0.75 - uTime * 0.008, flowUv.y * 0.95 + uTime * 0.006));
+  float cloudMass = smoothstep(0.34, 0.74, cloudMassNoise + trail * 0.56);
+  float fog = clamp(baseFog * 2.16 + cloudMass * 1.18, 0.0, 1.0);
+
+  // Stars in upper portion (vUv.y = 1 is top)
   float starFade = smoothstep(0.3, 1.0, vUv.y);
   float starField = stars(vUv, uTime * 0.2) * starFade;
-
-  // Star color (dim white/cyan)
   vec3 starColor = vec3(0.7, 0.85, 0.95) * starField * 0.4;
 
-  // Dark, moody fog color - London street atmosphere
-  vec3 fogColorDark = vec3(0.25, 0.30, 0.35); // Dark blue-grey fog
-  vec3 fogColorLight = vec3(0.55, 0.65, 0.75); // Lighter fog where thinner
+  // Cool atmospheric color palette from original
+  vec3 deep = vec3(0.030, 0.033, 0.040);
+  vec3 fogGray = vec3(0.158, 0.168, 0.184);
+  vec3 lightGray = vec3(0.782, 0.798, 0.828);
 
-  // Brightness based on density - darker where denser
-  float brightness = 0.4 + 0.6 * pow(1.0 - val, 0.8);
-  vec3 mistColor = mix(fogColorDark, fogColorLight, brightness);
+  vec2 mouseP = uMouse * 2.0 - 1.0;
+  mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
+  float mouseDist = length(p - mouseP);
+  float mouseInfluence = exp(-mouseDist * 5.1);
+  float mouseSpeed = clamp(length(uMouseVelocity) * 270.0, 0.0, 1.0);
+  float mouseFogLift = exp(-mouseDist * 2.9) * (0.66 + 0.90 * mouseSpeed);
+  fog = clamp(fog + mouseFogLift * 0.92, 0.0, 1.0);
 
-  vec3 col = mistColor;
+  // Constrain fog to bottom third (vUv.y = 0 is bottom)
+  float bottomThirdMask = smoothstep(0.35, 0.0, vUv.y);
+  fog *= bottomThirdMask;
 
-  // Strong, dense alpha for thick London fog
-  float alpha = pow(val, 0.9) * 1.2;
-  alpha = smoothstep(0.0, 0.15, alpha);
-  alpha = clamp(alpha, 0.0, 0.95); // Dense but not fully opaque
+  float beam = (0.22 + 0.78 * fog) * right * verticalBand;
 
-  // Composite: stars behind fog
-  vec3 finalColor = starColor + col * alpha;
+  vec3 col = mix(deep, fogGray, fog);
+  col *= mix(0.58, 1.0, leftFade);
+  col = mix(
+    col,
+    lightGray,
+      0.18 * beam +
+      0.18 * rightGlow * verticalBand +
+      0.12 * trail +
+      0.16 * mouseInfluence * mouseSpeed
+  );
 
-  gl_FragColor = vec4(finalColor, max(starField * 0.4, alpha));
+  // Stars behind fog
+  col = starColor + col;
+
+  // Film grain
+  float frameA = floor(uTime * 24.0);
+  float frameB = floor(uTime * 18.0 + 11.0);
+  float grainHi = hash(gl_FragCoord.xy + vec2(17.0, 53.0) * frameA) - 0.5;
+  float grainHi2 = hash(gl_FragCoord.yx + vec2(29.0, 31.0) * frameB) - 0.5;
+  float grainLo = noise(gl_FragCoord.xy * 0.22 + vec2(frameA * 0.37, frameB * 0.23)) - 0.5;
+  float tvStatic = hash(floor(gl_FragCoord.xy) + vec2(11.7, 5.3)) - 0.5;
+  float flicker = 0.988 + 0.012 * (hash(vec2(frameA, frameB)) - 0.5) * 2.0;
+  col *= flicker;
+  col += grainHi * 0.010 + grainHi2 * 0.008 + grainLo * 0.006;
+  col += tvStatic * 0.012;
+
+  col = clamp(col, 0.0, 1.0);
+  gl_FragColor = vec4(col, 1.0);
 }
 `;
 
+function createShader(gl: WebGLRenderingContext, type: number, source: string) {
+  const shader = gl.createShader(type);
+  if (!shader) return null;
+
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return null;
+  }
+
+  return shader;
+}
+
+function createProgram(gl: WebGLRenderingContext, vertexSource: string, fragmentSource: string) {
+  const vertex = createShader(gl, gl.VERTEX_SHADER, vertexSource);
+  const fragment = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+
+  if (!vertex || !fragment) return null;
+
+  const program = gl.createProgram();
+  if (!program) return null;
+
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error(gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+    return null;
+  }
+
+  return program;
+}
+
+function createTexture(gl: WebGLRenderingContext, width: number, height: number) {
+  const texture = gl.createTexture();
+  if (!texture) return null;
+
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  return texture;
+}
+
+function createFramebuffer(gl: WebGLRenderingContext, texture: WebGLTexture) {
+  const framebuffer = gl.createFramebuffer();
+  if (!framebuffer) return null;
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  return framebuffer;
+}
+
 export function LiquidBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext("webgl", {
-      alpha: true,
-      premultipliedAlpha: false,
-      antialias: false,
-      depth: false,
-      stencil: false,
-    });
+    const gl = (canvas.getContext("webgl2", { alpha: true, antialias: true, premultipliedAlpha: false }) ||
+      canvas.getContext("webgl", { alpha: true, antialias: true, premultipliedAlpha: false })) as WebGLRenderingContext | null;
 
     if (!gl) {
       console.warn("WebGL not supported");
       return;
     }
 
-    // Higher resolution for smoother fog
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    let width = 0;
-    let height = 0;
-    let lastCanvasWidth = 0;
-    let lastCanvasHeight = 0;
+    const updateProgram = createProgram(gl, VERTEX_SHADER, UPDATE_FRAGMENT_SHADER);
+    const renderProgram = createProgram(gl, VERTEX_SHADER, RENDER_FRAGMENT_SHADER);
 
-    // Declare trail textures and FBOs before resize function
-    let trailTextures: WebGLTexture[] = [];
-    let trailFbos: WebGLFramebuffer[] = [];
-    let currentTrailIndex = 0;
-
-    function resize() {
-      if (!canvas || !gl) return;
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
-      // Use higher base resolution for smoother fog
-      const scale = 1.2;
-      const newWidth = Math.floor(width * dpr * scale);
-      const newHeight = Math.floor(height * dpr * scale);
-
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-
-      // Only recreate trail targets if size changed and textures exist
-      if ((newWidth !== lastCanvasWidth || newHeight !== lastCanvasHeight) && trailTextures.length > 0) {
-        createTrailTargets();
-        lastCanvasWidth = newWidth;
-        lastCanvasHeight = newHeight;
-      }
-    }
-
-    function compileShader(type: number, source: string): WebGLShader | null {
-      if (!gl) return null;
-      const shader = gl.createShader(type);
-      if (!shader) return null;
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error(gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-      }
-      return shader;
-    }
-
-    function createProgram(vs: string, fs: string) {
-      if (!gl) return null;
-      const vertexShader = compileShader(gl.VERTEX_SHADER, vs);
-      const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fs);
-      if (!vertexShader || !fragmentShader) return null;
-
-      const program = gl.createProgram();
-      if (!program) return null;
-      gl.attachShader(program, vertexShader);
-      gl.attachShader(program, fragmentShader);
-      gl.linkProgram(program);
-
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.error(gl.getProgramInfoLog(program));
-        return null;
-      }
-
-      return program;
-    }
-
-    const updateProgram = createProgram(VERTEX_SHADER, UPDATE_FRAGMENT_SHADER);
-    const renderProgram = createProgram(VERTEX_SHADER, RENDER_FRAGMENT_SHADER);
     if (!updateProgram || !renderProgram) return;
 
-    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    const quad = gl.createBuffer();
+    if (!quad) return;
 
-    function createTrailTargets() {
-      if (!gl || !canvas) return;
-      trailTextures.forEach((t) => gl.deleteTexture(t));
-      trailFbos.forEach((f) => gl.deleteFramebuffer(f));
-      trailTextures = [];
-      trailFbos = [];
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
-      // Create initial fog data
-      const size = canvas.width * canvas.height * 4;
-      const initialData = new Uint8Array(size);
-      for (let i = 0; i < size; i += 4) {
-        const x = (i / 4) % canvas.width;
-        const y = Math.floor((i / 4) / canvas.width);
-        const nx = (x / canvas.width) * 2 - 1;
-        const ny = (y / canvas.height) * 2 - 1;
+    const updatePosLoc = gl.getAttribLocation(updateProgram, "aPosition");
+    const renderPosLoc = gl.getAttribLocation(renderProgram, "aPosition");
 
-        // Create dense fog ONLY in bottom third - London street scene
-        // In texture upload: y=0 in loop = bottom of screen (vUv.y=0)
-        const heightPosition = y / canvas.height; // 0 = bottom, 1 = top
+    const updateUniforms = {
+      time: gl.getUniformLocation(updateProgram, "uTime"),
+      resolution: gl.getUniformLocation(updateProgram, "uResolution"),
+      texel: gl.getUniformLocation(updateProgram, "uTexel"),
+      prevTrail: gl.getUniformLocation(updateProgram, "uPrevTrail"),
+      mouse: gl.getUniformLocation(updateProgram, "uMouse"),
+      mouseVelocity: gl.getUniformLocation(updateProgram, "uMouseVelocity"),
+    };
 
-        // Only generate fog in bottom third (0 to 0.33)
-        let bottomFog = 0;
-        if (heightPosition < 0.35) {
-          bottomFog = Math.pow(1.0 - (heightPosition / 0.35), 1.2); // Dense at bottom, fade at 1/3
-        }
+    const renderUniforms = {
+      time: gl.getUniformLocation(renderProgram, "uTime"),
+      resolution: gl.getUniformLocation(renderProgram, "uResolution"),
+      texel: gl.getUniformLocation(renderProgram, "uTexel"),
+      trail: gl.getUniformLocation(renderProgram, "uTrailTexture"),
+      mouse: gl.getUniformLocation(renderProgram, "uMouse"),
+      mouseVelocity: gl.getUniformLocation(renderProgram, "uMouseVelocity"),
+    };
 
-        const centerDist = Math.abs(nx) * 0.3; // Side to center
-        const fog = bottomFog * (1.0 - centerDist) * 0.5; // 50% opacity at bottom
-
-        const value = Math.floor(fog * 255);
-        initialData[i] = value;     // R
-        initialData[i + 1] = value; // G
-        initialData[i + 2] = value; // B
-        initialData[i + 3] = 255;   // A
-      }
-
-      for (let i = 0; i < 2; i++) {
-        const tex = gl.createTexture();
-        if (!tex) continue;
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        // Initialize with fog data instead of null
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, initialData);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        const fbo = gl.createFramebuffer();
-        if (!fbo) continue;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-
-        trailTextures.push(tex);
-        trailFbos.push(fbo);
-      }
-
-      gl.bindTexture(gl.TEXTURE_2D, null);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
-
-    resize();
-    window.addEventListener("resize", resize);
-    createTrailTargets();
-
-    const mouse = { x: 0.5, y: 0.5 };
-    const mousePrev = { x: 0.5, y: 0.5 };
+    let trailRead: WebGLTexture | null = null;
+    let trailWrite: WebGLTexture | null = null;
+    let fbRead: WebGLFramebuffer | null = null;
+    let fbWrite: WebGLFramebuffer | null = null;
+    const mouseTarget = { x: 0.86, y: 0.56 };
+    const mouseInertia = { x: 0.86, y: 0.56 };
     const mouseVelocity = { x: 0, y: 0 };
 
-    function onMouseMove(e: MouseEvent) {
-      if (!canvas) return;
+    const bindQuad = (location: number) => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+      gl.enableVertexAttribArray(location);
+      gl.vertexAttribPointer(location, 2, gl.FLOAT, false, 0, 0);
+    };
+
+    const allocateTrail = (width: number, height: number) => {
+      if (trailRead) gl.deleteTexture(trailRead);
+      if (trailWrite) gl.deleteTexture(trailWrite);
+      if (fbRead) gl.deleteFramebuffer(fbRead);
+      if (fbWrite) gl.deleteFramebuffer(fbWrite);
+
+      trailRead = createTexture(gl, width, height);
+      trailWrite = createTexture(gl, width, height);
+      if (!trailRead || !trailWrite) return;
+
+      fbRead = createFramebuffer(gl, trailRead);
+      fbWrite = createFramebuffer(gl, trailWrite);
+      if (!fbRead || !fbWrite) return;
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbRead);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbWrite);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
+    const resize = () => {
+      const ratio = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+      const width = Math.floor(canvas.clientWidth * ratio);
+      const height = Math.floor(canvas.clientHeight * ratio);
+      if (width <= 0 || height <= 0) return;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      gl.viewport(0, 0, width, height);
+      allocateTrail(width, height);
+    };
+
+    resize();
+
+    const onPointerMove = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mousePrev.x = mouse.x;
-      mousePrev.y = mouse.y;
-      mouse.x = (e.clientX - rect.left) / rect.width;
-      mouse.y = 1.0 - (e.clientY - rect.top) / rect.height;
-      mouseVelocity.x = mouse.x - mousePrev.x;
-      mouseVelocity.y = mouse.y - mousePrev.y;
-    }
+      if (rect.width <= 0 || rect.height <= 0) return;
 
-    window.addEventListener("mousemove", onMouseMove);
+      const x = (event.clientX - rect.left) / rect.width;
+      // WebGL UV origin is bottom-left; DOM pointer origin is top-left
+      const y = 1 - (event.clientY - rect.top) / rect.height;
 
-    let startTime = performance.now();
-    let rafId: number;
+      mouseTarget.x = Math.max(0, Math.min(1, x));
+      mouseTarget.y = Math.max(0, Math.min(1, y));
+    };
 
-    function render(now: number) {
-      if (!gl || !canvas) return;
-      const time = (now - startTime) * 0.001;
+    let raf = 0;
+    const start = performance.now();
 
-      const prevIndex = currentTrailIndex;
-      const nextIndex = 1 - currentTrailIndex;
+    const render = () => {
+      if (!trailRead || !trailWrite || !fbWrite) {
+        raf = window.requestAnimationFrame(render);
+        return;
+      }
 
-      // Update trail
+      const time = (performance.now() - start) * 0.001;
+      const texelX = 1 / Math.max(canvas.width, 1);
+      const texelY = 1 / Math.max(canvas.height, 1);
+      const prevMouseX = mouseInertia.x;
+      const prevMouseY = mouseInertia.y;
+
+      // Mouse inertia - fog lags behind pointer slightly
+      mouseInertia.x += (mouseTarget.x - mouseInertia.x) * 0.055;
+      mouseInertia.y += (mouseTarget.y - mouseInertia.y) * 0.055;
+      mouseVelocity.x = mouseInertia.x - prevMouseX;
+      mouseVelocity.y = mouseInertia.y - prevMouseY;
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbWrite);
       gl.useProgram(updateProgram);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, trailFbos[nextIndex]);
-      gl.viewport(0, 0, canvas.width, canvas.height);
-
-      const aPos = gl.getAttribLocation(updateProgram!, "aPosition");
-      gl.enableVertexAttribArray(aPos);
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-      gl.uniform1f(gl.getUniformLocation(updateProgram!, "uTime"), time);
-      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uResolution"), canvas.width, canvas.height);
-      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uTexel"), 1.0 / canvas.width, 1.0 / canvas.height);
-      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uMouse"), mouse.x, mouse.y);
-      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uMouseVelocity"), mouseVelocity.x, mouseVelocity.y);
+      bindQuad(updatePosLoc);
 
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, trailTextures[prevIndex]);
-      gl.uniform1i(gl.getUniformLocation(updateProgram!, "uPrevTrail"), 0);
+      gl.bindTexture(gl.TEXTURE_2D, trailRead);
+      gl.uniform1i(updateUniforms.prevTrail, 0);
+
+      gl.uniform1f(updateUniforms.time, time);
+      gl.uniform2f(updateUniforms.resolution, canvas.width, canvas.height);
+      gl.uniform2f(updateUniforms.texel, texelX, texelY);
+      gl.uniform2f(updateUniforms.mouse, mouseInertia.x, mouseInertia.y);
+      gl.uniform2f(updateUniforms.mouseVelocity, mouseVelocity.x, mouseVelocity.y);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-      mouseVelocity.x *= 0.85;
-      mouseVelocity.y *= 0.85;
-
-      currentTrailIndex = nextIndex;
-
-      // Render to screen
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(renderProgram);
-
-      const aPosRender = gl.getAttribLocation(renderProgram!, "aPosition");
-      gl.enableVertexAttribArray(aPosRender);
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.vertexAttribPointer(aPosRender, 2, gl.FLOAT, false, 0, 0);
-
-      gl.uniform1f(gl.getUniformLocation(renderProgram!, "uTime"), time);
-      gl.uniform2f(gl.getUniformLocation(renderProgram!, "uTexel"), 1.0 / canvas.width, 1.0 / canvas.height);
+      bindQuad(renderPosLoc);
 
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, trailTextures[nextIndex]);
-      gl.uniform1i(gl.getUniformLocation(renderProgram!, "uTrail"), 0);
+      gl.bindTexture(gl.TEXTURE_2D, trailWrite);
+      gl.uniform1i(renderUniforms.trail, 0);
+
+      gl.uniform1f(renderUniforms.time, time);
+      gl.uniform2f(renderUniforms.resolution, canvas.width, canvas.height);
+      gl.uniform2f(renderUniforms.texel, texelX, texelY);
+      gl.uniform2f(renderUniforms.mouse, mouseInertia.x, mouseInertia.y);
+      gl.uniform2f(renderUniforms.mouseVelocity, mouseVelocity.x, mouseVelocity.y);
 
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -497,24 +554,35 @@ export function LiquidBackground() {
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-      rafId = requestAnimationFrame(render);
-    }
+      const nextRead = trailWrite;
+      trailWrite = trailRead;
+      trailRead = nextRead;
 
-    rafId = requestAnimationFrame(render);
+      const nextFb = fbWrite;
+      fbWrite = fbRead;
+      fbRead = nextFb;
+
+      raf = window.requestAnimationFrame(render);
+    };
+
+    raf = window.requestAnimationFrame(render);
+    window.addEventListener("resize", resize);
+    window.addEventListener("pointermove", onPointerMove);
 
     return () => {
       window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMouseMove);
-      cancelAnimationFrame(rafId);
-      if (gl) {
-        trailTextures.forEach((t) => gl.deleteTexture(t));
-        trailFbos.forEach((f) => gl.deleteFramebuffer(f));
-        gl.deleteBuffer(buffer);
-        gl.deleteProgram(updateProgram);
-        gl.deleteProgram(renderProgram);
-      }
+      window.removeEventListener("pointermove", onPointerMove);
+      window.cancelAnimationFrame(raf);
+
+      if (trailRead) gl.deleteTexture(trailRead);
+      if (trailWrite) gl.deleteTexture(trailWrite);
+      if (fbRead) gl.deleteFramebuffer(fbRead);
+      if (fbWrite) gl.deleteFramebuffer(fbWrite);
+      gl.deleteBuffer(quad);
+      gl.deleteProgram(updateProgram);
+      gl.deleteProgram(renderProgram);
     };
   }, []);
 
-  return <canvas ref={canvasRef} />;
+  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />;
 }
