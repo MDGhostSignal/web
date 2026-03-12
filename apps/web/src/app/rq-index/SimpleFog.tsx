@@ -196,15 +196,31 @@ void main() {
     uv.y
   );
 
-  // Simple stars
+  // Improved stars - square pixels with slow brightness pulse
   float star = 0.0;
   if (uv.y > 0.5) {
-    float starNoise = hash(floor(uv * 300.0 + uTime * 0.01));
-    if (starNoise > 0.998) {
-      star = (starNoise - 0.998) * 400.0;
+    // Use aspect-corrected coordinates for square stars
+    vec2 starUv = uv;
+    starUv.x *= uResolution.x / uResolution.y;
+
+    // Create star grid
+    vec2 starGrid = floor(starUv * 300.0);
+    float starSeed = hash(starGrid);
+
+    // Only some grid cells have stars
+    if (starSeed > 0.998) {
+      // Unique twinkle speed for each star
+      float twinkleSpeed = 0.5 + hash(starGrid + vec2(1.0, 0.0)) * 1.5;
+      float twinklePhase = hash(starGrid + vec2(0.0, 1.0)) * 6.28318; // Random phase offset
+
+      // Slow brightness pulse using sine wave
+      float brightness = 0.3 + 0.7 * (0.5 + 0.5 * sin(uTime * twinkleSpeed + twinklePhase));
+
+      // Star intensity
+      star = (starSeed - 0.998) * 400.0 * brightness;
     }
   }
-  bgColor += vec3(star) * 0.3;
+  bgColor += vec3(star) * 0.35;
 
   // Fog color with depth variation
   // Closer layers are lighter, farther layers are darker
