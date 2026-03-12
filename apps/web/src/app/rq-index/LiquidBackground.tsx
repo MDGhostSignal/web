@@ -259,12 +259,23 @@ void main() {
   float verticalBand = exp(-pow((p.y + 0.10 * sin(uTime * 0.10 + p.x * 2.4)) * 1.28, 2.0) * 7.0);
   float leftFade = smoothstep(-1.05, 0.50, p.x);
 
+  // Multiple fog layers for depth and thickness
+  // Layer 1: Base fog (closest, most detailed)
   float baseFog = smoothstep(0.00, 0.45, n1 * 0.79 + n2 * 0.40 + trail * 1.50);
-
-  // Cloud masses for maximum fog density
   float cloudMassNoise = fbm(vec2(flowUv.x * 0.75 - uTime * 0.008, flowUv.y * 0.95 + uTime * 0.006));
   float cloudMass = smoothstep(0.20, 0.62, cloudMassNoise + trail * 0.75);
-  float fog = clamp(baseFog * 4.80 + cloudMass * 3.00, 0.0, 1.0);
+  float fogLayer1 = clamp(baseFog * 4.80 + cloudMass * 3.00, 0.0, 1.0);
+
+  // Layer 2: Mid-depth fog (slower, larger scale)
+  float n3 = fbm(vec2(flowUv.x * 1.2 - uTime * 0.015, flowUv.y * 1.5 + uTime * 0.008));
+  float fogLayer2 = smoothstep(0.15, 0.70, n3 + trail * 0.90) * 0.85;
+
+  // Layer 3: Background fog (slowest, largest scale, most diffuse)
+  float n4 = fbm(vec2(flowUv.x * 0.6 - uTime * 0.005, flowUv.y * 0.8 + uTime * 0.003));
+  float fogLayer3 = smoothstep(0.25, 0.80, n4 + trail * 0.50) * 0.65;
+
+  // Combine layers with depth ordering
+  float fog = clamp(fogLayer1 + fogLayer2 * 0.70 + fogLayer3 * 0.50, 0.0, 1.0);
 
   // Stars in upper portion (vUv.y = 1 is top)
   float starFade = smoothstep(0.3, 1.0, vUv.y);
@@ -284,22 +295,43 @@ void main() {
   float mouseFogLift = exp(-mouseDist * 1.4) * (1.50 + 2.20 * mouseSpeed); // Extremely strong effect
   fog = clamp(fog + mouseFogLift * 2.50, 0.0, 1.0); // Extremely strong mouse fog
 
+  // Volumetric lighting from mouse position
+  float mouseLightDist = length(p - mouseP);
+  float mouseLight = exp(-mouseLightDist * 1.2) * (0.8 + 0.4 * mouseSpeed);
+  // Light scatters through fog layers
+  float volumetricLight = mouseLight * fog * 1.8;
+
+  // Ambient depth lighting - fog closer to bottom is darker (more mysterious)
+  float depthDarkening = mix(0.65, 1.0, vUv.y * 3.0); // Darker at bottom
+
+  // Additional rim lighting from the right side
+  float rimLight = pow(max(p.x + 0.5, 0.0), 2.5) * 0.35;
+
   // Constrain fog to bottom third (vUv.y = 0 is bottom)
   float bottomThirdMask = smoothstep(0.35, 0.0, vUv.y);
   fog *= bottomThirdMask;
 
   float beam = (0.22 + 0.78 * fog) * right * verticalBand;
 
+  // Base fog color with depth variation
   vec3 col = mix(deep, fogGray, fog);
+  col *= depthDarkening; // Apply depth-based darkening
   col *= mix(0.58, 1.0, leftFade);
+
+  // Add highlights and lighting
   col = mix(
     col,
     lightGray,
       0.18 * beam +
       0.18 * rightGlow * verticalBand +
       0.12 * trail +
-      0.16 * mouseInfluence * mouseSpeed
+      0.16 * mouseInfluence * mouseSpeed +
+      rimLight * fog // Rim lighting on fog
   );
+
+  // Add volumetric lighting (light scattering through fog)
+  vec3 lightColor = vec3(0.9, 0.92, 0.98); // Cool white light
+  col += lightColor * volumetricLight;
 
   // Stars behind fog
   col = starColor + col;
