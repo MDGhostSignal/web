@@ -63,74 +63,106 @@ void main() {
 
   // Slow right-to-left drift
   float driftTime = uTime * 0.01;
+  // Gravity: all fog sinks downward over time
+  float gravityDrift = uTime * 0.015;
 
-  // Five layers of fog at different scales and speeds for depth
+  // Five layers of fog with gravity - all sink downward
   // Layer 1: Closest, fastest, most detailed
-  float fog1 = fbm(vec2(uv.x * 2.5 + driftTime * 1.2, uv.y * 2.5));
-  float heightFalloff1 = smoothstep(0.4, 0.0, uv.y);
+  float fog1 = fbm(vec2(uv.x * 2.5 + driftTime * 1.2, (uv.y + gravityDrift * 1.2) * 2.5));
+  float heightFalloff1 = smoothstep(0.5, 0.0, uv.y);
   fog1 *= heightFalloff1;
 
   // Layer 2: Mid-close
-  float fog2 = fbm(vec2(uv.x * 1.8 + driftTime, uv.y * 1.8));
-  float heightFalloff2 = smoothstep(0.5, 0.0, uv.y);
+  float fog2 = fbm(vec2(uv.x * 1.8 + driftTime, (uv.y + gravityDrift * 1.0) * 1.8));
+  float heightFalloff2 = smoothstep(0.6, 0.0, uv.y);
   fog2 *= heightFalloff2;
 
   // Layer 3: Middle
-  float fog3 = fbm(vec2(uv.x * 1.2 + driftTime * 0.8, uv.y * 1.3));
-  float heightFalloff3 = smoothstep(0.6, 0.0, uv.y);
+  float fog3 = fbm(vec2(uv.x * 1.2 + driftTime * 0.8, (uv.y + gravityDrift * 0.8) * 1.3));
+  float heightFalloff3 = smoothstep(0.7, 0.0, uv.y);
   fog3 *= heightFalloff3;
 
   // Layer 4: Mid-far
-  float fog4 = fbm(vec2(uv.x * 0.9 + driftTime * 0.6, uv.y * 1.0));
-  float heightFalloff4 = smoothstep(0.7, 0.0, uv.y);
+  float fog4 = fbm(vec2(uv.x * 0.9 + driftTime * 0.6, (uv.y + gravityDrift * 0.6) * 1.0));
+  float heightFalloff4 = smoothstep(0.8, 0.0, uv.y);
   fog4 *= heightFalloff4;
 
   // Layer 5: Farthest, slowest, most diffuse
-  float fog5 = fbm(vec2(uv.x * 0.6 + driftTime * 0.4, uv.y * 0.8));
-  float heightFalloff5 = smoothstep(0.8, 0.0, uv.y);
+  float fog5 = fbm(vec2(uv.x * 0.6 + driftTime * 0.4, (uv.y + gravityDrift * 0.4) * 0.8));
+  float heightFalloff5 = smoothstep(0.9, 0.0, uv.y);
   fog5 *= heightFalloff5;
 
-  // Combine layers with depth-based weights (closer = more opaque)
+  // Fog accumulation at bottom - increases over time
+  float bottomAccumulation = smoothstep(0.15, 0.0, uv.y);
+  float accumulationAmount = sin(uTime * 0.3) * 0.15 + 0.85; // Pulsing accumulation
+
+  // Combine layers with depth-based weights + accumulation
   float fog = fog1 * 0.35 + fog2 * 0.25 + fog3 * 0.20 + fog4 * 0.12 + fog5 * 0.08;
+  fog += bottomAccumulation * accumulationAmount * 0.4;
 
   // Mouse interaction
   vec2 toMouse = uv - uMouse;
   float mouseDist = length(toMouse);
   float mouseSpeed = length(uMouseVelocity);
 
-  // Fog emission from mouse with gravity - constant emission
-  // Create multiple "fog particles" at different ages that fall
+  // Fog emission from mouse - small, detailed particles
   float emittedFog = 0.0;
-  float gravitySpeed = 0.06; // How fast fog falls (slower for more visible trail)
+  float gravitySpeed = 0.055; // Fog falls with gravity
 
-  for (float i = 0.0; i < 12.0; i += 1.0) {
-    // Time offset for each particle
-    float age = mod(uTime * 1.5 + i * 0.25, 3.5);
+  // Create many small detailed particles
+  for (float i = 0.0; i < 24.0; i += 1.0) {
+    // Time offset for each particle (more frequent emission)
+    float age = mod(uTime * 2.0 + i * 0.15, 3.0);
 
-    // Mouse position at this time offset
+    // Mouse position
     vec2 mouseTrailPos = uMouse;
 
-    // Gravity: fog falls down over time
+    // Gravity: fog falls down
     float fallDistance = age * gravitySpeed;
     mouseTrailPos.y -= fallDistance;
 
-    // Slight horizontal drift as fog falls (natural turbulence)
-    mouseTrailPos.x += sin(age * 2.5 + i * 0.5) * 0.025;
+    // Multiple particles at different offsets for detail
+    float offsetAngle = i * 0.5 + uTime * 0.5;
+    float offsetRadius = 0.008 + sin(age * 3.0 + i) * 0.004; // Very small radius
+    mouseTrailPos.x += cos(offsetAngle) * offsetRadius;
+    mouseTrailPos.y += sin(offsetAngle) * offsetRadius * 0.3;
 
-    // Distance from this fog particle
+    // Slight horizontal drift
+    mouseTrailPos.x += sin(age * 3.0 + i * 0.8) * 0.015;
+
+    // Distance from particle
     float distToTrail = length(uv - mouseTrailPos);
 
-    // Fog particle size and intensity (fades with age)
-    float particleLife = 1.0 - (age / 3.5);
-    particleLife = smoothstep(0.0, 0.2, particleLife) * smoothstep(1.0, 0.3, particleLife);
-    float particleSize = 0.06 + age * 0.04; // Expands as it falls
-    float particle = exp(-distToTrail / particleSize) * particleLife;
+    // Small particle size (much smaller than before)
+    float particleLife = 1.0 - (age / 3.0);
+    particleLife = smoothstep(0.0, 0.15, particleLife) * smoothstep(1.0, 0.4, particleLife);
+    float particleSize = 0.015 + age * 0.012; // Much smaller: starts at 0.015
 
-    // Constant base emission with speed boost
-    float emissionStrength = 0.12 + mouseSpeed * 0.25;
+    // Sharper falloff for more defined particles
+    float particle = exp(-distToTrail * distToTrail / (particleSize * particleSize * 2.0)) * particleLife;
+
+    // Constant emission with speed boost
+    float emissionStrength = 0.08 + mouseSpeed * 0.20;
     particle *= emissionStrength;
 
-    emittedFog += particle;
+    emittedFog += particle * 0.6;
+  }
+
+  // Add some larger wispy particles for variation
+  for (float i = 0.0; i < 6.0; i += 1.0) {
+    float age = mod(uTime * 1.2 + i * 0.4, 4.0);
+    vec2 mouseTrailPos = uMouse;
+    float fallDistance = age * gravitySpeed * 0.8;
+    mouseTrailPos.y -= fallDistance;
+    mouseTrailPos.x += sin(age * 2.0 + i) * 0.02;
+
+    float distToTrail = length(uv - mouseTrailPos);
+    float particleLife = 1.0 - (age / 4.0);
+    particleLife = smoothstep(0.0, 0.3, particleLife) * smoothstep(1.0, 0.2, particleLife);
+    float particleSize = 0.025 + age * 0.018;
+    float particle = exp(-distToTrail / particleSize) * particleLife;
+
+    emittedFog += particle * (0.06 + mouseSpeed * 0.12);
   }
 
   // Add emitted fog to base fog
