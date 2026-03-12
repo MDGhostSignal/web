@@ -7,7 +7,7 @@ import { ScaleQuestion } from "@/components/rq/ScaleQuestion";
 import { ChoiceQuestion } from "@/components/rq/ChoiceQuestion";
 import { TextInput } from "@/components/rq/TextInput";
 import { TextArea } from "@/components/rq/TextArea";
-import VolumetricFog from "./VolumetricFog";
+import SimpleFog from "./SimpleFog";
 import { computeRQ, computeSignalClarity, type RQAnswers, type RQResult, type SignalClarity } from "@/lib/rq/scoring";
 import { BRAND } from "@/lib/rq/constants";
 import "./rq-index.css";
@@ -648,7 +648,7 @@ export default function RQIndexPage() {
           {isIntroStep ? (
             <>
               <div className="rq-intro-liquid-bg" aria-hidden="true">
-                <VolumetricFog />
+                <SimpleFog />
               </div>
               <div className="rq-intro">
                 <div className="rq-intro-content">
