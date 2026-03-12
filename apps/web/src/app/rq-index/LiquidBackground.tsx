@@ -73,12 +73,13 @@ void main() {
   vec2 p = uv * 2.0 - 1.0;
   p.x *= uResolution.x / max(uResolution.y, 1.0);
 
-  // FBM-based flow
-  float n1 = fbm(vec2(p.x * 1.8 - uTime * 0.042, p.y * 2.3 + uTime * 0.020));
-  float n2 = fbm(vec2(p.x * 3.1 + uTime * 0.031, p.y * 3.9 - uTime * 0.016));
+  // Professional slow-moving flow field
+  float n1 = fbm(vec2(p.x * 1.5 + uTime * 0.018, p.y * 1.9));
+  float n2 = fbm(vec2(p.x * 2.2 + uTime * 0.012, p.y * 2.6));
 
-  vec2 flow = vec2(-0.0014, 0.0);
-  flow += 0.0020 * vec2(n1 - 0.5, n2 - 0.5);
+  // Very gentle base flow
+  vec2 flow = vec2(0.0008, 0.0); // Subtle right-to-left
+  flow += 0.0012 * vec2(n1 - 0.5, n2 - 0.5);
 
   // Horizontal band that generates fog at bottom
   float right = smoothstep(-0.20, 1.15, p.x);
@@ -110,7 +111,7 @@ void main() {
 
   flow += normalize(swirlVec + vec2(1e-6))
     * mouseInfluence
-    * (0.002 + 0.004 * mouseSpeed);
+    * (0.0015 + 0.0025 * mouseSpeed);
 
   vec2 uvFlow = uv - flow;
 
@@ -131,12 +132,13 @@ void main() {
   prev += texture2D(uPrevTrail, uvFlow + (d3 + d4) * 0.5).rgb * 0.035;
   prev += texture2D(uPrevTrail, uvFlow + (d4 + d1) * 0.5).rgb * 0.035;
 
-  // Maximum fog generation for RQ index
-  float source = (0.070 + 0.180 * n1) * right * (1.00 + 2.40 * band);
-  source += mouseInfluence * (0.120 + 0.280 * mouseSpeed) * right;
+  // Professional fog generation - steady, natural
+  float source = (0.055 + 0.095 * n1) * right * (0.70 + 1.40 * band);
+  source += mouseInfluence * (0.035 + 0.055 * mouseSpeed) * right;
 
-  vec3 trail = prev * 0.995 + vec3(source);
-  trail *= 0.9998;
+  // High persistence for thick, heavy fog that lingers
+  vec3 trail = prev * 0.9965 + vec3(source);
+  trail *= 0.9996;
 
   gl_FragColor = vec4(clamp(trail, 0.0, 1.0), 1.0);
 }
@@ -249,61 +251,62 @@ void main() {
   trail += texture2D(uTrailTexture, uv + (d3 + d4) * 0.5).r * 0.035;
   trail += texture2D(uTrailTexture, uv + (d4 + d1) * 0.5).r * 0.035;
 
-  vec2 flowUv = uv + vec2(trail * 0.010, 0.0);
+  vec2 flowUv = uv + vec2(trail * 0.008, 0.0);
 
-  // Very slow right-to-left drift
-  float driftSpeed = 0.012;
-  float n1 = fbm(vec2(flowUv.x * 1.9 + uTime * driftSpeed, flowUv.y * 2.2));
-  float n2 = fbm(vec2(flowUv.x * 3.5 + uTime * driftSpeed * 0.8, flowUv.y * 4.6));
+  // Professional volumetric fog - slow right-to-left drift
+  float driftSpeed = 0.008; // Very slow, cinematic movement
 
-  float right = smoothstep(-0.10, 1.10, p.x);
-  float rightGlow = pow(max(p.x + 0.18, 0.0), 1.3);
-  float verticalBand = exp(-pow((p.y + 0.10 * sin(uTime * 0.10 + p.x * 2.4)) * 1.28, 2.0) * 7.0);
-  float leftFade = smoothstep(-1.05, 0.50, p.x);
+  // Layer 1: Fine detail fog (closest)
+  float n1 = fbm(vec2(flowUv.x * 2.5 + uTime * driftSpeed, flowUv.y * 2.8));
+  float detailFog = smoothstep(0.35, 0.65, n1 + trail * 0.80);
 
-  // Simplified fog with slow right-to-left drift
-  float baseFog = smoothstep(0.00, 0.50, n1 * 0.70 + n2 * 0.35 + trail * 1.20);
+  // Layer 2: Mid-range fog masses
+  float n2 = fbm(vec2(flowUv.x * 1.5 + uTime * driftSpeed * 0.7, flowUv.y * 1.8));
+  float midFog = smoothstep(0.30, 0.70, n2 + trail * 0.60);
 
-  // Add subtle second layer for depth
-  float n3 = fbm(vec2(flowUv.x * 1.1 + uTime * driftSpeed, flowUv.y * 1.3));
-  float fogLayer2 = smoothstep(0.30, 0.75, n3 + trail * 0.60) * 0.45;
+  // Layer 3: Large background fog formations
+  float n3 = fbm(vec2(flowUv.x * 0.8 + uTime * driftSpeed * 0.5, flowUv.y * 1.0));
+  float backgroundFog = smoothstep(0.25, 0.75, n3 + trail * 0.40);
 
-  float fog = clamp(baseFog * 3.20 + fogLayer2 * 1.40, 0.0, 1.0);
+  // Combine layers with proper depth attenuation
+  float fog = detailFog * 1.20 + midFog * 0.85 + backgroundFog * 0.50;
+  fog = clamp(fog * 1.10, 0.0, 1.0);
 
-  // Stars in upper portion (vUv.y = 1 is top)
-  float starFade = smoothstep(0.3, 1.0, vUv.y);
-  float starField = stars(vUv, uTime * 0.2) * starFade;
-  vec3 starColor = vec3(0.7, 0.85, 0.95) * starField * 0.4;
+  // Volumetric height falloff - exponential density decrease with height
+  float heightFalloff = exp(-vUv.y * 2.5);
+  fog *= heightFalloff;
 
-  // Cool atmospheric color palette from original
-  vec3 deep = vec3(0.030, 0.033, 0.040);
-  vec3 fogGray = vec3(0.158, 0.168, 0.184);
-  vec3 lightGray = vec3(0.782, 0.798, 0.828);
-
+  // Subtle mouse interaction - fog parts gently around cursor
   vec2 mouseP = uMouse * 2.0 - 1.0;
   mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
   float mouseDist = length(p - mouseP);
-  float mouseInfluence = exp(-mouseDist * 3.0);
-  float mouseSpeed = clamp(length(uMouseVelocity) * 270.0, 0.0, 1.0);
-  float mouseFogLift = exp(-mouseDist * 1.6) * (0.80 + 1.20 * mouseSpeed);
-  fog = clamp(fog + mouseFogLift * 1.40, 0.0, 1.0);
+  float mouseSpeed = clamp(length(uMouseVelocity) * 180.0, 0.0, 1.0);
 
-  // Constrain fog to bottom third (vUv.y = 0 is bottom)
-  float bottomThirdMask = smoothstep(0.35, 0.0, vUv.y);
-  fog *= bottomThirdMask;
+  // Gentle fog parting (reduces fog near cursor)
+  float mouseParting = exp(-mouseDist * 2.5) * (0.35 + 0.25 * mouseSpeed);
+  fog = clamp(fog - mouseParting * 0.40, 0.0, 1.0);
 
-  float beam = (0.22 + 0.78 * fog) * right * verticalBand;
+  // Professional color grading - cool atmospheric palette
+  vec3 deepColor = vec3(0.018, 0.022, 0.032);      // Very dark blue-gray base
+  vec3 fogColor = vec3(0.135, 0.145, 0.165);       // Cool medium gray
+  vec3 highlightColor = vec3(0.680, 0.710, 0.750); // Soft blue-white highlights
 
-  vec3 col = mix(deep, fogGray, fog);
-  col *= mix(0.58, 1.0, leftFade);
-  col = mix(
-    col,
-    lightGray,
-      0.18 * beam +
-      0.18 * rightGlow * verticalBand +
-      0.12 * trail +
-      0.12 * mouseInfluence * mouseSpeed
-  );
+  // Base fog color with smooth gradient
+  vec3 col = mix(deepColor, fogColor, fog * fog); // Squared for better falloff
+
+  // Subtle ambient lighting from above
+  float ambientLight = smoothstep(0.0, 0.6, vUv.y) * 0.15;
+  col += highlightColor * ambientLight * fog;
+
+  // Very subtle mouse-based local illumination
+  float mouseGlow = exp(-mouseDist * 1.8) * mouseSpeed * fog * 0.12;
+  col += highlightColor * mouseGlow;
+
+  // Stars in upper portion (vUv.y = 1 is top)
+  float starFade = smoothstep(0.4, 1.0, vUv.y) * (1.0 - fog * 0.7);
+  float starField = stars(vUv, uTime * 0.2) * starFade;
+  vec3 starColor = vec3(0.65, 0.75, 0.85) * starField * 0.25;
+  col += starColor;
 
   // Stars behind fog
   col = starColor + col;
