@@ -1,42 +1,6 @@
 import { NextResponse } from "next/server";
-
-type SubmissionPayload = {
-  source?: string;
-  submittedAt?: string;
-  brand?: {
-    company?: string;
-    acronym?: string;
-    title?: string;
-  };
-  basics?: {
-    type?: string;
-    first?: string;
-    last?: string;
-    role?: string;
-    org?: string;
-    industry?: string;
-    website?: string;
-    email?: string;
-  };
-  answers?: Record<string, unknown>;
-  result?: {
-    rq?: string;
-    rqName?: string;
-    profile?: unknown;
-    details?: unknown;
-    clarity?: {
-      label?: string;
-      note?: string;
-      [key: string]: unknown;
-    };
-    undertone?: string;
-  };
-  meta?: {
-    pageUrl?: string;
-    referrer?: string;
-    userAgent?: string;
-  };
-};
+import { postToGoogleSheetsWebhook } from "@/lib/googleSheetsWebhook";
+import type { SubmissionPayload } from "./types";
 
 const TABLE_NAME = process.env.RQ_SUBMISSIONS_TABLE ?? "rq_submissions";
 const EMAIL_TO = process.env.RQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
@@ -161,20 +125,35 @@ async function sendNotificationEmail(payload: SubmissionPayload) {
     <p><strong>Referrer:</strong> ${escapeHtml(payload.meta?.referrer ?? "-")}</p>
   `;
 
+  // Format reply_to properly - only include if email is valid
+  const replyTo = basics.email?.trim();
+  const emailPayload: {
+    from: string;
+    to: string[];
+    subject: string;
+    text: string;
+    html: string;
+    reply_to?: string;
+  } = {
+    from: resendFrom,
+    to: [EMAIL_TO],
+    subject: `New GhostSignal RQ: ${result.rq ?? "Submission"} - ${fullName || basics.org || "Unknown"}`,
+    text,
+    html,
+  };
+
+  // Only add reply_to if we have a valid email
+  if (replyTo && replyTo.includes("@")) {
+    emailPayload.reply_to = replyTo;
+  }
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${resendApiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      from: resendFrom,
-      to: [EMAIL_TO],
-      subject: `New GhostSignal RQ: ${result.rq ?? "Submission"} - ${fullName || basics.org || "Unknown"}`,
-      text,
-      html,
-      reply_to: basics.email || undefined,
-    }),
+    body: JSON.stringify(emailPayload),
     cache: "no-store",
   });
 
@@ -199,6 +178,7 @@ export async function GET(request: Request) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const resendConfigured = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
+  const googleSheetsConfigured = Boolean(process.env.GOOGLE_SHEETS_WEBHOOK_URL);
 
   if (!supabaseUrl || !serviceRoleKey) {
     return json(
@@ -207,6 +187,7 @@ export async function GET(request: Request) {
         configured: false,
         table: TABLE_NAME,
         emailConfigured: resendConfigured,
+        googleSheetsConfigured,
         error:
           "RQ submission capture is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
       },
@@ -235,6 +216,7 @@ export async function GET(request: Request) {
         configured: true,
         table: TABLE_NAME,
         emailConfigured: resendConfigured,
+        googleSheetsConfigured,
         error: "Supabase connection check failed.",
         detail,
       },
@@ -249,6 +231,7 @@ export async function GET(request: Request) {
       configured: true,
       table: TABLE_NAME,
       emailConfigured: resendConfigured,
+      googleSheetsConfigured,
       emailTo: EMAIL_TO,
       message: "Supabase connection is working for RQ submissions.",
     },
@@ -336,13 +319,21 @@ export async function POST(request: Request) {
   }
 
   const inserted = (await response.json()) as Array<{ id?: string | number }>;
+
+  // Send email notification
   const emailResult = await sendNotificationEmail(payload);
+
+  // Post to Google Sheets webhook
+  const sheetsResult = await postToGoogleSheetsWebhook(payload);
+
   return json(
     {
       ok: true,
       id: inserted?.[0]?.id ?? null,
       emailNotified: emailResult.sent,
       emailTo: emailResult.attempted ? EMAIL_TO : null,
+      googleSheetsAppended: sheetsResult.success,
+      googleSheetsRow: sheetsResult.row,
     },
     { status: 201 },
     origin,
