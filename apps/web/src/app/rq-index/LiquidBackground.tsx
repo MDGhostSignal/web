@@ -108,24 +108,24 @@ void main() {
   // Gentle upward drift like rising fog
   flow += vec2(0.0002, 0.0015);
 
-  // Ambient fog generation - always present
-  float fogSource = combined * 0.003; // Constant ambient fog
+  // Ambient fog generation - very subtle
+  float fogSource = combined * 0.0015; // Subtle constant ambient fog
 
-  // Mouse interaction - immediate fog creation
+  // Mouse interaction - very subtle and localized
   vec2 mouseP = uMouse * 2.0 - 1.0;
   mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
   vec2 mouseDelta = p - mouseP;
   float mouseDist = length(mouseDelta);
-  float mouseInfluence = exp(-mouseDist * 2.5); // Wider influence area
-  float mouseSpeed = clamp(length(uMouseVelocity) * 150.0, 0.0, 1.0);
+  float mouseInfluence = exp(-mouseDist * 15.0); // Much tighter, localized area
+  float mouseSpeed = clamp(length(uMouseVelocity) * 120.0, 0.0, 1.0);
 
-  // Gentle atmospheric disturbance - no swirl, just drift
-  vec2 mouseDrift = normalize(mouseDelta) * 0.005 * mouseSpeed;
+  // Very gentle atmospheric disturbance
+  vec2 mouseDrift = normalize(mouseDelta) * 0.002 * mouseSpeed;
   flow += mouseDrift * mouseInfluence;
 
-  // Immediate fog creation on mouse presence
-  float mouseInject = mouseInfluence * 0.008; // Always creates fog, not dependent on speed
-  mouseInject += mouseInfluence * mouseSpeed * 0.012; // Extra on movement
+  // Subtle fog creation - barely visible
+  float mouseInject = mouseInfluence * 0.0015; // Very subtle presence
+  mouseInject += mouseInfluence * mouseSpeed * 0.003; // Minimal extra on movement
 
   // Multi-sample for smoother advection
   vec2 sampleUv1 = uv + flow;
@@ -212,43 +212,36 @@ float stars(vec2 uv, float time) {
 void main() {
   float val = 0.0;
 
-  // 3x3 blur for smooth, fog-like appearance
+  // Larger, more diffuse blur for soft mist-like appearance
   float totalWeight = 0.0;
-  for (float x = -1.0; x <= 1.0; x += 1.0) {
-    for (float y = -1.0; y <= 1.0; y += 1.0) {
-      float weight = 1.0 / (1.0 + length(vec2(x, y)));
-      val += texture2D(uTrail, vUv + vec2(x, y) * uTexel * 2.0).r * weight;
+  for (float x = -2.0; x <= 2.0; x += 1.0) {
+    for (float y = -2.0; y <= 2.0; y += 1.0) {
+      float dist = length(vec2(x, y));
+      // Gaussian-like falloff for natural diffusion
+      float weight = exp(-dist * 0.5);
+      val += texture2D(uTrail, vUv + vec2(x, y) * uTexel * 3.0).r * weight;
       totalWeight += weight;
     }
   }
   val /= totalWeight;
 
   // Star field in upper portion of screen
-  float starFade = smoothstep(0.3, 0.0, vUv.y); // More stars at top
+  float starFade = smoothstep(0.3, 0.0, vUv.y);
   float starField = stars(vUv, uTime * 0.2) * starFade;
 
   // Star color (dim white/cyan)
   vec3 starColor = vec3(0.7, 0.85, 0.95) * starField * 0.4;
 
-  // Soft, organic color gradient with multiple stops
-  vec3 color1 = vec3(0.00, 0.70, 0.61); // Deep teal
-  vec3 color2 = vec3(0.40, 0.85, 0.80); // Mid cyan
-  vec3 color3 = vec3(0.78, 0.98, 1.00); // Bright cyan
-  vec3 color4 = vec3(1.00, 1.00, 1.00); // White
+  // Smooth, uniform mist color - no distinct layers
+  vec3 mistColor = vec3(0.50, 0.85, 0.90); // Soft cyan-white mist
 
-  vec3 col;
-  float t = pow(val, 0.7);
-  if (t < 0.33) {
-    col = mix(color1, color2, t / 0.33);
-  } else if (t < 0.66) {
-    col = mix(color2, color3, (t - 0.33) / 0.33);
-  } else {
-    col = mix(color3, color4, (t - 0.66) / 0.34);
-  }
+  // Very gradual brightness variation for depth
+  float brightness = 0.7 + 0.3 * pow(val, 2.0);
+  vec3 col = mistColor * brightness;
 
-  // Softer alpha transition for wispy fog edges
-  float alpha = smoothstep(0.0, 0.15, val) * smoothstep(1.0, 0.7, val);
-  alpha = pow(alpha, 0.8);
+  // Very soft, diffuse alpha for atmospheric fog
+  float alpha = pow(val, 1.5) * 0.85;
+  alpha = smoothstep(0.0, 0.25, alpha);
 
   // Composite: stars behind fog
   vec3 finalColor = starColor + col * alpha;
@@ -369,9 +362,9 @@ export function LiquidBackground() {
         const nx = (x / canvas.width) * 2 - 1;
         const ny = (y / canvas.height) * 2 - 1;
 
-        // Create some initial ambient fog
+        // Create very subtle initial ambient fog
         const dist = Math.sqrt(nx * nx + ny * ny);
-        const fog = Math.max(0, (1.0 - dist * 0.5) * 0.15); // 15% opacity fog
+        const fog = Math.max(0, (1.0 - dist * 0.5) * 0.08); // 8% opacity fog
 
         const value = Math.floor(fog * 255);
         initialData[i] = value;     // R
