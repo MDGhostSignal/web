@@ -417,20 +417,20 @@ export function LiquidBackground() {
       gl.bindFramebuffer(gl.FRAMEBUFFER, trailFbos[nextIndex]);
       gl.viewport(0, 0, canvas.width, canvas.height);
 
-      const aPos = gl.getAttribLocation(updateProgram, "aPosition");
+      const aPos = gl.getAttribLocation(updateProgram!, "aPosition");
       gl.enableVertexAttribArray(aPos);
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
-      gl.uniform1f(gl.getUniformLocation(updateProgram, "uTime"), time);
-      gl.uniform2f(gl.getUniformLocation(updateProgram, "uResolution"), canvas.width, canvas.height);
-      gl.uniform2f(gl.getUniformLocation(updateProgram, "uTexel"), 1.0 / canvas.width, 1.0 / canvas.height);
-      gl.uniform2f(gl.getUniformLocation(updateProgram, "uMouse"), mouse.x, mouse.y);
-      gl.uniform2f(gl.getUniformLocation(updateProgram, "uMouseVelocity"), mouseVelocity.x, mouseVelocity.y);
+      gl.uniform1f(gl.getUniformLocation(updateProgram!, "uTime"), time);
+      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uResolution"), canvas.width, canvas.height);
+      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uTexel"), 1.0 / canvas.width, 1.0 / canvas.height);
+      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uMouse"), mouse.x, mouse.y);
+      gl.uniform2f(gl.getUniformLocation(updateProgram!, "uMouseVelocity"), mouseVelocity.x, mouseVelocity.y);
 
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, trailTextures[prevIndex]);
-      gl.uniform1i(gl.getUniformLocation(updateProgram, "uPrevTrail"), 0);
+      gl.uniform1i(gl.getUniformLocation(updateProgram!, "uPrevTrail"), 0);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -444,17 +444,17 @@ export function LiquidBackground() {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(renderProgram);
 
-      const aPosRender = gl.getAttribLocation(renderProgram, "aPosition");
+      const aPosRender = gl.getAttribLocation(renderProgram!, "aPosition");
       gl.enableVertexAttribArray(aPosRender);
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.vertexAttribPointer(aPosRender, 2, gl.FLOAT, false, 0, 0);
 
-      gl.uniform1f(gl.getUniformLocation(renderProgram, "uTime"), time);
-      gl.uniform2f(gl.getUniformLocation(renderProgram, "uTexel"), 1.0 / canvas.width, 1.0 / canvas.height);
+      gl.uniform1f(gl.getUniformLocation(renderProgram!, "uTime"), time);
+      gl.uniform2f(gl.getUniformLocation(renderProgram!, "uTexel"), 1.0 / canvas.width, 1.0 / canvas.height);
 
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, trailTextures[nextIndex]);
-      gl.uniform1i(gl.getUniformLocation(renderProgram, "uTrail"), 0);
+      gl.uniform1i(gl.getUniformLocation(renderProgram!, "uTrail"), 0);
 
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
