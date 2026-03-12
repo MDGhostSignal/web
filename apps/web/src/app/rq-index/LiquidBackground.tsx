@@ -93,7 +93,7 @@ void main() {
   vec2 mouseDelta = p - mouseP;
   float mouseDist = length(p - mouseP);
   float mouseInfluence = exp(-mouseDist * 5.2);
-  float mouseSpeed = clamp(length(uMouseVelocity) * 270.0, 0.0, 1.0);
+  float mouseSpeed = clamp(length(uMouseVelocity) * 120.0, 0.0, 1.0);
 
   // Swirl system from original
   float swirlPhase = uTime * 0.12;
@@ -110,7 +110,7 @@ void main() {
 
   flow += normalize(swirlVec + vec2(1e-6))
     * mouseInfluence
-    * (0.007 + 0.016 * mouseSpeed);
+    * (0.002 + 0.004 * mouseSpeed);
 
   vec2 uvFlow = uv - flow;
 
@@ -135,8 +135,8 @@ void main() {
   float source = (0.070 + 0.180 * n1) * right * (1.00 + 2.40 * band);
   source += mouseInfluence * (0.120 + 0.280 * mouseSpeed) * right;
 
-  vec3 trail = prev * 0.982 + vec3(source);
-  trail *= 0.9993;
+  vec3 trail = prev * 0.995 + vec3(source);
+  trail *= 0.9998;
 
   gl_FragColor = vec4(clamp(trail, 0.0, 1.0), 1.0);
 }
