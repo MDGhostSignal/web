@@ -99,20 +99,22 @@ void main() {
   float combined = turbulence1 * 0.5 + turbulence2 * 0.3 + turbulence3 * 0.2;
 
   // Slow upward drift like classic London fog
-  vec2 flow = vec2(0.0, 0.0008); // Very slow upward movement
+  vec2 flow = vec2(0.0, -0.0012); // Negative = upward in screen space
 
   // Add subtle horizontal drift for atmospheric effect
-  flow.x += sin(uTime * 0.02 + p.y * 2.0) * 0.0002;
+  flow.x += sin(uTime * 0.02 + p.y * 2.0) * 0.0003;
 
-  // Fog generation at the bottom, rising slowly
-  // Stronger at bottom (y near 1.0 in UV space, which is bottom of screen)
-  float bottomGradient = smoothstep(0.3, 1.0, vUv.y); // More fog at bottom
+  // Fog generation at the bottom of screen
+  // In UV space: vUv.y = 0 is top, vUv.y = 1 is bottom
+  // We want MORE fog at bottom (high vUv.y values)
+  float distanceFromBottom = 1.0 - vUv.y; // 0 at bottom, 1 at top
+  float bottomGradient = smoothstep(0.7, 0.0, distanceFromBottom); // Dense at bottom
 
   // Add some variation to the fog generation
-  float fogVariation = 0.5 + 0.5 * sin(uTime * 0.03 + p.x * 3.0);
+  float fogVariation = 0.7 + 0.3 * sin(uTime * 0.03 + p.x * 3.0);
 
-  // Generate fog from the bottom
-  float fogSource = bottomGradient * fogVariation * 0.004;
+  // Generate dense fog from the bottom
+  float fogSource = bottomGradient * fogVariation * 0.015;
 
   // Mouse interaction - subtle but visible and localized
   vec2 mouseP = uMouse * 2.0 - 1.0;
@@ -141,8 +143,8 @@ void main() {
 
   float prevSmooth = (prev1 * 0.5 + prev2 * 0.3 + prev3 * 0.2);
 
-  // Very slow decay - fog persists
-  float decay = 0.998;
+  // Very slow decay - dense fog lingers
+  float decay = 0.9985;
   float val = prevSmooth * decay + fogSource + mouseInject;
 
   // Clamp to prevent over-saturation
@@ -235,16 +237,20 @@ void main() {
   // Star color (dim white/cyan)
   vec3 starColor = vec3(0.7, 0.85, 0.95) * starField * 0.4;
 
-  // Smooth, uniform mist color - no distinct layers
-  vec3 mistColor = vec3(0.50, 0.85, 0.90); // Soft cyan-white mist
+  // Dark, moody fog color - London street atmosphere
+  vec3 fogColorDark = vec3(0.25, 0.30, 0.35); // Dark blue-grey fog
+  vec3 fogColorLight = vec3(0.55, 0.65, 0.75); // Lighter fog where thinner
 
-  // Very gradual brightness variation for depth
-  float brightness = 0.7 + 0.3 * pow(val, 2.0);
-  vec3 col = mistColor * brightness;
+  // Brightness based on density - darker where denser
+  float brightness = 0.4 + 0.6 * pow(1.0 - val, 0.8);
+  vec3 mistColor = mix(fogColorDark, fogColorLight, brightness);
 
-  // Soft, visible alpha for atmospheric fog
-  float alpha = pow(val, 1.2) * 1.0;
-  alpha = smoothstep(0.0, 0.2, alpha);
+  vec3 col = mistColor;
+
+  // Strong, dense alpha for thick London fog
+  float alpha = pow(val, 0.9) * 1.2;
+  alpha = smoothstep(0.0, 0.15, alpha);
+  alpha = clamp(alpha, 0.0, 0.95); // Dense but not fully opaque
 
   // Composite: stars behind fog
   vec3 finalColor = starColor + col * alpha;
@@ -365,9 +371,11 @@ export function LiquidBackground() {
         const nx = (x / canvas.width) * 2 - 1;
         const ny = (y / canvas.height) * 2 - 1;
 
-        // Create initial ambient fog
-        const dist = Math.sqrt(nx * nx + ny * ny);
-        const fog = Math.max(0, (1.0 - dist * 0.5) * 0.18); // 18% opacity fog
+        // Create dense fog at bottom, lighter at top - London street scene
+        const distanceFromBottom = 1.0 - (y / canvas.height); // 0 at bottom, 1 at top
+        const bottomFog = Math.max(0, 1.0 - distanceFromBottom * 1.5); // Dense at bottom
+        const centerDist = Math.abs(nx) * 0.5; // Side to center
+        const fog = bottomFog * (1.0 - centerDist) * 0.45; // 45% opacity at bottom
 
         const value = Math.floor(fog * 255);
         initialData[i] = value;     // R
