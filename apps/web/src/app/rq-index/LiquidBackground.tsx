@@ -262,7 +262,6 @@ void main() {
   float leftFade = smoothstep(-1.05, 0.50, p.x);
 
   // Simplified fog with slow right-to-left drift
-  float driftSpeed = 0.012; // Very slow drift from right to left
   float baseFog = smoothstep(0.00, 0.50, n1 * 0.70 + n2 * 0.35 + trail * 1.20);
 
   // Add subtle second layer for depth
