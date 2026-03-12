@@ -98,11 +98,21 @@ void main() {
   // Combine multiple scales for depth
   float combined = turbulence1 * 0.5 + turbulence2 * 0.3 + turbulence3 * 0.2;
 
-  // Minimal flow - almost static
-  vec2 flow = vec2(0.0, 0.0);
+  // Slow upward drift like classic London fog
+  vec2 flow = vec2(0.0, 0.0008); // Very slow upward movement
 
-  // No ambient fog generation - only mouse interaction
-  float fogSource = 0.0;
+  // Add subtle horizontal drift for atmospheric effect
+  flow.x += sin(uTime * 0.02 + p.y * 2.0) * 0.0002;
+
+  // Fog generation at the bottom, rising slowly
+  // Stronger at bottom (y near 1.0 in UV space, which is bottom of screen)
+  float bottomGradient = smoothstep(0.3, 1.0, vUv.y); // More fog at bottom
+
+  // Add some variation to the fog generation
+  float fogVariation = 0.5 + 0.5 * sin(uTime * 0.03 + p.x * 3.0);
+
+  // Generate fog from the bottom
+  float fogSource = bottomGradient * fogVariation * 0.004;
 
   // Mouse interaction - subtle but visible and localized
   vec2 mouseP = uMouse * 2.0 - 1.0;
