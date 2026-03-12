@@ -108,24 +108,24 @@ void main() {
   // Gentle upward drift like rising fog
   flow += vec2(0.0002, 0.0015);
 
-  // Ambient fog generation - very subtle
-  float fogSource = combined * 0.0015; // Subtle constant ambient fog
+  // Ambient fog generation - visible but gentle
+  float fogSource = combined * 0.005; // Constant ambient fog
 
-  // Mouse interaction - very subtle and localized
+  // Mouse interaction - subtle but visible and localized
   vec2 mouseP = uMouse * 2.0 - 1.0;
   mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
   vec2 mouseDelta = p - mouseP;
   float mouseDist = length(mouseDelta);
-  float mouseInfluence = exp(-mouseDist * 15.0); // Much tighter, localized area
+  float mouseInfluence = exp(-mouseDist * 8.0); // Localized but visible area
   float mouseSpeed = clamp(length(uMouseVelocity) * 120.0, 0.0, 1.0);
 
-  // Very gentle atmospheric disturbance
-  vec2 mouseDrift = normalize(mouseDelta) * 0.002 * mouseSpeed;
+  // Gentle atmospheric disturbance
+  vec2 mouseDrift = normalize(mouseDelta) * 0.003 * mouseSpeed;
   flow += mouseDrift * mouseInfluence;
 
-  // Subtle fog creation - barely visible
-  float mouseInject = mouseInfluence * 0.0015; // Very subtle presence
-  mouseInject += mouseInfluence * mouseSpeed * 0.003; // Minimal extra on movement
+  // Subtle fog creation - visible on hover
+  float mouseInject = mouseInfluence * 0.004; // Subtle presence
+  mouseInject += mouseInfluence * mouseSpeed * 0.008; // Extra on movement
 
   // Multi-sample for smoother advection
   vec2 sampleUv1 = uv + flow;
@@ -239,9 +239,9 @@ void main() {
   float brightness = 0.7 + 0.3 * pow(val, 2.0);
   vec3 col = mistColor * brightness;
 
-  // Very soft, diffuse alpha for atmospheric fog
-  float alpha = pow(val, 1.5) * 0.85;
-  alpha = smoothstep(0.0, 0.25, alpha);
+  // Soft, visible alpha for atmospheric fog
+  float alpha = pow(val, 1.2) * 1.0;
+  alpha = smoothstep(0.0, 0.2, alpha);
 
   // Composite: stars behind fog
   vec3 finalColor = starColor + col * alpha;
@@ -362,9 +362,9 @@ export function LiquidBackground() {
         const nx = (x / canvas.width) * 2 - 1;
         const ny = (y / canvas.height) * 2 - 1;
 
-        // Create very subtle initial ambient fog
+        // Create initial ambient fog
         const dist = Math.sqrt(nx * nx + ny * ny);
-        const fog = Math.max(0, (1.0 - dist * 0.5) * 0.08); // 8% opacity fog
+        const fog = Math.max(0, (1.0 - dist * 0.5) * 0.18); // 18% opacity fog
 
         const value = Math.floor(fog * 255);
         initialData[i] = value;     // R
