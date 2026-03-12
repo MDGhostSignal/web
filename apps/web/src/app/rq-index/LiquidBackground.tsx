@@ -105,10 +105,10 @@ void main() {
   // Add subtle horizontal drift for atmospheric effect
   flow.x += sin(uTime * 0.02 + p.y * 2.0) * 0.0003;
 
-  // Fog generation at the bottom of screen
-  // In UV space: vUv.y = 0 is BOTTOM, vUv.y = 1 is TOP (standard GL coordinates)
-  // We want MORE fog at bottom (low vUv.y values)
-  float bottomGradient = smoothstep(1.0, 0.3, vUv.y); // Dense at bottom (vUv.y = 0)
+  // Fog generation ONLY in bottom third of screen
+  // In UV space: vUv.y = 0 is BOTTOM, vUv.y = 1 is TOP
+  // We want fog only from 0 to ~0.33 (bottom third)
+  float bottomGradient = smoothstep(0.35, 0.0, vUv.y); // Dense at bottom, fades out by 1/3 height
 
   // Add some variation to the fog generation
   float fogVariation = 0.7 + 0.3 * sin(uTime * 0.03 + p.x * 3.0);
@@ -371,10 +371,16 @@ export function LiquidBackground() {
         const nx = (x / canvas.width) * 2 - 1;
         const ny = (y / canvas.height) * 2 - 1;
 
-        // Create dense fog at bottom, lighter at top - London street scene
+        // Create dense fog ONLY in bottom third - London street scene
         // In texture upload: y=0 in loop = bottom of screen (vUv.y=0)
         const heightPosition = y / canvas.height; // 0 = bottom, 1 = top
-        const bottomFog = Math.pow(1.0 - heightPosition, 0.8); // Dense at bottom (y=0)
+
+        // Only generate fog in bottom third (0 to 0.33)
+        let bottomFog = 0;
+        if (heightPosition < 0.35) {
+          bottomFog = Math.pow(1.0 - (heightPosition / 0.35), 1.2); // Dense at bottom, fade at 1/3
+        }
+
         const centerDist = Math.abs(nx) * 0.3; // Side to center
         const fog = bottomFog * (1.0 - centerDist) * 0.5; // 50% opacity at bottom
 
