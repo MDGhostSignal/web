@@ -132,8 +132,8 @@ void main() {
   prev += texture2D(uPrevTrail, uvFlow + (d4 + d1) * 0.5).rgb * 0.035;
 
   // Maximum fog generation for RQ index
-  float source = (0.045 + 0.130 * n1) * right * (0.75 + 1.80 * band);
-  source += mouseInfluence * (0.080 + 0.200 * mouseSpeed) * right;
+  float source = (0.070 + 0.180 * n1) * right * (1.00 + 2.40 * band);
+  source += mouseInfluence * (0.120 + 0.280 * mouseSpeed) * right;
 
   vec3 trail = prev * 0.982 + vec3(source);
   trail *= 0.9993;
@@ -259,12 +259,12 @@ void main() {
   float verticalBand = exp(-pow((p.y + 0.10 * sin(uTime * 0.10 + p.x * 2.4)) * 1.28, 2.0) * 7.0);
   float leftFade = smoothstep(-1.05, 0.50, p.x);
 
-  float baseFog = smoothstep(0.00, 0.55, n1 * 0.79 + n2 * 0.40 + trail * 1.22);
+  float baseFog = smoothstep(0.00, 0.45, n1 * 0.79 + n2 * 0.40 + trail * 1.50);
 
   // Cloud masses for maximum fog density
   float cloudMassNoise = fbm(vec2(flowUv.x * 0.75 - uTime * 0.008, flowUv.y * 0.95 + uTime * 0.006));
-  float cloudMass = smoothstep(0.20, 0.62, cloudMassNoise + trail * 0.56);
-  float fog = clamp(baseFog * 3.60 + cloudMass * 2.20, 0.0, 1.0);
+  float cloudMass = smoothstep(0.20, 0.62, cloudMassNoise + trail * 0.75);
+  float fog = clamp(baseFog * 4.80 + cloudMass * 3.00, 0.0, 1.0);
 
   // Stars in upper portion (vUv.y = 1 is top)
   float starFade = smoothstep(0.3, 1.0, vUv.y);
@@ -279,10 +279,10 @@ void main() {
   vec2 mouseP = uMouse * 2.0 - 1.0;
   mouseP.x *= uResolution.x / max(uResolution.y, 1.0);
   float mouseDist = length(p - mouseP);
-  float mouseInfluence = exp(-mouseDist * 3.8); // Very wide influence area
+  float mouseInfluence = exp(-mouseDist * 3.0); // Extremely wide influence area
   float mouseSpeed = clamp(length(uMouseVelocity) * 270.0, 0.0, 1.0);
-  float mouseFogLift = exp(-mouseDist * 1.8) * (1.10 + 1.60 * mouseSpeed); // Maximum effect
-  fog = clamp(fog + mouseFogLift * 1.85, 0.0, 1.0); // Maximum mouse fog
+  float mouseFogLift = exp(-mouseDist * 1.4) * (1.50 + 2.20 * mouseSpeed); // Extremely strong effect
+  fog = clamp(fog + mouseFogLift * 2.50, 0.0, 1.0); // Extremely strong mouse fog
 
   // Constrain fog to bottom third (vUv.y = 0 is bottom)
   float bottomThirdMask = smoothstep(0.35, 0.0, vUv.y);
