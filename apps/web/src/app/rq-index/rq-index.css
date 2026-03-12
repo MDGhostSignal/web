@@ -20,8 +20,6 @@
   top: 0;
   left: 0;
   right: 0;
-  background: var(--rq-bg);
-  border-bottom: 1px solid var(--rq-line);
   padding: 20px;
   z-index: 100;
   display: flex;
