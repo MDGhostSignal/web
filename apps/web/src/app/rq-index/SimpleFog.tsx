@@ -98,38 +98,39 @@ void main() {
   float mouseDist = length(toMouse);
   float mouseSpeed = length(uMouseVelocity);
 
-  // Fog emission from mouse with gravity
+  // Fog emission from mouse with gravity - constant emission
   // Create multiple "fog particles" at different ages that fall
   float emittedFog = 0.0;
-  float gravitySpeed = 0.08; // How fast fog falls
+  float gravitySpeed = 0.06; // How fast fog falls (slower for more visible trail)
 
-  for (float i = 0.0; i < 8.0; i += 1.0) {
+  for (float i = 0.0; i < 12.0; i += 1.0) {
     // Time offset for each particle
-    float age = mod(uTime * 2.0 + i * 0.3, 2.5);
+    float age = mod(uTime * 1.5 + i * 0.25, 3.5);
 
-    // Mouse position at this time offset (simulated trail)
-    float trailOffset = i * 0.015;
+    // Mouse position at this time offset
     vec2 mouseTrailPos = uMouse;
 
     // Gravity: fog falls down over time
     float fallDistance = age * gravitySpeed;
     mouseTrailPos.y -= fallDistance;
 
-    // Slight horizontal drift as fog falls
-    mouseTrailPos.x += sin(age * 2.0 + i) * 0.02;
+    // Slight horizontal drift as fog falls (natural turbulence)
+    mouseTrailPos.x += sin(age * 2.5 + i * 0.5) * 0.025;
 
     // Distance from this fog particle
     float distToTrail = length(uv - mouseTrailPos);
 
     // Fog particle size and intensity (fades with age)
-    float particleLife = 1.0 - (age / 2.5);
-    float particleSize = 0.08 + age * 0.03; // Expands as it falls
+    float particleLife = 1.0 - (age / 3.5);
+    particleLife = smoothstep(0.0, 0.2, particleLife) * smoothstep(1.0, 0.3, particleLife);
+    float particleSize = 0.06 + age * 0.04; // Expands as it falls
     float particle = exp(-distToTrail / particleSize) * particleLife;
 
-    // Only add if mouse is moving
-    particle *= smoothstep(0.0, 0.3, mouseSpeed);
+    // Constant base emission with speed boost
+    float emissionStrength = 0.12 + mouseSpeed * 0.25;
+    particle *= emissionStrength;
 
-    emittedFog += particle * 0.15;
+    emittedFog += particle;
   }
 
   // Add emitted fog to base fog
