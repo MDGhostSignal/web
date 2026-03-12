@@ -64,44 +64,46 @@ void main() {
   // Slow right-to-left drift
   float driftTime = uTime * 0.01;
 
-  // Two layers of fog at different scales
+  // Three layers of fog at different scales for more density
   float fog1 = fbm(vec2(uv.x * 2.0 + driftTime, uv.y * 2.0));
   float fog2 = fbm(vec2(uv.x * 1.0 + driftTime * 0.7, uv.y * 1.2));
+  float fog3 = fbm(vec2(uv.x * 1.5 + driftTime * 0.5, uv.y * 1.6));
 
-  // Combine layers
-  float fog = fog1 * 0.6 + fog2 * 0.4;
+  // Combine layers with higher weights
+  float fog = fog1 * 0.5 + fog2 * 0.35 + fog3 * 0.25;
 
-  // Height-based gradient (more fog at bottom)
-  float heightFalloff = smoothstep(0.5, 0.0, uv.y);
+  // Height-based gradient (more fog at bottom, less aggressive)
+  float heightFalloff = smoothstep(0.6, 0.0, uv.y);
   fog *= heightFalloff;
 
-  // Mouse interaction - simple displacement
+  // Mouse interaction - stronger displacement
   vec2 toMouse = uv - uMouse;
   float mouseDist = length(toMouse);
   float mouseSpeed = length(uMouseVelocity);
 
-  // Small area of effect
-  float mouseInfluence = smoothstep(0.15, 0.0, mouseDist);
+  // Larger area of effect for more visible interaction
+  float mouseInfluence = smoothstep(0.25, 0.0, mouseDist);
 
   // Displace fog sampling based on mouse movement
   if (mouseInfluence > 0.0) {
-    vec2 displacement = normalize(uMouseVelocity) * mouseInfluence * mouseSpeed * 0.5;
+    vec2 displacement = normalize(uMouseVelocity) * mouseInfluence * mouseSpeed * 1.2;
     vec2 displacedUv = uv + displacement;
 
     // Resample fog at displaced position
     float fog1Displaced = fbm(vec2(displacedUv.x * 2.0 + driftTime, displacedUv.y * 2.0));
     float fog2Displaced = fbm(vec2(displacedUv.x * 1.0 + driftTime * 0.7, displacedUv.y * 1.2));
-    float fogDisplaced = fog1Displaced * 0.6 + fog2Displaced * 0.4;
-    fogDisplaced *= smoothstep(0.5, 0.0, displacedUv.y);
+    float fog3Displaced = fbm(vec2(displacedUv.x * 1.5 + driftTime * 0.5, displacedUv.y * 1.6));
+    float fogDisplaced = fog1Displaced * 0.5 + fog2Displaced * 0.35 + fog3Displaced * 0.25;
+    fogDisplaced *= smoothstep(0.6, 0.0, displacedUv.y);
 
     fog = mix(fog, fogDisplaced, mouseInfluence);
 
-    // Clear fog at mouse position
-    fog *= 1.0 - mouseInfluence * 0.7;
+    // Stronger clearing at mouse position
+    fog *= 1.0 - mouseInfluence * 0.85;
   }
 
-  // Adjust fog density
-  fog = pow(fog, 0.8) * 1.2;
+  // Adjust fog density - much higher for more visibility
+  fog = pow(fog, 0.65) * 2.0;
   fog = clamp(fog, 0.0, 1.0);
 
   // Dark background with gradient
@@ -124,9 +126,9 @@ void main() {
   // Fog color
   vec3 fogColor = vec3(0.25, 0.27, 0.3);
 
-  // Mouse light
-  float mouseLight = exp(-mouseDist * 3.0) * mouseSpeed * 3.0;
-  fogColor += vec3(0.3, 0.35, 0.4) * mouseLight * fog;
+  // Mouse light - stronger and more visible
+  float mouseLight = exp(-mouseDist * 2.0) * mouseSpeed * 5.0;
+  fogColor += vec3(0.4, 0.45, 0.5) * mouseLight * fog;
 
   // Mix fog with background
   vec3 color = mix(bgColor, fogColor, fog);
@@ -225,12 +227,12 @@ export default function SimpleFog() {
       const y = 1.0 - (e.clientY - rect.top) / rect.height;
 
       const mouse = mouseRef.current;
-      mouse.vx = (x - mouse.prevX) * 2.0;
-      mouse.vy = (y - mouse.prevY) * 2.0;
+      mouse.vx = (x - mouse.prevX) * 3.5;
+      mouse.vy = (y - mouse.prevY) * 3.5;
       mouse.prevX = mouse.x;
       mouse.prevY = mouse.y;
-      mouse.x += (x - mouse.x) * 0.15;
-      mouse.y += (y - mouse.y) * 0.15;
+      mouse.x += (x - mouse.x) * 0.2;
+      mouse.y += (y - mouse.y) * 0.2;
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -245,9 +247,9 @@ export default function SimpleFog() {
       gl.uniform2f(uMouse, mouseRef.current.x, mouseRef.current.y);
       gl.uniform2f(uMouseVelocity, mouseRef.current.vx, mouseRef.current.vy);
 
-      // Decay velocity
-      mouseRef.current.vx *= 0.9;
-      mouseRef.current.vy *= 0.9;
+      // Decay velocity - slower for lingering effect
+      mouseRef.current.vx *= 0.93;
+      mouseRef.current.vy *= 0.93;
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
