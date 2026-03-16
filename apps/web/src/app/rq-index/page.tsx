@@ -8,6 +8,7 @@ import { ChoiceQuestion } from "@/components/rq/ChoiceQuestion";
 import { TextInput } from "@/components/rq/TextInput";
 import { TextArea } from "@/components/rq/TextArea";
 import SimpleFog from "./SimpleFog";
+import { SnowAnimation } from "./SnowAnimation";
 import { computeRQ, computeSignalClarity, type RQAnswers, type RQResult, type SignalClarity } from "@/lib/rq/scoring";
 import { BRAND } from "@/lib/rq/constants";
 import "./rq-index.css";
@@ -98,7 +99,7 @@ const STEPS: Step[] = [
     id: "contact",
     title: "How can we reach you?",
     fields: [
-      { type: "email", id: "EMAIL", label: "Email", required: true, placeholder: "name@company.com" },
+      { type: "email", id: "EMAIL", label: "Email", required: true, placeholder: "name@company.com", helpText: "We'll send your RQ Index summary to this address." },
       { type: "text", id: "ROLE", label: "Role / Title", placeholder: "Your role" },
       { type: "text", id: "INDUSTRY", label: "Industry", placeholder: "Your industry" },
       { type: "text", id: "WEBSITE", label: "Website", placeholder: "https://…" },
@@ -513,7 +514,7 @@ export default function RQIndexPage() {
         const data = await response.json();
         setSubmitStatus({
           type: "success",
-          message: "You have successfully created your RQ index.",
+          message: "Your RQ Index has been emailed to you.",
         });
       } else {
         throw new Error("Submission failed");
@@ -585,6 +586,7 @@ export default function RQIndexPage() {
         placeholder={field.placeholder}
         value={form[fieldId] as string}
         onChange={(v) => updateForm(fieldId, v as any)}
+        helpText={field.helpText}
       />
     );
   };
@@ -633,6 +635,43 @@ export default function RQIndexPage() {
                 {submitStatus.message}
               </div>
             )}
+
+            {/* CTA Buttons */}
+            <div className="rq-cta-section">
+              <div className="rq-snowdrift-section">
+                <div className="rq-snowdrift-snow-bg" aria-hidden="true">
+                  <SnowAnimation />
+                </div>
+                <div className="rq-snowdrift-content">
+                  <img
+                    src="/images/brand/snowdrift-logo-white.png"
+                    alt="Snowdrift"
+                    className="rq-snowdrift-logo-large"
+                  />
+                  <p className="rq-snowdrift-description">
+                    <span className="rq-snowdrift-tagline">Snowdrift is a GhostSignal transmission.</span>
+                    Thoughts for a community of world makers. A cultural investigation of the future and what it means for you.
+                  </p>
+                  <a
+                    href="https://snowdriftghostsignal.substack.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rq-cta-btn rq-cta-snowdrift"
+                  >
+                    Subscribe to the Snowdrift Newsletter
+                  </a>
+                </div>
+              </div>
+
+              <a
+                href="https://ghostsignal.cloud"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rq-cta-btn rq-cta-primary"
+              >
+                Discover GhostSignal
+              </a>
+            </div>
           </div>
         </div>
       </div>

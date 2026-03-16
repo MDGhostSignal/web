@@ -57,6 +57,10 @@ export function ScaleQuestion({
         />
         <div className="rq-scale-value">{noPreference ? "NP" : value}</div>
       </div>
+      <div className="rq-scale-labels">
+        <span className="rq-scale-label-min">{min} = Lowest</span>
+        <span className="rq-scale-label-max">{max} = Highest</span>
+      </div>
       <label className="rq-no-preference">
         <input
           type="checkbox"

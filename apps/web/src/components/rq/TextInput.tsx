@@ -8,6 +8,7 @@ type TextInputProps = {
   type?: "text" | "email" | "url";
   value: string;
   onChange: (value: string) => void;
+  helpText?: string;
 };
 
 export function TextInput({
@@ -18,6 +19,7 @@ export function TextInput({
   type = "text",
   value,
   onChange,
+  helpText,
 }: TextInputProps) {
   return (
     <div className="rq-question">
@@ -33,6 +35,7 @@ export function TextInput({
         placeholder={placeholder}
         className="rq-input"
       />
+      {helpText && <p className="rq-help-text">{helpText}</p>}
     </div>
   );
 }

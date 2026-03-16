@@ -311,6 +311,23 @@
   text-align: center;
 }
 
+.rq-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  padding-right: 61px; /* Align with slider (45px value + 16px gap) */
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.rq-scale-label-min,
+.rq-scale-label-max {
+  font-size: 11px;
+  color: var(--rq-muted);
+  opacity: 0.7;
+  font-family: var(--rq-mono);
+  letter-spacing: 0.3px;
+}
+
 /* No Preference */
 .rq-no-preference {
   display: flex;
@@ -579,6 +596,106 @@
   background: rgba(255, 100, 100, 0.15);
   color: #ff6464;
   border: 1px solid rgba(255, 100, 100, 0.3);
+}
+
+/* CTA Section */
+.rq-cta-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rq-line);
+}
+
+.rq-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--rq-transition);
+  cursor: pointer;
+}
+
+.rq-cta-primary {
+  background: var(--rq-accent);
+  color: #0b0f12;
+}
+
+.rq-cta-primary:hover {
+  background: #FCC055;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(251, 173, 37, 0.4);
+}
+
+.rq-snowdrift-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.rq-snowdrift-snow-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rq-snowdrift-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.rq-cta-snowdrift {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--rq-text);
+  border: 2px solid var(--rq-line);
+}
+
+.rq-cta-snowdrift:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(251, 173, 37, 0.3);
+  transform: translateY(-2px);
+}
+
+.rq-snowdrift-logo-large {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+}
+
+.rq-snowdrift-description {
+  font-size: 16px;
+  color: var(--rq-muted);
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+  max-width: 480px;
+}
+
+.rq-snowdrift-tagline {
+  display: block;
+  color: var(--rq-text);
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 /* Responsive */
