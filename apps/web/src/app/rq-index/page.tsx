@@ -369,6 +369,7 @@ export default function RQIndexPage() {
   const [clarity, setClarity] = useState<SignalClarity | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [statusVisible, setStatusVisible] = useState(true);
   const [expandedSections, setExpandedSections] = useState<{ values: boolean; authenticity: boolean; horizon: boolean }>({
     values: false,
     authenticity: false,
@@ -378,6 +379,16 @@ export default function RQIndexPage() {
   const toggleSection = (section: "values" | "authenticity" | "horizon") => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Fade out status notification after 10 seconds
+  React.useEffect(() => {
+    if (submitStatus && submitStatus.type === "success") {
+      const timer = setTimeout(() => {
+        setStatusVisible(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [submitStatus]);
 
   const currentStepData = STEPS[currentStep];
   const isIntroStep = currentStep === 0;
@@ -609,6 +620,13 @@ export default function RQIndexPage() {
               <h1>Your Resonance Index</h1>
             </div>
 
+            {/* Status notification - fades out after 10 seconds */}
+            {submitStatus && statusVisible && (
+              <div className={`rq-status-modern rq-status-${submitStatus.type} rq-status-fadeout`}>
+                {submitStatus.message}
+              </div>
+            )}
+
             <div className="rq-results-card">
               <div className="rq-code-large">{result.rq}</div>
               <div className="rq-name-large">{result.rqName}</div>
@@ -624,6 +642,33 @@ export default function RQIndexPage() {
               )}
             </div>
 
+            {/* Snowdrift Section - moved above profile sections */}
+            <div className="rq-snowdrift-section">
+              <div className="rq-snowdrift-snow-bg" aria-hidden="true">
+                <SnowAnimation />
+              </div>
+              <div className="rq-snowdrift-content">
+                <img
+                  src="/images/brand/snowdrift-logo-white.png"
+                  alt="Snowdrift"
+                  className="rq-snowdrift-logo-large"
+                />
+                <p className="rq-snowdrift-description">
+                  <span className="rq-snowdrift-tagline">Snowdrift is a GhostSignal transmission.</span>
+                  Thoughts for a community of world makers. A cultural investigation of the future and what it means for you.
+                </p>
+                <a
+                  href="https://snowdriftghostsignal.substack.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rq-cta-btn rq-cta-snowdrift"
+                >
+                  Subscribe to the Snowdrift Newsletter
+                </a>
+              </div>
+            </div>
+
+            {/* Profile Sections - collapsible */}
             <div className="rq-profile-sections">
               <button
                 type="button"
@@ -686,39 +731,8 @@ export default function RQIndexPage() {
               </button>
             </div>
 
-            {submitStatus && (
-              <div className={`rq-status-modern rq-status-${submitStatus.type}`}>
-                {submitStatus.message}
-              </div>
-            )}
-
-            {/* CTA Buttons */}
+            {/* Discover GhostSignal CTA */}
             <div className="rq-cta-section">
-              <div className="rq-snowdrift-section">
-                <div className="rq-snowdrift-snow-bg" aria-hidden="true">
-                  <SnowAnimation />
-                </div>
-                <div className="rq-snowdrift-content">
-                  <img
-                    src="/images/brand/snowdrift-logo-white.png"
-                    alt="Snowdrift"
-                    className="rq-snowdrift-logo-large"
-                  />
-                  <p className="rq-snowdrift-description">
-                    <span className="rq-snowdrift-tagline">Snowdrift is a GhostSignal transmission.</span>
-                    Thoughts for a community of world makers. A cultural investigation of the future and what it means for you.
-                  </p>
-                  <a
-                    href="https://snowdriftghostsignal.substack.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rq-cta-btn rq-cta-snowdrift"
-                  >
-                    Subscribe to the Snowdrift Newsletter
-                  </a>
-                </div>
-              </div>
-
               <a
                 href="https://ghostsignal.cloud"
                 target="_blank"
