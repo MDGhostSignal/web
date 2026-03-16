@@ -68,7 +68,7 @@ type Step = {
 const STEPS: Step[] = [
   {
     id: "intro",
-    title: "Welcome\nto the GhostSignal\nResonance Index",
+    title: "Welcome\nto the GhostSignal\nResonance Quotient",
     description: "Find Your Signal.\nName Your Resonance.",
     fields: [],
   },
