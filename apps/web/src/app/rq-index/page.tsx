@@ -369,6 +369,15 @@ export default function RQIndexPage() {
   const [clarity, setClarity] = useState<SignalClarity | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [expandedSections, setExpandedSections] = useState<{ values: boolean; authenticity: boolean; horizon: boolean }>({
+    values: false,
+    authenticity: false,
+    horizon: false,
+  });
+
+  const toggleSection = (section: "values" | "authenticity" | "horizon") => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const currentStepData = STEPS[currentStep];
   const isIntroStep = currentStep === 0;
@@ -616,18 +625,65 @@ export default function RQIndexPage() {
             </div>
 
             <div className="rq-profile-sections">
-              <div className="rq-profile-section">
-                <h3>Values</h3>
-                <p>{result.profile.values}</p>
-              </div>
-              <div className="rq-profile-section">
-                <h3>Authenticity</h3>
-                <p>{result.profile.authenticity}</p>
-              </div>
-              <div className="rq-profile-section">
-                <h3>Horizon</h3>
-                <p>{result.profile.horizon}</p>
-              </div>
+              <button
+                type="button"
+                className={`rq-profile-section rq-profile-collapsible ${expandedSections.values ? "expanded" : ""}`}
+                onClick={() => toggleSection("values")}
+                aria-expanded={expandedSections.values}
+              >
+                <div className="rq-profile-header">
+                  <h3>Values</h3>
+                  <span className="rq-profile-toggle" aria-hidden="true">
+                    {expandedSections.values ? "−" : "+"}
+                  </span>
+                </div>
+                <p className={expandedSections.values ? "" : "rq-profile-truncated"}>
+                  {result.profile.values}
+                </p>
+                {!expandedSections.values && (
+                  <span className="rq-profile-expand-hint">Tap to expand</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                className={`rq-profile-section rq-profile-collapsible ${expandedSections.authenticity ? "expanded" : ""}`}
+                onClick={() => toggleSection("authenticity")}
+                aria-expanded={expandedSections.authenticity}
+              >
+                <div className="rq-profile-header">
+                  <h3>Authenticity</h3>
+                  <span className="rq-profile-toggle" aria-hidden="true">
+                    {expandedSections.authenticity ? "−" : "+"}
+                  </span>
+                </div>
+                <p className={expandedSections.authenticity ? "" : "rq-profile-truncated"}>
+                  {result.profile.authenticity}
+                </p>
+                {!expandedSections.authenticity && (
+                  <span className="rq-profile-expand-hint">Tap to expand</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                className={`rq-profile-section rq-profile-collapsible ${expandedSections.horizon ? "expanded" : ""}`}
+                onClick={() => toggleSection("horizon")}
+                aria-expanded={expandedSections.horizon}
+              >
+                <div className="rq-profile-header">
+                  <h3>Horizon</h3>
+                  <span className="rq-profile-toggle" aria-hidden="true">
+                    {expandedSections.horizon ? "−" : "+"}
+                  </span>
+                </div>
+                <p className={expandedSections.horizon ? "" : "rq-profile-truncated"}>
+                  {result.profile.horizon}
+                </p>
+                {!expandedSections.horizon && (
+                  <span className="rq-profile-expand-hint">Tap to expand</span>
+                )}
+              </button>
             </div>
 
             {submitStatus && (
