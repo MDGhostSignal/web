@@ -42,3 +42,11 @@ assets/**
 !assets/README.md
 !assets/.gitkeep
 
+# Local tool/agent settings
+.claude/
+.grok/
+
+# Temporary files
+.tmp-*
+nul
+
