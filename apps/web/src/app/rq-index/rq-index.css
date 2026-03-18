@@ -428,6 +428,7 @@ html:has(.rq-modern-page) {
 }
 
 .rq-scale-label-min,
+.rq-scale-label-center,
 .rq-scale-label-max {
   font-size: 11px;
   color: var(--rq-muted);
@@ -436,27 +437,9 @@ html:has(.rq-modern-page) {
   letter-spacing: 0.3px;
 }
 
-/* No Preference */
-.rq-no-preference {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--rq-muted);
-  font-size: 14px;
-  cursor: pointer;
-  user-select: none;
-  transition: var(--rq-transition);
-}
-
-.rq-no-preference:hover {
-  color: var(--rq-text);
-}
-
-.rq-no-preference input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--rq-accent);
+.rq-scale-label-center {
+  opacity: 0.85;
+  color: var(--rq-accent);
 }
 
 /* Choice Questions */

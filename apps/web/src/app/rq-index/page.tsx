@@ -443,13 +443,10 @@ export default function RQIndexPage() {
   }, [currentStep, form, result, submitting]);
 
   const handleSubmit = async () => {
-    // Count "No preference"
+    // Count "No preference" from choice questions only
+    // (Scale questions now use neutral center position instead)
     let npCount = 0;
     const totalCount = 15;
-
-    [form.VO1_NP, form.VO2_NP, form.VO5_NP, form.AE2_NP, form.AE4_NP, form.AE5_NP, form.FH2_NP, form.FH5_NP].forEach(
-      (np) => { if (np) npCount++; }
-    );
 
     [form.VO3, form.VO4, form.AE1, form.AE3, form.FH1, form.FH3, form.FH4].forEach((val) => {
       if (val === "No preference") npCount++;
@@ -555,16 +552,13 @@ export default function RQIndexPage() {
     const fieldId = field.id as keyof FormState;
 
     if (field.type === "scale") {
-      const npKey = `${String(fieldId)}_NP` as keyof FormState;
       return (
         <ScaleQuestion
           key={String(fieldId)}
           id={String(fieldId)}
           label={field.label}
           value={form[fieldId] as number}
-          noPreference={form[npKey] as boolean}
-          onChange={(v) => updateForm(fieldId, v as any)}
-          onNoPreferenceChange={(c) => updateForm(npKey, c as any)}
+          onChange={(v) => updateForm(fieldId, v as FormState[typeof fieldId])}
         />
       );
     }
@@ -578,7 +572,7 @@ export default function RQIndexPage() {
           options={field.options || []}
           allowNoPreference={field.allowNoPreference}
           value={form[fieldId] as string}
-          onChange={(v) => updateForm(fieldId, v as any)}
+          onChange={(v) => updateForm(fieldId, v as FormState[typeof fieldId])}
         />
       );
     }
@@ -591,7 +585,7 @@ export default function RQIndexPage() {
           label={field.label}
           rows={field.rows}
           value={form[fieldId] as string}
-          onChange={(v) => updateForm(fieldId, v as any)}
+          onChange={(v) => updateForm(fieldId, v as FormState[typeof fieldId])}
           helpText={field.helpText}
         />
       );
@@ -606,7 +600,7 @@ export default function RQIndexPage() {
         required={field.required}
         placeholder={field.placeholder}
         value={form[fieldId] as string}
-        onChange={(v) => updateForm(fieldId, v as any)}
+        onChange={(v) => updateForm(fieldId, v as FormState[typeof fieldId])}
         helpText={field.helpText}
       />
     );
