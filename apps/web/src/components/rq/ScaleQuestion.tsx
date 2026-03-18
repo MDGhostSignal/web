@@ -13,7 +13,7 @@ export function ScaleQuestion({
   id,
   label,
   min = 1,
-  max = 10,
+  max = 9,
   value,
   onChange,
 }: ScaleQuestionProps) {
