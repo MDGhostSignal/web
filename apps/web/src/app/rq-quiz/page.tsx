@@ -12,7 +12,7 @@ import DesertFog from "./DesertFog";
 import { SnowAnimation } from "./SnowAnimation";
 import { computeRQ, computeSignalClarity, type RQAnswers, type RQResult, type SignalClarity } from "@/lib/rq/scoring";
 import { BRAND } from "@/lib/rq/constants";
-import "./rq-index.css";
+import "./rq-quiz.css";
 
 type FormState = {
   TYPE: string;
