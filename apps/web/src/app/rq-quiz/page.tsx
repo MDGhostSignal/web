@@ -69,7 +69,7 @@ type Step = {
 const STEPS: Step[] = [
   {
     id: "intro",
-    title: "intro", // Special handling for styled GhostSignal brand
+    title: "", // Rendered directly in JSX with styled GhostSignal brand
     description: "Find Your Signal.\nName Your Resonance.",
     fields: [],
   },
@@ -727,12 +727,9 @@ export default function RQIndexPage() {
                     className="rq-brand-logo"
                   />
                   <h1 className="rq-intro-title">
-                    {currentStepData.title.split('\n').map((line, i) => (
-                      <React.Fragment key={i}>
-                        {line}
-                        {i < currentStepData.title.split('\n').length - 1 && <br />}
-                      </React.Fragment>
-                    ))}
+                    Welcome<br />
+                    to the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span><br />
+                    Resonance Quotient
                   </h1>
                   <p className="rq-intro-description">
                     {currentStepData.description?.split('\n').map((line, i) => (
