@@ -613,6 +613,9 @@ export default function RQIndexPage() {
           <div className="rq-results-modern">
             <div className="rq-results-header">
               <h1>Your GhostSignal Resonance Quotient</h1>
+              <p className="rq-email-reminder">
+                Check your email inbox to read your full analysis.
+              </p>
             </div>
 
             {/* Status notification - fades out after 10 seconds */}
@@ -679,69 +682,6 @@ export default function RQIndexPage() {
                   Subscribe to the Snowdrift Newsletter
                 </a>
               </div>
-            </div>
-
-            {/* Profile Sections - collapsible */}
-            <div className="rq-profile-sections">
-              <button
-                type="button"
-                className={`rq-profile-section rq-profile-collapsible ${expandedSections.values ? "expanded" : ""}`}
-                onClick={() => toggleSection("values")}
-                aria-expanded={expandedSections.values}
-              >
-                <div className="rq-profile-header">
-                  <h3>Values</h3>
-                  <span className="rq-profile-toggle" aria-hidden="true">
-                    {expandedSections.values ? "−" : "+"}
-                  </span>
-                </div>
-                <p className={expandedSections.values ? "" : "rq-profile-truncated"}>
-                  {result.profile.values}
-                </p>
-                {!expandedSections.values && (
-                  <span className="rq-profile-expand-hint">Tap to expand</span>
-                )}
-              </button>
-
-              <button
-                type="button"
-                className={`rq-profile-section rq-profile-collapsible ${expandedSections.authenticity ? "expanded" : ""}`}
-                onClick={() => toggleSection("authenticity")}
-                aria-expanded={expandedSections.authenticity}
-              >
-                <div className="rq-profile-header">
-                  <h3>Authenticity</h3>
-                  <span className="rq-profile-toggle" aria-hidden="true">
-                    {expandedSections.authenticity ? "−" : "+"}
-                  </span>
-                </div>
-                <p className={expandedSections.authenticity ? "" : "rq-profile-truncated"}>
-                  {result.profile.authenticity}
-                </p>
-                {!expandedSections.authenticity && (
-                  <span className="rq-profile-expand-hint">Tap to expand</span>
-                )}
-              </button>
-
-              <button
-                type="button"
-                className={`rq-profile-section rq-profile-collapsible ${expandedSections.horizon ? "expanded" : ""}`}
-                onClick={() => toggleSection("horizon")}
-                aria-expanded={expandedSections.horizon}
-              >
-                <div className="rq-profile-header">
-                  <h3>Horizon</h3>
-                  <span className="rq-profile-toggle" aria-hidden="true">
-                    {expandedSections.horizon ? "−" : "+"}
-                  </span>
-                </div>
-                <p className={expandedSections.horizon ? "" : "rq-profile-truncated"}>
-                  {result.profile.horizon}
-                </p>
-                {!expandedSections.horizon && (
-                  <span className="rq-profile-expand-hint">Tap to expand</span>
-                )}
-              </button>
             </div>
 
             {/* Discover GhostSignal CTA */}

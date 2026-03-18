@@ -644,6 +644,12 @@ html:has(.rq-modern-page) {
   font-style: italic;
 }
 
+.rq-email-reminder {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--rq-muted);
+}
+
 /* Founder CTA Section */
 .rq-founder-cta {
   text-align: center;
