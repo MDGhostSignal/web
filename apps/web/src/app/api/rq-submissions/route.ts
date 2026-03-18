@@ -258,7 +258,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       mike@ghostsignal.cloud
                     </a>
                     <div style="margin-top: 16px;">
-                      <img src="https://web-nine-fawn-27.vercel.app/images/brand/GS-EmailSignatures-mikew.gif" alt="Mike" width="200" style="display: block; margin: 0 auto; border-radius: 8px;" />
+                      <img src="https://web-nine-fawn-27.vercel.app/images/brand/GS-EmailSignatures-mikew.gif" alt="Mike" width="320" style="display: block; margin: 0 auto; border-radius: 8px;" />
                     </div>
                   </td>
                 </tr>
