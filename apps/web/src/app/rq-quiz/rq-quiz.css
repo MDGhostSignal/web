@@ -7,6 +7,11 @@ html:has(.rq-modern-page) {
   overflow-y: scroll;
 }
 
+/* Dark background for results page (fog canvas fallback) */
+html:has(.rq-results-page) {
+  background: #0a0b0d;
+}
+
 :root {
   --rq-accent: #FBAD25;
   --rq-bg: #0b0f12;
@@ -97,8 +102,9 @@ html:has(.rq-modern-page) {
 }
 
 /* Results page with desert fog background */
-.rq-results-page {
+.rq-modern-page.rq-results-page {
   position: relative;
+  background: transparent;
 }
 
 .rq-desert-fog-bg {
