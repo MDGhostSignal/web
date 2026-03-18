@@ -116,7 +116,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
           <!-- Header -->
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
-              <img src="https://ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
+              <img src="https://web-nine-fawn-27.vercel.app/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
               <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">
                 Your GhostSignal Resonance Quotient
               </h1>
