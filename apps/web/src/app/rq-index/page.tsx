@@ -792,7 +792,7 @@ export default function RQIndexPage() {
                         </p>
                         <div className="rq-intro-links">
                           <a
-                            href="#"
+                            href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="rq-intro-link"
