@@ -36,10 +36,11 @@ html:has(.rq-modern-page) {
 .morse-sequence {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 3px;
+  flex-wrap: nowrap;
   justify-content: center;
-  max-width: 800px;
+  max-width: 100%;
+  padding: 0 16px;
 }
 
 .morse-symbol {
@@ -55,23 +56,27 @@ html:has(.rq-modern-page) {
 }
 
 .morse-dot {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .morse-dash {
-  width: 18px;
-  height: 6px;
-  border-radius: 3px;
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .morse-letter-separator {
-  width: 4px;
+  width: 3px;
+  flex-shrink: 0;
 }
 
 .morse-word-separator {
-  width: 12px;
+  width: 8px;
+  flex-shrink: 0;
 }
 
 .morse-text {
@@ -639,6 +644,43 @@ html:has(.rq-modern-page) {
   font-style: italic;
 }
 
+/* Founder CTA Section */
+.rq-founder-cta {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 32px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--rq-line);
+  border-radius: 16px;
+}
+
+.rq-founder-text {
+  font-size: 18px;
+  color: var(--rq-text);
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.rq-founder-card {
+  display: inline-block;
+  transition: var(--rq-transition);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rq-founder-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(251, 173, 37, 0.2);
+}
+
+.rq-founder-image {
+  display: block;
+  max-width: 100%;
+  width: 400px;
+  height: auto;
+  border-radius: 12px;
+}
+
 /* Profile Sections */
 .rq-profile-sections {
   display: flex;
@@ -872,21 +914,29 @@ html:has(.rq-modern-page) {
   }
 
   .morse-progress {
-    padding: 16px;
+    padding: 12px 8px;
   }
 
   .morse-sequence {
-    gap: 3px;
+    gap: 2px;
   }
 
   .morse-dot {
-    width: 5px;
-    height: 5px;
+    width: 3px;
+    height: 3px;
   }
 
   .morse-dash {
-    width: 15px;
-    height: 5px;
+    width: 8px;
+    height: 3px;
+  }
+
+  .morse-letter-separator {
+    width: 2px;
+  }
+
+  .morse-word-separator {
+    width: 5px;
   }
 
   .rq-modern-container {

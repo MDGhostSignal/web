@@ -612,7 +612,7 @@ export default function RQIndexPage() {
         <div className="rq-modern-container">
           <div className="rq-results-modern">
             <div className="rq-results-header">
-              <h1>Your Resonance Index</h1>
+              <h1>Your GhostSignal Resonance Quotient</h1>
             </div>
 
             {/* Status notification - fades out after 10 seconds */}
@@ -635,6 +635,21 @@ export default function RQIndexPage() {
                   <p className="rq-clarity-note">{clarity.note}</p>
                 </div>
               )}
+            </div>
+
+            {/* Schedule Call with Mike Section */}
+            <div className="rq-founder-cta">
+              <p className="rq-founder-text">
+                Find out what your RQ can do for you.<br />
+                Schedule a call with one of our founders, Mike.
+              </p>
+              <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-card">
+                <img
+                  src="/images/brand/GS-EmailSignatures-mikeb.gif"
+                  alt="Mike Sense - Co-Founder, Vision & Partnerships"
+                  className="rq-founder-image"
+                />
+              </a>
             </div>
 
             {/* Snowdrift Section - moved above profile sections */}
