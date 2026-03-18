@@ -1,0 +1,358 @@
+/* RQ Dashboard Styles */
+
+.rq-dash-page {
+  min-height: 100vh;
+  background: #0b0f12;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 40px 24px;
+}
+
+.rq-dash-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.rq-dash-header {
+  margin-bottom: 32px;
+}
+
+.rq-dash-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.rq-dash-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.rq-dash-count {
+  font-size: 14px;
+  color: #FBAD25;
+  font-weight: 500;
+  padding: 6px 14px;
+  background: rgba(251, 173, 37, 0.1);
+  border-radius: 20px;
+}
+
+/* Search */
+.rq-dash-search {
+  width: 100%;
+}
+
+.rq-dash-search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 14px 20px;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.rq-dash-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rq-dash-search-input:focus {
+  border-color: #FBAD25;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Loading & Error States */
+.rq-dash-loading,
+.rq-dash-error,
+.rq-dash-empty {
+  text-align: center;
+  padding: 80px 24px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.rq-dash-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(251, 173, 37, 0.2);
+  border-top-color: #FBAD25;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rq-dash-error h2 {
+  color: #ff6b6b;
+  margin-bottom: 8px;
+}
+
+/* Table */
+.rq-dash-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rq-dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.rq-dash-table thead {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rq-dash-table th {
+  padding: 16px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.rq-dash-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.rq-dash-table tbody tr:hover {
+  background: rgba(251, 173, 37, 0.05);
+}
+
+.rq-dash-table tbody tr.expanded {
+  background: rgba(251, 173, 37, 0.08);
+}
+
+.rq-dash-table td {
+  padding: 14px;
+  vertical-align: middle;
+}
+
+/* Cell Styles */
+.rq-dash-date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.rq-dash-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.rq-dash-email a {
+  color: #FBAD25;
+  text-decoration: none;
+}
+
+.rq-dash-email a:hover {
+  text-decoration: underline;
+}
+
+.rq-dash-org {
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rq-dash-code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  color: #FBAD25;
+}
+
+/* Type Badge */
+.rq-dash-type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rq-dash-type-badge.creator {
+  background: rgba(100, 200, 255, 0.15);
+  color: #64c8ff;
+}
+
+.rq-dash-type-badge.brand {
+  background: rgba(255, 150, 100, 0.15);
+  color: #ff9664;
+}
+
+/* Clarity Badge */
+.rq-dash-clarity-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-radius: 4px;
+}
+
+.rq-dash-clarity-badge.high {
+  background: rgba(50, 255, 150, 0.15);
+  color: #50ff96;
+}
+
+.rq-dash-clarity-badge.medium {
+  background: rgba(255, 200, 100, 0.15);
+  color: #ffc864;
+}
+
+.rq-dash-clarity-badge.low {
+  background: rgba(255, 150, 150, 0.15);
+  color: #ff9696;
+}
+
+/* Expand Button */
+.rq-dash-expand {
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.4);
+  width: 30px;
+  text-align: center;
+}
+
+/* Details Row */
+.rq-dash-details-row {
+  background: rgba(0, 0, 0, 0.3) !important;
+  cursor: default !important;
+}
+
+.rq-dash-details-row:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.rq-dash-details {
+  padding: 24px;
+}
+
+.rq-dash-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.rq-dash-detail-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #FBAD25;
+  margin: 0 0 12px;
+}
+
+.rq-dash-detail-section p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.rq-dash-detail-section a {
+  color: #FBAD25;
+  text-decoration: none;
+}
+
+.rq-dash-detail-section a:hover {
+  text-decoration: underline;
+}
+
+/* Profile Section */
+.rq-dash-profile {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 24px;
+}
+
+.rq-dash-profile h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #FBAD25;
+  margin: 0 0 16px;
+}
+
+.rq-dash-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.rq-dash-profile-item {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid #FBAD25;
+  padding: 16px;
+  border-radius: 0 8px 8px 0;
+}
+
+.rq-dash-profile-item h5 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.rq-dash-profile-item p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rq-dash-page {
+    padding: 24px 16px;
+  }
+
+  .rq-dash-header h1 {
+    font-size: 22px;
+  }
+
+  .rq-dash-table {
+    font-size: 13px;
+  }
+
+  .rq-dash-table th,
+  .rq-dash-table td {
+    padding: 12px 10px;
+  }
+
+  .rq-dash-details {
+    padding: 16px;
+  }
+
+  .rq-dash-details-grid,
+  .rq-dash-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
