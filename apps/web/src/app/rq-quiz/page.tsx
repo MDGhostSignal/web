@@ -153,8 +153,8 @@ const STEPS: Step[] = [
         label: "When you describe your mission, it is usually…",
         required: true,
         options: [
-          'A clearly stated "why" we return to often (Formative)',
-          "Mostly expressed through tone, behavior, and outcomes (Implicit)",
+          'A clearly stated "why" we return to often',
+          "Mostly expressed through tone, behavior, and outcomes",
         ],
         allowNoPreference: true,
       },
