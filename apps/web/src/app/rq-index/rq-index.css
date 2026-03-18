@@ -580,9 +580,9 @@ html:has(.rq-modern-page) {
   background: linear-gradient(135deg, rgba(251, 173, 37, 0.1), rgba(251, 173, 37, 0.05));
   border: 2px solid var(--rq-line);
   border-radius: 20px;
-  padding: 48px 32px;
+  padding: 32px 24px;
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
 .rq-code-large {
@@ -598,11 +598,11 @@ html:has(.rq-modern-page) {
   font-family: var(--rq-mono);
   font-size: clamp(18px, 3vw, 24px);
   color: var(--rq-muted);
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .rq-clarity {
-  padding-top: 32px;
+  padding-top: 24px;
   border-top: 1px solid var(--rq-line);
 }
 
@@ -650,21 +650,23 @@ html:has(.rq-modern-page) {
   color: var(--rq-muted);
 }
 
-/* Founder CTA Section */
-.rq-founder-cta {
+/* Card Divider */
+.rq-card-divider {
+  height: 1px;
+  background: var(--rq-line);
+  margin: 32px 0;
+}
+
+/* Founder Inline Section (inside results card) */
+.rq-founder-inline {
   text-align: center;
-  margin-bottom: 48px;
-  padding: 32px 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--rq-line);
-  border-radius: 16px;
 }
 
 .rq-founder-text {
-  font-size: 18px;
+  font-size: 16px;
   color: var(--rq-text);
   line-height: 1.6;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
 }
 
 .rq-founder-email {
@@ -673,7 +675,7 @@ html:has(.rq-modern-page) {
   font-size: 14px;
   color: var(--rq-accent);
   text-decoration: none;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   transition: var(--rq-transition);
 }
 
@@ -685,7 +687,7 @@ html:has(.rq-modern-page) {
 .rq-founder-card {
   display: inline-block;
   transition: var(--rq-transition);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -697,9 +699,9 @@ html:has(.rq-modern-page) {
 .rq-founder-image {
   display: block;
   max-width: 100%;
-  width: 400px;
+  width: 320px;
   height: auto;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 /* Profile Sections */

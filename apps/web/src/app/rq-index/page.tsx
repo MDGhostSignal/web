@@ -638,24 +638,27 @@ export default function RQIndexPage() {
                   <p className="rq-clarity-note">{clarity.note}</p>
                 </div>
               )}
-            </div>
 
-            {/* Schedule Call with Mike Section */}
-            <div className="rq-founder-cta">
-              <p className="rq-founder-text">
-                Find out what your RQ can do for you.<br />
-                Schedule a call with one of our founders, Mike.
-              </p>
-              <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-email">
-                mike@ghostsignal.cloud
-              </a>
-              <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-card">
-                <img
-                  src="/images/brand/GS-EmailSignatures-mikeb.gif"
-                  alt="Mike Sense - Co-Founder, Vision & Partnerships"
-                  className="rq-founder-image"
-                />
-              </a>
+              {/* Divider */}
+              <div className="rq-card-divider" />
+
+              {/* Reach out to Mike */}
+              <div className="rq-founder-inline">
+                <p className="rq-founder-text">
+                  Find out what your RQ can do for you.<br />
+                  Schedule a call with one of our founders, Mike.
+                </p>
+                <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-email">
+                  mike@ghostsignal.cloud
+                </a>
+                <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-card">
+                  <img
+                    src="/images/brand/GS-EmailSignatures-mikeb.gif"
+                    alt="Mike Sense - Co-Founder, Vision & Partnerships"
+                    className="rq-founder-image"
+                  />
+                </a>
+              </div>
             </div>
 
             {/* Snowdrift Section - moved above profile sections */}
