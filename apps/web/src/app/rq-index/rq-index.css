@@ -566,12 +566,12 @@ html:has(.rq-modern-page) {
 
 .rq-results-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
 .rq-results-header h1 {
-  font-size: clamp(28px, 5vw, 40px);
-  font-weight: 700;
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 600;
   margin: 0;
   color: var(--rq-text);
 }
@@ -659,6 +659,21 @@ html:has(.rq-modern-page) {
   color: var(--rq-text);
   line-height: 1.6;
   margin: 0 0 24px;
+}
+
+.rq-founder-email {
+  display: block;
+  font-family: var(--rq-mono);
+  font-size: 14px;
+  color: var(--rq-accent);
+  text-decoration: none;
+  margin-bottom: 16px;
+  transition: var(--rq-transition);
+}
+
+.rq-founder-email:hover {
+  color: #FCC055;
+  text-decoration: underline;
 }
 
 .rq-founder-card {

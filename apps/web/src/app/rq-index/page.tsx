@@ -643,6 +643,9 @@ export default function RQIndexPage() {
                 Find out what your RQ can do for you.<br />
                 Schedule a call with one of our founders, Mike.
               </p>
+              <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-email">
+                mike@ghostsignal.cloud
+              </a>
               <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-card">
                 <img
                   src="/images/brand/GS-EmailSignatures-mikeb.gif"
