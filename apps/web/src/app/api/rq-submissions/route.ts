@@ -214,7 +214,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                   <td style="padding: 24px;">
                     <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #1a1a1a;">What is the Resonance Quotient?</h3>
                     <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: #555555;">
-                      The Resonance Quotient is a framework for understanding how you signal values, build trust, and approach partnerships—helping match creators and brands who share aligned visions for world-making.
+                      The <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> Resonance Quotient is a framework for understanding how you signal values, build trust, and approach partnerships—helping match creators and brands who share aligned visions for world-making.
                     </p>
                     <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: #555555;">
                       Nobel Prize-winning economist Daron Acemoglu's research demonstrates that "high-trust circles"—groups bound by shared values—are self-reinforcing. This deeper trust directly translates to greater revenue, efficiency, and long-term sustainability.

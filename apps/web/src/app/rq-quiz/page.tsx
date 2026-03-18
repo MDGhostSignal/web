@@ -742,7 +742,7 @@ export default function RQIndexPage() {
 
                   {/* Brief Summary */}
                   <p className="rq-intro-summary">
-                    The Resonance Quotient is a framework for understanding how you signal values,
+                    The <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> Resonance Quotient is a framework for understanding how you signal values,
                     build trust, and approach partnerships—helping match creators and brands
                     who share aligned visions for world-making.
                   </p>
