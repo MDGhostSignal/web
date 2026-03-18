@@ -800,12 +800,12 @@ export default function RQIndexPage() {
                             Read the GhostSignal White Paper →
                           </a>
                           <a
-                            href="#"
+                            href="https://economics.mit.edu/sites/default/files/2023-04/Culture%2C%20Institutions%20and%20Social%20Equilibria%20-%20A%20Framework.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="rq-intro-link"
                           >
-                            Acemoglu on High-Trust Equilibria →
+                            Acemoglu on High-Trust Equilibria at MIT →
                           </a>
                         </div>
                       </div>
