@@ -96,6 +96,30 @@ html:has(.rq-modern-page) {
   font-family: var(--rq-font);
 }
 
+/* Results page with desert fog background */
+.rq-results-page {
+  position: relative;
+}
+
+.rq-desert-fog-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.rq-desert-fog-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.rq-results-page .rq-modern-container {
+  position: relative;
+  z-index: 1;
+}
+
 .rq-modern-container {
   max-width: 720px;
   margin: 0 auto;

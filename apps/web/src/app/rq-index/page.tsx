@@ -8,6 +8,7 @@ import { ChoiceQuestion } from "@/components/rq/ChoiceQuestion";
 import { TextInput } from "@/components/rq/TextInput";
 import { TextArea } from "@/components/rq/TextArea";
 import SimpleFog from "./SimpleFog";
+import DesertFog from "./DesertFog";
 import { SnowAnimation } from "./SnowAnimation";
 import { computeRQ, computeSignalClarity, type RQAnswers, type RQResult, type SignalClarity } from "@/lib/rq/scoring";
 import { BRAND } from "@/lib/rq/constants";
@@ -608,7 +609,10 @@ export default function RQIndexPage() {
 
   if (isResultsStep) {
     return (
-      <div className="rq-modern-page">
+      <div className="rq-modern-page rq-results-page">
+        <div className="rq-desert-fog-bg" aria-hidden="true">
+          <DesertFog />
+        </div>
         <div className="rq-modern-container">
           <div className="rq-results-modern">
             <div className="rq-results-header">
