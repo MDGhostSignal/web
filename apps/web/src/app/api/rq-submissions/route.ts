@@ -87,16 +87,16 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
 
   const fullName = `${basics.first ?? ""} ${basics.last ?? ""}`.trim() || "there";
 
-  // Determine clarity badge color
-  let clarityBgColor = "rgba(255, 200, 100, 0.2)";
-  let clarityTextColor = "#ffc864";
+  // Determine clarity badge color for light background
+  let clarityBgColor = "rgba(200, 150, 50, 0.15)";
+  let clarityTextColor = "#b8860b";
   const clarityLabel = clarity.label?.toLowerCase() ?? "";
   if (clarityLabel === "high") {
-    clarityBgColor = "rgba(50, 255, 150, 0.2)";
-    clarityTextColor = "#50ff96";
+    clarityBgColor = "rgba(34, 139, 34, 0.12)";
+    clarityTextColor = "#228b22";
   } else if (clarityLabel === "low") {
-    clarityBgColor = "rgba(255, 150, 150, 0.2)";
-    clarityTextColor = "#ff9696";
+    clarityBgColor = "rgba(178, 34, 34, 0.12)";
+    clarityTextColor = "#b22222";
   }
 
   const html = `
@@ -105,45 +105,45 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your GhostSignal Resonance Index</title>
+  <title>Your GhostSignal Resonance Quotient</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0b0f12; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0b0f12;">
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
 
           <!-- Header -->
           <tr>
-            <td align="center" style="padding-bottom: 32px;">
-              <img src="https://ghostsignal.cloud/images/brand/brandmark-vert-white.svg" alt="GhostSignal" width="60" style="display: block; margin: 0 auto 16px;" />
-              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #FFFFFF; line-height: 1.3;">
-                Your Resonance Index
+            <td align="center" style="padding: 40px 32px 24px;">
+              <img src="https://ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
+              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">
+                Your GhostSignal Resonance Quotient
               </h1>
-              <p style="margin: 12px 0 0; font-size: 16px; color: #BCBCBC;">
-                Hello ${escapeHtml(fullName)}, here's your RQ summary.
+              <p style="margin: 12px 0 0; font-size: 15px; color: #666666;">
+                Hello ${escapeHtml(fullName)}, here's your complete RQ analysis.
               </p>
             </td>
           </tr>
 
           <!-- RQ Card -->
           <tr>
-            <td style="padding: 0 0 32px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(251, 173, 37, 0.15), rgba(251, 173, 37, 0.05)); border: 2px solid rgba(251, 173, 37, 0.18); border-radius: 16px;">
+            <td style="padding: 0 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(251, 173, 37, 0.12), rgba(251, 173, 37, 0.04)); border: 2px solid rgba(251, 173, 37, 0.25); border-radius: 12px;">
                 <tr>
-                  <td align="center" style="padding: 40px 24px;">
-                    <div style="font-family: 'Inter', ui-monospace, monospace; font-size: 32px; font-weight: 700; color: #FBAD25; letter-spacing: 1px; margin-bottom: 8px;">
+                  <td align="center" style="padding: 32px 24px;">
+                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 28px; font-weight: 700; color: #c4880d; letter-spacing: 1px; margin-bottom: 6px;">
                       ${escapeHtml(result.rq ?? "—")}
                     </div>
-                    <div style="font-family: 'Inter', ui-monospace, monospace; font-size: 18px; color: #BCBCBC; margin-bottom: 24px;">
+                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 16px; color: #666666; margin-bottom: 20px;">
                       ${escapeHtml(result.rqName ?? "—")}
                     </div>
 
                     <!-- Clarity Badge -->
                     <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                       <tr>
-                        <td style="padding-top: 24px; border-top: 1px solid rgba(251, 173, 37, 0.18);">
-                          <span style="font-size: 13px; color: #BCBCBC; margin-right: 8px;">Signal Clarity:</span>
+                        <td style="padding-top: 20px; border-top: 1px solid rgba(251, 173, 37, 0.2);">
+                          <span style="font-size: 13px; color: #666666; margin-right: 8px;">Signal Clarity:</span>
                           <span style="display: inline-block; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: ${clarityBgColor}; color: ${clarityTextColor};">
                             ${escapeHtml(clarity.label ?? "—")}
                           </span>
@@ -152,7 +152,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       ${clarity.note ? `
                       <tr>
                         <td style="padding-top: 10px;">
-                          <p style="margin: 0; font-size: 13px; color: #BCBCBC; font-style: italic; text-align: center;">
+                          <p style="margin: 0; font-size: 13px; color: #888888; font-style: italic; text-align: center;">
                             ${escapeHtml(clarity.note)}
                           </p>
                         </td>
@@ -167,13 +167,13 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
 
           <!-- Profile Sections -->
           <tr>
-            <td style="padding-bottom: 32px;">
+            <td style="padding: 0 32px 32px;">
               <!-- Values -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
                 <tr>
-                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px;">
-                    <h3 style="margin: 0 0 10px; font-size: 14px; font-weight: 600; color: #FBAD25; text-transform: uppercase; letter-spacing: 0.5px;">Values</h3>
-                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #FFFFFF;">
+                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
+                    <h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px;">Values</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${escapeHtml(profile.values ?? "—")}
                     </p>
                   </td>
@@ -183,9 +183,9 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
               <!-- Authenticity -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
                 <tr>
-                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px;">
-                    <h3 style="margin: 0 0 10px; font-size: 14px; font-weight: 600; color: #FBAD25; text-transform: uppercase; letter-spacing: 0.5px;">Authenticity</h3>
-                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #FFFFFF;">
+                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
+                    <h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px;">Authenticity</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${escapeHtml(profile.authenticity ?? "—")}
                     </p>
                   </td>
@@ -195,9 +195,9 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
               <!-- Horizon -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px;">
-                    <h3 style="margin: 0 0 10px; font-size: 14px; font-weight: 600; color: #FBAD25; text-transform: uppercase; letter-spacing: 0.5px;">Horizon</h3>
-                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #FFFFFF;">
+                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
+                    <h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px;">Horizon</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${escapeHtml(profile.horizon ?? "—")}
                     </p>
                   </td>
@@ -206,39 +206,85 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
             </td>
           </tr>
 
+          <!-- About the RQ Section -->
+          <tr>
+            <td style="padding: 0 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f8f8f8; border-radius: 12px; border: 1px solid #e8e8e8;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #1a1a1a;">What is the Resonance Quotient?</h3>
+                    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: #555555;">
+                      The Resonance Quotient is a framework for understanding how you signal values, build trust, and approach partnerships—helping match creators and brands who share aligned visions for world-making.
+                    </p>
+                    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: #555555;">
+                      Nobel Prize-winning economist Daron Acemoglu's research demonstrates that "high-trust circles"—groups bound by shared values—are self-reinforcing. This deeper trust directly translates to greater revenue, efficiency, and long-term sustainability.
+                    </p>
+                    <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.7; color: #555555;">
+                      When partnerships are built on genuine alignment rather than transactional reach, it creates a deeply human bond—one where every interaction compounds into community that lasts.
+                    </p>
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding-right: 24px;">
+                          <a href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link" target="_blank" style="font-size: 13px; color: #c4880d; text-decoration: none; font-weight: 500;">
+                            Read the GhostSignal White Paper →
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 8px;">
+                          <a href="https://economics.mit.edu/sites/default/files/2023-04/Culture%2C%20Institutions%20and%20Social%20Equilibria%20-%20A%20Framework.pdf" target="_blank" style="font-size: 13px; color: #c4880d; text-decoration: none; font-weight: 500;">
+                            Acemoglu on High-Trust Equilibria at MIT →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Connect with Mike -->
+          <tr>
+            <td style="padding: 0 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top: 1px solid #e8e8e8; padding-top: 24px;">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0 0 12px; font-size: 15px; color: #333333; line-height: 1.6;">
+                      Find out what your RQ can do for you.<br />
+                      Schedule a call with one of our founders, Mike.
+                    </p>
+                    <a href="mailto:mike@ghostsignal.cloud" style="font-size: 14px; color: #c4880d; text-decoration: none; font-weight: 500;">
+                      mike@ghostsignal.cloud
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
           <!-- CTA Buttons -->
           <tr>
-            <td style="padding: 32px 0; border-top: 1px solid rgba(251, 173, 37, 0.18);">
+            <td style="padding: 24px 32px; background: #fafafa; border-top: 1px solid #e8e8e8;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <!-- Snowdrift Logo -->
+                <!-- Snowdrift Section -->
                 <tr>
                   <td align="center" style="padding-bottom: 20px;">
-                    <img src="https://ghostsignal.cloud/images/brand/snowdrift-logo-white.png" alt="Snowdrift" width="100" style="display: block;" />
-                  </td>
-                </tr>
-                <!-- Snowdrift Description -->
-                <tr>
-                  <td align="center" style="padding-bottom: 20px;">
-                    <p style="margin: 0 0 8px; font-size: 15px; color: #FFFFFF; font-weight: 500; line-height: 1.6;">
+                    <p style="margin: 0 0 4px; font-size: 14px; color: #333333; font-weight: 600;">
                       Snowdrift is a GhostSignal transmission.
                     </p>
-                    <p style="margin: 0; font-size: 15px; color: #BCBCBC; line-height: 1.6; max-width: 420px;">
-                      Thoughts for a community of world makers. A cultural investigation of the future and what it means for you.
+                    <p style="margin: 0 0 16px; font-size: 13px; color: #666666; line-height: 1.6;">
+                      Thoughts for a community of world makers.
                     </p>
-                  </td>
-                </tr>
-                <!-- Snowdrift Button -->
-                <tr>
-                  <td align="center" style="padding-bottom: 20px;">
-                    <a href="https://snowdriftghostsignal.substack.com/" target="_blank" style="display: inline-block; padding: 14px 28px; background: rgba(255, 255, 255, 0.08); color: #FFFFFF; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 10px; border: 2px solid rgba(251, 173, 37, 0.18);">
-                      Subscribe to the Snowdrift Newsletter
+                    <a href="https://snowdriftghostsignal.substack.com/" target="_blank" style="display: inline-block; padding: 12px 24px; background: #ffffff; color: #333333; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px; border: 1px solid #dddddd;">
+                      Subscribe to Snowdrift Newsletter
                     </a>
                   </td>
                 </tr>
                 <!-- Discover GhostSignal Button -->
                 <tr>
-                  <td align="center">
-                    <a href="https://ghostsignal.cloud" target="_blank" style="display: inline-block; padding: 16px 32px; background: #FBAD25; color: #0b0f12; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 10px;">
+                  <td align="center" style="padding-top: 16px;">
+                    <a href="https://ghostsignal.cloud" target="_blank" style="display: inline-block; padding: 14px 28px; background: #FBAD25; color: #1a1a1a; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
                       Discover GhostSignal
                     </a>
                   </td>
@@ -249,11 +295,11 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding: 32px 0; border-top: 1px solid rgba(251, 173, 37, 0.18);">
-              <p style="margin: 0 0 8px; font-size: 13px; color: #BCBCBC;">
+            <td align="center" style="padding: 24px 32px; border-top: 1px solid #e8e8e8;">
+              <p style="margin: 0 0 8px; font-size: 12px; color: #888888;">
                 Your RQ is a tuning tool — clarity, not a box.
               </p>
-              <p style="margin: 0; font-size: 12px; color: #666666;">
+              <p style="margin: 0; font-size: 11px; color: #aaaaaa;">
                 © ${new Date().getFullYear()} GhostSignal · Values-based partnerships
               </p>
             </td>
