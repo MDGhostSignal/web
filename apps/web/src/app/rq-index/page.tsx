@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import * as React from "react";
 import { MorseProgress } from "@/components/rq/MorseProgress";
 import { ScaleQuestion } from "@/components/rq/ScaleQuestion";
@@ -375,6 +375,7 @@ export default function RQIndexPage() {
     authenticity: false,
     horizon: false,
   });
+  const [introExpanded, setIntroExpanded] = useState(false);
 
   const toggleSection = (section: "values" | "authenticity" | "horizon") => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -782,6 +783,73 @@ export default function RQIndexPage() {
                       </React.Fragment>
                     ))}
                   </p>
+
+                  {/* Brief Summary */}
+                  <p className="rq-intro-summary">
+                    The Resonance Quotient is a framework for understanding how you signal values,
+                    build trust, and approach partnerships—helping match creators and brands
+                    who share aligned visions for world-making.
+                  </p>
+
+                  {/* Expandable Extended Description */}
+                  <div className="rq-intro-extended">
+                    <button
+                      type="button"
+                      className={`rq-intro-collapsible ${introExpanded ? "expanded" : ""}`}
+                      onClick={() => setIntroExpanded(!introExpanded)}
+                      aria-expanded={introExpanded}
+                    >
+                      <div className="rq-intro-collapsible-header">
+                        <span>The Research Behind the GhostSignal RQ</span>
+                        <span className="rq-profile-toggle" aria-hidden="true">
+                          {introExpanded ? "−" : "+"}
+                        </span>
+                      </div>
+                      <p className={introExpanded ? "" : "rq-profile-truncated"}>
+                        The Resonance Quotient draws on decades of research into how shared values
+                        create durable, high-trust relationships.
+                      </p>
+                      {!introExpanded && (
+                        <span className="rq-profile-expand-hint">Tap to expand</span>
+                      )}
+                    </button>
+
+                    {introExpanded && (
+                      <div className="rq-intro-extended-content">
+                        <p>
+                          Economist Daron Acemoglu&apos;s work demonstrates that &ldquo;high-trust circles&rdquo;—groups
+                          bound by shared values—are self-reinforcing: once they exist, they grow and
+                          protect themselves, outperforming low-trust systems by orders of magnitude.
+                        </p>
+                        <p>
+                          In the attention economy, this matters more than ever. When partnerships
+                          are built on genuine alignment rather than transactional reach, every
+                          interaction compounds into community that lasts. The RQ doesn&apos;t measure
+                          &ldquo;better&rdquo; or &ldquo;worse&rdquo;—it maps your unique position across three axes of
+                          partnership resonance, helping you find collaborators who amplify rather
+                          than distort your signal.
+                        </p>
+                        <div className="rq-intro-links">
+                          <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rq-intro-link"
+                          >
+                            Read the GhostSignal White Paper →
+                          </a>
+                          <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rq-intro-link"
+                          >
+                            Acemoglu on High-Trust Equilibria →
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </>
