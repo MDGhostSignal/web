@@ -653,7 +653,7 @@ export default function RQIndexPage() {
                 </a>
                 <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-card">
                   <img
-                    src="/images/brand/GS-EmailSignatures-mikeb.gif"
+                    src="/images/brand/GS-EmailSignatures-mikew.gif"
                     alt="Mike Sense - Co-Founder, Vision & Partnerships"
                     className="rq-founder-image"
                   />
