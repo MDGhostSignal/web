@@ -776,17 +776,19 @@ export default function RQIndexPage() {
                     {introExpanded && (
                       <div className="rq-intro-extended-content">
                         <p>
-                          Economist Daron Acemoglu&apos;s work demonstrates that &ldquo;high-trust circles&rdquo;—groups
-                          bound by shared values—are self-reinforcing: once they exist, they grow and
-                          protect themselves, outperforming low-trust systems by orders of magnitude.
+                          Nobel Prize-winning economist Daron Acemoglu&apos;s research demonstrates that
+                          &ldquo;high-trust circles&rdquo;—groups bound by shared values—are self-reinforcing:
+                          once they exist, they grow and protect themselves, outperforming low-trust
+                          systems by orders of magnitude. This deeper trust directly translates to
+                          greater revenue, efficiency, and long-term sustainability.
                         </p>
                         <p>
                           In the attention economy, this matters more than ever. When partnerships
-                          are built on genuine alignment rather than transactional reach, every
-                          interaction compounds into community that lasts. The RQ doesn&apos;t measure
-                          &ldquo;better&rdquo; or &ldquo;worse&rdquo;—it maps your unique position across three axes of
-                          partnership resonance, helping you find collaborators who amplify rather
-                          than distort your signal.
+                          are built on genuine alignment rather than transactional reach, it creates
+                          a deeply human bond—one where every interaction compounds into community
+                          that lasts. The RQ doesn&apos;t measure &ldquo;better&rdquo; or &ldquo;worse&rdquo;—it maps your
+                          unique position across three axes of partnership resonance, helping you
+                          find collaborators who amplify rather than distort your signal.
                         </p>
                         <div className="rq-intro-links">
                           <a
