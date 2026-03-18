@@ -117,8 +117,8 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
               <img src="https://web-nine-fawn-27.vercel.app/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
-              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">
-                Your GhostSignal Resonance Quotient
+              <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.3;">
+                Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> Resonance Quotient
               </h1>
               <p style="margin: 12px 0 0; font-size: 15px; color: #666666;">
                 Hello ${escapeHtml(fullName)}, here's your complete RQ analysis.
@@ -226,7 +226,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       <tr>
                         <td style="padding-right: 24px;">
                           <a href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link" target="_blank" style="font-size: 13px; color: #c4880d; text-decoration: none; font-weight: 500;">
-                            Read the GhostSignal White Paper →
+                            Read the <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> White Paper →
                           </a>
                         </td>
                       </tr>
@@ -273,8 +273,8 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                 <!-- Snowdrift Section -->
                 <tr>
                   <td align="center" style="padding-bottom: 20px;">
-                    <p style="margin: 0 0 4px; font-size: 14px; color: #333333; font-weight: 600;">
-                      Snowdrift is a GhostSignal transmission.
+                    <p style="margin: 0 0 4px; font-size: 14px; color: #333333; font-weight: 400;">
+                      Snowdrift is a <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> transmission.
                     </p>
                     <p style="margin: 0 0 16px; font-size: 13px; color: #666666; line-height: 1.6;">
                       Thoughts for a community of world makers.
@@ -288,7 +288,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                 <tr>
                   <td align="center" style="padding-top: 16px;">
                     <a href="https://ghostsignal.cloud" target="_blank" style="display: inline-block; padding: 14px 28px; background: #FBAD25; color: #1a1a1a; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
-                      Discover GhostSignal
+                      Discover <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span>
                     </a>
                   </td>
                 </tr>
@@ -303,7 +303,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                 Your RQ is a tuning tool — clarity, not a box.
               </p>
               <p style="margin: 0; font-size: 11px; color: #aaaaaa;">
-                © ${new Date().getFullYear()} GhostSignal · Values-based partnerships
+                © ${new Date().getFullYear()} <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> · Values-based partnerships
               </p>
             </td>
           </tr>
@@ -317,7 +317,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   `.trim();
 
   const text = [
-    "Your GhostSignal Resonance Index",
+    "Your GHOSTSignal Resonance Quotient",
     "",
     `Hello ${fullName}, here's your RQ summary.`,
     "",
@@ -343,18 +343,18 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     "",
     "SNOWDRIFT",
     "",
-    "Snowdrift is a GhostSignal transmission. Thoughts for a community of world makers.",
+    "Snowdrift is a GHOSTSignal transmission. Thoughts for a community of world makers.",
     "A cultural investigation of the future and what it means for you.",
     "",
     "→ Subscribe to the Snowdrift Newsletter: https://snowdriftghostsignal.substack.com/",
     "",
-    "→ Discover GhostSignal: https://ghostsignal.cloud",
+    "→ Discover GHOSTSignal: https://ghostsignal.cloud",
     "",
     "═══════════════════════════════════",
     "",
     "Your RQ is a tuning tool — clarity, not a box.",
     "",
-    `© ${new Date().getFullYear()} GhostSignal · Values-based partnerships`,
+    `© ${new Date().getFullYear()} GHOSTSignal · Values-based partnerships`,
   ].filter(Boolean).join("\n");
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -396,7 +396,7 @@ async function sendNotificationEmail(payload: SubmissionPayload) {
   const fullName = `${basics.first ?? ""} ${basics.last ?? ""}`.trim();
 
   const text = [
-    "New GhostSignal RQ submission",
+    "New GHOSTSignal RQ submission",
     "",
     `Name: ${fullName || "Unknown"}`,
     `Type: ${basics.type ?? "Unknown"}`,
@@ -418,7 +418,7 @@ async function sendNotificationEmail(payload: SubmissionPayload) {
   ].join("\n");
 
   const html = `
-    <h2>New GhostSignal RQ submission</h2>
+    <h2>New <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> RQ submission</h2>
     <p><strong>Name:</strong> ${escapeHtml(fullName || "Unknown")}</p>
     <p><strong>Type:</strong> ${escapeHtml(basics.type ?? "Unknown")}</p>
     <p><strong>Organization:</strong> ${escapeHtml(basics.org ?? "Unknown")}</p>
@@ -452,7 +452,7 @@ async function sendNotificationEmail(payload: SubmissionPayload) {
   } = {
     from: resendFrom,
     to: [EMAIL_TO],
-    subject: `New GhostSignal RQ: ${result.rq ?? "Submission"} - ${fullName || basics.org || "Unknown"}`,
+    subject: `New GHOSTSignal RQ: ${result.rq ?? "Submission"} - ${fullName || basics.org || "Unknown"}`,
     text,
     html,
   };

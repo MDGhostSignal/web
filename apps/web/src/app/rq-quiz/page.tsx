@@ -69,7 +69,7 @@ type Step = {
 const STEPS: Step[] = [
   {
     id: "intro",
-    title: "Welcome\nto the GhostSignal\nResonance Quotient",
+    title: "intro", // Special handling for styled GhostSignal brand
     description: "Find Your Signal.\nName Your Resonance.",
     fields: [],
   },
@@ -616,7 +616,7 @@ export default function RQIndexPage() {
         <div className="rq-modern-container">
           <div className="rq-results-modern">
             <div className="rq-results-header">
-              <h1>Your GhostSignal Resonance Quotient</h1>
+              <h1>Your <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> Resonance Quotient</h1>
               <p className="rq-email-reminder">
                 Check your email inbox to read your full analysis.
               </p>
@@ -677,7 +677,7 @@ export default function RQIndexPage() {
                   className="rq-snowdrift-logo-large"
                 />
                 <p className="rq-snowdrift-description">
-                  <span className="rq-snowdrift-tagline">Snowdrift is a GhostSignal transmission.</span>
+                  <span className="rq-snowdrift-tagline">Snowdrift is a <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> transmission.</span>
                   Thoughts for a community of world makers. A cultural investigation of the future and what it means for you.
                 </p>
                 <a
@@ -699,7 +699,7 @@ export default function RQIndexPage() {
                 rel="noopener noreferrer"
                 className="rq-cta-btn rq-cta-primary"
               >
-                Discover GhostSignal
+                Discover <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span>
               </a>
             </div>
           </div>
@@ -759,7 +759,7 @@ export default function RQIndexPage() {
                       aria-expanded={introExpanded}
                     >
                       <div className="rq-intro-collapsible-header">
-                        <span>The Research Behind the GhostSignal RQ</span>
+                        <span>The Research Behind the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> RQ</span>
                         <span className="rq-profile-toggle" aria-hidden="true">
                           {introExpanded ? "−" : "+"}
                         </span>
@@ -797,7 +797,7 @@ export default function RQIndexPage() {
                             rel="noopener noreferrer"
                             className="rq-intro-link"
                           >
-                            Read the GhostSignal White Paper →
+                            Read the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> White Paper →
                           </a>
                           <a
                             href="https://economics.mit.edu/sites/default/files/2023-04/Culture%2C%20Institutions%20and%20Social%20Equilibria%20-%20A%20Framework.pdf"
@@ -819,7 +819,15 @@ export default function RQIndexPage() {
               {currentStepData.description && (
                 <p className="rq-step-description">{currentStepData.description}</p>
               )}
-              <h2 className="rq-step-title">{currentStepData.title}</h2>
+              {currentStepData.id === "intro" ? (
+                <h2 className="rq-step-title">
+                  Welcome<br />
+                  to the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span><br />
+                  Resonance Quotient
+                </h2>
+              ) : (
+                <h2 className="rq-step-title">{currentStepData.title}</h2>
+              )}
 
               <div className="rq-step-fields">
                 {currentStepData.fields.map(renderField)}

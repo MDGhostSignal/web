@@ -1,6 +1,18 @@
 /* RQ Index V2 - Modern Typeform-inspired UI */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* GhostSignal brand text styling */
+.gs-brand {
+  white-space: nowrap;
+}
+.gs-brand-ghost {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.gs-brand-signal {
+  font-weight: 300;
+}
 
 /* Prevent layout shift from scrollbar appearing/disappearing */
 html:has(.rq-modern-page) {
