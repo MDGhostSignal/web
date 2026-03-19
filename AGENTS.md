@@ -70,14 +70,132 @@ If `assets:audit` reports missing files:
 - Look for the file in the raw vault `assets/` and copy it into `apps/web/public/...`.
 - Update the code to reference only `public/` paths (no hotlinking unless explicitly requested).
 
-## Motion / animation library (already implemented)
+## Design Token System (Mandatory)
 
-This repo includes a **Motto-inspired motion library** (GSAP + ScrollTrigger patterns) that future agents should reuse instead of reinventing animations:
+This repo has a **comprehensive design token system** synced from Figma. Agents MUST use these tokens instead of hard-coding values.
+
+### Token Files
+
+| File | Purpose |
+|------|---------|
+| `apps/web/src/styles/generated-tokens.css` | Auto-generated from Figma (DO NOT EDIT) |
+| `apps/web/src/styles/typography.css` | Composite text styles + utility classes |
+| `apps/web/public/variables/` | Source token JSON files from Figma |
+| `apps/web/scripts/build-tokens.mjs` | Token generation script |
+
+### Available Token Categories
+
+**Colors (semantic):**
+- `--gs-background`, `--gs-foreground`, `--gs-primary`, `--gs-secondary`
+- `--gs-muted`, `--gs-accent`, `--gs-destructive`, `--gs-border`
+- Full light/dark mode support via `.theme-dark` class
+
+**Colors (primitives):**
+- `--gs-tw-{color}-{shade}` (e.g., `--gs-tw-neutral-500`, `--gs-tw-blue-600`)
+- Brand colors: `--gs-tw-brand-red`, `--gs-tw-brand-purple`, etc.
+
+**Typography:**
+- Font sizes: `--gs-font-size-xs` through `--gs-font-size-10xl`
+- Font weights: `--gs-font-weight-thin` through `--gs-font-weight-black`
+- Line heights: `--gs-font-leading-3` through `--gs-font-leading-32`
+- Composite styles: `--gs-text-{size}-size`, `--gs-text-{size}-leading`
+
+**Spacing:**
+- Number scale: `--gs-n-{value}` (e.g., `--gs-n-16`, `--gs-n-64`)
+- Gap tokens: `--gs-gap-gap-{n}`
+- Space/padding/margin tokens available
+
+**Border Radius:**
+- `--gs-radius-none` through `--gs-radius-full`
+
+### Token Usage Pattern
+
+Always use the calc pattern for pixel values:
+```css
+/* Correct */
+padding: calc(var(--gs-n-24) * var(--gs-px));
+font-size: calc(var(--gs-font-size-xl) * var(--gs-px));
+
+/* Also correct - composite typography */
+font-size: var(--gs-text-xl-size);
+line-height: var(--gs-text-xl-leading);
+
+/* WRONG - never hard-code */
+padding: 24px;
+font-size: 20px;
+```
+
+### Typography Utility Classes
+
+The `typography.css` file provides ready-to-use classes:
+```tsx
+<p className="text-xl-regular">Body text</p>
+<h1 className="text-display-lg">Display heading</h1>
+<span className="text-caption">Small caption</span>
+```
+
+### Regenerating Tokens
+
+After updating Figma token JSON files:
+```bash
+cd apps/web && node scripts/build-tokens.mjs
+```
+
+### Design System Reference Page
+
+A visual reference of all tokens is available at `/design-system` in the running app. This page displays:
+- All color swatches (semantic, brand, palettes)
+- Typography scale with live samples
+- Spacing scale visualization
+- Border radius tokens
+
+---
+
+## Motion / Animation Library (Mandatory)
+
+This repo includes a **Motto-inspired motion library** (GSAP + ScrollTrigger patterns). Agents MUST reuse these components instead of creating new animations.
+
+### Location
 
 - **Components + hooks**: `apps/web/src/motion/`
-- **Reference doc / catalog**: `apps/web/docs/MOTTO_MOTION_LIBRARY.md`
+- **Full documentation**: `apps/web/docs/MOTTO_MOTION_LIBRARY.md`
 
-If you need a new motion pattern, add it to `src/motion/` and document it in `apps/web/docs/MOTTO_MOTION_LIBRARY.md`.
+### Available Motion Components
+
+| Component | Purpose | Usage |
+|-----------|---------|-------|
+| `SplitLinesReveal` | Text line-by-line reveal on scroll | Headings, quotes |
+| `ScrollFadeUp` | Fade + slide up on scroll | Cards, paragraphs |
+| `ParallaxY` | Vertical parallax effect | Background layers |
+| `RotateOnScroll` | Rotation on scroll | Icons, decorations |
+| `ScrollGrowDockPin` | Pin + scale + dock to target | Hero media |
+| `ScrollGrowToContainer` | Scale to container width | Media sections |
+| `AccordionHeight` | Collapsible height animation | FAQs, dropdowns |
+| `SmoothScrollLenis` | Smooth scroll wrapper | App root |
+
+### Quick Usage
+
+```tsx
+import { SplitLinesReveal, ScrollFadeUp } from "@/motion";
+
+// Text reveal animation
+<SplitLinesReveal duration={1.9} stagger={0.28}>
+  <h1>Headline text</h1>
+</SplitLinesReveal>
+
+// Fade up animation
+<ScrollFadeUp index={0}>
+  <div>Card content</div>
+</ScrollFadeUp>
+```
+
+### Adding New Motion Patterns
+
+1. Create component in `src/motion/`
+2. Export from `src/motion/index.ts`
+3. Document in `apps/web/docs/MOTTO_MOTION_LIBRARY.md`
+
+---
 
 ## Session Logging (Mandatory)
 

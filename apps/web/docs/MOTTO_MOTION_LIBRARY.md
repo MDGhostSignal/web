@@ -1,3 +1,9 @@
+# GhostSignal Motion Library
+
+> **For Agents**: This is the canonical motion/animation library. Always import from `@/motion` instead of writing custom GSAP code. See `AGENTS.md` for the full design system overview.
+
+---
+
 ## Motto-inspired motion library (mirrors `wearemotto.com`)
 
 This project’s motion primitives are based on the **actual implementation** used on `wearemotto.com` (as observed in their shipped JS bundle `main.js?version=19`).
