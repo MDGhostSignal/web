@@ -1,0 +1,682 @@
+/**
+ * GhostSignal Typography System
+ *
+ * This file defines composite text styles based on Figma's design system.
+ * All styles use primitive tokens from generated-tokens.css.
+ *
+ * Naming Convention: .text-{size}/{weight}
+ * - Sizes: xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 7xl, 8xl, 9xl, 10xl
+ * - Weights: regular, medium, semibold, bold, extrabold
+ *
+ * Usage:
+ *   <p class="text-xl-regular">Body text</p>
+ *   <h1 class="text-7xl-medium">Headline</h1>
+ */
+
+/* =============================================================================
+   TEXT STYLE CUSTOM PROPERTIES
+   These define the complete text style as individual properties that can be
+   applied together or individually.
+   ============================================================================= */
+
+:root {
+  /* -------------------------------------------------------------------------
+     Extra Small (xs) - 12px
+     ------------------------------------------------------------------------- */
+  --gs-text-xs-size: calc(var(--gs-font-size-xs) * var(--gs-px));
+  --gs-text-xs-leading: calc(var(--gs-font-leading-4) * var(--gs-px));
+  --gs-text-xs-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     Small (sm) - 14px
+     ------------------------------------------------------------------------- */
+  --gs-text-sm-size: calc(var(--gs-font-size-sm) * var(--gs-px));
+  --gs-text-sm-leading: calc(var(--gs-font-leading-5) * var(--gs-px));
+  --gs-text-sm-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     Base - 16px
+     ------------------------------------------------------------------------- */
+  --gs-text-base-size: calc(var(--gs-font-size-base) * var(--gs-px));
+  --gs-text-base-leading: calc(var(--gs-font-leading-6) * var(--gs-px));
+  --gs-text-base-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     Large (lg) - 18px
+     From Figma: Text-lg/Bold uses leading/7 (28px)
+     ------------------------------------------------------------------------- */
+  --gs-text-lg-size: calc(var(--gs-font-size-lg) * var(--gs-px));
+  --gs-text-lg-leading: calc(var(--gs-font-leading-7) * var(--gs-px));
+  --gs-text-lg-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     Extra Large (xl) - 20px
+     From Figma: Text-xl/Bold, Text-xl/Regular use leading/7 (28px)
+     ------------------------------------------------------------------------- */
+  --gs-text-xl-size: calc(var(--gs-font-size-xl) * var(--gs-px));
+  --gs-text-xl-leading: calc(var(--gs-font-leading-7) * var(--gs-px));
+  --gs-text-xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     2XL - 24px
+     From Figma: Text-2xl/Regular uses leading/8 (32px)
+     ------------------------------------------------------------------------- */
+  --gs-text-2xl-size: calc(var(--gs-font-size-2xl) * var(--gs-px));
+  --gs-text-2xl-leading: calc(var(--gs-font-leading-8) * var(--gs-px));
+  --gs-text-2xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     3XL - 30px
+     From Figma: Text-3xl/Regular uses leading/9 (36px)
+     ------------------------------------------------------------------------- */
+  --gs-text-3xl-size: calc(var(--gs-font-size-3xl) * var(--gs-px));
+  --gs-text-3xl-leading: calc(var(--gs-font-leading-9) * var(--gs-px));
+  --gs-text-3xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     4XL - 36px
+     ------------------------------------------------------------------------- */
+  --gs-text-4xl-size: calc(var(--gs-font-size-4xl) * var(--gs-px));
+  --gs-text-4xl-leading: calc(var(--gs-font-leading-10) * var(--gs-px));
+  --gs-text-4xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     5XL - 48px
+     From Figma: Text-5xl/Regular uses leading/12 (48px) - 1:1 ratio
+     ------------------------------------------------------------------------- */
+  --gs-text-5xl-size: calc(var(--gs-font-size-5xl) * var(--gs-px));
+  --gs-text-5xl-leading: calc(var(--gs-font-leading-12) * var(--gs-px));
+  --gs-text-5xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     6XL - 60px
+     ------------------------------------------------------------------------- */
+  --gs-text-6xl-size: calc(var(--gs-font-size-6xl) * var(--gs-px));
+  --gs-text-6xl-leading: calc(var(--gs-font-leading-15) * var(--gs-px));
+  --gs-text-6xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     7XL - 72px
+     From Figma: Text-7xl/Medium uses leading/18 (72px) - 1:1 ratio
+     ------------------------------------------------------------------------- */
+  --gs-text-7xl-size: calc(var(--gs-font-size-7xl) * var(--gs-px));
+  --gs-text-7xl-leading: calc(var(--gs-font-leading-18) * var(--gs-px));
+  --gs-text-7xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     8XL - 96px
+     ------------------------------------------------------------------------- */
+  --gs-text-8xl-size: calc(var(--gs-font-size-8xl) * var(--gs-px));
+  --gs-text-8xl-leading: calc(var(--gs-font-leading-24) * var(--gs-px));
+  --gs-text-8xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     9XL - 128px
+     From Figma: Text-9xl/Bold uses leading/32 (128px) - 1:1 ratio
+     ------------------------------------------------------------------------- */
+  --gs-text-9xl-size: calc(var(--gs-font-size-9xl) * var(--gs-px));
+  --gs-text-9xl-leading: calc(var(--gs-font-leading-32) * var(--gs-px));
+  --gs-text-9xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+
+  /* -------------------------------------------------------------------------
+     10XL - 150px/160px (Extended - not in primitive tokens)
+     From Figma: Text-10xl/Bold uses 150px, Text-10xl/Regular uses 160px
+     Both use 100px line-height (tighter for display)
+     ------------------------------------------------------------------------- */
+  --gs-font-size-10xl: 150;
+  --gs-font-size-10xl-alt: 160;
+  --gs-font-leading-100: 100;
+
+  --gs-text-10xl-size: calc(var(--gs-font-size-10xl) * var(--gs-px));
+  --gs-text-10xl-alt-size: calc(var(--gs-font-size-10xl-alt) * var(--gs-px));
+  --gs-text-10xl-leading: calc(var(--gs-font-leading-100) * var(--gs-px));
+  --gs-text-10xl-tracking: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+}
+
+/* =============================================================================
+   TYPOGRAPHY UTILITY CLASSES
+   Complete text style classes that apply font-family, size, weight,
+   line-height, and letter-spacing together.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   Extra Small (xs) - 12px
+   ----------------------------------------------------------------------------- */
+.text-xs-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xs-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-xs-leading);
+  letter-spacing: var(--gs-text-xs-tracking);
+}
+
+.text-xs-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xs-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-xs-leading);
+  letter-spacing: var(--gs-text-xs-tracking);
+}
+
+.text-xs-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xs-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-xs-leading);
+  letter-spacing: var(--gs-text-xs-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   Small (sm) - 14px
+   ----------------------------------------------------------------------------- */
+.text-sm-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-sm-leading);
+  letter-spacing: var(--gs-text-sm-tracking);
+}
+
+.text-sm-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-sm-leading);
+  letter-spacing: var(--gs-text-sm-tracking);
+}
+
+.text-sm-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-sm-leading);
+  letter-spacing: var(--gs-text-sm-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   Base - 16px
+   ----------------------------------------------------------------------------- */
+.text-base-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-base-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-base-leading);
+  letter-spacing: var(--gs-text-base-tracking);
+}
+
+.text-base-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-base-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-base-leading);
+  letter-spacing: var(--gs-text-base-tracking);
+}
+
+.text-base-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-base-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-base-leading);
+  letter-spacing: var(--gs-text-base-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   Large (lg) - 18px
+   Figma: Text-lg/Bold
+   ----------------------------------------------------------------------------- */
+.text-lg-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-lg-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-lg-leading);
+  letter-spacing: var(--gs-text-lg-tracking);
+}
+
+.text-lg-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-lg-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-lg-leading);
+  letter-spacing: var(--gs-text-lg-tracking);
+}
+
+.text-lg-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-lg-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-lg-leading);
+  letter-spacing: var(--gs-text-lg-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   Extra Large (xl) - 20px
+   Figma: Text-xl/Regular, Text-xl/Bold
+   ----------------------------------------------------------------------------- */
+.text-xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-xl-leading);
+  letter-spacing: var(--gs-text-xl-tracking);
+}
+
+.text-xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-xl-leading);
+  letter-spacing: var(--gs-text-xl-tracking);
+}
+
+.text-xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-xl-leading);
+  letter-spacing: var(--gs-text-xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   2XL - 24px
+   Figma: Text-2xl/Regular
+   ----------------------------------------------------------------------------- */
+.text-2xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-2xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-2xl-leading);
+  letter-spacing: var(--gs-text-2xl-tracking);
+}
+
+.text-2xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-2xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-2xl-leading);
+  letter-spacing: var(--gs-text-2xl-tracking);
+}
+
+.text-2xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-2xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-2xl-leading);
+  letter-spacing: var(--gs-text-2xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   3XL - 30px
+   Figma: Text-3xl/Regular
+   ----------------------------------------------------------------------------- */
+.text-3xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-3xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-3xl-leading);
+  letter-spacing: var(--gs-text-3xl-tracking);
+}
+
+.text-3xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-3xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-3xl-leading);
+  letter-spacing: var(--gs-text-3xl-tracking);
+}
+
+.text-3xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-3xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-3xl-leading);
+  letter-spacing: var(--gs-text-3xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   4XL - 36px
+   ----------------------------------------------------------------------------- */
+.text-4xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-4xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-4xl-leading);
+  letter-spacing: var(--gs-text-4xl-tracking);
+}
+
+.text-4xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-4xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-4xl-leading);
+  letter-spacing: var(--gs-text-4xl-tracking);
+}
+
+.text-4xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-4xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-4xl-leading);
+  letter-spacing: var(--gs-text-4xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   5XL - 48px
+   Figma: Text-5xl/Regular
+   ----------------------------------------------------------------------------- */
+.text-5xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-5xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-5xl-leading);
+  letter-spacing: var(--gs-text-5xl-tracking);
+}
+
+.text-5xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-5xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-5xl-leading);
+  letter-spacing: var(--gs-text-5xl-tracking);
+}
+
+.text-5xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-5xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-5xl-leading);
+  letter-spacing: var(--gs-text-5xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   6XL - 60px
+   ----------------------------------------------------------------------------- */
+.text-6xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-6xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-6xl-leading);
+  letter-spacing: var(--gs-text-6xl-tracking);
+}
+
+.text-6xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-6xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-6xl-leading);
+  letter-spacing: var(--gs-text-6xl-tracking);
+}
+
+.text-6xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-6xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-6xl-leading);
+  letter-spacing: var(--gs-text-6xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   7XL - 72px
+   Figma: Text-7xl/Medium
+   ----------------------------------------------------------------------------- */
+.text-7xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-7xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-7xl-leading);
+  letter-spacing: var(--gs-text-7xl-tracking);
+}
+
+.text-7xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-7xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-7xl-leading);
+  letter-spacing: var(--gs-text-7xl-tracking);
+}
+
+.text-7xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-7xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-7xl-leading);
+  letter-spacing: var(--gs-text-7xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   8XL - 96px
+   ----------------------------------------------------------------------------- */
+.text-8xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-8xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-8xl-leading);
+  letter-spacing: var(--gs-text-8xl-tracking);
+}
+
+.text-8xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-8xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-8xl-leading);
+  letter-spacing: var(--gs-text-8xl-tracking);
+}
+
+.text-8xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-8xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-8xl-leading);
+  letter-spacing: var(--gs-text-8xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   9XL - 128px
+   Figma: Text-9xl/Bold
+   ----------------------------------------------------------------------------- */
+.text-9xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-9xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-9xl-leading);
+  letter-spacing: var(--gs-text-9xl-tracking);
+}
+
+.text-9xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-9xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-9xl-leading);
+  letter-spacing: var(--gs-text-9xl-tracking);
+}
+
+.text-9xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-9xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-9xl-leading);
+  letter-spacing: var(--gs-text-9xl-tracking);
+}
+
+/* -----------------------------------------------------------------------------
+   10XL - 150px/160px (Display Headlines)
+   Figma: Text-10xl/Regular (160px), Text-10xl/Bold (150px)
+   Note: These use tighter line-height (100px) for display purposes
+   ----------------------------------------------------------------------------- */
+.text-10xl-regular {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-10xl-alt-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-10xl-leading);
+  letter-spacing: var(--gs-text-10xl-tracking);
+}
+
+.text-10xl-medium {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-10xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-10xl-leading);
+  letter-spacing: var(--gs-text-10xl-tracking);
+}
+
+.text-10xl-bold {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-10xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-10xl-leading);
+  letter-spacing: var(--gs-text-10xl-tracking);
+}
+
+/* =============================================================================
+   SEMANTIC TEXT STYLES
+   These map to common UI patterns for easier adoption.
+   ============================================================================= */
+
+/* Body text variants */
+.text-body {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-base-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-base-leading);
+  letter-spacing: var(--gs-text-base-tracking);
+}
+
+.text-body-lg {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-lg-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-lg-leading);
+  letter-spacing: var(--gs-text-lg-tracking);
+}
+
+.text-body-xl {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xl-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-xl-leading);
+  letter-spacing: var(--gs-text-xl-tracking);
+}
+
+/* Caption/small text */
+.text-caption {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: var(--gs-text-sm-leading);
+  letter-spacing: var(--gs-text-sm-tracking);
+}
+
+/* Label text */
+.text-label {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-sm-leading);
+  letter-spacing: var(--gs-text-sm-tracking);
+}
+
+/* Heading hierarchy */
+.text-heading-sm {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-xl-leading);
+  letter-spacing: var(--gs-text-xl-tracking);
+}
+
+.text-heading-md {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-2xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-2xl-leading);
+  letter-spacing: var(--gs-text-2xl-tracking);
+}
+
+.text-heading-lg {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-3xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-3xl-leading);
+  letter-spacing: var(--gs-text-3xl-tracking);
+}
+
+.text-heading-xl {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-4xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-4xl-leading);
+  letter-spacing: var(--gs-text-4xl-tracking);
+}
+
+/* Display headlines (hero/feature sections) */
+.text-display-sm {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-5xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-5xl-leading);
+  letter-spacing: var(--gs-text-5xl-tracking);
+}
+
+.text-display-md {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-7xl-size);
+  font-weight: var(--gs-font-weight-medium);
+  line-height: var(--gs-text-7xl-leading);
+  letter-spacing: var(--gs-text-7xl-tracking);
+}
+
+.text-display-lg {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-9xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-9xl-leading);
+  letter-spacing: var(--gs-text-9xl-tracking);
+}
+
+.text-display-xl {
+  font-family: var(--font-body);
+  font-size: var(--gs-text-10xl-size);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: var(--gs-text-10xl-leading);
+  letter-spacing: var(--gs-text-10xl-tracking);
+}
+
+/* =============================================================================
+   RESPONSIVE TEXT UTILITIES
+   These provide responsive scaling for headlines.
+   ============================================================================= */
+
+.text-responsive-display {
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: 1;
+  letter-spacing: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+  font-size: clamp(
+    calc(var(--gs-font-size-4xl) * var(--gs-px)),
+    8vw,
+    calc(var(--gs-font-size-9xl) * var(--gs-px))
+  );
+}
+
+.text-responsive-heading {
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  line-height: 1.1;
+  letter-spacing: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+  font-size: clamp(
+    calc(var(--gs-font-size-2xl) * var(--gs-px)),
+    5vw,
+    calc(var(--gs-font-size-5xl) * var(--gs-px))
+  );
+}
+
+.text-responsive-subhead {
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  line-height: 1.3;
+  letter-spacing: calc(var(--gs-font-tracking-normal) * var(--gs-px));
+  font-size: clamp(
+    calc(var(--gs-font-size-lg) * var(--gs-px)),
+    3vw,
+    calc(var(--gs-font-size-3xl) * var(--gs-px))
+  );
+}

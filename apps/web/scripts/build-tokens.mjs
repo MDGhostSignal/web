@@ -59,6 +59,10 @@ function main() {
   const tokensPath = path.join(variablesDir, "tokens", "Mode 1.tokens.json");
   const twFontPath = path.join(variablesDir, "tw_font", "Mode 1.tokens.json");
   const twColorsPath = path.join(variablesDir, "tw_colors", "Mode 1.tokens.json");
+  const twGapPath = path.join(variablesDir, "tw_gap", "Mode 1.tokens.json");
+  const twSpacePath = path.join(variablesDir, "tw_space", "Mode 1.tokens.json");
+  const twPaddingPath = path.join(variablesDir, "tw_padding", "Mode 1.tokens.json");
+  const twMarginPath = path.join(variablesDir, "tw_margin", "Mode 1.tokens.json");
 
   if (!fs.existsSync(lightPath) || !fs.existsSync(darkPath)) {
     console.error("Missing mode token files under public/variables/mode/.");
@@ -83,6 +87,18 @@ function main() {
     : [];
   const twColorTokens = fs.existsSync(twColorsPath)
     ? collectLeafTokens(readJson(twColorsPath))
+    : [];
+  const twGapTokens = fs.existsSync(twGapPath)
+    ? collectLeafTokens(readJson(twGapPath))
+    : [];
+  const twSpaceTokens = fs.existsSync(twSpacePath)
+    ? collectLeafTokens(readJson(twSpacePath))
+    : [];
+  const twPaddingTokens = fs.existsSync(twPaddingPath)
+    ? collectLeafTokens(readJson(twPaddingPath))
+    : [];
+  const twMarginTokens = fs.existsSync(twMarginPath)
+    ? collectLeafTokens(readJson(twMarginPath))
     : [];
 
   const header =
@@ -112,13 +128,22 @@ function main() {
     // Tailwind-like primitive palette (used when the frame specifies a non-semantic fill)
     renderBlock(":root", twColorTokens, { prefix: "gs-tw" }) +
     "\n\n" +
+    // Spacing tokens (gap, space, padding, margin)
+    renderBlock(":root", twGapTokens, { prefix: "gs-gap" }) +
+    "\n\n" +
+    renderBlock(":root", twSpaceTokens, { prefix: "gs-space" }) +
+    "\n\n" +
+    renderBlock(":root", twPaddingTokens, { prefix: "gs-padding" }) +
+    "\n\n" +
+    renderBlock(":root", twMarginTokens, { prefix: "gs-margin" }) +
+    "\n\n" +
     renderBlock(".theme-dark", darkTokens, { prefix: "gs" }) +
     "\n";
 
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, css, "utf8");
   console.log(
-    `Wrote ${path.relative(root, outFile)} (mode ${lightTokens.length}+${darkTokens.length}, n ${numberTokens.length}, font ${twFontTokens.length}, tw ${twColorTokens.length})`,
+    `Wrote ${path.relative(root, outFile)} (mode ${lightTokens.length}+${darkTokens.length}, n ${numberTokens.length}, font ${twFontTokens.length}, tw ${twColorTokens.length}, spacing ${twGapTokens.length + twSpaceTokens.length + twPaddingTokens.length + twMarginTokens.length})`,
   );
 }
 

@@ -33,14 +33,9 @@ export default function HomePage() {
 
       <section className={styles.heroDark}>
         <div className={styles.heroSky} aria-hidden="true" />
+        <h1 className={styles.srOnly}>GhostSignal</h1>
         <div className={styles.heroLiquidWordmark}>
-          <h1 className={styles.heroGhostSignalBase}>
-            <span className={styles.heroGhostWord}>GHOST</span>
-            <span className={styles.heroSignalWord}>Signal</span>
-          </h1>
-          <div className={styles.heroGhostSignalFx} aria-hidden="true">
-            <GhostSignalLiquidWordmark />
-          </div>
+          <GhostSignalLiquidWordmark />
         </div>
       </section>
 
@@ -250,9 +245,15 @@ export default function HomePage() {
         </div>
 
         <div className={styles.footerSocial}>
-          <Image src="/images/home/figma/social-linkedin-outline.svg" alt="LinkedIn" width={24} height={24} className={styles.socialIcon} />
-          <Image src="/images/home/figma/social-facebook.svg" alt="Facebook" width={24} height={24} className={styles.socialIcon} />
-          <Image src="/images/home/figma/social-instagram.svg" alt="Instagram" width={24} height={24} className={styles.socialIcon} />
+          <a href="https://www.linkedin.com/company/ghostsignal" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className={styles.socialLink}>
+            <Image src="/images/home/figma/social-linkedin-outline.svg" alt="" width={24} height={24} className={styles.socialIcon} />
+          </a>
+          <a href="https://www.facebook.com/ghostsignal" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className={styles.socialLink}>
+            <Image src="/images/home/figma/social-facebook.svg" alt="" width={24} height={24} className={styles.socialIcon} />
+          </a>
+          <a href="https://www.instagram.com/ghostsignal" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={styles.socialLink}>
+            <Image src="/images/home/figma/social-instagram.svg" alt="" width={24} height={24} className={styles.socialIcon} />
+          </a>
         </div>
       </footer>
     </main>

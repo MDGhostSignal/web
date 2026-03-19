@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 
 import { gsap, ScrollTrigger } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 import { useGsapContext } from "@/motion/useGsapContext";
+
+import styles from "./SiteHeader.module.css";
 
 type NavLink = { href: string; label: string };
 
@@ -38,13 +40,6 @@ export function SiteHeader({
 
   const linksWrapRef = useRef<HTMLDivElement | null>(null);
   const ctaRef = useRef<HTMLAnchorElement | null>(null);
-
-  const px = "var(--gs-px)";
-  const n = useMemo(() => (value: number) => `calc(var(--gs-n-${value}) * ${px})`, [px]);
-  const fontSize = useMemo(
-    () => (token: string) => `calc(var(--gs-font-size-${token}) * ${px})`,
-    [px],
-  );
 
   // Note: we keep these as literal values because they are taken from Motto's code.
   const THRESHOLD_Y = 100;
@@ -158,91 +153,35 @@ export function SiteHeader({
   }, [THRESHOLD_Y, contextRef, rootRef]);
 
   return (
-    <div ref={rootRef} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
-      <header
-        className="js-sh"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          height: "140px",
-          minHeight: "140px",
-          paddingLeft: n(48),
-          paddingRight: n(48),
-          background: "#f2f2f2",
-        }}
-      >
-        <div
-          className="js-sh-logo-wrap"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: n(185),
-            height: n(80),
-            paddingTop: n(16),
-            paddingBottom: n(16),
-            paddingLeft: n(64),
-            paddingRight: n(64),
-            overflow: "hidden",
-          }}
-        >
+    <div ref={rootRef} className={styles.headerRoot}>
+      <header className={`${styles.header} js-sh`}>
+        <div className={`${styles.logoWrap} js-sh-logo-wrap`}>
           <Image
             src="/images/home/figma/logo-black-1.svg"
             alt="Ghost Signal"
             width={57}
             height={48}
             priority
-            style={{ display: "block", width: n(57), height: n(48) }}
+            className={styles.logo}
           />
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            columnGap: n(24),
-          }}
-        >
+        <div className={styles.navContainer}>
           <nav
             aria-label="Primary"
             ref={linksWrapRef}
-            className="js-sh-main-links"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              width: n(1385),
-              height: n(60),
-              justifyContent: "flex-start",
-              columnGap: n(64),
-            }}
+            className={`${styles.nav} js-sh-main-links`}
           >
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="js-sh-main-link"
+                className={`${styles.navLink} js-sh-main-link`}
                 data-sh-link
                 data-sh-key={l.href}
                 data-sh-role={l.href === "/get-in-touch" ? "keep" : "hide"}
                 style={{
-                  display: "inline-flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: n(linkFrameWidths[l.href] ?? 174),
-                  height: n(60),
-                  gap: n(8),
-                  paddingTop: n(16),
-                  paddingBottom: n(16),
-                  paddingLeft: n(32),
-                  paddingRight: n(32),
-                  fontFamily: "var(--font-body)",
-                  fontWeight: "var(--gs-font-weight-bold)",
-                  fontSize: fontSize("lg"),
-                  lineHeight: "1.5555555555555556em",
-                  color: "var(--gs-tw-black)",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
+                  width: `calc(var(--gs-n-${linkFrameWidths[l.href] ?? 174}, ${linkFrameWidths[l.href] ?? 174}) * var(--gs-px))`,
                 }}
               >
                 {l.label}
@@ -254,33 +193,11 @@ export function SiteHeader({
             <Link
               ref={ctaRef}
               href={cta.href}
-              className="js-sh-cta"
-              style={{
-                display: "inline-flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: n(36),
-                paddingTop: n(8),
-                paddingBottom: n(8),
-                paddingLeft: n(16),
-                paddingRight: n(16),
-                borderRadius: `calc(var(--gs-radius-lg) * ${px})`,
-                border: `calc(var(--gs-border-width) * ${px}) solid var(--gs-border)`,
-                background: "var(--gs-background)",
-                boxShadow: "0px 1px 2px 0px rgb(0 0 0 / 0.1)",
-                color: "var(--gs-foreground)",
-                textDecoration: "none",
-                fontFamily: "var(--font-body)",
-                fontWeight: "var(--gs-font-weight-medium)",
-                fontSize: fontSize("sm"),
-                lineHeight: "1.4285714285714286em",
-                whiteSpace: "nowrap",
-              }}
+              className={`${styles.cta} js-sh-cta`}
             >
               {cta.label}
             </Link>
           ) : null}
-
         </div>
       </header>
     </div>
