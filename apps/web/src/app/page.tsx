@@ -55,23 +55,17 @@ export default function HomePage() {
             </div>
 
             <div className={styles.hero2Right}>
-              <div className={styles.hero2Line2}>
-                <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%">
-                  <h1 className={styles.hero2DisplayLine2}>IS FOR PEOPLE</h1>
-                </SplitLinesReveal>
-              </div>
+              <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%" className={styles.hero2Line2}>
+                <h1 className={styles.hero2DisplayLine2}>IS FOR PEOPLE</h1>
+              </SplitLinesReveal>
 
-              <div className={styles.hero2Line3}>
-                <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%">
-                  <h2 className={styles.hero2DisplayLine3}>WHO ARE MAKING</h2>
-                </SplitLinesReveal>
-              </div>
+              <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%" className={styles.hero2Line3}>
+                <h2 className={styles.hero2DisplayLine3}>WHO ARE MAKING</h2>
+              </SplitLinesReveal>
 
-              <div className={styles.hero2Line4}>
-                <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%">
-                  <h2 className={styles.hero2DisplayLine4}>THE WORLD.</h2>
-                </SplitLinesReveal>
-              </div>
+              <SplitLinesReveal duration={2.25} stagger={0.32} start="top 72%" className={styles.hero2Line4}>
+                <h2 className={styles.hero2DisplayLine4}>THE WORLD.</h2>
+              </SplitLinesReveal>
             </div>
           </div>
 
@@ -115,23 +109,23 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div data-gs-home-harmony className={styles.harmony}>
-            <div className={styles.harmonyHeadline}>
-              <div className={styles.harmonyTextBlock}>
+          <section data-gs-home-harmony className={styles.harmony}>
+            <header className={styles.harmonyHeadline}>
+              <hgroup className={styles.harmonyTextBlock}>
                 <SplitLinesReveal>
                   <h2 className={styles.harmonyH9}>HARMONY</h2>
                 </SplitLinesReveal>
                 <div className={styles.harmonySecondLine}>
                   <SplitLinesReveal>
-                    <h2 className={styles.harmonyH9}>NOT</h2>
+                    <p className={styles.harmonyH9}>NOT</p>
                   </SplitLinesReveal>
                   <SplitLinesReveal>
-                    <h2 className={styles.harmonyH9}>HYPE</h2>
+                    <p className={styles.harmonyH9}>HYPE</p>
                   </SplitLinesReveal>
                 </div>
-              </div>
+              </hgroup>
               <div data-gs-home-media-target className={styles.redTarget} />
-            </div>
+            </header>
 
             <div className={styles.twoCol}>
               <div className={styles.thinkBigCol}>
@@ -208,7 +202,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </section>
 
@@ -221,28 +215,28 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className={styles.footerNav}>
+        <nav className={styles.footerNav} aria-label="Footer">
           <div className={styles.footerCol}>
             <h4 className={styles.footerColTitle}>Discover</h4>
-            <div className={styles.footerColLinks}>
-              <Link href="/for-creators">FOR CREATORS</Link>
-              <Link href="/for-brands">FOR BRANDS</Link>
-            </div>
+            <ul className={styles.footerColLinks}>
+              <li><Link href="/for-creators">FOR CREATORS</Link></li>
+              <li><Link href="/for-brands">FOR BRANDS</Link></li>
+            </ul>
           </div>
           <div className={styles.footerCol}>
             <h4 className={styles.footerColTitle}>Company</h4>
-            <div className={styles.footerColLinks}>
-              <Link href="/who-are-we">WHO WE ARE</Link>
-              <Link href="/what-is-this">WHAT IS THIS</Link>
-            </div>
+            <ul className={styles.footerColLinks}>
+              <li><Link href="/who-are-we">WHO WE ARE</Link></li>
+              <li><Link href="/what-is-this">WHAT IS THIS</Link></li>
+            </ul>
           </div>
           <div className={styles.footerCol}>
             <h4 className={styles.footerColTitle}>Learn</h4>
-            <div className={styles.footerColLinks}>
-              <Link href="/snowdrift">SNOWDRIFT</Link>
-            </div>
+            <ul className={styles.footerColLinks}>
+              <li><Link href="/snowdrift">SNOWDRIFT</Link></li>
+            </ul>
           </div>
-        </div>
+        </nav>
 
         <div className={styles.footerSocial}>
           <a href="https://www.linkedin.com/company/ghostsignal" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className={styles.socialLink}>

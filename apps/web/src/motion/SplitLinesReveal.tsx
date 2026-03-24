@@ -22,6 +22,11 @@ type Props = {
    */
   delay?: number;
   start?: string;
+  /**
+   * Optional className to apply to the wrapper div.
+   * Helps reduce unnecessary nesting when the wrapper can serve double duty.
+   */
+  className?: string;
 };
 
 /**
@@ -37,6 +42,7 @@ export function SplitLinesReveal({
   ease = "expo",
   delay = 0,
   start = "top 76%",
+  className,
 }: Props) {
   const id = useId();
 
@@ -80,6 +86,6 @@ export function SplitLinesReveal({
     };
   }, [delay, duration, ease, id, stagger, start]);
 
-  return <div data-gs-split={id}>{children}</div>;
+  return <div data-gs-split={id} className={className}>{children}</div>;
 }
 

@@ -20,9 +20,9 @@ export function ChoiceQuestion({
   const allOptions = allowNoPreference ? [...options, "No preference"] : options;
 
   return (
-    <div className="rq-question">
-      <label className="rq-question-label">{label}</label>
-      <div className="rq-choices">
+    <fieldset className="rq-question rq-question-choice">
+      <legend className="rq-question-label">{label}</legend>
+      <div className="rq-choices" role="radiogroup">
         {allOptions.map((option) => (
           <label key={option} className="rq-choice-label">
             <input
@@ -36,6 +36,6 @@ export function ChoiceQuestion({
           </label>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }

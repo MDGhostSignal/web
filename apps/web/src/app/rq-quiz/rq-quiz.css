@@ -36,6 +36,19 @@ html:has(.rq-results-page) {
   --rq-mono: 'Inter', ui-monospace, monospace;
 }
 
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Morse Progress Bar */
 .morse-progress {
   position: fixed;
@@ -193,16 +206,7 @@ html:has(.rq-results-page) {
   position: relative;
   text-align: center;
   padding: 32px 0 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 1;
-}
-
-.rq-intro-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
 }
 
 .rq-brand-logo {
@@ -238,40 +242,36 @@ html:has(.rq-results-page) {
   opacity: 0.9;
 }
 
-/* Intro Extended/Collapsible Section */
+/* Intro Extended/Collapsible Section (using details/summary) */
 .rq-intro-extended {
   margin-top: 20px;
   max-width: 520px;
   margin-left: auto;
   margin-right: auto;
-}
-
-.rq-intro-collapsible {
-  display: block;
-  width: 100%;
-  background: transparent;
-  border: none;
   border-left: 3px solid var(--rq-accent);
-  padding: 14px 14px 14px 20px;
-  margin: 0;
-  cursor: pointer;
-  transition: var(--rq-transition);
   border-radius: 0 8px 8px 0;
-  text-align: left;
-  font-family: inherit;
+  transition: var(--rq-transition);
 }
 
-.rq-intro-collapsible:hover {
+.rq-intro-extended:hover {
   background: rgba(251, 173, 37, 0.05);
 }
 
-.rq-intro-collapsible-header {
+.rq-intro-collapsible {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 14px 14px 14px 20px;
+  cursor: pointer;
+  list-style: none;
+  font-family: inherit;
 }
 
-.rq-intro-collapsible-header > span:first-child {
+.rq-intro-collapsible::-webkit-details-marker {
+  display: none;
+}
+
+.rq-intro-collapsible > span:first-child {
   font-size: 14px;
   font-weight: 600;
   color: var(--rq-accent);
@@ -279,11 +279,13 @@ html:has(.rq-results-page) {
   letter-spacing: 0.5px;
 }
 
-.rq-intro-collapsible p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--rq-muted);
-  margin: 8px 0 0;
+/* Toggle indicator */
+.rq-intro-collapsible .rq-profile-toggle::before {
+  content: "+";
+}
+
+.rq-intro-extended[open] .rq-intro-collapsible .rq-profile-toggle::before {
+  content: "−";
 }
 
 .rq-intro-extended-content {
@@ -350,6 +352,8 @@ html:has(.rq-results-page) {
 /* Step Fields */
 .rq-step-fields {
   margin-bottom: 40px;
+  border: none;
+  padding: 0;
 }
 
 .rq-question {
@@ -358,6 +362,11 @@ html:has(.rq-results-page) {
   border: none;
   border-radius: 0;
   background: transparent;
+}
+
+/* Choice question uses fieldset */
+.rq-question-choice {
+  margin: 0 0 32px;
 }
 
 .rq-question-label {
@@ -691,11 +700,12 @@ html:has(.rq-results-page) {
   color: var(--rq-muted);
 }
 
-/* Card Divider */
+/* Card Divider (hr element) */
 .rq-card-divider {
   height: 1px;
   background: var(--rq-line);
   margin: 32px 0;
+  border: none;
 }
 
 /* Founder Inline Section (inside results card) */
@@ -903,6 +913,11 @@ html:has(.rq-results-page) {
   background: #FCC055;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(251, 173, 37, 0.4);
+}
+
+/* Standalone CTA (not wrapped in container) */
+.rq-cta-standalone {
+  margin-top: 32px;
 }
 
 .rq-snowdrift-section {

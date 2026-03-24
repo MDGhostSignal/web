@@ -17,13 +17,18 @@ type Props = {
    */
   start?: string;
   duration?: number;
+  /**
+   * Optional className to apply to the wrapper div.
+   * Helps reduce unnecessary nesting when the wrapper can serve double duty.
+   */
+  className?: string;
 };
 
 /**
  * Mirrors Motto's common scroll entrance animation:
  * `fromTo(el, { y:60, opacity:0 }, { y:0, opacity:1, duration:1, ease:"power2.out", delay: 0.1*index, scrollTrigger:{trigger: el, start:"top bottom"} })`
  */
-export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration = 1.7 }: Props) {
+export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration = 1.7, className }: Props) {
   const id = useId();
 
   useIsomorphicLayoutEffect(() => {
@@ -50,6 +55,6 @@ export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration 
     };
   }, [duration, id, index, start]);
 
-  return <div data-gs-sfu={id}>{children}</div>;
+  return <div data-gs-sfu={id} className={className}>{children}</div>;
 }
 

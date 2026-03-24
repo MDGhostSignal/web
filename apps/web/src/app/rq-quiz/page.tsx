@@ -371,16 +371,6 @@ export default function RQIndexPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [statusVisible, setStatusVisible] = useState(true);
-  const [expandedSections, setExpandedSections] = useState<{ values: boolean; authenticity: boolean; horizon: boolean }>({
-    values: false,
-    authenticity: false,
-    horizon: false,
-  });
-  const [introExpanded, setIntroExpanded] = useState(false);
-
-  const toggleSection = (section: "values" | "authenticity" | "horizon") => {
-    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
 
   // Fade out status notification after 10 seconds
   React.useEffect(() => {
@@ -609,18 +599,18 @@ export default function RQIndexPage() {
 
   if (isResultsStep) {
     return (
-      <div className="rq-modern-page rq-results-page">
+      <main className="rq-modern-page rq-results-page">
         <div className="rq-desert-fog-bg" aria-hidden="true">
           <DesertFog />
         </div>
         <div className="rq-modern-container">
           <div className="rq-results-modern">
-            <div className="rq-results-header">
+            <header className="rq-results-header">
               <h1>Your <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> Resonance Quotient</h1>
               <p className="rq-email-reminder">
                 Check your email inbox to read your full analysis.
               </p>
-            </div>
+            </header>
 
             {/* Status notification - fades out after 10 seconds */}
             {submitStatus && statusVisible && (
@@ -629,9 +619,9 @@ export default function RQIndexPage() {
               </div>
             )}
 
-            <div className="rq-results-card">
-              <div className="rq-code-large">{result.rq}</div>
-              <div className="rq-name-large">{result.rqName}</div>
+            <article className="rq-results-card">
+              <p className="rq-code-large">{result.rq}</p>
+              <p className="rq-name-large">{result.rqName}</p>
 
               {clarity && (
                 <div className="rq-clarity">
@@ -643,11 +633,10 @@ export default function RQIndexPage() {
                 </div>
               )}
 
-              {/* Divider */}
-              <div className="rq-card-divider" />
+              <hr className="rq-card-divider" />
 
               {/* Reach out to Mike */}
-              <div className="rq-founder-inline">
+              <aside className="rq-founder-inline">
                 <p className="rq-founder-text">
                   Find out what your RQ can do for you.<br />
                   Schedule a call with one of our founders, Mike.
@@ -662,11 +651,11 @@ export default function RQIndexPage() {
                     className="rq-founder-image"
                   />
                 </a>
-              </div>
-            </div>
+              </aside>
+            </article>
 
-            {/* Snowdrift Section - moved above profile sections */}
-            <div className="rq-snowdrift-section">
+            {/* Snowdrift Section */}
+            <aside className="rq-snowdrift-section">
               <div className="rq-snowdrift-snow-bg" aria-hidden="true">
                 <SnowAnimation />
               </div>
@@ -689,150 +678,120 @@ export default function RQIndexPage() {
                   Subscribe to the Snowdrift Newsletter
                 </a>
               </div>
-            </div>
+            </aside>
 
             {/* Discover GhostSignal CTA */}
-            <div className="rq-cta-section">
-              <a
-                href="https://ghostsignal.cloud"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rq-cta-btn rq-cta-primary"
-              >
-                Discover <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span>
-              </a>
-            </div>
+            <a
+              href="https://ghostsignal.cloud"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rq-cta-btn rq-cta-primary rq-cta-standalone"
+            >
+              Discover <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span>
+            </a>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="rq-modern-page">
+    <main className="rq-modern-page">
       <MorseProgress currentStep={currentStep + 1} totalSteps={STEPS.length} />
 
       <div className="rq-modern-container">
         <div className="rq-step-content">
           {isIntroStep ? (
-            <>
+            <section className="rq-intro">
               <div className="rq-intro-liquid-bg" aria-hidden="true">
                 <SimpleFog />
               </div>
-              <div className="rq-intro">
-                <div className="rq-intro-content">
-                  <img
-                    src="/images/brand/brandmark-vert-white.svg"
-                    alt="GhostSignal"
-                    className="rq-brand-logo"
-                  />
-                  <h1 className="rq-intro-title">
-                    Welcome<br />
-                    to the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span><br />
-                    Resonance Quotient
-                  </h1>
-                  <p className="rq-intro-description">
-                    {currentStepData.description?.split('\n').map((line, i) => (
-                      <React.Fragment key={i}>
-                        {line}
-                        {i < (currentStepData.description?.split('\n').length || 0) - 1 && <br />}
-                      </React.Fragment>
-                    ))}
-                  </p>
+              <img
+                src="/images/brand/brandmark-vert-white.svg"
+                alt="GhostSignal"
+                className="rq-brand-logo"
+              />
+              <h1 className="rq-intro-title">
+                Welcome<br />
+                to the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span><br />
+                Resonance Quotient
+              </h1>
+              <p className="rq-intro-description">
+                {currentStepData.description?.split('\n').map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    {i < (currentStepData.description?.split('\n').length || 0) - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </p>
 
-                  {/* Brief Summary */}
-                  <p className="rq-intro-summary">
-                    The <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> Resonance Quotient is a framework for understanding how you signal values,
-                    build trust, and approach partnerships—helping match creators and brands
-                    who share aligned visions for world-making.
-                  </p>
+              <p className="rq-intro-summary">
+                The <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> Resonance Quotient is a framework for understanding how you signal values,
+                build trust, and approach partnerships—helping match creators and brands
+                who share aligned visions for world-making.
+              </p>
 
-                  {/* Expandable Extended Description */}
-                  <div className="rq-intro-extended">
-                    <button
-                      type="button"
-                      className={`rq-intro-collapsible ${introExpanded ? "expanded" : ""}`}
-                      onClick={() => setIntroExpanded(!introExpanded)}
-                      aria-expanded={introExpanded}
+              <details className="rq-intro-extended">
+                <summary className="rq-intro-collapsible">
+                  <span>The Research Behind the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> RQ</span>
+                  <span className="rq-profile-toggle" aria-hidden="true"></span>
+                </summary>
+                <div className="rq-intro-extended-content">
+                  <p>
+                    The Resonance Quotient draws on decades of research into how shared values
+                    create durable, high-trust relationships.
+                  </p>
+                  <p>
+                    Nobel Prize-winning economist Daron Acemoglu&apos;s research demonstrates that
+                    &ldquo;high-trust circles&rdquo;—groups bound by shared values—are self-reinforcing:
+                    once they exist, they grow and protect themselves, outperforming low-trust
+                    systems by orders of magnitude. This deeper trust directly translates to
+                    greater revenue, efficiency, and long-term sustainability.
+                  </p>
+                  <p>
+                    In the attention economy, this matters more than ever. When partnerships
+                    are built on genuine alignment rather than transactional reach, it creates
+                    a deeply human bond—one where every interaction compounds into community
+                    that lasts. The RQ doesn&apos;t measure &ldquo;better&rdquo; or &ldquo;worse&rdquo;—it maps your
+                    unique position across three axes of partnership resonance, helping you
+                    find collaborators who amplify rather than distort your signal.
+                  </p>
+                  <nav className="rq-intro-links">
+                    <a
+                      href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rq-intro-link"
                     >
-                      <div className="rq-intro-collapsible-header">
-                        <span>The Research Behind the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> RQ</span>
-                        <span className="rq-profile-toggle" aria-hidden="true">
-                          {introExpanded ? "−" : "+"}
-                        </span>
-                      </div>
-                      <p className={introExpanded ? "" : "rq-profile-truncated"}>
-                        The Resonance Quotient draws on decades of research into how shared values
-                        create durable, high-trust relationships.
-                      </p>
-                      {!introExpanded && (
-                        <span className="rq-profile-expand-hint">Tap to expand</span>
-                      )}
-                    </button>
-
-                    {introExpanded && (
-                      <div className="rq-intro-extended-content">
-                        <p>
-                          Nobel Prize-winning economist Daron Acemoglu&apos;s research demonstrates that
-                          &ldquo;high-trust circles&rdquo;—groups bound by shared values—are self-reinforcing:
-                          once they exist, they grow and protect themselves, outperforming low-trust
-                          systems by orders of magnitude. This deeper trust directly translates to
-                          greater revenue, efficiency, and long-term sustainability.
-                        </p>
-                        <p>
-                          In the attention economy, this matters more than ever. When partnerships
-                          are built on genuine alignment rather than transactional reach, it creates
-                          a deeply human bond—one where every interaction compounds into community
-                          that lasts. The RQ doesn&apos;t measure &ldquo;better&rdquo; or &ldquo;worse&rdquo;—it maps your
-                          unique position across three axes of partnership resonance, helping you
-                          find collaborators who amplify rather than distort your signal.
-                        </p>
-                        <div className="rq-intro-links">
-                          <a
-                            href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rq-intro-link"
-                          >
-                            Read the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> White Paper →
-                          </a>
-                          <a
-                            href="https://economics.mit.edu/sites/default/files/2023-04/Culture%2C%20Institutions%20and%20Social%20Equilibria%20-%20A%20Framework.pdf"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rq-intro-link"
-                          >
-                            Acemoglu on High-Trust Equilibria at MIT →
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                      Read the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> White Paper →
+                    </a>
+                    <a
+                      href="https://economics.mit.edu/sites/default/files/2023-04/Culture%2C%20Institutions%20and%20Social%20Equilibria%20-%20A%20Framework.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rq-intro-link"
+                    >
+                      Acemoglu on High-Trust Equilibria at MIT →
+                    </a>
+                  </nav>
                 </div>
-              </div>
-            </>
+              </details>
+            </section>
           ) : (
-            <>
+            <section className="rq-step-section">
               {currentStepData.description && (
                 <p className="rq-step-description">{currentStepData.description}</p>
               )}
-              {currentStepData.id === "intro" ? (
-                <h2 className="rq-step-title">
-                  Welcome<br />
-                  to the <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span><br />
-                  Resonance Quotient
-                </h2>
-              ) : (
-                <h2 className="rq-step-title">{currentStepData.title}</h2>
-              )}
+              <h2 className="rq-step-title">{currentStepData.title}</h2>
 
-              <div className="rq-step-fields">
+              <fieldset className="rq-step-fields">
+                <legend className="sr-only">{currentStepData.title}</legend>
                 {currentStepData.fields.map(renderField)}
-              </div>
-            </>
+              </fieldset>
+            </section>
           )}
 
-          <div className="rq-nav-buttons">
+          <nav className="rq-nav-buttons" aria-label="Quiz navigation">
             {currentStep > 0 && (
               <button type="button" onClick={handlePrev} className="rq-nav-btn rq-nav-prev">
                 ← Back
@@ -846,13 +805,13 @@ export default function RQIndexPage() {
             >
               {submitting ? "Generating..." : isLastStep ? "Generate My RQ →" : "Continue →"}
             </button>
-          </div>
+          </nav>
 
-          <div className="rq-keyboard-hint">
+          <p className="rq-keyboard-hint">
             Press <kbd>Enter</kbd> to continue
-          </div>
+          </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

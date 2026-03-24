@@ -69,29 +69,32 @@ export function MorseProgress({ currentStep, totalSteps }: MorseProgressProps) {
   const activeCount = Math.floor(progress * MORSE_SEQUENCE.length);
 
   return (
-    <div className="morse-progress">
-      <div className="morse-sequence">
+    <div
+      className="morse-progress"
+      role="progressbar"
+      aria-valuenow={currentStep}
+      aria-valuemin={1}
+      aria-valuemax={totalSteps}
+      aria-label={`Quiz progress: Step ${currentStep} of ${totalSteps}`}
+    >
+      <div className="morse-sequence" aria-hidden="true">
         {MORSE_SEQUENCE.map((symbol, index) => {
           const isActive = index < activeCount;
 
           if (symbol === "/") {
-            // Word separator - wider gap
-            return <div key={index} className="morse-word-separator" />;
+            return <span key={index} className="morse-word-separator" />;
           } else if (symbol === "|") {
-            // Letter separator - small gap
-            return <div key={index} className="morse-letter-separator" />;
+            return <span key={index} className="morse-letter-separator" />;
           } else if (symbol === ".") {
-            // Dot
             return (
-              <div
+              <span
                 key={index}
                 className={`morse-symbol morse-dot ${isActive ? "active" : ""}`}
               />
             );
           } else {
-            // Dash
             return (
-              <div
+              <span
                 key={index}
                 className={`morse-symbol morse-dash ${isActive ? "active" : ""}`}
               />
@@ -99,9 +102,9 @@ export function MorseProgress({ currentStep, totalSteps }: MorseProgressProps) {
           }
         })}
       </div>
-      <div className="morse-text">
+      <p className="morse-text">
         Step {currentStep} of {totalSteps}
-      </div>
+      </p>
     </div>
   );
 }
