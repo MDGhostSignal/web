@@ -155,7 +155,7 @@ export function SiteHeader({
   return (
     <div ref={rootRef} className={styles.headerRoot}>
       <header className={`${styles.header} js-sh`}>
-        <div className={`${styles.logoWrap} js-sh-logo-wrap`}>
+        <Link href="/" className={`${styles.logoWrap} js-sh-logo-wrap`}>
           <Image
             src="/images/home/figma/logo-black-1.svg"
             alt="Ghost Signal"
@@ -164,7 +164,7 @@ export function SiteHeader({
             priority
             className={styles.logo}
           />
-        </div>
+        </Link>
 
         <div className={styles.navContainer}>
           <nav
