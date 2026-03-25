@@ -43,9 +43,12 @@ export function RQRadarChart({ result, size = 420 }: RQRadarChartProps) {
   const maxRadius = (size / 2) - 60; // Leave room for labels
   const minRadius = 20; // Don't go all the way to center
 
-  // Calculate the radius for a given score (1-10)
+  // Calculate the radius for a given score (1-10) with 5 at exact center
+  // Scores 1-5 map to 0-50%, scores 5-10 map to 50-100%
   const scoreToRadius = (score: number): number => {
-    const normalizedScore = (score - 1) / 9; // 0 to 1
+    const normalizedScore = score <= 5
+      ? ((score - 1) / 4) * 0.5
+      : 0.5 + ((score - 5) / 5) * 0.5;
     return minRadius + normalizedScore * (maxRadius - minRadius);
   };
 

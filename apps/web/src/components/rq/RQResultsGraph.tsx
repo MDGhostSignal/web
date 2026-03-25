@@ -31,8 +31,11 @@ function AxisBarVisualization({
   letter: string;
   rightLetter: string;
 }) {
-  // Calculate position on the 1-10 scale (0% to 100%)
-  const position = ((score - 1) / 9) * 100;
+  // Calculate position on the 1-10 scale with 5 at exact center (50%)
+  // Scores 1-5 map to 0-50%, scores 5-10 map to 50-100%
+  const position = score <= 5
+    ? ((score - 1) / 4) * 50
+    : 50 + ((score - 5) / 5) * 50;
   const isOnRight = letter === rightLetter;
 
   return (
