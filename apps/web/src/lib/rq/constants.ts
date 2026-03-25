@@ -62,13 +62,13 @@ export const SCORE_BANDS = {
       "Present, but flexible. You likely have range here, and can move across the spectrum without much friction.",
   },
   balanced: {
-    range: "4–6",
+    range: "4–5",
     label: "Balanced Signal",
     description:
       "A clear leaning, but with openness. You can adapt without losing yourself.",
   },
   strong: {
-    range: "7–10",
+    range: "6–10",
     label: "Strong Signal",
     description:
       "A defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.",

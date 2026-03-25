@@ -105,10 +105,11 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   }
 
   // Helper to get strength label and colors
+  // Bands: 1-3 (light), 4-5 (balanced), 6-10 (strong)
   const getStrengthInfo = (score: number | undefined) => {
     const s = score ?? 5;
     if (s <= 3) return { label: "Lighter Signal", bg: "rgba(70, 130, 180, 0.12)", color: "#4682b4" };
-    if (s <= 6) return { label: "Balanced Signal", bg: "rgba(200, 150, 50, 0.12)", color: "#b8860b" };
+    if (s <= 5) return { label: "Balanced Signal", bg: "rgba(200, 150, 50, 0.12)", color: "#b8860b" };
     return { label: "Strong Signal", bg: "rgba(34, 139, 34, 0.12)", color: "#228b22" };
   };
 
