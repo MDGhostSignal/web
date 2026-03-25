@@ -13,6 +13,69 @@ export const BRAND = {
 } as const;
 
 /**
+ * Axis metadata for graph visualization
+ */
+export const AXES = {
+  values: {
+    name: "Values Orientation",
+    leftLabel: "Implicit",
+    rightLabel: "Formative",
+    leftLetter: "I",
+    rightLetter: "F",
+    description:
+      "This axis reflects how your convictions show up in your work. On the Formative end, values are named, declared, and actively shaping the message—what you stand for is part of what you say. On the Implicit end, values are lived rather than stated—what you stand for is revealed through tone, choices, and outcomes.",
+    interpretationNote:
+      "Neither is more \"true\" than the other. This is about where your signal is most naturally expressed: spoken or embodied, explicit or ambient.",
+  },
+  authenticity: {
+    name: "Authenticity Expression",
+    leftLabel: "Structural",
+    rightLabel: "Relational",
+    leftLetter: "S",
+    rightLetter: "R",
+    description:
+      "This axis captures how your voice carries trust. On the Relational end, authenticity flows through story, personality, and lived experience—people trust you because they feel like they know you. On the Structural end, authenticity comes through clarity, consistency, and well-formed ideas—people trust you because your message holds together.",
+    interpretationNote:
+      "This is not a choice between warmth and rigor. It's about whether your signal lands more through connection or construction, presence or precision.",
+  },
+  horizon: {
+    name: "Flourishing Horizon",
+    leftLabel: "Long-Arc",
+    rightLabel: "Catalytic",
+    leftLetter: "L",
+    rightLetter: "C",
+    description:
+      "This axis reveals how you think about growth, impact, and partnership over time. On the Long-Arc end, you prioritize depth, durability, and relationships that compound slowly—trust is built and protected over time. On the Catalytic end, you value momentum, activation, and timely impact—energy is directed toward movement and measurable lift.",
+    interpretationNote:
+      "Both create real value. This axis simply shows whether your signal is oriented toward endurance or ignition, formation or acceleration.",
+  },
+} as const;
+
+/**
+ * Score strength interpretation
+ */
+export const SCORE_BANDS = {
+  light: {
+    range: "1–3",
+    label: "Lighter Signal",
+    description:
+      "Present, but flexible. You likely have range here, and can move across the spectrum without much friction.",
+  },
+  balanced: {
+    range: "4–6",
+    label: "Balanced Signal",
+    description:
+      "A clear leaning, but with openness. You can adapt without losing yourself.",
+  },
+  strong: {
+    range: "7–10",
+    label: "Strong Signal",
+    description:
+      "A defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.",
+  },
+} as const;
+
+/**
  * Word pools for RQ name generation
  * Organized by axis and letter, with 3 bands (0=1-3, 1=4-5, 2=6-10)
  */

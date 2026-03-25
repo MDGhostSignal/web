@@ -60,8 +60,8 @@ export type SignalClarity = {
 };
 
 // Helper functions
-const bandIndex = (n: number): 0 | 1 | 2 => (n <= 3 ? 0 : n <= 5 ? 1 : 2);
-const bandLabel = (n: number): string => (n <= 3 ? "1–3" : n <= 5 ? "4–5" : "6–10");
+const bandIndex = (n: number): 0 | 1 | 2 => (n <= 3 ? 0 : n <= 6 ? 1 : 2);
+const bandLabel = (n: number): string => (n <= 3 ? "1–3" : n <= 6 ? "4–6" : "7–10");
 const clamp1to10 = (n: number): number => Math.max(1, Math.min(10, n));
 const round = (n: number): number => Math.round(n);
 const avg = (arr: number[]): number => arr.reduce((a, b) => a + b, 0) / arr.length;

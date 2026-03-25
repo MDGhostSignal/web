@@ -79,6 +79,11 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   const result = payload.result ?? {};
   const clarity = result.clarity ?? {};
   const profile = (result.profile ?? {}) as { values?: string; authenticity?: string; horizon?: string };
+  const details = (result.details ?? {}) as {
+    values?: { letter?: string; score?: number };
+    authenticity?: { letter?: string; score?: number };
+    horizon?: { letter?: string; score?: number };
+  };
   const userEmail = basics.email?.trim();
 
   if (!userEmail || !userEmail.includes("@")) {
@@ -99,6 +104,96 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     clarityTextColor = "#b22222";
   }
 
+  // Helper to get strength label and colors
+  const getStrengthInfo = (score: number | undefined) => {
+    const s = score ?? 5;
+    if (s <= 3) return { label: "Lighter Signal", bg: "rgba(70, 130, 180, 0.12)", color: "#4682b4" };
+    if (s <= 6) return { label: "Balanced Signal", bg: "rgba(200, 150, 50, 0.12)", color: "#b8860b" };
+    return { label: "Strong Signal", bg: "rgba(34, 139, 34, 0.12)", color: "#228b22" };
+  };
+
+  const valuesStrength = getStrengthInfo(details.values?.score);
+  const authenticityStrength = getStrengthInfo(details.authenticity?.score);
+  const horizonStrength = getStrengthInfo(details.horizon?.score);
+
+  // Helper to generate a simple email-safe bar visualization
+  const generateBarHtml = (score: number, leftLabel: string, rightLabel: string, activeLetter: string, rightLetter: string) => {
+    const position = ((score - 1) / 9) * 100;
+    const isOnRight = activeLetter === rightLetter;
+
+    return `
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 12px 0 16px; background: #f0f0f0; border-radius: 8px; padding: 12px;">
+        <tr>
+          <td style="padding: 0 12px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+              <tr>
+                <td style="font-size: 11px; color: ${!isOnRight ? '#c4880d' : '#888888'}; font-weight: ${!isOnRight ? '600' : '400'}; width: 80px;">
+                  ${leftLabel}
+                </td>
+                <td style="padding: 0 8px;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td style="background: linear-gradient(90deg, #e8e8e8, #f5f5f5, #fff5e6); height: 8px; border-radius: 4px; position: relative;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="height: 8px;">
+                          <tr>
+                            <td style="width: ${position}%;"></td>
+                            <td style="width: 16px;">
+                              <div style="width: 14px; height: 14px; background: #FBAD25; border-radius: 50%; margin-top: -3px; box-shadow: 0 1px 3px rgba(251,173,37,0.4);"></div>
+                            </td>
+                            <td></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
+                          <tr>
+                            <td style="font-size: 9px; color: #aaa; font-family: monospace;">1</td>
+                            <td style="font-size: 9px; color: #aaa; font-family: monospace; text-align: center;">5</td>
+                            <td style="font-size: 9px; color: #aaa; font-family: monospace; text-align: right;">10</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="font-size: 11px; color: ${isOnRight ? '#c4880d' : '#888888'}; font-weight: ${isOnRight ? '600' : '400'}; width: 80px; text-align: right;">
+                  ${rightLabel}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `;
+  };
+
+  // Generate bar visualizations for each axis
+  const valuesBar = generateBarHtml(
+    details.values?.score ?? 5,
+    "Implicit",
+    "Formative",
+    details.values?.letter ?? "",
+    "F"
+  );
+
+  const authenticityBar = generateBarHtml(
+    details.authenticity?.score ?? 5,
+    "Structural",
+    "Relational",
+    details.authenticity?.letter ?? "",
+    "R"
+  );
+
+  const horizonBar = generateBarHtml(
+    details.horizon?.score ?? 5,
+    "Long-Arc",
+    "Catalytic",
+    details.horizon?.letter ?? "",
+    "C"
+  );
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -117,8 +212,9 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
               <img src="https://web-nine-fawn-27.vercel.app/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
-              <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.3;">
-                Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> Resonance Quotient
+              <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.4;">
+                <span style="display: block;">Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span></span>
+                <span style="display: block;">Resonance Quotient</span>
               </h1>
               <p style="margin: 12px 0 0; font-size: 15px; color: #666666;">
                 Hello ${escapeHtml(fullName)}, here's your complete RQ analysis.
@@ -132,11 +228,13 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(251, 173, 37, 0.12), rgba(251, 173, 37, 0.04)); border: 2px solid rgba(251, 173, 37, 0.25); border-radius: 12px;">
                 <tr>
                   <td align="center" style="padding: 32px 24px;">
-                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 28px; font-weight: 700; color: #c4880d; letter-spacing: 1px; margin-bottom: 6px;">
-                      ${escapeHtml(result.rq ?? "—")}
-                    </div>
-                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 16px; color: #666666; margin-bottom: 20px;">
+                    <!-- RQ Name (now large display) -->
+                    <div style="font-size: 28px; font-weight: 700; color: #c4880d; letter-spacing: 0.5px; margin-bottom: 8px; line-height: 1.2;">
                       ${escapeHtml(result.rqName ?? "—")}
+                    </div>
+                    <!-- RQ Code (now subtitle) -->
+                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 15px; font-weight: 500; color: #666666; letter-spacing: 1px; margin-bottom: 20px;">
+                      ${escapeHtml(result.rq ?? "—")}
                     </div>
 
                     <!-- Clarity Badge -->
@@ -165,14 +263,30 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
             </td>
           </tr>
 
-          <!-- Profile Sections -->
+          <!-- What Your Profile Means Section -->
           <tr>
             <td style="padding: 0 32px 32px;">
-              <!-- Values -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+              <h2 style="margin: 0 0 20px; font-size: 18px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">
+                What Your Profile Means:
+              </h2>
+
+              <!-- Values Orientation -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                 <tr>
                   <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
-                    <h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px;">Values</h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 10px;">
+                      <tr>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px; display: inline;">Values Orientation</h3>
+                        </td>
+                        <td align="right">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${valuesStrength.bg}; color: ${valuesStrength.color};">
+                            ${details.values?.letter ?? ""}(${details.values?.score ?? ""}) · ${valuesStrength.label}
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                    ${valuesBar}
                     <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${escapeHtml(profile.values ?? "—")}
                     </p>
@@ -180,11 +294,23 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                 </tr>
               </table>
 
-              <!-- Authenticity -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+              <!-- Authenticity Expression -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                 <tr>
                   <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
-                    <h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px;">Authenticity</h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 10px;">
+                      <tr>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px; display: inline;">Authenticity Expression</h3>
+                        </td>
+                        <td align="right">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${authenticityStrength.bg}; color: ${authenticityStrength.color};">
+                            ${details.authenticity?.letter ?? ""}(${details.authenticity?.score ?? ""}) · ${authenticityStrength.label}
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                    ${authenticityBar}
                     <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${escapeHtml(profile.authenticity ?? "—")}
                     </p>
@@ -192,11 +318,23 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                 </tr>
               </table>
 
-              <!-- Horizon -->
+              <!-- Flourishing Horizon -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
-                    <h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px;">Horizon</h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 10px;">
+                      <tr>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px; display: inline;">Flourishing Horizon</h3>
+                        </td>
+                        <td align="right">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${horizonStrength.bg}; color: ${horizonStrength.color};">
+                            ${details.horizon?.letter ?? ""}(${details.horizon?.score ?? ""}) · ${horizonStrength.label}
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                    ${horizonBar}
                     <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
                       ${escapeHtml(profile.horizon ?? "—")}
                     </p>
@@ -251,8 +389,8 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                 <tr>
                   <td align="center">
                     <p style="margin: 0 0 12px; font-size: 15px; color: #333333; line-height: 1.6;">
-                      Find out what your RQ can do for you.<br />
-                      Schedule a call with one of our founders, Mike.
+                      Ready to put your RQ to work?<br />
+                      Let's talk about partnership opportunities.
                     </p>
                     <a href="mailto:mike@ghostsignal.cloud" style="font-size: 14px; color: #c4880d; text-decoration: none; font-weight: 500;">
                       mike@ghostsignal.cloud
@@ -316,27 +454,45 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
 </html>
   `.trim();
 
+  // Helper to generate text-based bar
+  const generateTextBar = (score: number, leftLabel: string, rightLabel: string) => {
+    const position = Math.round(((score - 1) / 9) * 10);
+    const bar = "─".repeat(position) + "●" + "─".repeat(10 - position);
+    return `  ${leftLabel.padEnd(12)} [${bar}] ${rightLabel}`;
+  };
+
+  const valuesTextBar = generateTextBar(details.values?.score ?? 5, "Implicit", "Formative");
+  const authenticityTextBar = generateTextBar(details.authenticity?.score ?? 5, "Structural", "Relational");
+  const horizonTextBar = generateTextBar(details.horizon?.score ?? 5, "Long-Arc", "Catalytic");
+
   const text = [
-    "Your GHOSTSignal Resonance Quotient",
+    "Your GHOSTSignal",
+    "Resonance Quotient",
     "",
     `Hello ${fullName}, here's your RQ summary.`,
     "",
     "═══════════════════════════════════",
     "",
-    `RQ Code: ${result.rq ?? "—"}`,
-    `RQ Name: ${result.rqName ?? "—"}`,
+    `${result.rqName ?? "—"}`,
+    `${result.rq ?? "—"}`,
+    "",
     `Signal Clarity: ${clarity.label ?? "—"}`,
     clarity.note ? `  ${clarity.note}` : "",
     "",
     "═══════════════════════════════════",
     "",
-    "VALUES",
+    "WHAT YOUR PROFILE MEANS:",
+    "",
+    `VALUES ORIENTATION [${details.values?.letter ?? ""}(${details.values?.score ?? ""})] - ${valuesStrength.label}`,
+    valuesTextBar,
     profile.values ?? "—",
     "",
-    "AUTHENTICITY",
+    `AUTHENTICITY EXPRESSION [${details.authenticity?.letter ?? ""}(${details.authenticity?.score ?? ""})] - ${authenticityStrength.label}`,
+    authenticityTextBar,
     profile.authenticity ?? "—",
     "",
-    "HORIZON",
+    `FLOURISHING HORIZON [${details.horizon?.letter ?? ""}(${details.horizon?.score ?? ""})] - ${horizonStrength.label}`,
+    horizonTextBar,
     profile.horizon ?? "—",
     "",
     "═══════════════════════════════════",

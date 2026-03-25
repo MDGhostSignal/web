@@ -610,13 +610,17 @@ html:has(.rq-results-page) {
 }
 
 /* Results Screen */
+.rq-results-container {
+  max-width: 800px;
+}
+
 .rq-results-modern {
   animation: fadeInUp 0.5s ease;
 }
 
 .rq-results-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .rq-results-header h1 {
@@ -626,6 +630,40 @@ html:has(.rq-results-page) {
   color: var(--rq-text);
 }
 
+.rq-results-title-line {
+  display: block;
+}
+
+/* Hero section with RQ code and name */
+.rq-results-hero {
+  background: linear-gradient(135deg, rgba(251, 173, 37, 0.1), rgba(251, 173, 37, 0.05));
+  border: 2px solid var(--rq-line);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+/* CTA card at bottom */
+.rq-results-cta-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.rq-results-cta-card .rq-email-reminder {
+  margin: 0 0 24px;
+  font-size: 15px;
+}
+
+.rq-results-cta-card .rq-card-divider {
+  margin: 0 0 24px;
+}
+
+/* Legacy card style - keep for backwards compat */
 .rq-results-card {
   background: linear-gradient(135deg, rgba(251, 173, 37, 0.1), rgba(251, 173, 37, 0.05));
   border: 2px solid var(--rq-line);
@@ -635,6 +673,26 @@ html:has(.rq-results-page) {
   margin-bottom: 32px;
 }
 
+/* Swapped: Name is now the large display, code is the subtitle */
+.rq-name-display {
+  font-size: clamp(24px, 5vw, 40px);
+  font-weight: 700;
+  color: var(--rq-accent);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.rq-code-subtitle {
+  font-family: var(--rq-mono);
+  font-size: clamp(14px, 2.5vw, 18px);
+  font-weight: 500;
+  color: var(--rq-muted);
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+
+/* Legacy styles kept for backwards compatibility */
 .rq-code-large {
   font-family: var(--rq-mono);
   font-size: clamp(24px, 4vw, 36px);

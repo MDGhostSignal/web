@@ -13,7 +13,7 @@ export function ScaleQuestion({
   id,
   label,
   min = 1,
-  max = 9,
+  max = 10,
   value,
   onChange,
 }: ScaleQuestionProps) {
@@ -40,7 +40,7 @@ export function ScaleQuestion({
       </div>
       <div className="rq-scale-labels">
         <span className="rq-scale-label-min">{min} = Lowest</span>
-        <span className="rq-scale-label-center">5 = Neutral</span>
+        <span className="rq-scale-label-center">5–6 = Neutral</span>
         <span className="rq-scale-label-max">{max} = Highest</span>
       </div>
     </div>

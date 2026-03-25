@@ -1,0 +1,634 @@
+/* RQ Results Graph - Radar + Detail Cards */
+
+.rq-results-graph {
+  margin-top: 8px;
+}
+
+.rq-graph-header {
+  display: none; /* Header not needed when inside hero card */
+}
+
+.rq-graph-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--rq-text);
+  margin: 0 0 8px;
+}
+
+.rq-graph-subtitle {
+  font-size: 14px;
+  color: var(--rq-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Details Section */
+.rq-graph-details-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rq-line);
+}
+
+.rq-graph-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.rq-graph-details-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--rq-text);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rq-graph-expand-all {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--rq-line);
+  color: var(--rq-muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--rq-transition);
+  font-family: inherit;
+}
+
+.rq-graph-expand-all:hover {
+  border-color: var(--rq-accent);
+  color: var(--rq-accent);
+}
+
+/* Detail Cards */
+.rq-graph-detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rq-axis-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: var(--rq-transition);
+}
+
+.rq-axis-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.rq-axis-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.rq-axis-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rq-axis-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rq-accent);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rq-axis-card-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.rq-axis-card-content {
+  padding: 0 20px 20px;
+  animation: fadeInUp 0.3s ease;
+}
+
+/* Axis Bar Visualization (inside expandable cards) */
+.rq-axis-bar {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rq-axis-bar-spectrum {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rq-axis-bar-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rq-muted);
+  min-width: 70px;
+  transition: var(--rq-transition);
+}
+
+.rq-axis-bar-label:first-child {
+  text-align: right;
+}
+
+.rq-axis-bar-label:last-child {
+  text-align: left;
+}
+
+.rq-axis-bar-label.active {
+  color: var(--rq-accent);
+  font-weight: 600;
+}
+
+.rq-axis-bar-track {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rq-axis-bar-track-bg {
+  position: relative;
+  height: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(100, 200, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(251, 173, 37, 0.12) 100%
+  );
+  border-radius: 5px;
+  overflow: visible;
+}
+
+.rq-axis-bar-center {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-50%);
+  border-radius: 1px;
+}
+
+.rq-axis-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(251, 173, 37, 0.5),
+    rgba(251, 173, 37, 0.7)
+  );
+  border-radius: 5px;
+  transition: all 0.4s ease;
+}
+
+.rq-axis-bar-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.rq-axis-bar-dot {
+  width: 18px;
+  height: 18px;
+  background: var(--rq-accent);
+  border: 3px solid var(--rq-bg);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(251, 173, 37, 0.5);
+}
+
+.rq-axis-bar-scale {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.rq-axis-bar-scale span {
+  font-family: var(--rq-mono);
+  font-size: 9px;
+  color: var(--rq-muted);
+  opacity: 0.5;
+}
+
+/* Responsive for bar visualization */
+@media (max-width: 480px) {
+  .rq-axis-bar-spectrum {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rq-axis-bar-label {
+    min-width: auto;
+    text-align: center !important;
+  }
+
+  .rq-axis-bar-track {
+    width: 100%;
+    order: 0;
+  }
+
+  .rq-axis-bar-label:first-child {
+    order: -1;
+  }
+
+  .rq-axis-bar-label:last-child {
+    order: 1;
+  }
+}
+
+/* Expand icon for cards */
+.rq-axis-card-header .rq-axis-expand-icon {
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--rq-muted);
+  transition: var(--rq-transition);
+}
+
+.rq-axis-card-header .rq-axis-expand-icon::before {
+  content: "+";
+}
+
+.rq-axis-card-header.expanded .rq-axis-expand-icon::before {
+  content: "−";
+}
+
+.rq-axis-card-header.expanded .rq-axis-expand-icon {
+  color: var(--rq-accent);
+}
+
+/* Legacy axis styles (kept for compatibility) */
+.rq-axis-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rq-accent);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rq-axis-badge {
+  font-family: var(--rq-mono);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+/* Match signal clarity badge styling */
+.rq-axis-badge-light {
+  background: rgba(100, 200, 255, 0.2);
+  color: #64c8ff;
+}
+
+.rq-axis-badge-balanced {
+  background: rgba(255, 200, 100, 0.2);
+  color: #ffc864;
+}
+
+.rq-axis-badge-strong {
+  background: rgba(50, 255, 150, 0.2);
+  color: #50ff96;
+}
+
+/* Spectrum Visualization */
+.rq-axis-spectrum {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rq-axis-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rq-muted);
+  min-width: 80px;
+  transition: var(--rq-transition);
+}
+
+.rq-axis-label-left {
+  text-align: right;
+}
+
+.rq-axis-label-right {
+  text-align: left;
+}
+
+.rq-axis-label-active {
+  color: var(--rq-accent);
+  font-weight: 600;
+}
+
+/* Track */
+.rq-axis-track {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rq-axis-track-bg {
+  position: relative;
+  height: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(100, 200, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(251, 173, 37, 0.15) 100%
+  );
+  border-radius: 6px;
+  overflow: visible;
+}
+
+/* Center marker */
+.rq-axis-center-mark {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-50%);
+  border-radius: 1px;
+}
+
+/* Fill from center */
+.rq-axis-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(251, 173, 37, 0.4),
+    rgba(251, 173, 37, 0.6)
+  );
+  border-radius: 6px;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Position indicator */
+.rq-axis-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.rq-axis-indicator-dot {
+  width: 20px;
+  height: 20px;
+  background: var(--rq-accent);
+  border: 3px solid var(--rq-bg);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(251, 173, 37, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.rq-axis:hover .rq-axis-indicator-dot {
+  transform: scale(1.1);
+}
+
+.rq-axis-indicator-glow {
+  position: absolute;
+  inset: -8px;
+  background: radial-gradient(circle, rgba(251, 173, 37, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
+}
+
+/* Scale markers */
+.rq-axis-scale {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.rq-axis-scale span {
+  font-family: var(--rq-mono);
+  font-size: 10px;
+  color: var(--rq-muted);
+  opacity: 0.6;
+}
+
+/* Strength indicator */
+.rq-axis-strength {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.rq-axis-strength-badge {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Match signal clarity badge styling */
+.rq-axis-strength-light {
+  background: rgba(100, 200, 255, 0.2);
+  color: #64c8ff;
+}
+
+.rq-axis-strength-balanced {
+  background: rgba(255, 200, 100, 0.2);
+  color: #ffc864;
+}
+
+.rq-axis-strength-strong {
+  background: rgba(50, 255, 150, 0.2);
+  color: #50ff96;
+}
+
+.rq-axis-strength-desc {
+  font-size: 13px;
+  color: var(--rq-muted);
+  line-height: 1.4;
+}
+
+/* Expand button */
+.rq-axis-expand {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--rq-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--rq-transition);
+  font-family: inherit;
+}
+
+.rq-axis-expand:hover {
+  color: var(--rq-accent);
+}
+
+.rq-axis-expand-icon::before {
+  content: "+";
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.rq-axis-expand.expanded .rq-axis-expand-icon::before {
+  content: "−";
+}
+
+/* Expanded details */
+.rq-axis-details {
+  padding-top: 16px;
+  animation: fadeInUp 0.3s ease;
+}
+
+.rq-axis-description {
+  font-size: 14px;
+  color: var(--rq-text);
+  line-height: 1.7;
+  margin: 0 0 12px;
+}
+
+.rq-axis-interpretation {
+  font-size: 13px;
+  color: var(--rq-muted);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 0 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--rq-line);
+}
+
+.rq-axis-profile {
+  background: rgba(251, 173, 37, 0.05);
+  border: 1px solid rgba(251, 173, 37, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.rq-axis-profile h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rq-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+}
+
+.rq-axis-profile p {
+  font-size: 14px;
+  color: var(--rq-text);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Legend */
+.rq-graph-legend {
+  margin-top: 32px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.rq-graph-legend-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rq-text);
+  margin: 0 0 8px;
+}
+
+.rq-graph-legend-text {
+  font-size: 13px;
+  color: var(--rq-muted);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .rq-axis {
+    padding: 20px 16px;
+  }
+
+  .rq-axis-spectrum {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rq-axis-label {
+    min-width: auto;
+    text-align: center !important;
+  }
+
+  .rq-axis-label-left {
+    order: -1;
+  }
+
+  .rq-axis-track {
+    order: 0;
+    width: 100%;
+  }
+
+  .rq-axis-label-right {
+    order: 1;
+  }
+
+  .rq-axis-strength {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .rq-axis-profile {
+    padding: 16px;
+  }
+}

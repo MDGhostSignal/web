@@ -7,6 +7,7 @@ import { ScaleQuestion } from "@/components/rq/ScaleQuestion";
 import { ChoiceQuestion } from "@/components/rq/ChoiceQuestion";
 import { TextInput } from "@/components/rq/TextInput";
 import { TextArea } from "@/components/rq/TextArea";
+import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
 import SimpleFog from "./SimpleFog";
 import DesertFog from "./DesertFog";
 import { SnowAnimation } from "./SnowAnimation";
@@ -603,13 +604,13 @@ export default function RQIndexPage() {
         <div className="rq-desert-fog-bg" aria-hidden="true">
           <DesertFog />
         </div>
-        <div className="rq-modern-container">
+        <div className="rq-modern-container rq-results-container">
           <div className="rq-results-modern">
             <header className="rq-results-header">
-              <h1>Your <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> Resonance Quotient</h1>
-              <p className="rq-email-reminder">
-                Check your email inbox to read your full analysis.
-              </p>
+              <h1>
+                <span className="rq-results-title-line">Your <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span></span>
+                <span className="rq-results-title-line">Resonance Quotient</span>
+              </h1>
             </header>
 
             {/* Status notification - fades out after 10 seconds */}
@@ -619,9 +620,10 @@ export default function RQIndexPage() {
               </div>
             )}
 
-            <article className="rq-results-card">
-              <p className="rq-code-large">{result.rq}</p>
-              <p className="rq-name-large">{result.rqName}</p>
+            {/* RQ Code, Name, Graph and Profile - All in one card */}
+            <article className="rq-results-hero">
+              <p className="rq-name-display">{result.rqName}</p>
+              <p className="rq-code-subtitle">{result.rq}</p>
 
               {clarity && (
                 <div className="rq-clarity">
@@ -633,13 +635,23 @@ export default function RQIndexPage() {
                 </div>
               )}
 
+              {/* Axis Graph Visualization */}
+              <RQResultsGraph result={result} />
+            </article>
+
+            {/* CTA Card */}
+            <article className="rq-results-cta-card">
+              <p className="rq-email-reminder">
+                A detailed analysis has been sent to your email.
+              </p>
+
               <hr className="rq-card-divider" />
 
               {/* Reach out to Mike */}
               <aside className="rq-founder-inline">
                 <p className="rq-founder-text">
-                  Find out what your RQ can do for you.<br />
-                  Schedule a call with one of our founders, Mike.
+                  Ready to put your RQ to work?<br />
+                  Let&apos;s talk about partnership opportunities.
                 </p>
                 <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-email">
                   mike@ghostsignal.cloud
