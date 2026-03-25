@@ -421,6 +421,72 @@ html:has(.rq-results-page) {
   margin-bottom: 12px;
 }
 
+/* Custom slider with centered 5 positioning */
+.rq-slider-custom {
+  flex: 1;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  outline: none;
+}
+
+.rq-slider-custom:focus .rq-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(251, 173, 37, 0.3), 0 2px 8px rgba(251, 173, 37, 0.4);
+}
+
+.rq-slider-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: var(--rq-line);
+  border-radius: 3px;
+  transition: var(--rq-transition);
+}
+
+.rq-slider-custom:hover .rq-slider-track {
+  background: rgba(251, 173, 37, 0.25);
+}
+
+.rq-slider-center-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 12px;
+  background: rgba(251, 173, 37, 0.4);
+  border-radius: 1px;
+}
+
+.rq-slider-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: var(--rq-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(251, 173, 37, 0.4);
+  transition: left 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rq-slider-custom:hover .rq-slider-thumb {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(251, 173, 37, 0.6);
+}
+
+.rq-slider-custom:active {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.rq-slider-custom:active .rq-slider-thumb {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Legacy native slider styles (keeping for backwards compat) */
 .rq-slider {
   flex: 1;
   height: 6px;
