@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
+import { ScrollScenes } from "@/components/ScrollScenes";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -26,9 +27,11 @@ export default function WhatIsThisPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
+      {/* Scroll-driven 3D Scenes */}
+      <ScrollScenes className={styles.scrollScenes} />
+
       {/* Hero Section */}
       <section className={styles.hero}>
-        <div className={styles.heroSky} aria-hidden="true" />
         <div className={styles.heroContent}>
           <ScrollFadeUp index={0} duration={1.8}>
             <p className={styles.heroEyebrow}>Welcome to the Signal</p>

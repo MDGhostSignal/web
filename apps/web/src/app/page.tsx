@@ -99,14 +99,6 @@ export default function HomePage() {
                 />
               </ScrollFadeUp>
             </ScrollGrowDockPin>
-
-            <p className={styles.videoCaption}>
-              If you&apos;re looking for
-              <br />
-              A signal in the noise
-              <br />
-              this is it.
-            </p>
           </div>
 
           <section data-gs-home-harmony className={styles.harmony}>

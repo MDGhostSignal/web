@@ -154,3 +154,65 @@ Resonance Quotient
 │  └────────────────────────────┘ │
 └─────────────────────────────────┘
 ```
+
+---
+
+## Session Part 2: "What Is This" Page Earth Globe Animation
+
+### Overview
+Created an interactive 3D Earth globe animation for the "What is this?" page hero section.
+
+### Earth Globe Features
+
+**Visual Design:**
+- Real continent topology from NASA texture map
+- Monochromatic color palette (grays/blues)
+- Dark space background with subtle stars
+- Atmosphere glow with fresnel effect
+- Proper lighting with terminator shadow
+- Ocean specular highlights
+- Limb darkening for realistic depth
+
+**Interactivity:**
+- Slow auto-rotation when idle
+- Mouse/touch drag to rotate manually
+- Inertia-based physics (momentum after release)
+- Vertical tilt clamping (±1.2 radians)
+
+**Performance:**
+- 30fps cap for mobile optimization
+- Low DPR (max 1.5x) for battery efficiency
+- `powerPreference: "low-power"` WebGL hint
+- Respects `prefers-reduced-motion`
+
+### Files Created/Modified
+
+**New Files:**
+- `apps/web/src/components/ScrollScenes.tsx` - Earth globe WebGL component
+- `apps/web/src/components/EarthGlobe.tsx` - Original standalone version (unused)
+
+**Modified Files:**
+- `apps/web/src/app/what-is-this/page.tsx` - Integrated ScrollScenes component
+- `apps/web/src/app/what-is-this/page.module.css` - Updated overflow handling
+- `apps/web/src/app/page.tsx` - Removed "If you're looking for a signal" text
+
+### Technical Implementation
+
+**WebGL Shader (GLSL):**
+- Ray-sphere intersection for globe rendering
+- Equirectangular texture projection
+- Atmosphere calculated via fresnel
+- Film grain for organic feel
+
+**Texture Source:**
+- NASA topology map via unpkg CDN
+- `https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png`
+
+### Bug Fixes During Development
+1. Fixed Y-axis inversion (continents were upside down)
+2. Fixed mouse Y-axis direction (was reversed)
+3. Removed complex raymarching scenes that exceeded shader limits
+4. Changed `overflow-x: clip` to `overflow-x: hidden` for sticky compatibility
+
+### Validation
+- TypeScript: All checks pass
