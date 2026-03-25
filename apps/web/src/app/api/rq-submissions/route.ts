@@ -532,9 +532,13 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   if (!response.ok) {
     const detail = await response.text();
     console.error("User summary email failed:", detail);
+    console.error("Attempted to send to:", userEmail);
+    console.error("From address:", resendFrom);
+    console.error("Note: If using onboarding@resend.dev, you can only send to verified emails on your Resend account.");
     return { attempted: true, sent: false, reason: detail };
   }
 
+  console.log("User summary email sent successfully to:", userEmail);
   return { attempted: true, sent: true, email: userEmail };
 }
 
