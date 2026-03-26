@@ -105,12 +105,12 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   }
 
   // Helper to get strength label and colors
-  // Bands: 1-3 (light), 4-5 (balanced), 6-10 (strong)
+  // Bands: 1-3 (ambient), 4-6 (balanced), 7-10 (emphatic)
   const getStrengthInfo = (score: number | undefined) => {
     const s = score ?? 5;
-    if (s <= 3) return { label: "Lighter Signal", bg: "rgba(70, 130, 180, 0.12)", color: "#4682b4" };
-    if (s <= 5) return { label: "Balanced Signal", bg: "rgba(200, 150, 50, 0.12)", color: "#b8860b" };
-    return { label: "Strong Signal", bg: "rgba(34, 139, 34, 0.12)", color: "#228b22" };
+    if (s <= 3) return { label: "Ambient Signal", bg: "rgba(70, 130, 180, 0.12)", color: "#4682b4" };
+    if (s <= 6) return { label: "Balanced Signal", bg: "rgba(200, 150, 50, 0.12)", color: "#b8860b" };
+    return { label: "Emphatic Signal", bg: "rgba(34, 139, 34, 0.12)", color: "#228b22" };
   };
 
   const valuesStrength = getStrengthInfo(details.values?.score);
@@ -258,6 +258,73 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       </tr>
                       ` : ""}
                     </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Signal Profile Radar Summary -->
+          <tr>
+            <td style="padding: 0 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #fafafa; border-radius: 12px; border: 1px solid #e8e8e8;">
+                <tr>
+                  <td align="center" style="padding: 24px;">
+                    <h3 style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">Your Signal Profile</h3>
+
+                    <!-- Triangular radar representation -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                      <!-- Top vertex: Values -->
+                      <tr>
+                        <td colspan="3" align="center" style="padding-bottom: 16px;">
+                          <div style="display: inline-block; text-align: center;">
+                            <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Values</div>
+                            <div style="font-size: 10px; color: #aaa; margin-bottom: 6px;">
+                              <span style="color: ${details.values?.letter === 'I' ? '#c4880d' : '#aaa'}; font-weight: ${details.values?.letter === 'I' ? '600' : '400'};">I</span>
+                              <span> / </span>
+                              <span style="color: ${details.values?.letter === 'F' ? '#c4880d' : '#aaa'}; font-weight: ${details.values?.letter === 'F' ? '600' : '400'};">F</span>
+                            </div>
+                            <div style="display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(251, 173, 37, 0.25), rgba(251, 173, 37, 0.1)); border: 2px solid #FBAD25; line-height: 48px; text-align: center;">
+                              <span style="font-size: 16px; font-weight: 700; color: #c4880d;">${details.values?.letter ?? ""}${details.values?.score ?? ""}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      <!-- Bottom vertices: Authenticity (left) and Horizon (right) -->
+                      <tr>
+                        <td align="center" style="padding: 8px 24px;">
+                          <div style="display: inline-block; text-align: center;">
+                            <div style="display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(251, 173, 37, 0.25), rgba(251, 173, 37, 0.1)); border: 2px solid #FBAD25; line-height: 48px; text-align: center;">
+                              <span style="font-size: 16px; font-weight: 700; color: #c4880d;">${details.authenticity?.letter ?? ""}${details.authenticity?.score ?? ""}</span>
+                            </div>
+                            <div style="font-size: 10px; color: #aaa; margin-top: 6px;">
+                              <span style="color: ${details.authenticity?.letter === 'S' ? '#c4880d' : '#aaa'}; font-weight: ${details.authenticity?.letter === 'S' ? '600' : '400'};">S</span>
+                              <span> / </span>
+                              <span style="color: ${details.authenticity?.letter === 'R' ? '#c4880d' : '#aaa'}; font-weight: ${details.authenticity?.letter === 'R' ? '600' : '400'};">R</span>
+                            </div>
+                            <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Authenticity</div>
+                          </div>
+                        </td>
+                        <td style="width: 40px;"></td>
+                        <td align="center" style="padding: 8px 24px;">
+                          <div style="display: inline-block; text-align: center;">
+                            <div style="display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(251, 173, 37, 0.25), rgba(251, 173, 37, 0.1)); border: 2px solid #FBAD25; line-height: 48px; text-align: center;">
+                              <span style="font-size: 16px; font-weight: 700; color: #c4880d;">${details.horizon?.letter ?? ""}${details.horizon?.score ?? ""}</span>
+                            </div>
+                            <div style="font-size: 10px; color: #aaa; margin-top: 6px;">
+                              <span style="color: ${details.horizon?.letter === 'L' ? '#c4880d' : '#aaa'}; font-weight: ${details.horizon?.letter === 'L' ? '600' : '400'};">L</span>
+                              <span> / </span>
+                              <span style="color: ${details.horizon?.letter === 'C' ? '#c4880d' : '#aaa'}; font-weight: ${details.horizon?.letter === 'C' ? '600' : '400'};">C</span>
+                            </div>
+                            <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Horizon</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin: 16px 0 0; font-size: 12px; color: #888; font-style: italic;">
+                      Distance from center indicates signal strength (1–10)
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -479,6 +546,22 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     "",
     `Signal Clarity: ${clarity.label ?? "—"}`,
     clarity.note ? `  ${clarity.note}` : "",
+    "",
+    "═══════════════════════════════════",
+    "",
+    "YOUR SIGNAL PROFILE:",
+    "",
+    "              Values",
+    `            ${details.values?.letter ?? ""}(${details.values?.score ?? ""})`,
+    "               ▲",
+    "              / \\",
+    "             /   \\",
+    "            /     \\",
+    "           /       \\",
+    `   ${details.authenticity?.letter ?? ""}(${details.authenticity?.score ?? ""})◄─────────►${details.horizon?.letter ?? ""}(${details.horizon?.score ?? ""})`,
+    "  Authenticity    Horizon",
+    "",
+    "  (Distance from center = signal strength 1-10)",
     "",
     "═══════════════════════════════════",
     "",

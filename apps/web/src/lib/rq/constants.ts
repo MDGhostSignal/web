@@ -57,7 +57,7 @@ export const AXES = {
 export const SCORE_BANDS = {
   light: {
     range: "1–3",
-    label: "Lighter Signal",
+    label: "Ambient Signal",
     description:
       "Present, but flexible. You likely have range here, and can move across the spectrum without much friction.",
   },
@@ -69,7 +69,7 @@ export const SCORE_BANDS = {
   },
   strong: {
     range: "7–10",
-    label: "Strong Signal",
+    label: "Emphatic Signal",
     description:
       "A defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.",
   },

@@ -13,9 +13,9 @@ type RQResultsGraphProps = {
 type AxisKey = "values" | "authenticity" | "horizon";
 
 function getScoreBand(score: number): keyof typeof SCORE_BANDS {
-  // Bands: 1-3 (light), 4-5 (balanced), 6-10 (strong)
+  // Bands: 1-3 (light/ambient), 4-6 (balanced), 7-10 (strong/emphatic)
   if (score <= 3) return "light";
-  if (score <= 5) return "balanced";
+  if (score <= 6) return "balanced";
   return "strong";
 }
 
