@@ -297,20 +297,20 @@
   letter-spacing: 0.5px;
 }
 
-/* Match signal clarity badge styling */
+/* Signal strength badge colors - Ambient (blue), Balanced (amber), Emphatic (green) */
 .rq-axis-badge-light {
-  background: rgba(100, 200, 255, 0.2);
-  color: #64c8ff;
+  background: rgba(100, 180, 255, 0.25) !important;
+  color: #5eb5ff !important;
 }
 
 .rq-axis-badge-balanced {
-  background: rgba(255, 200, 100, 0.2);
-  color: #ffc864;
+  background: rgba(251, 173, 37, 0.25) !important;
+  color: #fbad25 !important;
 }
 
 .rq-axis-badge-strong {
-  background: rgba(50, 255, 150, 0.2);
-  color: #50ff96;
+  background: rgba(80, 220, 130, 0.25) !important;
+  color: #4ade80 !important;
 }
 
 /* Spectrum Visualization */
@@ -465,20 +465,20 @@
   flex-shrink: 0;
 }
 
-/* Match signal clarity badge styling */
+/* Signal strength label colors - Ambient (blue), Balanced (amber), Emphatic (green) */
 .rq-axis-strength-light {
-  background: rgba(100, 200, 255, 0.2);
-  color: #64c8ff;
+  background: rgba(100, 180, 255, 0.25) !important;
+  color: #5eb5ff !important;
 }
 
 .rq-axis-strength-balanced {
-  background: rgba(255, 200, 100, 0.2);
-  color: #ffc864;
+  background: rgba(251, 173, 37, 0.25) !important;
+  color: #fbad25 !important;
 }
 
 .rq-axis-strength-strong {
-  background: rgba(50, 255, 150, 0.2);
-  color: #50ff96;
+  background: rgba(80, 220, 130, 0.25) !important;
+  color: #4ade80 !important;
 }
 
 .rq-axis-strength-desc {

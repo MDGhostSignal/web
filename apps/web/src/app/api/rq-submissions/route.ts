@@ -105,12 +105,12 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   }
 
   // Helper to get strength label and colors
-  // Bands: 1-3 (ambient), 4-6 (balanced), 7-10 (emphatic)
+  // Bands: 1-3 (ambient/blue), 4-6 (balanced/amber), 7-10 (emphatic/green)
   const getStrengthInfo = (score: number | undefined) => {
     const s = score ?? 5;
-    if (s <= 3) return { label: "Ambient Signal", bg: "rgba(70, 130, 180, 0.12)", color: "#4682b4" };
-    if (s <= 6) return { label: "Balanced Signal", bg: "rgba(200, 150, 50, 0.12)", color: "#b8860b" };
-    return { label: "Emphatic Signal", bg: "rgba(34, 139, 34, 0.12)", color: "#228b22" };
+    if (s <= 3) return { label: "Ambient Signal", bg: "rgba(94, 181, 255, 0.15)", color: "#3b9eff" };
+    if (s <= 6) return { label: "Balanced Signal", bg: "rgba(251, 173, 37, 0.15)", color: "#e09800" };
+    return { label: "Emphatic Signal", bg: "rgba(74, 222, 128, 0.15)", color: "#22c55e" };
   };
 
   const valuesStrength = getStrengthInfo(details.values?.score);
