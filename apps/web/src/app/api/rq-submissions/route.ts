@@ -270,60 +270,123 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #fafafa; border-radius: 12px; border: 1px solid #e8e8e8;">
                 <tr>
                   <td align="center" style="padding: 24px;">
-                    <h3 style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">Your Signal Profile</h3>
+                    <h3 style="margin: 0 0 20px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">Your Signal Profile</h3>
 
-                    <!-- Triangular radar representation -->
+                    <!-- Triangular radar representation using email-safe tables -->
                     <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                       <!-- Top vertex: Values -->
                       <tr>
-                        <td colspan="3" align="center" style="padding-bottom: 16px;">
-                          <div style="display: inline-block; text-align: center;">
-                            <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Values</div>
-                            <div style="font-size: 10px; color: #aaa; margin-bottom: 6px;">
-                              <span style="color: ${details.values?.letter === 'I' ? '#c4880d' : '#aaa'}; font-weight: ${details.values?.letter === 'I' ? '600' : '400'};">I</span>
-                              <span> / </span>
-                              <span style="color: ${details.values?.letter === 'F' ? '#c4880d' : '#aaa'}; font-weight: ${details.values?.letter === 'F' ? '600' : '400'};">F</span>
-                            </div>
-                            <div style="display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(251, 173, 37, 0.25), rgba(251, 173, 37, 0.1)); border: 2px solid #FBAD25; line-height: 48px; text-align: center;">
-                              <span style="font-size: 16px; font-weight: 700; color: #c4880d;">${details.values?.letter ?? ""}${details.values?.score ?? ""}</span>
-                            </div>
-                          </div>
+                        <td colspan="3" align="center" style="padding-bottom: 12px;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" align="center">
+                            <tr>
+                              <td align="center" style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px;">Values</td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="font-size: 10px; padding-bottom: 6px;">
+                                <span style="color: ${details.values?.letter === 'I' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.values?.letter === 'I' ? '600' : '400'};">I</span>
+                                <span style="color: #aaaaaa;"> / </span>
+                                <span style="color: ${details.values?.letter === 'F' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.values?.letter === 'F' ? '600' : '400'};">F</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center">
+                                <!--[if mso]>
+                                <v:oval xmlns:v="urn:schemas-microsoft-com:vml" style="width:52px;height:52px;" strokecolor="#FBAD25" strokeweight="2px" fillcolor="#fff5e6">
+                                  <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
+                                    <center style="font-size:16px;font-weight:700;color:#c4880d;font-family:Arial,sans-serif;">${details.values?.letter ?? ""}${details.values?.score ?? ""}</center>
+                                  </v:textbox>
+                                </v:oval>
+                                <![endif]-->
+                                <!--[if !mso]><!-->
+                                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: separate;">
+                                  <tr>
+                                    <td align="center" valign="middle" width="52" height="52" style="width: 52px; height: 52px; border-radius: 26px; -webkit-border-radius: 26px; -moz-border-radius: 26px; background-color: #fff5e6; border: 2px solid #FBAD25; font-size: 16px; font-weight: 700; color: #c4880d; font-family: Arial, sans-serif;">
+                                      ${details.values?.letter ?? ""}${details.values?.score ?? ""}
+                                    </td>
+                                  </tr>
+                                </table>
+                                <!--<![endif]-->
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                       <!-- Bottom vertices: Authenticity (left) and Horizon (right) -->
                       <tr>
-                        <td align="center" style="padding: 8px 24px;">
-                          <div style="display: inline-block; text-align: center;">
-                            <div style="display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(251, 173, 37, 0.25), rgba(251, 173, 37, 0.1)); border: 2px solid #FBAD25; line-height: 48px; text-align: center;">
-                              <span style="font-size: 16px; font-weight: 700; color: #c4880d;">${details.authenticity?.letter ?? ""}${details.authenticity?.score ?? ""}</span>
-                            </div>
-                            <div style="font-size: 10px; color: #aaa; margin-top: 6px;">
-                              <span style="color: ${details.authenticity?.letter === 'S' ? '#c4880d' : '#aaa'}; font-weight: ${details.authenticity?.letter === 'S' ? '600' : '400'};">S</span>
-                              <span> / </span>
-                              <span style="color: ${details.authenticity?.letter === 'R' ? '#c4880d' : '#aaa'}; font-weight: ${details.authenticity?.letter === 'R' ? '600' : '400'};">R</span>
-                            </div>
-                            <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Authenticity</div>
-                          </div>
+                        <td align="center" valign="top" style="padding: 8px 16px;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" align="center">
+                            <tr>
+                              <td align="center">
+                                <!--[if mso]>
+                                <v:oval xmlns:v="urn:schemas-microsoft-com:vml" style="width:52px;height:52px;" strokecolor="#FBAD25" strokeweight="2px" fillcolor="#fff5e6">
+                                  <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
+                                    <center style="font-size:16px;font-weight:700;color:#c4880d;font-family:Arial,sans-serif;">${details.authenticity?.letter ?? ""}${details.authenticity?.score ?? ""}</center>
+                                  </v:textbox>
+                                </v:oval>
+                                <![endif]-->
+                                <!--[if !mso]><!-->
+                                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: separate;">
+                                  <tr>
+                                    <td align="center" valign="middle" width="52" height="52" style="width: 52px; height: 52px; border-radius: 26px; -webkit-border-radius: 26px; -moz-border-radius: 26px; background-color: #fff5e6; border: 2px solid #FBAD25; font-size: 16px; font-weight: 700; color: #c4880d; font-family: Arial, sans-serif;">
+                                      ${details.authenticity?.letter ?? ""}${details.authenticity?.score ?? ""}
+                                    </td>
+                                  </tr>
+                                </table>
+                                <!--<![endif]-->
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="font-size: 10px; padding-top: 6px;">
+                                <span style="color: ${details.authenticity?.letter === 'S' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.authenticity?.letter === 'S' ? '600' : '400'};">S</span>
+                                <span style="color: #aaaaaa;"> / </span>
+                                <span style="color: ${details.authenticity?.letter === 'R' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.authenticity?.letter === 'R' ? '600' : '400'};">R</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; padding-top: 4px;">Authenticity</td>
+                            </tr>
+                          </table>
                         </td>
-                        <td style="width: 40px;"></td>
-                        <td align="center" style="padding: 8px 24px;">
-                          <div style="display: inline-block; text-align: center;">
-                            <div style="display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(251, 173, 37, 0.25), rgba(251, 173, 37, 0.1)); border: 2px solid #FBAD25; line-height: 48px; text-align: center;">
-                              <span style="font-size: 16px; font-weight: 700; color: #c4880d;">${details.horizon?.letter ?? ""}${details.horizon?.score ?? ""}</span>
-                            </div>
-                            <div style="font-size: 10px; color: #aaa; margin-top: 6px;">
-                              <span style="color: ${details.horizon?.letter === 'L' ? '#c4880d' : '#aaa'}; font-weight: ${details.horizon?.letter === 'L' ? '600' : '400'};">L</span>
-                              <span> / </span>
-                              <span style="color: ${details.horizon?.letter === 'C' ? '#c4880d' : '#aaa'}; font-weight: ${details.horizon?.letter === 'C' ? '600' : '400'};">C</span>
-                            </div>
-                            <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Horizon</div>
-                          </div>
+                        <td width="32" style="width: 32px;"></td>
+                        <td align="center" valign="top" style="padding: 8px 16px;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" align="center">
+                            <tr>
+                              <td align="center">
+                                <!--[if mso]>
+                                <v:oval xmlns:v="urn:schemas-microsoft-com:vml" style="width:52px;height:52px;" strokecolor="#FBAD25" strokeweight="2px" fillcolor="#fff5e6">
+                                  <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
+                                    <center style="font-size:16px;font-weight:700;color:#c4880d;font-family:Arial,sans-serif;">${details.horizon?.letter ?? ""}${details.horizon?.score ?? ""}</center>
+                                  </v:textbox>
+                                </v:oval>
+                                <![endif]-->
+                                <!--[if !mso]><!-->
+                                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: separate;">
+                                  <tr>
+                                    <td align="center" valign="middle" width="52" height="52" style="width: 52px; height: 52px; border-radius: 26px; -webkit-border-radius: 26px; -moz-border-radius: 26px; background-color: #fff5e6; border: 2px solid #FBAD25; font-size: 16px; font-weight: 700; color: #c4880d; font-family: Arial, sans-serif;">
+                                      ${details.horizon?.letter ?? ""}${details.horizon?.score ?? ""}
+                                    </td>
+                                  </tr>
+                                </table>
+                                <!--<![endif]-->
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="font-size: 10px; padding-top: 6px;">
+                                <span style="color: ${details.horizon?.letter === 'L' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.horizon?.letter === 'L' ? '600' : '400'};">L</span>
+                                <span style="color: #aaaaaa;"> / </span>
+                                <span style="color: ${details.horizon?.letter === 'C' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.horizon?.letter === 'C' ? '600' : '400'};">C</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; padding-top: 4px;">Horizon</td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                     </table>
 
-                    <p style="margin: 16px 0 0; font-size: 12px; color: #888; font-style: italic;">
-                      Distance from center indicates signal strength (1–10)
+                    <p style="margin: 16px 0 0; font-size: 12px; color: #888888; font-style: italic;">
+                      Your position on each axis (1–10 scale)
                     </p>
                   </td>
                 </tr>
