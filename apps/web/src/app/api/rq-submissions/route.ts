@@ -170,6 +170,141 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     `;
   };
 
+  // Generate SVG radar chart for email (matching the web version)
+  const generateRadarChartSvg = () => {
+    const size = 300;
+    const center = size / 2;
+    const maxRadius = (size / 2) - 45;
+    const minRadius = 15;
+
+    // Axis configuration matching the web version
+    const axisConfig = [
+      { key: "values", angle: 270, leftLabel: "I", rightLabel: "F", name: "Values" },
+      { key: "authenticity", angle: 30, leftLabel: "S", rightLabel: "R", name: "Authenticity" },
+      { key: "horizon", angle: 150, leftLabel: "L", rightLabel: "C", name: "Horizon" },
+    ];
+
+    // Convert polar to cartesian
+    const polarToCartesian = (cx: number, cy: number, r: number, angle: number) => {
+      const rad = ((angle - 90) * Math.PI) / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    };
+
+    // Score to radius (5 at center)
+    const scoreToRadius = (score: number) => {
+      const normalized = score <= 5
+        ? ((score - 1) / 4) * 0.5
+        : 0.5 + ((score - 5) / 5) * 0.5;
+      return minRadius + normalized * (maxRadius - minRadius);
+    };
+
+    // Generate rings
+    const rings = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(v => ({
+      value: v,
+      radius: scoreToRadius(v),
+    }));
+
+    // Get data points
+    const detailsMap: Record<string, { letter?: string; score?: number }> = {
+      values: details.values ?? {},
+      authenticity: details.authenticity ?? {},
+      horizon: details.horizon ?? {},
+    };
+
+    const dataPoints = axisConfig.map(axis => {
+      const detail = detailsMap[axis.key];
+      const score = detail?.score ?? 5;
+      const letter = detail?.letter ?? "";
+      const radius = scoreToRadius(score);
+      const point = polarToCartesian(center, center, radius, axis.angle);
+      return { ...axis, score, letter, ...point };
+    });
+
+    // Polygon path
+    const polygonPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ") + " Z";
+
+    // Axis lines
+    const axisLines = axisConfig.map(axis => {
+      const outer = polarToCartesian(center, center, maxRadius + 8, axis.angle);
+      return { ...axis, x1: center, y1: center, x2: outer.x, y2: outer.y };
+    });
+
+    // Label positions
+    const labelPositions = axisConfig.map(axis => {
+      const pos = polarToCartesian(center, center, maxRadius + 28, axis.angle);
+      const detail = detailsMap[axis.key];
+      return { ...axis, ...pos, activeLabel: detail?.letter ?? "", score: detail?.score ?? 5 };
+    });
+
+    // Light theme colors
+    const ringStroke = "rgba(0, 0, 0, 0.08)";
+    const ringStrokeMid = "rgba(0, 0, 0, 0.15)";
+    const axisStroke = "rgba(0, 0, 0, 0.12)";
+    const polygonFill = "rgba(251, 173, 37, 0.2)";
+    const polygonStroke = "#FBAD25";
+    const pointFill = "#FBAD25";
+    const pointGlow = "rgba(251, 173, 37, 0.3)";
+    const textMuted = "#888888";
+    const textActive = "#c4880d";
+    const textInactive = "rgba(0, 0, 0, 0.3)";
+
+    return `
+      <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="display: block; margin: 0 auto;">
+        <!-- Background rings -->
+        ${rings.map((ring, i) => `
+          <circle cx="${center}" cy="${center}" r="${ring.radius.toFixed(1)}"
+            fill="none"
+            stroke="${ring.value === 5 ? ringStrokeMid : ringStroke}"
+            stroke-width="${ring.value === 5 || ring.value === 10 ? 1.5 : 1}" />
+        `).join("")}
+
+        <!-- Axis lines -->
+        ${axisLines.map(axis => `
+          <line x1="${axis.x1}" y1="${axis.y1}" x2="${axis.x2.toFixed(1)}" y2="${axis.y2.toFixed(1)}"
+            stroke="${axisStroke}" stroke-width="1" />
+        `).join("")}
+
+        <!-- Scale labels (1, 5, 10) -->
+        ${rings.filter(r => r.value === 1 || r.value === 5 || r.value === 10).map(ring => {
+          const pos = polarToCartesian(center, center, ring.radius, 270);
+          return `<text x="${(pos.x - 10).toFixed(1)}" y="${(pos.y + 3).toFixed(1)}"
+            font-family="Arial, sans-serif" font-size="8" fill="${textMuted}">${ring.value}</text>`;
+        }).join("")}
+
+        <!-- Filled polygon -->
+        <path d="${polygonPath}" fill="${polygonFill}" />
+        <path d="${polygonPath}" fill="none" stroke="${polygonStroke}" stroke-width="2" stroke-linejoin="round" />
+
+        <!-- Data points -->
+        ${dataPoints.map(p => `
+          <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="8" fill="${pointGlow}" />
+          <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${pointFill}" stroke="#ffffff" stroke-width="2" />
+        `).join("")}
+
+        <!-- Center marker -->
+        <circle cx="${center}" cy="${center}" r="2" fill="${textMuted}" />
+
+        <!-- Axis labels -->
+        ${labelPositions.map(label => `
+          <text x="${label.x.toFixed(1)}" y="${(label.y - 6).toFixed(1)}"
+            text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="600"
+            fill="${textMuted}" style="text-transform: uppercase; letter-spacing: 0.5px;">${label.name}</text>
+          <text x="${label.x.toFixed(1)}" y="${(label.y + 8).toFixed(1)}"
+            text-anchor="middle" font-family="Arial, sans-serif" font-size="12">
+            <tspan fill="${label.activeLabel === label.leftLabel ? textActive : textInactive}" font-weight="${label.activeLabel === label.leftLabel ? '700' : '400'}">${label.leftLabel}</tspan>
+            <tspan fill="${textInactive}"> / </tspan>
+            <tspan fill="${label.activeLabel === label.rightLabel ? textActive : textInactive}" font-weight="${label.activeLabel === label.rightLabel ? '700' : '400'}">${label.rightLabel}</tspan>
+          </text>
+          <text x="${label.x.toFixed(1)}" y="${(label.y + 22).toFixed(1)}"
+            text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="600"
+            fill="${textActive}">${label.activeLabel}(${label.score})</text>
+        `).join("")}
+      </svg>
+    `;
+  };
+
+  const radarChartSvg = generateRadarChartSvg();
+
   // Generate bar visualizations for each axis
   const valuesBar = generateBarHtml(
     details.values?.score ?? 5,
@@ -264,129 +399,22 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
             </td>
           </tr>
 
-          <!-- Signal Profile Radar Summary -->
+          <!-- Signal Profile Radar Chart -->
           <tr>
             <td style="padding: 0 32px 32px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #fafafa; border-radius: 12px; border: 1px solid #e8e8e8;">
                 <tr>
-                  <td align="center" style="padding: 24px;">
-                    <h3 style="margin: 0 0 20px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">Your Signal Profile</h3>
-
-                    <!-- Triangular radar representation using email-safe tables -->
-                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
-                      <!-- Top vertex: Values -->
+                  <td align="center" style="padding: 24px 16px;">
+                    <h3 style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">Your Signal Profile</h3>
+                    ${radarChartSvg}
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 16px auto 0;">
                       <tr>
-                        <td colspan="3" align="center" style="padding-bottom: 12px;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" align="center">
-                            <tr>
-                              <td align="center" style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px;">Values</td>
-                            </tr>
-                            <tr>
-                              <td align="center" style="font-size: 10px; padding-bottom: 6px;">
-                                <span style="color: ${details.values?.letter === 'I' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.values?.letter === 'I' ? '600' : '400'};">I</span>
-                                <span style="color: #aaaaaa;"> / </span>
-                                <span style="color: ${details.values?.letter === 'F' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.values?.letter === 'F' ? '600' : '400'};">F</span>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td align="center">
-                                <!--[if mso]>
-                                <v:oval xmlns:v="urn:schemas-microsoft-com:vml" style="width:52px;height:52px;" strokecolor="#FBAD25" strokeweight="2px" fillcolor="#fff5e6">
-                                  <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
-                                    <center style="font-size:16px;font-weight:700;color:#c4880d;font-family:Arial,sans-serif;">${details.values?.letter ?? ""}${details.values?.score ?? ""}</center>
-                                  </v:textbox>
-                                </v:oval>
-                                <![endif]-->
-                                <!--[if !mso]><!-->
-                                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: separate;">
-                                  <tr>
-                                    <td align="center" valign="middle" width="52" height="52" style="width: 52px; height: 52px; border-radius: 26px; -webkit-border-radius: 26px; -moz-border-radius: 26px; background-color: #fff5e6; border: 2px solid #FBAD25; font-size: 16px; font-weight: 700; color: #c4880d; font-family: Arial, sans-serif;">
-                                      ${details.values?.letter ?? ""}${details.values?.score ?? ""}
-                                    </td>
-                                  </tr>
-                                </table>
-                                <!--<![endif]-->
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <!-- Bottom vertices: Authenticity (left) and Horizon (right) -->
-                      <tr>
-                        <td align="center" valign="top" style="padding: 8px 16px;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" align="center">
-                            <tr>
-                              <td align="center">
-                                <!--[if mso]>
-                                <v:oval xmlns:v="urn:schemas-microsoft-com:vml" style="width:52px;height:52px;" strokecolor="#FBAD25" strokeweight="2px" fillcolor="#fff5e6">
-                                  <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
-                                    <center style="font-size:16px;font-weight:700;color:#c4880d;font-family:Arial,sans-serif;">${details.authenticity?.letter ?? ""}${details.authenticity?.score ?? ""}</center>
-                                  </v:textbox>
-                                </v:oval>
-                                <![endif]-->
-                                <!--[if !mso]><!-->
-                                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: separate;">
-                                  <tr>
-                                    <td align="center" valign="middle" width="52" height="52" style="width: 52px; height: 52px; border-radius: 26px; -webkit-border-radius: 26px; -moz-border-radius: 26px; background-color: #fff5e6; border: 2px solid #FBAD25; font-size: 16px; font-weight: 700; color: #c4880d; font-family: Arial, sans-serif;">
-                                      ${details.authenticity?.letter ?? ""}${details.authenticity?.score ?? ""}
-                                    </td>
-                                  </tr>
-                                </table>
-                                <!--<![endif]-->
-                              </td>
-                            </tr>
-                            <tr>
-                              <td align="center" style="font-size: 10px; padding-top: 6px;">
-                                <span style="color: ${details.authenticity?.letter === 'S' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.authenticity?.letter === 'S' ? '600' : '400'};">S</span>
-                                <span style="color: #aaaaaa;"> / </span>
-                                <span style="color: ${details.authenticity?.letter === 'R' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.authenticity?.letter === 'R' ? '600' : '400'};">R</span>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td align="center" style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; padding-top: 4px;">Authenticity</td>
-                            </tr>
-                          </table>
-                        </td>
-                        <td width="32" style="width: 32px;"></td>
-                        <td align="center" valign="top" style="padding: 8px 16px;">
-                          <table role="presentation" cellspacing="0" cellpadding="0" align="center">
-                            <tr>
-                              <td align="center">
-                                <!--[if mso]>
-                                <v:oval xmlns:v="urn:schemas-microsoft-com:vml" style="width:52px;height:52px;" strokecolor="#FBAD25" strokeweight="2px" fillcolor="#fff5e6">
-                                  <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
-                                    <center style="font-size:16px;font-weight:700;color:#c4880d;font-family:Arial,sans-serif;">${details.horizon?.letter ?? ""}${details.horizon?.score ?? ""}</center>
-                                  </v:textbox>
-                                </v:oval>
-                                <![endif]-->
-                                <!--[if !mso]><!-->
-                                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: separate;">
-                                  <tr>
-                                    <td align="center" valign="middle" width="52" height="52" style="width: 52px; height: 52px; border-radius: 26px; -webkit-border-radius: 26px; -moz-border-radius: 26px; background-color: #fff5e6; border: 2px solid #FBAD25; font-size: 16px; font-weight: 700; color: #c4880d; font-family: Arial, sans-serif;">
-                                      ${details.horizon?.letter ?? ""}${details.horizon?.score ?? ""}
-                                    </td>
-                                  </tr>
-                                </table>
-                                <!--<![endif]-->
-                              </td>
-                            </tr>
-                            <tr>
-                              <td align="center" style="font-size: 10px; padding-top: 6px;">
-                                <span style="color: ${details.horizon?.letter === 'L' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.horizon?.letter === 'L' ? '600' : '400'};">L</span>
-                                <span style="color: #aaaaaa;"> / </span>
-                                <span style="color: ${details.horizon?.letter === 'C' ? '#c4880d' : '#aaaaaa'}; font-weight: ${details.horizon?.letter === 'C' ? '600' : '400'};">C</span>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td align="center" style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; padding-top: 4px;">Horizon</td>
-                            </tr>
-                          </table>
-                        </td>
+                        <td style="width: 12px; height: 12px; background: rgba(251, 173, 37, 0.3); border: 2px solid #FBAD25; border-radius: 2px;"></td>
+                        <td style="padding-left: 8px; font-size: 13px; color: #333333; font-weight: 500;">Your Signal Profile</td>
                       </tr>
                     </table>
-
-                    <p style="margin: 16px 0 0; font-size: 12px; color: #888888; font-style: italic;">
-                      Your position on each axis (1–10 scale)
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #888888;">
+                      Distance from center indicates signal strength (1–10)
                     </p>
                   </td>
                 </tr>
