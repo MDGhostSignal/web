@@ -298,16 +298,19 @@
 }
 
 /* Signal strength badge colors - Ambient (blue), Balanced (amber), Emphatic (green) */
+.rq-axis-badge.rq-axis-badge-light,
 .rq-axis-badge-light {
   background: rgba(100, 180, 255, 0.25) !important;
   color: #5eb5ff !important;
 }
 
+.rq-axis-badge.rq-axis-badge-balanced,
 .rq-axis-badge-balanced {
   background: rgba(251, 173, 37, 0.25) !important;
   color: #fbad25 !important;
 }
 
+.rq-axis-badge.rq-axis-badge-strong,
 .rq-axis-badge-strong {
   background: rgba(80, 220, 130, 0.25) !important;
   color: #4ade80 !important;
@@ -466,16 +469,19 @@
 }
 
 /* Signal strength label colors - Ambient (blue), Balanced (amber), Emphatic (green) */
+.rq-axis-strength-badge.rq-axis-strength-light,
 .rq-axis-strength-light {
   background: rgba(100, 180, 255, 0.25) !important;
   color: #5eb5ff !important;
 }
 
+.rq-axis-strength-badge.rq-axis-strength-balanced,
 .rq-axis-strength-balanced {
   background: rgba(251, 173, 37, 0.25) !important;
   color: #fbad25 !important;
 }
 
+.rq-axis-strength-badge.rq-axis-strength-strong,
 .rq-axis-strength-strong {
   background: rgba(80, 220, 130, 0.25) !important;
   color: #4ade80 !important;
