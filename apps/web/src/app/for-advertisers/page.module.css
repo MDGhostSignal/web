@@ -452,6 +452,7 @@
 .businessVisual {
   position: sticky;
   top: calc(var(--gs-n-120) * var(--gs-px));
+  overflow: visible;
 }
 
 .visualStack {
@@ -461,9 +462,13 @@
 }
 
 .visualImage {
-  width: 100%;
+  width: 200%;
+  max-width: none;
   height: auto;
   object-fit: cover;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .visualOverlay {
@@ -816,7 +821,9 @@
   }
 
   .visualImage {
-    max-height: calc(var(--gs-n-400, 400) * var(--gs-px));
+    width: 100%;
+    max-width: none;
+    max-height: none;
     object-fit: cover;
   }
 

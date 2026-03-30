@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
+import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -219,16 +220,15 @@ export default function ForAdvertisersPage() {
 
           <div className={styles.businessVisual}>
             <ScrollFadeUp index={0} duration={1.8}>
-              <div className={styles.visualStack}>
+              <ParallaxY range={["-35rem", "35rem"]}>
                 <Image
                   src="/images/home/figma/mariah.png"
                   alt="Classical sculpture representing timeless values"
-                  width={400}
-                  height={500}
+                  width={2585}
+                  height={3231}
                   className={styles.visualImage}
                 />
-                <div className={styles.visualOverlay} />
-              </div>
+              </ParallaxY>
             </ScrollFadeUp>
           </div>
         </div>
