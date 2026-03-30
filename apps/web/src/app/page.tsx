@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
+import FogOverlay from "./FogOverlay";
 
 import styles from "./page.module.css";
 
@@ -35,6 +36,7 @@ export default function LegacyHomePage() {
           disablePictureInPicture
         />
         <div className={styles.cloudOverlay} />
+        <FogOverlay className={styles.fogOverlay} />
       </div>
 
       {/* Hero Section */}

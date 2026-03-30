@@ -49,6 +49,16 @@
   pointer-events: none;
 }
 
+/* Fog overlay - WebGL animated fog on top of video */
+.fogOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.6;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 /* ========================================
    Hero Section
    ======================================== */
@@ -88,8 +98,9 @@
 }
 
 .heroSignal {
-  font-weight: var(--gs-font-weight-thin, 100);
+  font-weight: 100;
   text-transform: none;
+  opacity: 0.85;
 }
 
 /* Hero Subtitle */

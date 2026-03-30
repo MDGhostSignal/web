@@ -72,24 +72,24 @@ export default function ForAdvertisersPage() {
       <section className={styles.hero}>
         <div className={styles.heroSky} aria-hidden="true" />
         <div className={styles.heroContent}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <Image
+              src="/images/brand/ghostsignal-logo.svg"
+              alt="GhostSignal"
+              width={480}
+              height={480}
+              className={styles.heroLogo}
+            />
+          </ScrollFadeUp>
           <SplitLinesReveal duration={2.2} stagger={0.3}>
             <h1 className={styles.heroHeadline}>
               The right audience changes everything.
             </h1>
           </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.8}>
-            <div className={styles.heroLogoText}>
-              <Image
-                src="/images/brand/ghostsignal-logo.svg"
-                alt="GhostSignal"
-                width={48}
-                height={48}
-                className={styles.heroLogo}
-              />
-              <p className={styles.heroSubhead}>
-                We help you reach the right audience by pairing your brand with creators who share your convictions. When alignment is authentic, trust flows naturally — and <strong>trust is the soil where conversion grows.</strong>
-              </p>
-            </div>
+          <ScrollFadeUp index={1} duration={1.8}>
+            <p className={styles.heroSubhead}>
+              We help you reach the right audience by pairing your brand with creators who share your convictions. When alignment is authentic, trust flows naturally — and <strong>trust is the soil where conversion grows.</strong>
+            </p>
           </ScrollFadeUp>
         </div>
       </section>
