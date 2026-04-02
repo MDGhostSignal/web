@@ -1202,19 +1202,9 @@ html:has(.rq-results-page) {
   border-color: #5eb5ff;
 }
 
-.rq-numbers-item-light strong {
-  color: #5eb5ff;
-  font-weight: 600;
-}
-
 .rq-numbers-item-balanced {
   background: rgba(251, 173, 37, 0.08);
   border-color: #fbad25;
-}
-
-.rq-numbers-item-balanced strong {
-  color: #fbad25;
-  font-weight: 600;
 }
 
 .rq-numbers-item-strong {
@@ -1222,7 +1212,18 @@ html:has(.rq-results-page) {
   border-color: #4ade80;
 }
 
-.rq-numbers-item-strong strong {
+/* Signal text colors - used for number labels and signal type names */
+.rq-signal-light {
+  color: #5eb5ff;
+  font-weight: 600;
+}
+
+.rq-signal-balanced {
+  color: #fbad25;
+  font-weight: 600;
+}
+
+.rq-signal-strong {
   color: #4ade80;
   font-weight: 600;
 }

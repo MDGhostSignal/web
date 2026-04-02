@@ -741,13 +741,13 @@ export default function RQIndexPage() {
                 </p>
                 <ul className="rq-numbers-list">
                   <li className="rq-numbers-item-light">
-                    <strong>Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
+                    <span className="rq-signal-light">Lower numbers (1–3)</span> indicate an <span className="rq-signal-light">ambient signal</span>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
                   </li>
                   <li className="rq-numbers-item-balanced">
-                    <strong>Middle numbers (4–6)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
+                    <span className="rq-signal-balanced">Middle numbers (4–6)</span> suggest a <span className="rq-signal-balanced">balanced signal</span>—you have a clear leaning, but with openness. You can adapt without losing yourself.
                   </li>
                   <li className="rq-numbers-item-strong">
-                    <strong>Higher numbers (7–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
+                    <span className="rq-signal-strong">Higher numbers (7–10)</span> indicate an <span className="rq-signal-strong">emphatic signal</span>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
                   </li>
                 </ul>
                 <p className="rq-numbers-note">

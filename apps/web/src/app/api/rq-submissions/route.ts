@@ -457,7 +457,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       <tr>
                         <td style="padding: 12px 16px; background: rgba(100, 180, 255, 0.08); border-radius: 0 8px 8px 0; border-left: 4px solid #5eb5ff;">
                           <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
-                            <strong style="color: #3b9eff;">Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
+                            <span style="color: #3b9eff; font-weight: 600;">Lower numbers (1–3)</span> indicate an <span style="color: #3b9eff; font-weight: 600;">ambient signal</span>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
                           </p>
                         </td>
                       </tr>
@@ -465,7 +465,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       <tr>
                         <td style="padding: 12px 16px; background: rgba(251, 173, 37, 0.08); border-radius: 0 8px 8px 0; border-left: 4px solid #fbad25;">
                           <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
-                            <strong style="color: #e09800;">Middle numbers (4–6)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
+                            <span style="color: #e09800; font-weight: 600;">Middle numbers (4–6)</span> suggest a <span style="color: #e09800; font-weight: 600;">balanced signal</span>—you have a clear leaning, but with openness. You can adapt without losing yourself.
                           </p>
                         </td>
                       </tr>
@@ -473,7 +473,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       <tr>
                         <td style="padding: 12px 16px; background: rgba(80, 220, 130, 0.08); border-radius: 0 8px 8px 0; border-left: 4px solid #4ade80;">
                           <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
-                            <strong style="color: #22c55e;">Higher numbers (7–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
+                            <span style="color: #22c55e; font-weight: 600;">Higher numbers (7–10)</span> indicate an <span style="color: #22c55e; font-weight: 600;">emphatic signal</span>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
                           </p>
                         </td>
                       </tr>
