@@ -1279,6 +1279,17 @@ html:has(.rq-results-page) {
   opacity: 0.85;
 }
 
+.rq-name-quote {
+  font-size: 16px;
+  color: var(--rq-muted);
+  line-height: 1.6;
+  margin: 16px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-style: italic;
+  text-align: center;
+}
+
 /* Mobile responsive for explanation section */
 @media (max-width: 768px) {
   .rq-explanation-section {
