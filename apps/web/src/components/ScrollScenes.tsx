@@ -113,7 +113,7 @@ void main() {
     float cloudDiff = max(dot(cloudNormal, lightDir), 0.0);
     float cloudLighting = 0.5 + cloudDiff * 0.5;
 
-    cloudAlpha = cloudDensity * 0.85; // More visible clouds
+    cloudAlpha = cloudDensity * 0.25; // Subtle, transparent clouds
     cloudColor = vec3(1.0) * cloudLighting;
   }
 
