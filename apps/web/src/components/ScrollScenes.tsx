@@ -106,8 +106,8 @@ void main() {
     cloudUv.x = fract(cloudUv.x);
 
     vec4 cloudSample = texture2D(uCloudTexture, cloudUv);
-    // Try both RGB (white clouds) and alpha channel
-    float cloudDensity = max(cloudSample.r, cloudSample.a);
+    // Try both RGB (white clouds) and alpha channel, inverted
+    float cloudDensity = 1.0 - max(cloudSample.r, cloudSample.a);
 
     // Cloud lighting
     float cloudDiff = max(dot(cloudNormal, lightDir), 0.0);
