@@ -107,6 +107,19 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   const chartBaseUrl = "https://web-nine-fawn-27.vercel.app";
   const chartUrl = `${chartBaseUrl}/api/rq-chart?vl=${details.values?.letter || "F"}&vs=${details.values?.score || 5}&al=${details.authenticity?.letter || "R"}&as=${details.authenticity?.score || 5}&hl=${details.horizon?.letter || "L"}&hs=${details.horizon?.score || 5}`;
 
+  // Helper to get badge colors based on score
+  // 1-3: Blue (ambient), 4-6: Amber (balanced), 7-10: Green (emphatic)
+  const getBadgeColors = (score: number | undefined) => {
+    const s = score ?? 5;
+    if (s <= 3) return { bg: "rgba(100, 180, 255, 0.25)", color: "#3b9eff" }; // Blue - ambient
+    if (s <= 6) return { bg: "rgba(251, 173, 37, 0.25)", color: "#c4880d" };  // Amber - balanced
+    return { bg: "rgba(80, 220, 130, 0.25)", color: "#22c55e" };              // Green - emphatic
+  };
+
+  const valuesBadge = getBadgeColors(details.values?.score);
+  const authBadge = getBadgeColors(details.authenticity?.score);
+  const horizonBadge = getBadgeColors(details.horizon?.score);
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -210,7 +223,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                           <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Axis 1: Values Orientation</h3>
                         </td>
                         <td align="right">
-                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(251, 173, 37, 0.15); color: #c4880d;">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ${valuesBadge.bg}; color: ${valuesBadge.color};">
                             You're ${details.values?.letter === "F" ? "an F" : "an I"} (${details.values?.score ?? ""})
                           </span>
                         </td>
@@ -246,7 +259,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                           <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Axis 2: Authenticity Expression</h3>
                         </td>
                         <td align="right">
-                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(251, 173, 37, 0.15); color: #c4880d;">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ${authBadge.bg}; color: ${authBadge.color};">
                             You're ${details.authenticity?.letter === "R" ? "an R" : "an S"} (${details.authenticity?.score ?? ""})
                           </span>
                         </td>
@@ -282,7 +295,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                           <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Axis 3: Flourishing Time Horizon</h3>
                         </td>
                         <td align="right">
-                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(251, 173, 37, 0.15); color: #c4880d;">
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ${horizonBadge.bg}; color: ${horizonBadge.color};">
                             You're ${details.horizon?.letter === "L" ? "an L" : "a C"} (${details.horizon?.score ?? ""})
                           </span>
                         </td>
