@@ -66,8 +66,9 @@ void main() {
 
   vec3 lightDir = normalize(vec3(0.5, 0.3, 0.8));
 
-  // Dark space background
-  vec3 col = vec3(0.01, 0.012, 0.018);
+  // Transparent background
+  vec3 col = vec3(0.0);
+  float alpha = 0.0;
 
   // Atmosphere glow
   float atmoT = sphereIntersect(ro, rd, atmoRadius);
@@ -78,6 +79,7 @@ void main() {
     fresnel = pow(fresnel, 2.5);
     vec3 atmoColor = vec3(0.3, 0.35, 0.45);
     col += atmoColor * fresnel * 0.5;
+    alpha = max(alpha, fresnel * 0.4); // Semi-transparent atmosphere glow
   }
 
   // Cloud layer (rendered first, will be blended over earth)
@@ -182,6 +184,7 @@ void main() {
 
     // Blend clouds over earth surface
     col = mix(surfaceColor, cloudColor, cloudAlpha);
+    alpha = 1.0; // Earth is fully opaque
   }
 
   // Subtle vignette
@@ -192,7 +195,7 @@ void main() {
   float grain = (hash(gl_FragCoord.xy + uTime * 0.1) - 0.5) * 0.015;
   col += grain;
 
-  gl_FragColor = vec4(col, 1.0);
+  gl_FragColor = vec4(col, alpha);
 }
 `;
 
@@ -262,9 +265,10 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const gl = canvas.getContext("webgl", {
-      alpha: false,
+      alpha: true,
       antialias: false,
       powerPreference: "low-power",
+      premultipliedAlpha: false,
     }) as WebGLRenderingContext | null;
 
     if (!gl) {
@@ -458,7 +462,7 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
         rotation.y = Math.max(-1.2, Math.min(1.2, rotation.y));
       }
 
-      gl.clearColor(0.01, 0.012, 0.018, 1.0);
+      gl.clearColor(0.0, 0.0, 0.0, 0.0); // Transparent background
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.useProgram(program);

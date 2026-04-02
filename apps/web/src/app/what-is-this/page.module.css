@@ -25,6 +25,10 @@
   height: 100vh;
   z-index: 1;
   pointer-events: none;
+  background-image: url('/images/what-is-this/clouds-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .scrollScenes {
