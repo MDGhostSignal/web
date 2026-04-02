@@ -61,8 +61,16 @@
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
+  padding: calc(var(--gs-n-120) * var(--gs-px)) calc(var(--gs-n-80) * var(--gs-px));
   width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1200px) {
+  .textSection {
+    padding-left: calc(var(--gs-n-160) * var(--gs-px));
+    padding-right: calc(var(--gs-n-160) * var(--gs-px));
+  }
 }
 
 .alignLeft {
