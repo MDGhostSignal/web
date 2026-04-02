@@ -357,8 +357,8 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
         cloudLoaded = false;
       };
 
-      // Cloud texture - high resolution (4096px) from live satellite data
-      img.src = "https://raw.githubusercontent.com/matteason/live-cloud-maps/main/clouds_4096.png";
+      // Cloud texture - high resolution from live satellite data (updates every 3 hours)
+      img.src = "https://clouds.matteason.co.uk/images/2048x1024/clouds-alpha.png";
     };
 
     loadEarthTexture();
