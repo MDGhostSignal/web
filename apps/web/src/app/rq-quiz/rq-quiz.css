@@ -1087,11 +1087,26 @@ html:has(.rq-results-page) {
 .rq-axis-result {
   font-family: var(--rq-mono);
   font-size: 14px;
-  font-weight: 500;
-  color: var(--rq-accent);
-  background: rgba(251, 173, 37, 0.15);
-  padding: 4px 12px;
+  font-weight: 700;
+  padding: 6px 14px;
   border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+/* Signal strength colors for axis result badges - matches RQResultsGraph badges */
+.rq-axis-result.rq-axis-result-light {
+  background: rgba(100, 180, 255, 0.25);
+  color: #5eb5ff;
+}
+
+.rq-axis-result.rq-axis-result-balanced {
+  background: rgba(251, 173, 37, 0.25);
+  color: #fbad25;
+}
+
+.rq-axis-result.rq-axis-result-strong {
+  background: rgba(80, 220, 130, 0.25);
+  color: #4ade80;
 }
 
 .rq-axis-spectrum {

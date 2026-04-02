@@ -647,7 +647,7 @@ export default function RQIndexPage() {
               <div className="rq-axis-explanation">
                 <h3 className="rq-axis-name">
                   Axis 1: Values Orientation
-                  <span className="rq-axis-result">
+                  <span className={`rq-axis-result ${result.details.values.score <= 3 ? "rq-axis-result-light" : result.details.values.score <= 6 ? "rq-axis-result-balanced" : "rq-axis-result-strong"}`}>
                     You&apos;re {result.details.values.letter === "F" ? "an F" : "an I"} ({result.details.values.score})
                   </span>
                 </h3>
@@ -677,7 +677,7 @@ export default function RQIndexPage() {
               <div className="rq-axis-explanation">
                 <h3 className="rq-axis-name">
                   Axis 2: Authenticity Expression
-                  <span className="rq-axis-result">
+                  <span className={`rq-axis-result ${result.details.authenticity.score <= 3 ? "rq-axis-result-light" : result.details.authenticity.score <= 6 ? "rq-axis-result-balanced" : "rq-axis-result-strong"}`}>
                     You&apos;re {result.details.authenticity.letter === "R" ? "an R" : "an S"} ({result.details.authenticity.score})
                   </span>
                 </h3>
@@ -707,7 +707,7 @@ export default function RQIndexPage() {
               <div className="rq-axis-explanation">
                 <h3 className="rq-axis-name">
                   Axis 3: Flourishing Time Horizon
-                  <span className="rq-axis-result">
+                  <span className={`rq-axis-result ${result.details.horizon.score <= 3 ? "rq-axis-result-light" : result.details.horizon.score <= 6 ? "rq-axis-result-balanced" : "rq-axis-result-strong"}`}>
                     You&apos;re {result.details.horizon.letter === "L" ? "an L" : "a C"} ({result.details.horizon.score})
                   </span>
                 </h3>
