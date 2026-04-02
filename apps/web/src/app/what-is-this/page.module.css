@@ -148,7 +148,7 @@
 }
 
 .finalLogo {
-  width: clamp(280px, 50vw, 500px);
+  width: clamp(200px, 40vw, 320px);
   height: auto;
   margin-bottom: calc(var(--gs-n-32) * var(--gs-px));
 }
