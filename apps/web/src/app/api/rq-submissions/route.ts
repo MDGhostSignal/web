@@ -78,7 +78,6 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   const basics = payload.basics ?? {};
   const result = payload.result ?? {};
   const clarity = result.clarity ?? {};
-  const profile = (result.profile ?? {}) as { values?: string; authenticity?: string; horizon?: string };
   const details = (result.details ?? {}) as {
     values?: { letter?: string; score?: number };
     authenticity?: { letter?: string; score?: number };
@@ -103,72 +102,6 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     clarityBgColor = "rgba(178, 34, 34, 0.12)";
     clarityTextColor = "#b22222";
   }
-
-  // Helper to get strength label and colors
-  // Bands: 1-3 (ambient/blue), 4-6 (balanced/amber), 7-10 (emphatic/green)
-  const getStrengthInfo = (score: number | undefined) => {
-    const s = score ?? 5;
-    if (s <= 3) return { label: "Ambient Signal", bg: "rgba(94, 181, 255, 0.15)", color: "#3b9eff" };
-    if (s <= 6) return { label: "Balanced Signal", bg: "rgba(251, 173, 37, 0.15)", color: "#e09800" };
-    return { label: "Emphatic Signal", bg: "rgba(74, 222, 128, 0.15)", color: "#22c55e" };
-  };
-
-  const valuesStrength = getStrengthInfo(details.values?.score);
-  const authenticityStrength = getStrengthInfo(details.authenticity?.score);
-  const horizonStrength = getStrengthInfo(details.horizon?.score);
-
-  // Helper to generate a simple email-safe bar visualization
-  const generateBarHtml = (score: number, leftLabel: string, rightLabel: string, activeLetter: string, rightLetter: string) => {
-    const position = ((score - 1) / 9) * 100;
-    const isOnRight = activeLetter === rightLetter;
-
-    return `
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 12px 0 16px; background: #f0f0f0; border-radius: 8px; padding: 12px;">
-        <tr>
-          <td style="padding: 0 12px;">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-              <tr>
-                <td style="font-size: 11px; color: ${!isOnRight ? '#c4880d' : '#888888'}; font-weight: ${!isOnRight ? '600' : '400'}; width: 80px;">
-                  ${leftLabel}
-                </td>
-                <td style="padding: 0 8px;">
-                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td style="background: linear-gradient(90deg, #e8e8e8, #f5f5f5, #fff5e6); height: 8px; border-radius: 4px; position: relative;">
-                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="height: 8px;">
-                          <tr>
-                            <td style="width: ${position}%;"></td>
-                            <td style="width: 16px;">
-                              <div style="width: 14px; height: 14px; background: #FBAD25; border-radius: 50%; margin-top: -3px; box-shadow: 0 1px 3px rgba(251,173,37,0.4);"></div>
-                            </td>
-                            <td></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
-                          <tr>
-                            <td style="font-size: 9px; color: #aaa; font-family: monospace;">1</td>
-                            <td style="font-size: 9px; color: #aaa; font-family: monospace; text-align: center;">5</td>
-                            <td style="font-size: 9px; color: #aaa; font-family: monospace; text-align: right;">10</td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-                <td style="font-size: 11px; color: ${isOnRight ? '#c4880d' : '#888888'}; font-weight: ${isOnRight ? '600' : '400'}; width: 80px; text-align: right;">
-                  ${rightLabel}
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    `;
-  };
 
   // Generate SVG radar chart for email (matching the web version)
   const generateRadarChartSvg = () => {
@@ -251,7 +184,7 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     return `
       <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="display: block; margin: 0 auto;">
         <!-- Background rings -->
-        ${rings.map((ring, i) => `
+        ${rings.map((ring) => `
           <circle cx="${center}" cy="${center}" r="${ring.radius.toFixed(1)}"
             fill="none"
             stroke="${ring.value === 5 ? ringStrokeMid : ringStroke}"
@@ -304,31 +237,6 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
   };
 
   const radarChartSvg = generateRadarChartSvg();
-
-  // Generate bar visualizations for each axis
-  const valuesBar = generateBarHtml(
-    details.values?.score ?? 5,
-    "Implicit",
-    "Formative",
-    details.values?.letter ?? "",
-    "F"
-  );
-
-  const authenticityBar = generateBarHtml(
-    details.authenticity?.score ?? 5,
-    "Structural",
-    "Relational",
-    details.authenticity?.letter ?? "",
-    "R"
-  );
-
-  const horizonBar = generateBarHtml(
-    details.horizon?.score ?? 5,
-    "Long-Arc",
-    "Catalytic",
-    details.horizon?.letter ?? "",
-    "C"
-  );
 
   const html = `
 <!DOCTYPE html>
@@ -422,80 +330,174 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
             </td>
           </tr>
 
-          <!-- What Your Profile Means Section -->
+          <!-- What Does This Mean For You? Section -->
           <tr>
             <td style="padding: 0 32px 32px;">
-              <h2 style="margin: 0 0 20px; font-size: 18px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">
-                What Your Profile Means:
+              <h2 style="margin: 0 0 24px; font-size: 20px; font-weight: 600; color: #c4880d; text-align: center;">
+                What Does This Mean For You?
               </h2>
 
-              <!-- Values Orientation -->
+              <!-- Axis 1: Values Orientation -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 10px;">
+                  <td style="background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #e8e8e8;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 12px;">
                       <tr>
                         <td>
-                          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px; display: inline;">Values Orientation</h3>
+                          <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Axis 1: Values Orientation</h3>
                         </td>
                         <td align="right">
-                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${valuesStrength.bg}; color: ${valuesStrength.color};">
-                            ${details.values?.letter ?? ""}(${details.values?.score ?? ""}) · ${valuesStrength.label}
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(251, 173, 37, 0.15); color: #c4880d;">
+                            You're ${details.values?.letter === "F" ? "an F" : "an I"} (${details.values?.score ?? ""})
                           </span>
                         </td>
                       </tr>
                     </table>
-                    ${valuesBar}
-                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
-                      ${escapeHtml(profile.values ?? "—")}
+                    <p style="margin: 0 0 8px; font-size: 12px; font-family: monospace; color: #888888;">
+                      <span style="color: ${details.values?.letter === "F" ? "#c4880d" : "#888888"}; font-weight: ${details.values?.letter === "F" ? "600" : "400"};">Formative</span>
+                      ←→
+                      <span style="color: ${details.values?.letter === "I" ? "#c4880d" : "#888888"}; font-weight: ${details.values?.letter === "I" ? "600" : "400"};">Implicit</span>
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #666666;">
+                      This axis reflects how your convictions show up in your work.
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #333333; padding: 12px 16px; background: rgba(251, 173, 37, 0.08); border-left: 3px solid #FBAD25; border-radius: 0 8px 8px 0;">
+                      ${details.values?.letter === "F"
+                        ? "As an <strong style=\"color: #c4880d;\">F (Formative)</strong>, your values are named, declared, and actively shaping your message—what you stand for is part of what you say."
+                        : "As an <strong style=\"color: #c4880d;\">I (Implicit)</strong>, your values are lived rather than stated—what you stand for is revealed through tone, choices, and outcomes."}
+                    </p>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #888888; font-style: italic;">
+                      Neither is more "true" than the other. This is about where your signal is most naturally expressed: spoken or embodied, explicit or ambient.
                     </p>
                   </td>
                 </tr>
               </table>
 
-              <!-- Authenticity Expression -->
+              <!-- Axis 2: Authenticity Expression -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 10px;">
+                  <td style="background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #e8e8e8;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 12px;">
                       <tr>
                         <td>
-                          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px; display: inline;">Authenticity Expression</h3>
+                          <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Axis 2: Authenticity Expression</h3>
                         </td>
                         <td align="right">
-                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${authenticityStrength.bg}; color: ${authenticityStrength.color};">
-                            ${details.authenticity?.letter ?? ""}(${details.authenticity?.score ?? ""}) · ${authenticityStrength.label}
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(251, 173, 37, 0.15); color: #c4880d;">
+                            You're ${details.authenticity?.letter === "R" ? "an R" : "an S"} (${details.authenticity?.score ?? ""})
                           </span>
                         </td>
                       </tr>
                     </table>
-                    ${authenticityBar}
-                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
-                      ${escapeHtml(profile.authenticity ?? "—")}
+                    <p style="margin: 0 0 8px; font-size: 12px; font-family: monospace; color: #888888;">
+                      <span style="color: ${details.authenticity?.letter === "R" ? "#c4880d" : "#888888"}; font-weight: ${details.authenticity?.letter === "R" ? "600" : "400"};">Relational</span>
+                      ←→
+                      <span style="color: ${details.authenticity?.letter === "S" ? "#c4880d" : "#888888"}; font-weight: ${details.authenticity?.letter === "S" ? "600" : "400"};">Structural</span>
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #666666;">
+                      This axis captures how your voice carries trust.
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #333333; padding: 12px 16px; background: rgba(251, 173, 37, 0.08); border-left: 3px solid #FBAD25; border-radius: 0 8px 8px 0;">
+                      ${details.authenticity?.letter === "R"
+                        ? "As an <strong style=\"color: #c4880d;\">R (Relational)</strong>, your authenticity flows through story, personality, and lived experience—people trust you because they feel like they know you."
+                        : "As an <strong style=\"color: #c4880d;\">S (Structural)</strong>, your authenticity comes through clarity, consistency, and well-formed ideas—people trust you because your message holds together."}
+                    </p>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #888888; font-style: italic;">
+                      This is not a choice between warmth and rigor. It's about whether your signal lands more through connection or construction, presence or precision.
                     </p>
                   </td>
                 </tr>
               </table>
 
-              <!-- Flourishing Horizon -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+              <!-- Axis 3: Flourishing Time Horizon -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
                 <tr>
-                  <td style="border-left: 3px solid #FBAD25; padding-left: 20px; background: #fafafa; padding-top: 16px; padding-bottom: 16px; padding-right: 16px; border-radius: 0 8px 8px 0;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 10px;">
+                  <td style="background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #e8e8e8;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 12px;">
                       <tr>
                         <td>
-                          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #c4880d; text-transform: uppercase; letter-spacing: 0.5px; display: inline;">Flourishing Horizon</h3>
+                          <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Axis 3: Flourishing Time Horizon</h3>
                         </td>
                         <td align="right">
-                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ${horizonStrength.bg}; color: ${horizonStrength.color};">
-                            ${details.horizon?.letter ?? ""}(${details.horizon?.score ?? ""}) · ${horizonStrength.label}
+                          <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(251, 173, 37, 0.15); color: #c4880d;">
+                            You're ${details.horizon?.letter === "L" ? "an L" : "a C"} (${details.horizon?.score ?? ""})
                           </span>
                         </td>
                       </tr>
                     </table>
-                    ${horizonBar}
-                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #333333;">
-                      ${escapeHtml(profile.horizon ?? "—")}
+                    <p style="margin: 0 0 8px; font-size: 12px; font-family: monospace; color: #888888;">
+                      <span style="color: ${details.horizon?.letter === "L" ? "#c4880d" : "#888888"}; font-weight: ${details.horizon?.letter === "L" ? "600" : "400"};">Long-Arc</span>
+                      ←→
+                      <span style="color: ${details.horizon?.letter === "C" ? "#c4880d" : "#888888"}; font-weight: ${details.horizon?.letter === "C" ? "600" : "400"};">Catalytic</span>
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #666666;">
+                      This axis reveals how you think about growth, impact, and partnership over time.
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #333333; padding: 12px 16px; background: rgba(251, 173, 37, 0.08); border-left: 3px solid #FBAD25; border-radius: 0 8px 8px 0;">
+                      ${details.horizon?.letter === "L"
+                        ? "As an <strong style=\"color: #c4880d;\">L (Long-Arc)</strong>, you prioritize depth, durability, and relationships that compound slowly—trust is built and protected over time."
+                        : "As a <strong style=\"color: #c4880d;\">C (Catalytic)</strong>, you value momentum, activation, and timely impact—energy is directed toward movement and measurable lift."}
+                    </p>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #888888; font-style: italic;">
+                      Both create real value. This axis simply shows whether your signal is oriented toward endurance or ignition, formation or acceleration.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What Do Your Numbers Mean? -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px; border-top: 1px solid #e8e8e8; padding-top: 24px;">
+                <tr>
+                  <td>
+                    <h3 style="margin: 0 0 12px; font-size: 16px; font-weight: 600; color: #1a1a1a;">What Do Your Numbers Mean?</h3>
+                    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #666666;">
+                      Each letter in your RQ is paired with a number from 1 to 10. This number reflects how strongly that signal shows up in you.
+                    </p>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 12px 16px; background: #f8f8f8; border-radius: 8px; border: 1px solid #e8e8e8; margin-bottom: 8px;">
+                          <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
+                            <strong style="color: #c4880d;">Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
+                          </p>
+                        </td>
+                      </tr>
+                      <tr><td style="height: 8px;"></td></tr>
+                      <tr>
+                        <td style="padding: 12px 16px; background: #f8f8f8; border-radius: 8px; border: 1px solid #e8e8e8; margin-bottom: 8px;">
+                          <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
+                            <strong style="color: #c4880d;">Middle numbers (4–5)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
+                          </p>
+                        </td>
+                      </tr>
+                      <tr><td style="height: 8px;"></td></tr>
+                      <tr>
+                        <td style="padding: 12px 16px; background: #f8f8f8; border-radius: 8px; border: 1px solid #e8e8e8;">
+                          <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
+                            <strong style="color: #c4880d;">Higher numbers (6–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="margin: 16px 0 0; font-size: 13px; line-height: 1.5; color: #888888; font-style: italic;">
+                      This isn't about better or worse. It's about clarity and intensity—how loudly or quietly each part of your signal comes through, and how important it is that others meet you there.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Your Call Sign -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top: 1px solid #e8e8e8; padding-top: 24px;">
+                <tr>
+                  <td>
+                    <h3 style="margin: 0 0 12px; font-size: 16px; font-weight: 600; color: #c4880d;">Your Call Sign: ${escapeHtml(result.rqName ?? "—")}</h3>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #666666;">
+                      The three-word name underneath your RQ score is shorthand for your signal.
+                    </p>
+                    <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #333333;">
+                      Each word corresponds to one axis of the Resonance Index—Values, Authenticity, and Time Horizon—and reflects both your direction and your strength on that axis. Taken together, they form your "call sign": a quick, intuitive way to understand how you interact in partnerships, how you communicate, and how you build.
+                    </p>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #888888; font-style: italic;">
+                      It's not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance.
                     </p>
                   </td>
                 </tr>
@@ -613,16 +615,18 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
 </html>
   `.trim();
 
-  // Helper to generate text-based bar
-  const generateTextBar = (score: number, leftLabel: string, rightLabel: string) => {
-    const position = Math.round(((score - 1) / 9) * 10);
-    const bar = "─".repeat(position) + "●" + "─".repeat(10 - position);
-    return `  ${leftLabel.padEnd(12)} [${bar}] ${rightLabel}`;
-  };
+  // Build personalized axis descriptions for plain text
+  const valuesPersonal = details.values?.letter === "F"
+    ? "As an F (Formative), your values are named, declared, and actively shaping your message—what you stand for is part of what you say."
+    : "As an I (Implicit), your values are lived rather than stated—what you stand for is revealed through tone, choices, and outcomes.";
 
-  const valuesTextBar = generateTextBar(details.values?.score ?? 5, "Implicit", "Formative");
-  const authenticityTextBar = generateTextBar(details.authenticity?.score ?? 5, "Structural", "Relational");
-  const horizonTextBar = generateTextBar(details.horizon?.score ?? 5, "Long-Arc", "Catalytic");
+  const authenticityPersonal = details.authenticity?.letter === "R"
+    ? "As an R (Relational), your authenticity flows through story, personality, and lived experience—people trust you because they feel like they know you."
+    : "As an S (Structural), your authenticity comes through clarity, consistency, and well-formed ideas—people trust you because your message holds together.";
+
+  const horizonPersonal = details.horizon?.letter === "L"
+    ? "As an L (Long-Arc), you prioritize depth, durability, and relationships that compound slowly—trust is built and protected over time."
+    : "As a C (Catalytic), you value momentum, activation, and timely impact—energy is directed toward movement and measurable lift.";
 
   const text = [
     "Your GHOSTSignal",
@@ -640,35 +644,73 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     "",
     "═══════════════════════════════════",
     "",
-    "YOUR SIGNAL PROFILE:",
+    "WHAT DOES THIS MEAN FOR YOU?",
     "",
-    "              Values",
-    `            ${details.values?.letter ?? ""}(${details.values?.score ?? ""})`,
-    "               ▲",
-    "              / \\",
-    "             /   \\",
-    "            /     \\",
-    "           /       \\",
-    `   ${details.authenticity?.letter ?? ""}(${details.authenticity?.score ?? ""})◄─────────►${details.horizon?.letter ?? ""}(${details.horizon?.score ?? ""})`,
-    "  Authenticity    Horizon",
+    "───────────────────────────────────",
     "",
-    "  (Distance from center = signal strength 1-10)",
+    `AXIS 1: VALUES ORIENTATION — You're ${details.values?.letter === "F" ? "an F" : "an I"} (${details.values?.score ?? ""})`,
+    `Formative ←→ Implicit`,
+    "",
+    "This axis reflects how your convictions show up in your work.",
+    "",
+    valuesPersonal,
+    "",
+    'Neither is more "true" than the other. This is about where your signal is most naturally expressed: spoken or embodied, explicit or ambient.',
+    "",
+    "───────────────────────────────────",
+    "",
+    `AXIS 2: AUTHENTICITY EXPRESSION — You're ${details.authenticity?.letter === "R" ? "an R" : "an S"} (${details.authenticity?.score ?? ""})`,
+    `Relational ←→ Structural`,
+    "",
+    "This axis captures how your voice carries trust.",
+    "",
+    authenticityPersonal,
+    "",
+    "This is not a choice between warmth and rigor. It's about whether your signal lands more through connection or construction, presence or precision.",
+    "",
+    "───────────────────────────────────",
+    "",
+    `AXIS 3: FLOURISHING TIME HORIZON — You're ${details.horizon?.letter === "L" ? "an L" : "a C"} (${details.horizon?.score ?? ""})`,
+    `Long-Arc ←→ Catalytic`,
+    "",
+    "This axis reveals how you think about growth, impact, and partnership over time.",
+    "",
+    horizonPersonal,
+    "",
+    "Both create real value. This axis simply shows whether your signal is oriented toward endurance or ignition, formation or acceleration.",
     "",
     "═══════════════════════════════════",
     "",
-    "WHAT YOUR PROFILE MEANS:",
+    "WHAT DO YOUR NUMBERS MEAN?",
     "",
-    `VALUES ORIENTATION [${details.values?.letter ?? ""}(${details.values?.score ?? ""})] - ${valuesStrength.label}`,
-    valuesTextBar,
-    profile.values ?? "—",
+    "Each letter in your RQ is paired with a number from 1 to 10.",
+    "This number reflects how strongly that signal shows up in you.",
     "",
-    `AUTHENTICITY EXPRESSION [${details.authenticity?.letter ?? ""}(${details.authenticity?.score ?? ""})] - ${authenticityStrength.label}`,
-    authenticityTextBar,
-    profile.authenticity ?? "—",
+    "• Lower numbers (1–3): Ambient signal—present, but flexible.",
+    "  You likely have range here and can move across the spectrum without much friction.",
     "",
-    `FLOURISHING HORIZON [${details.horizon?.letter ?? ""}(${details.horizon?.score ?? ""})] - ${horizonStrength.label}`,
-    horizonTextBar,
-    profile.horizon ?? "—",
+    "• Middle numbers (4–5): Balanced signal—you have a clear leaning, but with openness.",
+    "  You can adapt without losing yourself.",
+    "",
+    "• Higher numbers (6–10): Emphatic signal—this is a defining part of how you operate.",
+    "  Alignment here matters more, and mismatches are easier to feel.",
+    "",
+    "This isn't about better or worse. It's about clarity and intensity—how loudly or",
+    "quietly each part of your signal comes through, and how important it is that others meet you there.",
+    "",
+    "═══════════════════════════════════",
+    "",
+    `YOUR CALL SIGN: ${result.rqName ?? "—"}`,
+    "",
+    "The three-word name underneath your RQ score is shorthand for your signal.",
+    "",
+    "Each word corresponds to one axis of the Resonance Index—Values, Authenticity,",
+    "and Time Horizon—and reflects both your direction and your strength on that axis.",
+    "Taken together, they form your \"call sign\": a quick, intuitive way to understand",
+    "how you interact in partnerships, how you communicate, and how you build.",
+    "",
+    "It's not a label to live inside, but a way to recognize yourself—and to help",
+    "others recognize you—at a glance.",
     "",
     "═══════════════════════════════════",
     "",

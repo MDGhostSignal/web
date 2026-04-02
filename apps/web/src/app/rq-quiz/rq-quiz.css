@@ -1044,6 +1044,231 @@ html:has(.rq-results-page) {
   margin-top: 32px;
 }
 
+/* ===================================
+   EXPLANATION SECTION (What Does This Mean For You?)
+   =================================== */
+.rq-explanation-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 32px 24px;
+  margin-bottom: 32px;
+}
+
+.rq-explanation-title {
+  font-size: clamp(20px, 4vw, 26px);
+  font-weight: 600;
+  color: var(--rq-accent);
+  margin: 0 0 28px;
+  text-align: center;
+}
+
+/* Axis Explanation Blocks */
+.rq-axis-explanation {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rq-axis-explanation:last-of-type {
+  border-bottom: none;
+}
+
+.rq-axis-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--rq-text);
+  margin: 0 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+}
+
+.rq-axis-result {
+  font-family: var(--rq-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rq-accent);
+  background: rgba(251, 173, 37, 0.15);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.rq-axis-spectrum {
+  font-family: var(--rq-mono);
+  font-size: 13px;
+  color: var(--rq-muted);
+  margin: 0 0 12px;
+  letter-spacing: 0.5px;
+}
+
+.rq-spectrum-active {
+  color: var(--rq-accent);
+  font-weight: 600;
+}
+
+.rq-spectrum-inactive {
+  opacity: 0.5;
+}
+
+.rq-axis-description {
+  font-size: 15px;
+  color: var(--rq-muted);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.rq-axis-personal {
+  font-size: 15px;
+  color: var(--rq-text);
+  line-height: 1.6;
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  background: rgba(251, 173, 37, 0.08);
+  border-left: 3px solid var(--rq-accent);
+  border-radius: 0 8px 8px 0;
+}
+
+.rq-axis-personal strong {
+  color: var(--rq-accent);
+}
+
+.rq-axis-note {
+  font-size: 14px;
+  color: var(--rq-muted);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* Numbers Explanation */
+.rq-numbers-explanation {
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 8px;
+}
+
+.rq-numbers-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--rq-text);
+  margin: 0 0 12px;
+}
+
+.rq-numbers-intro {
+  font-size: 15px;
+  color: var(--rq-muted);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.rq-numbers-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rq-numbers-list li {
+  font-size: 14px;
+  color: var(--rq-text);
+  line-height: 1.6;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rq-numbers-list li strong {
+  color: var(--rq-accent);
+  font-weight: 600;
+}
+
+.rq-numbers-list li em {
+  color: var(--rq-muted);
+  font-style: normal;
+  opacity: 0.9;
+}
+
+.rq-numbers-note {
+  font-size: 14px;
+  color: var(--rq-muted);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* Name Explanation (Call Sign) */
+.rq-name-explanation {
+  padding: 24px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rq-name-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--rq-accent);
+  margin: 0 0 12px;
+}
+
+.rq-name-intro {
+  font-size: 15px;
+  color: var(--rq-muted);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.rq-name-description {
+  font-size: 15px;
+  color: var(--rq-text);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.rq-name-note {
+  font-size: 14px;
+  color: var(--rq-muted);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* Mobile responsive for explanation section */
+@media (max-width: 768px) {
+  .rq-explanation-section {
+    padding: 24px 16px;
+  }
+
+  .rq-explanation-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .rq-axis-name {
+    font-size: 15px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rq-axis-result {
+    align-self: flex-start;
+  }
+
+  .rq-axis-personal {
+    padding: 10px 14px;
+  }
+
+  .rq-numbers-list li {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
 .rq-snowdrift-section {
   position: relative;
   display: flex;

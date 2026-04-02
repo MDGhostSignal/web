@@ -639,6 +639,137 @@ export default function RQIndexPage() {
               <RQResultsGraph result={result} />
             </article>
 
+            {/* What Does This Mean For You? */}
+            <article className="rq-explanation-section">
+              <h2 className="rq-explanation-title">What Does This Mean For You?</h2>
+
+              {/* Axis 1: Values Orientation */}
+              <div className="rq-axis-explanation">
+                <h3 className="rq-axis-name">
+                  Axis 1: Values Orientation
+                  <span className="rq-axis-result">
+                    You&apos;re {result.details.values.letter === "F" ? "an F" : "an I"} ({result.details.values.score})
+                  </span>
+                </h3>
+                <p className="rq-axis-spectrum">
+                  <span className={result.details.values.letter === "F" ? "rq-spectrum-active" : "rq-spectrum-inactive"}>Formative</span>
+                  {" ←→ "}
+                  <span className={result.details.values.letter === "I" ? "rq-spectrum-active" : "rq-spectrum-inactive"}>Implicit</span>
+                </p>
+                <p className="rq-axis-description">
+                  This axis reflects how your convictions show up in your work.
+                </p>
+                {result.details.values.letter === "F" ? (
+                  <p className="rq-axis-personal">
+                    As an <strong>F (Formative)</strong>, your values are named, declared, and actively shaping your message—what you stand for is part of what you say.
+                  </p>
+                ) : (
+                  <p className="rq-axis-personal">
+                    As an <strong>I (Implicit)</strong>, your values are lived rather than stated—what you stand for is revealed through tone, choices, and outcomes.
+                  </p>
+                )}
+                <p className="rq-axis-note">
+                  Neither is more &ldquo;true&rdquo; than the other. This is about where your signal is most naturally expressed: spoken or embodied, explicit or ambient.
+                </p>
+              </div>
+
+              {/* Axis 2: Authenticity Expression */}
+              <div className="rq-axis-explanation">
+                <h3 className="rq-axis-name">
+                  Axis 2: Authenticity Expression
+                  <span className="rq-axis-result">
+                    You&apos;re {result.details.authenticity.letter === "R" ? "an R" : "an S"} ({result.details.authenticity.score})
+                  </span>
+                </h3>
+                <p className="rq-axis-spectrum">
+                  <span className={result.details.authenticity.letter === "R" ? "rq-spectrum-active" : "rq-spectrum-inactive"}>Relational</span>
+                  {" ←→ "}
+                  <span className={result.details.authenticity.letter === "S" ? "rq-spectrum-active" : "rq-spectrum-inactive"}>Structural</span>
+                </p>
+                <p className="rq-axis-description">
+                  This axis captures how your voice carries trust.
+                </p>
+                {result.details.authenticity.letter === "R" ? (
+                  <p className="rq-axis-personal">
+                    As an <strong>R (Relational)</strong>, your authenticity flows through story, personality, and lived experience—people trust you because they feel like they know you.
+                  </p>
+                ) : (
+                  <p className="rq-axis-personal">
+                    As an <strong>S (Structural)</strong>, your authenticity comes through clarity, consistency, and well-formed ideas—people trust you because your message holds together.
+                  </p>
+                )}
+                <p className="rq-axis-note">
+                  This is not a choice between warmth and rigor. It&apos;s about whether your signal lands more through connection or construction, presence or precision.
+                </p>
+              </div>
+
+              {/* Axis 3: Flourishing Time Horizon */}
+              <div className="rq-axis-explanation">
+                <h3 className="rq-axis-name">
+                  Axis 3: Flourishing Time Horizon
+                  <span className="rq-axis-result">
+                    You&apos;re {result.details.horizon.letter === "L" ? "an L" : "a C"} ({result.details.horizon.score})
+                  </span>
+                </h3>
+                <p className="rq-axis-spectrum">
+                  <span className={result.details.horizon.letter === "L" ? "rq-spectrum-active" : "rq-spectrum-inactive"}>Long-Arc</span>
+                  {" ←→ "}
+                  <span className={result.details.horizon.letter === "C" ? "rq-spectrum-active" : "rq-spectrum-inactive"}>Catalytic</span>
+                </p>
+                <p className="rq-axis-description">
+                  This axis reveals how you think about growth, impact, and partnership over time.
+                </p>
+                {result.details.horizon.letter === "L" ? (
+                  <p className="rq-axis-personal">
+                    As an <strong>L (Long-Arc)</strong>, you prioritize depth, durability, and relationships that compound slowly—trust is built and protected over time.
+                  </p>
+                ) : (
+                  <p className="rq-axis-personal">
+                    As a <strong>C (Catalytic)</strong>, you value momentum, activation, and timely impact—energy is directed toward movement and measurable lift.
+                  </p>
+                )}
+                <p className="rq-axis-note">
+                  Both create real value. This axis simply shows whether your signal is oriented toward endurance or ignition, formation or acceleration.
+                </p>
+              </div>
+
+              {/* What Do Your Numbers Mean? */}
+              <div className="rq-numbers-explanation">
+                <h3 className="rq-numbers-title">What Do Your Numbers Mean?</h3>
+                <p className="rq-numbers-intro">
+                  Each letter in your RQ is paired with a number from 1 to 10. This number reflects how strongly that signal shows up in you.
+                </p>
+                <ul className="rq-numbers-list">
+                  <li>
+                    <strong>Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
+                  </li>
+                  <li>
+                    <strong>Middle numbers (4–5)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
+                  </li>
+                  <li>
+                    <strong>Higher numbers (6–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
+                  </li>
+                </ul>
+                <p className="rq-numbers-note">
+                  This isn&apos;t about better or worse. It&apos;s about clarity and intensity—how loudly or quietly each part of your signal comes through, and how important it is that others meet you there.
+                </p>
+              </div>
+
+              {/* Your Call Sign */}
+              <div className="rq-name-explanation">
+                <h3 className="rq-name-title">Your Call Sign: {result.rqName}</h3>
+                <p className="rq-name-intro">
+                  The three-word name underneath your RQ score is shorthand for your signal.
+                </p>
+                <p className="rq-name-description">
+                  Each word corresponds to one axis of the Resonance Index—Values, Authenticity, and Time Horizon—and reflects both your direction and your strength on that axis. Taken together, they form your &ldquo;call sign&rdquo;: a quick, intuitive way to understand how you interact in partnerships, how you communicate, and how you build.
+                </p>
+                <p className="rq-name-note">
+                  It&apos;s not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance.
+                </p>
+              </div>
+            </article>
+
             {/* CTA Card */}
             <article className="rq-results-cta-card">
               <p className="rq-email-reminder">
