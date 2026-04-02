@@ -33,7 +33,6 @@ uniform float uRotationX;
 uniform float uRotationY;
 
 #define PI 3.14159265359
-#define NUM_CITIES 20
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -47,67 +46,58 @@ float sphereIntersect(vec3 ro, vec3 rd, float r) {
   return -b - sqrt(h);
 }
 
-// Generate cluster of tiny lights around a city center
-float cityCluster(vec2 pos, vec2 cityCenter, float seed, int numLights) {
-  float glow = 0.0;
-  float clusterRadius = 0.04; // Spread of lights around city center
-  float lightRadius = 0.004;  // Size of each tiny light
-
-  for (int i = 0; i < 24; i++) {
-    if (i >= numLights) break;
-
-    // Generate random offset for each light using seed
-    float fi = float(i);
-    float angle = hash(vec2(seed, fi)) * 2.0 * PI;
-    float dist = hash(vec2(fi, seed)) * clusterRadius;
-
-    // Offset position from city center
-    vec2 lightPos = cityCenter + vec2(cos(angle), sin(angle)) * dist;
-
-    // Sharp tiny point light
-    float d = distance(pos, lightPos);
-    glow += smoothstep(lightRadius, lightRadius * 0.3, d);
-  }
-
-  return glow;
+// Fast city light - single sharp point with early culling
+float cityLight(vec2 pos, vec2 city, float size) {
+  vec2 d = pos - city;
+  float dist2 = d.x * d.x + d.y * d.y; // Squared distance (no sqrt)
+  float r2 = size * size;
+  return dist2 < r2 ? 1.0 : 0.0; // Sharp cutoff, no gradient
 }
 
-// City lights - returns glow intensity at given lat/lon
-float cityLights(float lat, float lon, float time) {
-  vec2 currentPos = vec2(lat, lon);
-  float glow = 0.0;
+// City lights - optimized with early culling
+float cityLights(float lat, float lon) {
+  vec2 p = vec2(lat, lon);
+  float light = 0.0;
+  float s = 0.012; // Light point size
 
-  // Europe - dense clusters
-  glow += cityCluster(currentPos, vec2(0.899, -0.002), 1.0, 20);  // London
-  glow += cityCluster(currentPos, vec2(0.854, 0.041), 2.0, 18);   // Paris
-  glow += cityCluster(currentPos, vec2(0.916, 0.234), 3.0, 16);   // Berlin
-  glow += cityCluster(currentPos, vec2(0.974, 0.656), 4.0, 18);   // Moscow
-  glow += cityCluster(currentPos, vec2(0.706, -0.064), 5.0, 14);  // Madrid
+  // Early culling by region (skip distant cities entirely)
+  // Europe (lat 0.7-1.0, lon -0.1-0.7)
+  if (lat > 0.6 && lat < 1.1 && lon > -0.2 && lon < 0.8) {
+    light += cityLight(p, vec2(0.899, -0.002), s);  // London
+    light += cityLight(p, vec2(0.854, 0.041), s);   // Paris
+    light += cityLight(p, vec2(0.916, 0.234), s);   // Berlin
+    light += cityLight(p, vec2(0.974, 0.656), s);   // Moscow
+    light += cityLight(p, vec2(0.706, -0.064), s);  // Madrid
+  }
 
-  // Africa
-  glow += cityCluster(currentPos, vec2(0.113, 0.059), 6.0, 16);   // Lagos
-  glow += cityCluster(currentPos, vec2(0.524, 0.545), 7.0, 14);   // Cairo
-  glow += cityCluster(currentPos, vec2(-0.457, 0.489), 8.0, 12);  // Johannesburg
-  glow += cityCluster(currentPos, vec2(-0.022, 0.643), 9.0, 12);  // Nairobi
-  glow += cityCluster(currentPos, vec2(-0.076, 0.268), 10.0, 14); // Kinshasa
+  // Africa (lat -0.5-0.6, lon 0.0-0.7)
+  if (lat > -0.6 && lat < 0.6 && lon > -0.1 && lon < 0.8) {
+    light += cityLight(p, vec2(0.113, 0.059), s);   // Lagos
+    light += cityLight(p, vec2(0.524, 0.545), s);   // Cairo
+    light += cityLight(p, vec2(-0.457, 0.489), s);  // Johannesburg
+    light += cityLight(p, vec2(-0.022, 0.643), s);  // Nairobi
+    light += cityLight(p, vec2(-0.076, 0.268), s);  // Kinshasa
+  }
 
-  // Americas
-  glow += cityCluster(currentPos, vec2(0.711, -1.291), 11.0, 24); // New York
-  glow += cityCluster(currentPos, vec2(0.595, -2.063), 12.0, 20); // Los Angeles
-  glow += cityCluster(currentPos, vec2(-0.410, -0.813), 13.0, 18);// São Paulo
+  // Americas (lon -2.2 to -0.7)
+  if (lon > -2.3 && lon < -0.6) {
+    light += cityLight(p, vec2(0.711, -1.291), s);  // New York
+    light += cityLight(p, vec2(0.595, -2.063), s);  // Los Angeles
+    light += cityLight(p, vec2(-0.410, -0.813), s); // São Paulo
+  }
 
-  // Asia
-  glow += cityCluster(currentPos, vec2(0.623, 2.438), 14.0, 24);  // Tokyo
-  glow += cityCluster(currentPos, vec2(0.696, 2.032), 15.0, 22);  // Beijing
-  glow += cityCluster(currentPos, vec2(0.333, 1.272), 16.0, 20);  // Mumbai
-  glow += cityCluster(currentPos, vec2(0.440, 0.965), 17.0, 16);  // Dubai
-  glow += cityCluster(currentPos, vec2(0.023, 1.812), 18.0, 14);  // Singapore
-  glow += cityCluster(currentPos, vec2(0.388, 1.992), 19.0, 16);  // Hong Kong
+  // Asia (lon 0.9-2.7)
+  if (lon > 0.8 && lon < 2.8) {
+    light += cityLight(p, vec2(0.623, 2.438), s);   // Tokyo
+    light += cityLight(p, vec2(0.696, 2.032), s);   // Beijing
+    light += cityLight(p, vec2(0.333, 1.272), s);   // Mumbai
+    light += cityLight(p, vec2(0.440, 0.965), s);   // Dubai
+    light += cityLight(p, vec2(0.023, 1.812), s);   // Singapore
+    light += cityLight(p, vec2(0.388, 1.992), s);   // Hong Kong
+    light += cityLight(p, vec2(-0.592, 2.639), s);  // Sydney
+  }
 
-  // Oceania
-  glow += cityCluster(currentPos, vec2(-0.592, 2.639), 20.0, 16); // Sydney
-
-  return glow;
+  return light;
 }
 
 void main() {
@@ -195,13 +185,11 @@ void main() {
     float spec = pow(max(dot(normal, halfVec), 0.0), 48.0);
     surfaceColor += vec3(0.25) * spec * (1.0 - isLand) * terminator;
 
-    // City lights - tiny white points, brighter on dark side
-    float cityGlow = cityLights(lat, lon, uTime);
-    float nightFactor = 1.0 - terminator; // Stronger on night side
-    float dayVisibility = 0.25; // Slightly visible during day
-    float cityIntensity = cityGlow * (nightFactor * 0.8 + dayVisibility);
-    vec3 cityColor = vec3(1.0, 1.0, 1.0); // Pure white
-    surfaceColor += cityColor * cityIntensity * 0.5;
+    // City lights - sharp white points, brighter on dark side
+    float cityGlow = cityLights(lat, lon);
+    float nightFactor = 1.0 - terminator;
+    float cityIntensity = cityGlow * (nightFactor * 0.7 + 0.3);
+    surfaceColor += vec3(1.0) * cityIntensity * 0.8;
 
     float limb = 1.0 - abs(dot(rd, normal));
     limb = pow(limb, 2.0);
