@@ -117,7 +117,7 @@
 
 .spinningLogo {
   flex-shrink: 0;
-  margin-left: calc(var(--gs-n-48) * var(--gs-px));
+  margin-left: calc(var(--gs-n-96) * var(--gs-px));
 }
 
 @media (max-width: 1024px) {
@@ -134,11 +134,12 @@
 .sectionHeadline {
   margin: 0;
   font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: clamp(32px, 5vw, 56px);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(32px, 6vw, 80px);
   line-height: 1.1;
   color: var(--gs-tw-white);
   text-transform: uppercase;
+  letter-spacing: -0.02em;
 }
 
 .sectionSubtitle {
@@ -218,6 +219,55 @@
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+/* =============================================================================
+   WHITE PAPER CTA SECTION
+   ============================================================================= */
+
+.whitepaperSection {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+}
+
+.whitepaperContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-32) * var(--gs-px));
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+}
+
+.whitepaperText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: clamp(20px, 3vw, 28px);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.whitepaperButton {
+  display: inline-block;
+  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  background: #FBAD25;
+  color: #1a1a1a;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-lg-size);
+  line-height: var(--gs-text-lg-leading);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 200ms ease, transform 200ms ease;
+}
+
+.whitepaperButton:hover {
+  background: #e09d1f;
+  transform: translateY(-2px);
 }
 
 /* =============================================================================

@@ -73,10 +73,10 @@ export function SpinningLogo3D({ className = "" }: Props) {
         {/* Depth layers (edge/thickness) - no backface culling */}
         {depthLayers}
 
-        {/* Back face */}
+        {/* Back face - flipped horizontally so logo reads correctly from behind */}
         <div
           className={styles.face}
-          style={{ transform: `translateZ(${-HALF_DEPTH}px) rotateY(180deg)` }}
+          style={{ transform: `translateZ(${-HALF_DEPTH}px) rotateY(180deg) scaleX(-1)` }}
         >
           <Image
             src="/images/what-is-this/logo-white1.svg"

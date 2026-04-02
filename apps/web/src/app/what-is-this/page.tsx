@@ -61,7 +61,7 @@ export default function WhatIsThisPage() {
               <div className={styles.textContainer}>
                 <SplitLinesReveal duration={1.8} stagger={0.25}>
                   <h1 className={styles.sectionHeadline}>
-                    Ghost Signal is the values-based podcast advertising network
+                    The values-based podcast advertising network
                   </h1>
                 </SplitLinesReveal>
                 <ScrollFadeUp index={0} duration={1.6}>
@@ -158,6 +158,27 @@ export default function WhatIsThisPage() {
                 <p className={styles.finalTagline}>
                   Everything else is just static.
                 </p>
+              </ScrollFadeUp>
+            </div>
+          </section>
+
+          {/* White Paper CTA Section */}
+          <section className={styles.whitepaperSection}>
+            <div className={styles.whitepaperContent}>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.whitepaperText}>
+                  Access our white paper and read about how GhostSignal can help you make the world.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <a
+                  href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.whitepaperButton}
+                >
+                  Read the White Paper
+                </a>
               </ScrollFadeUp>
             </div>
           </section>
