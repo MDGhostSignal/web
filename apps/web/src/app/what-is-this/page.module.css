@@ -5,53 +5,123 @@
   position: relative;
   min-height: 100dvh;
   overflow-x: hidden;
-  background: #f2f2f2;
+  background: #0a0c10;
 }
 
 /* =============================================================================
-   SCROLL SCENES SECTION
+   GLOBE WRAPPER - Creates the scrolling effect with sticky globe
    ============================================================================= */
 
-.scrollScenes {
+.globeWrapper {
   position: relative;
   width: 100%;
 }
 
+.globeSticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+}
+
+.scrollScenes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 /* =============================================================================
-   HERO SECTION
+   SCROLLING CONTENT - Text sections that scroll over the globe
    ============================================================================= */
 
-.hero {
-  width: 100%;
-  min-height: calc(var(--gs-n-720, 720) * var(--gs-px));
-  background:
-    radial-gradient(
-      56% 52% at 84% 36%,
-      rgba(78, 114, 168, 0.20) 0%,
-      rgba(78, 114, 168, 0.08) 32%,
-      rgba(27, 27, 28, 0) 72%
-    ),
-    linear-gradient(180deg, #20242d 0%, #1b1b1c 62%, #171719 100%);
+.scrollContent {
+  position: relative;
+  z-index: 2;
+  margin-top: -100vh; /* Pull content up to overlap with sticky globe */
+  pointer-events: none;
+}
+
+.scrollContent > * {
+  pointer-events: auto;
+}
+
+/* =============================================================================
+   TEXT SECTIONS - The four content blocks
+   ============================================================================= */
+
+.textSection {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
+}
+
+.textContainer {
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+}
+
+.sectionHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.1;
+  color: var(--gs-tw-white);
+  text-transform: uppercase;
+}
+
+.sectionSubtitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+}
+
+.sectionBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* =============================================================================
+   FINAL SECTION - "This is the Signal" centered over globe
+   ============================================================================= */
+
+.finalSection {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  position: relative;
-  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad);
+  padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
 }
 
-.heroContent {
-  position: relative;
-  z-index: 2;
+.finalContent {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-  max-width: calc(var(--gs-n-960, 960) * var(--gs-px));
+  gap: calc(var(--gs-n-20) * var(--gs-px));
+  max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
 }
 
-.heroEyebrow {
+.finalLogo {
+  width: calc(var(--gs-n-120) * var(--gs-px));
+  height: auto;
+  margin-bottom: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+.finalSubheadline {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
@@ -59,257 +129,28 @@
   line-height: var(--gs-text-xl-leading);
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
-.heroHeadline {
+.finalHeadline {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
-  font-size: clamp(48px, 10vw, 128px);
+  font-size: clamp(48px, 10vw, 120px);
   line-height: 1;
   color: var(--gs-tw-white);
   text-transform: uppercase;
 }
 
-.heroSubhead {
+.finalTagline {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-2xl-size);
-  line-height: var(--gs-text-2xl-leading);
-  color: rgba(255, 255, 255, 0.8);
-  max-width: calc(var(--gs-n-640, 640) * var(--gs-px));
-}
-
-.heroCta {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--gs-n-12) * var(--gs-px));
-  margin-top: calc(var(--gs-n-24) * var(--gs-px));
-  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-gray-950);
-  background: var(--gs-tw-white);
-  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
-  text-decoration: none;
-  transition: background 200ms ease, transform 200ms ease;
-}
-
-.heroCta:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
-}
-
-.ctaArrow {
-  width: calc(var(--gs-n-24) * var(--gs-px));
-  height: calc(var(--gs-n-24) * var(--gs-px));
-  transition: transform 200ms ease;
-}
-
-.heroCta:hover .ctaArrow {
-  transform: translateX(4px);
-}
-
-/* =============================================================================
-   CARDS SECTION
-   ============================================================================= */
-
-.cardsSection {
-  padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
-}
-
-.cardsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: calc(var(--gs-n-48) * var(--gs-px));
-  max-width: var(--content-max);
-  margin-inline: auto;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  background: var(--gs-tw-white);
-  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
-  overflow: hidden;
-  text-decoration: none;
-  transition: transform 300ms ease, box-shadow 300ms ease;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
-}
-
-.cardImageWrap {
-  position: relative;
-  width: 100%;
-  height: calc(var(--gs-n-400, 400) * var(--gs-px));
-  overflow: hidden;
-}
-
-.cardImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transition: transform 400ms ease;
-}
-
-.card:hover .cardImage {
-  transform: scale(1.05);
-}
-
-.cardImageOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.3) 100%);
-}
-
-.cardImageGradient {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 25%, #ffeb3b 50%, #4caf50 75%, #2196f3 100%);
-}
-
-.cardContent {
-  padding: calc(var(--gs-n-32) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-16) * var(--gs-px));
-}
-
-.cardTitle {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-4xl-size);
-  line-height: var(--gs-text-4xl-leading);
-  color: var(--gs-tw-gray-950);
-}
-
-.cardLink {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--gs-n-8) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-gray-600);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.cardArrow {
-  width: calc(var(--gs-n-20) * var(--gs-px));
-  height: calc(var(--gs-n-20) * var(--gs-px));
-  opacity: 0.6;
-  transition: transform 200ms ease, opacity 200ms ease;
-}
-
-.card:hover .cardArrow {
-  transform: translateX(4px);
-  opacity: 1;
-}
-
-/* =============================================================================
-   CONTACT SECTION
-   ============================================================================= */
-
-.contactSection {
-  padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
-  background: var(--gs-tw-gray-950);
-}
-
-.contactContent {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(var(--gs-n-80) * var(--gs-px));
-  max-width: var(--content-max);
-  margin-inline: auto;
-  align-items: center;
-}
-
-.contactText {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-}
-
-.contactEyebrow {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-xl-size);
-  line-height: var(--gs-text-xl-leading);
+  font-size: clamp(24px, 4vw, 40px);
+  line-height: 1.2;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.contactHeadline {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: clamp(36px, 6vw, 72px);
-  line-height: 1.1;
-  color: var(--gs-tw-white);
-  text-transform: uppercase;
-}
-
-.contactBody {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-2xl-size);
-  line-height: var(--gs-text-2xl-leading);
-  color: rgba(255, 255, 255, 0.8);
-  max-width: calc(var(--gs-n-560, 560) * var(--gs-px));
-}
-
-.contactCta {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--gs-n-12) * var(--gs-px));
-  margin-top: calc(var(--gs-n-16) * var(--gs-px));
-  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-gray-950);
-  background: var(--gs-tw-white);
-  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
-  text-decoration: none;
-  transition: background 200ms ease, transform 200ms ease;
-  width: fit-content;
-}
-
-.contactCta:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
-}
-
-.contactCta:hover .ctaArrow {
-  transform: translateX(4px);
-}
-
-.contactVisual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.contactBars {
-  width: 100%;
-  max-width: calc(var(--gs-n-480, 480) * var(--gs-px));
-  height: auto;
-  object-fit: contain;
+  letter-spacing: 0.02em;
 }
 
 /* =============================================================================
@@ -324,6 +165,8 @@
   flex-direction: column;
   gap: calc(var(--gs-n-80) * var(--gs-px));
   border-bottom: 1px solid #60646c;
+  position: relative;
+  z-index: 10;
 }
 
 .footerTop,
@@ -457,10 +300,6 @@
     --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
   }
 
-  .contactHeadline {
-    font-size: clamp(32px, 5vw, 60px);
-  }
-
   .footer {
     padding: calc(var(--gs-n-96) * var(--gs-px));
   }
@@ -471,18 +310,8 @@
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .cardsGrid {
-    grid-template-columns: 1fr;
-    gap: calc(var(--gs-n-32) * var(--gs-px));
-  }
-
-  .contactContent {
-    grid-template-columns: 1fr;
-    gap: calc(var(--gs-n-48) * var(--gs-px));
-  }
-
-  .contactVisual {
-    order: -1;
+  .textContainer {
+    max-width: 100%;
   }
 
   .footerNav {
@@ -520,41 +349,36 @@
     --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
   }
 
-  .hero {
-    min-height: calc(var(--gs-n-560, 560) * var(--gs-px));
-    padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
-  }
-
-  .heroHeadline {
-    font-size: clamp(36px, 12vw, 72px);
-  }
-
-  .heroSubhead {
-    font-size: var(--gs-text-xl-size);
-    line-height: var(--gs-text-xl-leading);
-  }
-
-  .cardsSection,
-  .contactSection {
+  .textSection {
+    min-height: auto;
     padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
   }
 
-  .cardImageWrap {
-    height: calc(var(--gs-n-280, 280) * var(--gs-px));
+  .sectionHeadline {
+    font-size: clamp(28px, 7vw, 42px);
   }
 
-  .cardTitle {
-    font-size: var(--gs-text-3xl-size);
-    line-height: var(--gs-text-3xl-leading);
-  }
-
-  .contactHeadline {
-    font-size: clamp(28px, 8vw, 48px);
-  }
-
-  .contactBody {
+  .sectionSubtitle {
     font-size: var(--gs-text-xl-size);
     line-height: var(--gs-text-xl-leading);
+  }
+
+  .sectionBody {
+    font-size: var(--gs-text-lg-size);
+    line-height: var(--gs-text-lg-leading);
+  }
+
+  .finalSection {
+    min-height: auto;
+    padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
+  }
+
+  .finalHeadline {
+    font-size: clamp(36px, 12vw, 72px);
+  }
+
+  .finalTagline {
+    font-size: clamp(18px, 5vw, 28px);
   }
 
   .footer {
@@ -577,48 +401,20 @@
     --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
   }
 
-  .hero {
-    min-height: calc(var(--gs-n-480, 480) * var(--gs-px));
-    padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad);
+  .textSection {
+    padding: calc(var(--gs-n-60) * var(--gs-px)) var(--edge-pad);
   }
 
-  .heroEyebrow {
-    font-size: var(--gs-text-lg-size);
-    line-height: var(--gs-text-lg-leading);
+  .sectionHeadline {
+    font-size: clamp(24px, 8vw, 36px);
   }
 
-  .heroHeadline {
+  .finalLogo {
+    width: calc(var(--gs-n-80) * var(--gs-px));
+  }
+
+  .finalHeadline {
     font-size: clamp(32px, 14vw, 56px);
-  }
-
-  .heroSubhead {
-    font-size: var(--gs-text-lg-size);
-    line-height: var(--gs-text-lg-leading);
-  }
-
-  .heroCta,
-  .contactCta {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .cardContent {
-    padding: calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .cardTitle {
-    font-size: var(--gs-text-2xl-size);
-    line-height: var(--gs-text-2xl-leading);
-  }
-
-  .contactEyebrow {
-    font-size: var(--gs-text-lg-size);
-    line-height: var(--gs-text-lg-leading);
-  }
-
-  .contactBody {
-    font-size: var(--gs-text-lg-size);
-    line-height: var(--gs-text-lg-leading);
   }
 
   .footerMark {
@@ -647,8 +443,8 @@
     --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
   }
 
-  .hero {
-    padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+  .textSection {
+    padding: calc(var(--gs-n-48) * var(--gs-px)) var(--edge-pad);
   }
 
   .footer {
@@ -656,4 +452,3 @@
     gap: calc(var(--gs-n-40) * var(--gs-px));
   }
 }
-

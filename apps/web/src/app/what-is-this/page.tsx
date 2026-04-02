@@ -19,7 +19,7 @@ const navLinks = [
 
 export const metadata = {
   title: "What Is This | GhostSignal",
-  description: "Access our whitepaper and read about how GhostSignal can help you make the world through values-based advertising.",
+  description: "GhostSignal is the values-based podcast advertising network. We create partnerships that feel good because they are good.",
 };
 
 export default function WhatIsThisPage() {
@@ -27,140 +27,120 @@ export default function WhatIsThisPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Scroll-driven 3D Scenes */}
-      <ScrollScenes className={styles.scrollScenes} />
-
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <ScrollFadeUp index={0} duration={1.8}>
-            <p className={styles.heroEyebrow}>Welcome to the Signal</p>
-          </ScrollFadeUp>
-          <SplitLinesReveal duration={2} stagger={0.3}>
-            <h1 className={styles.heroHeadline}>WHAT IS THIS</h1>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={1} duration={1.8}>
-            <p className={styles.heroSubhead}>
-              Access our whitepaper and read about how GhostSignal can help you make the world
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={2} duration={1.8}>
-            <a
-              href="/s/GS-whitepaper-v4.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.heroCta}
-            >
-              Our Whitepaper
-              <Image
-                src="/images/home/icon-arrow-right.svg"
-                alt=""
-                width={24}
-                height={24}
-                className={styles.ctaArrow}
-              />
-            </a>
-          </ScrollFadeUp>
+      {/* Globe Background Container */}
+      <div className={styles.globeWrapper}>
+        <div className={styles.globeSticky}>
+          <ScrollScenes className={styles.scrollScenes} />
         </div>
-      </section>
 
-      {/* Audience Cards Section */}
-      <section className={styles.cardsSection}>
-        <div className={styles.cardsGrid}>
-          {/* For Creators Card */}
-          <ScrollFadeUp index={0} duration={1.6}>
-            <Link href="/for-creators" className={styles.card}>
-              <div className={styles.cardImageWrap}>
+        {/* Scrolling Content Over Globe */}
+        <div className={styles.scrollContent}>
+          {/* Section 1: Values-Based Network */}
+          <section className={styles.textSection}>
+            <div className={styles.textContainer}>
+              <SplitLinesReveal duration={1.8} stagger={0.25}>
+                <h1 className={styles.sectionHeadline}>
+                  Ghost Signal is the values-based podcast advertising network
+                </h1>
+              </SplitLinesReveal>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.sectionSubtitle}>
+                  We create partnerships that feel good because they are good.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  Values-based advertising is an approach that evaluates podcasters and brands on a matrix of commitments like lifestyle resonance, tone, aesthetic fit, and mission alignment.
+                </p>
+              </ScrollFadeUp>
+            </div>
+          </section>
+
+          {/* Section 2: Advertising Harmony */}
+          <section className={styles.textSection}>
+            <div className={styles.textContainer}>
+              <SplitLinesReveal duration={1.8} stagger={0.25}>
+                <h2 className={styles.sectionHeadline}>
+                  What if advertising could make harmony
+                </h2>
+              </SplitLinesReveal>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  Using this shared values matrix, we connect podcasters and brands who believe in the same things about people, purpose, moral imagination, and meaning. Our values determine the kind of world we are making and when we share values we are all building in the same direction to the world we want.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  We go beyond algorithmic targeting to find deep human connection. This is genuine alignment: creators keep their voice, brands keep their conviction, and audiences feel harmony instead of interruption.
+                </p>
+              </ScrollFadeUp>
+            </div>
+          </section>
+
+          {/* Section 3: Values Create Value */}
+          <section className={styles.textSection}>
+            <div className={styles.textContainer}>
+              <SplitLinesReveal duration={1.8} stagger={0.25}>
+                <h2 className={styles.sectionHeadline}>
+                  Values Create Value
+                </h2>
+              </SplitLinesReveal>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  When a partnership shares soul, trust flows naturally. Trust becomes resonance. Resonance drives results. 75% of listeners happily pay more for brands that feel right (Edelman 2025) and shared loves create deep lasting trust that low-trust systems can never match.
+                </p>
+              </ScrollFadeUp>
+            </div>
+          </section>
+
+          {/* Section 4: Who is GhostSignal */}
+          <section className={styles.textSection}>
+            <div className={styles.textContainer}>
+              <SplitLinesReveal duration={1.8} stagger={0.25}>
+                <h2 className={styles.sectionHeadline}>
+                  Who is GhostSignal?
+                </h2>
+              </SplitLinesReveal>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  We are a network that connects podcasters and brands who share soul—those who know their work shapes the future and take that responsibility seriously. As a creator or advertiser, whether you are value-sensitive, faith-based, or simply aware of the ethical impact of what you make, you belong in GhostSignal if you sense that your work is making the world.
+                </p>
+              </ScrollFadeUp>
+            </div>
+          </section>
+
+          {/* Final Section: This is the Signal */}
+          <section className={styles.finalSection}>
+            <div className={styles.finalContent}>
+              <ScrollFadeUp index={0} duration={1.6}>
                 <Image
-                  src="/images/home/figma/mariah.png"
-                  alt="Classical sculpture representing creative expression"
-                  width={600}
-                  height={400}
-                  className={styles.cardImage}
+                  src="/images/home/figma/footer-mark-dark.gif"
+                  alt="GhostSignal"
+                  width={120}
+                  height={112}
+                  unoptimized
+                  className={styles.finalLogo}
                 />
-                <div className={styles.cardImageOverlay} />
-              </div>
-              <div className={styles.cardContent}>
-                <h2 className={styles.cardTitle}>FOR CREATORS</h2>
-                <span className={styles.cardLink}>
-                  Learn more
-                  <Image
-                    src="/images/home/icon-arrow-right.svg"
-                    alt=""
-                    width={20}
-                    height={20}
-                    className={styles.cardArrow}
-                  />
-                </span>
-              </div>
-            </Link>
-          </ScrollFadeUp>
-
-          {/* For Advertisers Card */}
-          <ScrollFadeUp index={1} duration={1.6}>
-            <Link href="/for-advertisers" className={styles.card}>
-              <div className={styles.cardImageWrap}>
-                <div className={styles.cardImageGradient} />
-              </div>
-              <div className={styles.cardContent}>
-                <h2 className={styles.cardTitle}>FOR ADVERTISERS</h2>
-                <span className={styles.cardLink}>
-                  Learn more
-                  <Image
-                    src="/images/home/icon-arrow-right.svg"
-                    alt=""
-                    width={20}
-                    height={20}
-                    className={styles.cardArrow}
-                  />
-                </span>
-              </div>
-            </Link>
-          </ScrollFadeUp>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.finalSubheadline}>
+                  This is values-based advertising. This is world making.
+                </p>
+              </ScrollFadeUp>
+              <SplitLinesReveal duration={2} stagger={0.3}>
+                <h2 className={styles.finalHeadline}>
+                  This is the signal
+                </h2>
+              </SplitLinesReveal>
+              <ScrollFadeUp index={2} duration={1.6}>
+                <p className={styles.finalTagline}>
+                  Everything else is just static.
+                </p>
+              </ScrollFadeUp>
+            </div>
+          </section>
         </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className={styles.contactSection}>
-        <div className={styles.contactContent}>
-          <div className={styles.contactText}>
-            <ScrollFadeUp index={0} duration={1.6}>
-              <p className={styles.contactEyebrow}>GET IN TOUCH</p>
-            </ScrollFadeUp>
-            <SplitLinesReveal duration={1.8} stagger={0.28}>
-              <h2 className={styles.contactHeadline}>
-                EVERY PARTNERSHIP STARTS WITH A CHAT
-              </h2>
-            </SplitLinesReveal>
-            <ScrollFadeUp index={1} duration={1.6}>
-              <p className={styles.contactBody}>
-                Podcaster or Advertiser, ready to find your frequency? Schedule a call.
-              </p>
-            </ScrollFadeUp>
-            <ScrollFadeUp index={2} duration={1.6}>
-              <Link href="/get-in-touch" className={styles.contactCta}>
-                Email Us
-                <Image
-                  src="/images/home/icon-arrow-right.svg"
-                  alt=""
-                  width={24}
-                  height={24}
-                  className={styles.ctaArrow}
-                />
-              </Link>
-            </ScrollFadeUp>
-          </div>
-          <div className={styles.contactVisual}>
-            <Image
-              src="/images/home/figma/bars.png"
-              alt="Colorful horizontal lines representing the signal"
-              width={400}
-              height={300}
-              className={styles.contactBars}
-            />
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Footer */}
       <footer className={styles.footer}>
