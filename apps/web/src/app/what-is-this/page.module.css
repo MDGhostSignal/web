@@ -97,6 +97,27 @@
   gap: calc(var(--gs-n-24) * var(--gs-px));
 }
 
+.sectionWithLogo {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gs-n-64) * var(--gs-px));
+}
+
+.spinningLogo {
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .sectionWithLogo {
+    flex-direction: column;
+    gap: calc(var(--gs-n-40) * var(--gs-px));
+  }
+
+  .spinningLogo {
+    order: -1;
+  }
+}
+
 .sectionHeadline {
   margin: 0;
   font-family: var(--font-body);

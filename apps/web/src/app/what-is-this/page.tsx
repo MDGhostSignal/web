@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScrollScenes } from "@/components/ScrollScenes";
+import { SpinningLogo3D } from "@/components/SpinningLogo3D";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -35,24 +36,27 @@ export default function WhatIsThisPage() {
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
-          {/* Section 1: Values-Based Network - LEFT */}
+          {/* Section 1: Values-Based Network - LEFT with spinning logo */}
           <section className={`${styles.textSection} ${styles.alignLeft}`}>
-            <div className={styles.textContainer}>
-              <SplitLinesReveal duration={1.8} stagger={0.25}>
-                <h1 className={styles.sectionHeadline}>
-                  Ghost Signal is the values-based podcast advertising network
-                </h1>
-              </SplitLinesReveal>
-              <ScrollFadeUp index={0} duration={1.6}>
-                <p className={styles.sectionSubtitle}>
-                  We create partnerships that feel good because they are good.
-                </p>
-              </ScrollFadeUp>
-              <ScrollFadeUp index={1} duration={1.6}>
-                <p className={styles.sectionBody}>
-                  Values-based advertising is an approach that evaluates podcasters and brands on a matrix of commitments like lifestyle resonance, tone, aesthetic fit, and mission alignment.
-                </p>
-              </ScrollFadeUp>
+            <div className={styles.sectionWithLogo}>
+              <div className={styles.textContainer}>
+                <SplitLinesReveal duration={1.8} stagger={0.25}>
+                  <h1 className={styles.sectionHeadline}>
+                    Ghost Signal is the values-based podcast advertising network
+                  </h1>
+                </SplitLinesReveal>
+                <ScrollFadeUp index={0} duration={1.6}>
+                  <p className={styles.sectionSubtitle}>
+                    We create partnerships that feel good because they are good.
+                  </p>
+                </ScrollFadeUp>
+                <ScrollFadeUp index={1} duration={1.6}>
+                  <p className={styles.sectionBody}>
+                    Values-based advertising is an approach that evaluates podcasters and brands on a matrix of commitments like lifestyle resonance, tone, aesthetic fit, and mission alignment.
+                  </p>
+                </ScrollFadeUp>
+              </div>
+              <SpinningLogo3D className={styles.spinningLogo} />
             </div>
           </section>
 
