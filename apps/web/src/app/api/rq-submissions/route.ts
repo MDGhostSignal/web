@@ -103,8 +103,8 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     clarityTextColor = "#b22222";
   }
 
-  // Generate chart image URL - use production domain for email compatibility
-  const chartBaseUrl = "https://ghostsignal.cloud";
+  // Generate chart image URL - use Vercel deployment domain
+  const chartBaseUrl = "https://web-nine-fawn-27.vercel.app";
   const chartUrl = `${chartBaseUrl}/api/rq-chart?vl=${details.values?.letter || "F"}&vs=${details.values?.score || 5}&al=${details.authenticity?.letter || "R"}&as=${details.authenticity?.score || 5}&hl=${details.horizon?.letter || "L"}&hs=${details.horizon?.score || 5}`;
 
   const html = `
