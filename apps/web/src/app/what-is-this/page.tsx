@@ -35,8 +35,8 @@ export default function WhatIsThisPage() {
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
-          {/* Section 1: Values-Based Network */}
-          <section className={styles.textSection}>
+          {/* Section 1: Values-Based Network - LEFT */}
+          <section className={`${styles.textSection} ${styles.alignLeft}`}>
             <div className={styles.textContainer}>
               <SplitLinesReveal duration={1.8} stagger={0.25}>
                 <h1 className={styles.sectionHeadline}>
@@ -56,8 +56,8 @@ export default function WhatIsThisPage() {
             </div>
           </section>
 
-          {/* Section 2: Advertising Harmony */}
-          <section className={styles.textSection}>
+          {/* Section 2: Advertising Harmony - RIGHT */}
+          <section className={`${styles.textSection} ${styles.alignRight}`}>
             <div className={styles.textContainer}>
               <SplitLinesReveal duration={1.8} stagger={0.25}>
                 <h2 className={styles.sectionHeadline}>
@@ -77,8 +77,8 @@ export default function WhatIsThisPage() {
             </div>
           </section>
 
-          {/* Section 3: Values Create Value */}
-          <section className={styles.textSection}>
+          {/* Section 3: Values Create Value - LEFT */}
+          <section className={`${styles.textSection} ${styles.alignLeft}`}>
             <div className={styles.textContainer}>
               <SplitLinesReveal duration={1.8} stagger={0.25}>
                 <h2 className={styles.sectionHeadline}>
@@ -93,8 +93,8 @@ export default function WhatIsThisPage() {
             </div>
           </section>
 
-          {/* Section 4: Who is GhostSignal */}
-          <section className={styles.textSection}>
+          {/* Section 4: Who is GhostSignal - RIGHT */}
+          <section className={`${styles.textSection} ${styles.alignRight}`}>
             <div className={styles.textContainer}>
               <SplitLinesReveal duration={1.8} stagger={0.25}>
                 <h2 className={styles.sectionHeadline}>
@@ -109,7 +109,7 @@ export default function WhatIsThisPage() {
             </div>
           </section>
 
-          {/* Final Section: This is the Signal */}
+          {/* Final Section: This is the Signal - with globe behind */}
           <section className={styles.finalSection}>
             <div className={styles.finalContent}>
               <ScrollFadeUp index={0} duration={1.6}>

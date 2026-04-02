@@ -9,7 +9,7 @@
 }
 
 /* =============================================================================
-   GLOBE WRAPPER - Creates the scrolling effect with sticky globe
+   GLOBE WRAPPER - Globe positioned behind final section
    ============================================================================= */
 
 .globeWrapper {
@@ -18,11 +18,13 @@
 }
 
 .globeSticky {
-  position: sticky;
-  top: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 100vh;
   z-index: 1;
+  pointer-events: none;
 }
 
 .scrollScenes {
@@ -30,16 +32,16 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: auto;
 }
 
 /* =============================================================================
-   SCROLLING CONTENT - Text sections that scroll over the globe
+   SCROLLING CONTENT - Text sections over dark background
    ============================================================================= */
 
 .scrollContent {
   position: relative;
   z-index: 2;
-  margin-top: -100vh; /* Pull content up to overlap with sticky globe */
   pointer-events: none;
 }
 
@@ -56,6 +58,23 @@
   display: flex;
   align-items: center;
   padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
+  width: 100%;
+}
+
+.alignLeft {
+  justify-content: flex-start;
+}
+
+.alignLeft .textContainer {
+  text-align: left;
+}
+
+.alignRight {
+  justify-content: flex-end;
+}
+
+.alignRight .textContainer {
+  text-align: right;
 }
 
 .textContainer {
