@@ -383,7 +383,7 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
       const deltaX = e.clientX - mouse.lastX;
       const deltaY = e.clientY - mouse.lastY;
 
-      velocity.x = deltaX * sensitivity;
+      velocity.x = -deltaX * sensitivity; // Inverted so drag left = spin left
       velocity.y = -deltaY * sensitivity;
 
       rotation.x += velocity.x;
