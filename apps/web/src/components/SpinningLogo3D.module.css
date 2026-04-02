@@ -1,6 +1,6 @@
 .container {
   perspective: 1000px;
-  width: clamp(120px, 20vw, 200px);
+  width: clamp(96px, 16vw, 160px);
   height: auto;
   aspect-ratio: 309 / 263;
 }

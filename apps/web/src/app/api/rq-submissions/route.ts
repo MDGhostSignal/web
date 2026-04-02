@@ -441,33 +441,38 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
             </td>
           </tr>
 
-          <!-- CTA Buttons -->
+          <!-- Snowdrift Section - Dark starry background -->
           <tr>
-            <td style="padding: 24px 32px; background: #fafafa; border-top: 1px solid #e8e8e8;">
+            <td style="padding: 32px; background: #0a0a0d; background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle at 60% 70%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.12) 1px, transparent 1px), radial-gradient(circle at 40% 80%, rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(circle at 90% 50%, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle at 10% 60%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 70% 40%, rgba(255,255,255,0.12) 1px, transparent 1px), radial-gradient(circle at 30% 10%, rgba(255,255,255,0.08) 1px, transparent 1px); border-radius: 12px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <!-- Snowdrift Section -->
                 <tr>
-                  <td align="center" style="padding-bottom: 20px;">
-                    <p style="margin: 0 0 4px; font-size: 14px; color: #333333; font-weight: 400;">
-                      Snowdrift is a <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> transmission.
-                    </p>
-                    <p style="margin: 0 0 16px; font-size: 13px; color: #666666; line-height: 1.6;">
-                      Thoughts for a community of world makers.
-                    </p>
-                    <a href="https://snowdriftghostsignal.substack.com/" target="_blank" style="display: inline-block; padding: 12px 24px; background: #ffffff; color: #333333; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px; border: 1px solid #dddddd;">
-                      Subscribe to Snowdrift Newsletter
-                    </a>
+                  <td align="center" style="padding-bottom: 16px;">
+                    <img src="https://web-nine-fawn-27.vercel.app/images/brand/snowdrift-logo-white.png" alt="Snowdrift" width="100" style="display: block; margin: 0 auto;" />
                   </td>
                 </tr>
-                <!-- Discover GhostSignal Button -->
                 <tr>
-                  <td align="center" style="padding-top: 16px;">
-                    <a href="https://ghostsignal.cloud" target="_blank" style="display: inline-block; padding: 14px 28px; background: #FBAD25; color: #1a1a1a; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
-                      Discover <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span>
+                  <td align="center">
+                    <p style="margin: 0 0 4px; font-size: 15px; color: #ffffff; font-weight: 500;">
+                      Snowdrift is a <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> transmission.
+                    </p>
+                    <p style="margin: 0 0 20px; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6;">
+                      Thoughts for a community of world makers. A cultural investigation of the future and what it means for you.
+                    </p>
+                    <a href="https://snowdriftghostsignal.substack.com/" target="_blank" style="display: inline-block; padding: 12px 24px; background: rgba(255,255,255,0.08); color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                      Subscribe to the Snowdrift Newsletter
                     </a>
                   </td>
                 </tr>
               </table>
+            </td>
+          </tr>
+
+          <!-- Discover GhostSignal Button -->
+          <tr>
+            <td align="center" style="padding: 24px 32px;">
+              <a href="https://ghostsignal.cloud" target="_blank" style="display: inline-block; padding: 14px 28px; background: #FBAD25; color: #1a1a1a; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                Discover <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span>
+              </a>
             </td>
           </tr>
 

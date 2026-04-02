@@ -1,0 +1,81 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Starry background behind parallax image */
+.stars {
+  position: absolute;
+  inset: 0;
+  background: #0a0a0d;
+}
+
+.stars::before,
+.stars::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.stars::before {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 50% 20%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 60% 50%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 70% 80%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 80% 10%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 10% 60%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 30% 90%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 90% 40%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.7), transparent);
+  background-size: 250px 250px;
+}
+
+.stars::after {
+  background-image:
+    radial-gradient(1px 1px at 25% 45%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 55% 15%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 75% 65%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 5% 25%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 45% 95%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 85% 55%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 35% 5%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 65% 35%, rgba(255, 255, 255, 0.4), transparent);
+  background-size: 300px 300px;
+}
+
+.background {
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 100%;
+  height: 140%;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  will-change: transform;
+  /* Feather the top edge for smooth transition to starry background */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 15%,
+    rgba(0, 0, 0, 0.5) 30%,
+    rgba(0, 0, 0, 0.8) 40%,
+    black 50%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 15%,
+    rgba(0, 0, 0, 0.5) 30%,
+    rgba(0, 0, 0, 0.8) 40%,
+    black 50%
+  );
+}

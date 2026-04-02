@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScrollScenes } from "@/components/ScrollScenes";
 import { SpinningLogo3D } from "@/components/SpinningLogo3D";
+import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -28,8 +29,11 @@ export default function WhatIsThisPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Fixed parallax background */}
-      <div className={styles.parallaxBg} aria-hidden="true" />
+      {/* Parallax background */}
+      <ParallaxBackground
+        imageSrc="/images/what-is-this/clouds-bg.jpg"
+        speed={0.3}
+      />
 
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>
