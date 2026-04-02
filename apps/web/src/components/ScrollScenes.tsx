@@ -33,6 +33,7 @@ uniform float uRotationX;
 uniform float uRotationY;
 
 #define PI 3.14159265359
+#define NUM_CITIES 20
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -44,6 +45,75 @@ float sphereIntersect(vec3 ro, vec3 rd, float r) {
   float h = b * b - c;
   if (h < 0.0) return -1.0;
   return -b - sqrt(h);
+}
+
+// City lights - returns glow intensity at given lat/lon
+float cityLights(float lat, float lon, float time) {
+  // Major cities: lat (radians), lon (radians)
+  // Europe
+  vec2 london = vec2(0.899, -0.002);      // 51.5°N, 0.1°W
+  vec2 paris = vec2(0.854, 0.041);        // 48.9°N, 2.3°E
+  vec2 berlin = vec2(0.916, 0.234);       // 52.5°N, 13.4°E
+  vec2 moscow = vec2(0.974, 0.656);       // 55.8°N, 37.6°E
+  vec2 madrid = vec2(0.706, -0.064);      // 40.4°N, 3.7°W
+
+  // Africa
+  vec2 lagos = vec2(0.113, 0.059);        // 6.5°N, 3.4°E
+  vec2 cairo = vec2(0.524, 0.545);        // 30.0°N, 31.2°E
+  vec2 johannesburg = vec2(-0.457, 0.489);// 26.2°S, 28.0°E
+  vec2 nairobi = vec2(-0.022, 0.643);     // 1.3°S, 36.8°E
+  vec2 kinshasa = vec2(-0.076, 0.268);    // 4.4°S, 15.3°E (center Africa)
+
+  // Americas
+  vec2 newYork = vec2(0.711, -1.291);     // 40.7°N, 74.0°W
+  vec2 losAngeles = vec2(0.595, -2.063);  // 34.1°N, 118.2°W
+  vec2 saoPaulo = vec2(-0.410, -0.813);   // 23.5°S, 46.6°W
+
+  // Asia
+  vec2 tokyo = vec2(0.623, 2.438);        // 35.7°N, 139.7°E
+  vec2 beijing = vec2(0.696, 2.032);      // 39.9°N, 116.4°E
+  vec2 mumbai = vec2(0.333, 1.272);       // 19.1°N, 72.9°E
+  vec2 dubai = vec2(0.440, 0.965);        // 25.2°N, 55.3°E
+  vec2 singapore = vec2(0.023, 1.812);    // 1.3°N, 103.8°E
+  vec2 hongKong = vec2(0.388, 1.992);     // 22.3°N, 114.2°E
+
+  // Oceania
+  vec2 sydney = vec2(-0.592, 2.639);      // 33.9°S, 151.2°E
+
+  vec2 currentPos = vec2(lat, lon);
+  float glow = 0.0;
+  float radius = 0.08; // Size of city glow
+
+  // Calculate distance to each city and add glow
+  glow += smoothstep(radius, 0.0, distance(currentPos, london)) * 1.2;
+  glow += smoothstep(radius, 0.0, distance(currentPos, paris)) * 1.1;
+  glow += smoothstep(radius, 0.0, distance(currentPos, berlin)) * 1.0;
+  glow += smoothstep(radius, 0.0, distance(currentPos, moscow)) * 1.0;
+  glow += smoothstep(radius, 0.0, distance(currentPos, madrid)) * 0.9;
+
+  glow += smoothstep(radius, 0.0, distance(currentPos, lagos)) * 1.0;
+  glow += smoothstep(radius, 0.0, distance(currentPos, cairo)) * 1.0;
+  glow += smoothstep(radius, 0.0, distance(currentPos, johannesburg)) * 0.9;
+  glow += smoothstep(radius, 0.0, distance(currentPos, nairobi)) * 0.8;
+  glow += smoothstep(radius, 0.0, distance(currentPos, kinshasa)) * 0.8;
+
+  glow += smoothstep(radius, 0.0, distance(currentPos, newYork)) * 1.3;
+  glow += smoothstep(radius, 0.0, distance(currentPos, losAngeles)) * 1.1;
+  glow += smoothstep(radius, 0.0, distance(currentPos, saoPaulo)) * 1.0;
+
+  glow += smoothstep(radius, 0.0, distance(currentPos, tokyo)) * 1.3;
+  glow += smoothstep(radius, 0.0, distance(currentPos, beijing)) * 1.2;
+  glow += smoothstep(radius, 0.0, distance(currentPos, mumbai)) * 1.1;
+  glow += smoothstep(radius, 0.0, distance(currentPos, dubai)) * 1.0;
+  glow += smoothstep(radius, 0.0, distance(currentPos, singapore)) * 1.0;
+  glow += smoothstep(radius, 0.0, distance(currentPos, hongKong)) * 1.0;
+
+  glow += smoothstep(radius, 0.0, distance(currentPos, sydney)) * 1.0;
+
+  // Subtle pulsing effect
+  glow *= 0.8 + 0.2 * sin(time * 2.0 + lat * 10.0);
+
+  return glow;
 }
 
 void main() {
@@ -130,6 +200,14 @@ void main() {
     vec3 halfVec = normalize(lightDir - rd);
     float spec = pow(max(dot(normal, halfVec), 0.0), 48.0);
     surfaceColor += vec3(0.25) * spec * (1.0 - isLand) * terminator;
+
+    // City lights - brighter on dark side, visible on light side too
+    float cityGlow = cityLights(lat, lon, uTime);
+    float nightFactor = 1.0 - terminator; // Stronger on night side
+    float dayVisibility = 0.3; // Still visible during day
+    float cityIntensity = cityGlow * (nightFactor + dayVisibility);
+    vec3 cityColor = vec3(1.0, 0.85, 0.5); // Warm golden glow
+    surfaceColor += cityColor * cityIntensity * 0.6;
 
     float limb = 1.0 - abs(dot(rd, normal));
     limb = pow(limb, 2.0);
@@ -254,7 +332,8 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
     const rotYLoc = gl.getUniformLocation(program, "uRotationY");
 
     // Mouse interaction state
-    const rotation = { x: 0, y: 0 };
+    // Initial rotation centered on Europe (lon ~15°E, tilt to show northern hemisphere)
+    const rotation = { x: -0.25, y: 0.35 };
     const velocity = { x: 0, y: 0 };
     const mouse = { down: false, lastX: 0, lastY: 0 };
     const autoRotationSpeed = 0.02;
