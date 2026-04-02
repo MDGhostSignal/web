@@ -357,8 +357,8 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
         cloudLoaded = false;
       };
 
-      // Cloud texture - using Three.js example texture
-      img.src = "https://threejs.org/examples/textures/planets/earth_clouds_1024.png";
+      // Cloud texture - high resolution (4096px) from live satellite data
+      img.src = "https://raw.githubusercontent.com/matteason/live-cloud-maps/main/clouds_4096.png";
     };
 
     loadEarthTexture();
