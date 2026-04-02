@@ -135,9 +135,9 @@
 }
 
 .finalLogo {
-  width: calc(var(--gs-n-120) * var(--gs-px));
+  width: calc(var(--gs-n-160) * var(--gs-px));
   height: auto;
-  margin-bottom: calc(var(--gs-n-16) * var(--gs-px));
+  margin-bottom: calc(var(--gs-n-24) * var(--gs-px));
 }
 
 .finalSubheadline {

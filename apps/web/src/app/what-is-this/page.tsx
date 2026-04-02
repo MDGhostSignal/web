@@ -114,11 +114,10 @@ export default function WhatIsThisPage() {
             <div className={styles.finalContent}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <Image
-                  src="/images/home/figma/footer-mark-dark.gif"
+                  src="/images/brand/gs-logo-white.png"
                   alt="GhostSignal"
-                  width={120}
-                  height={112}
-                  unoptimized
+                  width={200}
+                  height={200}
                   className={styles.finalLogo}
                 />
               </ScrollFadeUp>
