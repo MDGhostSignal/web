@@ -103,6 +103,13 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     clarityTextColor = "#b22222";
   }
 
+  // Generate chart image URL
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_SITE_URL || "https://ghostsignal.cloud";
+
+  const chartUrl = `${baseUrl}/api/rq-chart?vl=${details.values?.letter || "F"}&vs=${details.values?.score || 5}&al=${details.authenticity?.letter || "R"}&as=${details.authenticity?.score || 5}&hl=${details.horizon?.letter || "L"}&hs=${details.horizon?.score || 5}`;
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -166,6 +173,23 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       </tr>
                       ` : ""}
                     </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Signal Profile Chart -->
+          <tr>
+            <td style="padding: 0 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #fafafa; border-radius: 12px; border: 1px solid #e8e8e8;">
+                <tr>
+                  <td align="center" style="padding: 24px 16px;">
+                    <h3 style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px;">Your Signal Profile</h3>
+                    <img src="${chartUrl}" alt="Your RQ Signal Profile" width="300" height="300" style="display: block; margin: 0 auto; border-radius: 8px;" />
+                    <p style="margin: 12px 0 0; font-size: 12px; color: #888888;">
+                      Distance from center indicates signal strength (1–10)
+                    </p>
                   </td>
                 </tr>
               </table>
