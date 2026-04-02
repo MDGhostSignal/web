@@ -148,9 +148,9 @@
 }
 
 .finalLogo {
-  width: clamp(200px, 40vw, 320px);
+  width: clamp(100px, 20vw, 160px);
   height: auto;
-  margin-bottom: calc(var(--gs-n-32) * var(--gs-px));
+  margin-bottom: calc(var(--gs-n-24) * var(--gs-px));
 }
 
 .finalSubheadline {
