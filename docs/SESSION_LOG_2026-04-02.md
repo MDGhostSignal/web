@@ -82,3 +82,61 @@ The radar chart in emails is generated dynamically:
 ## Deployment
 - All changes deployed to Vercel at `web-nine-fawn-27.vercel.app`
 - Main website remains on Squarespace at `ghostsignal.cloud`
+
+---
+
+## Session 2: What-is-this Page & Email Snowdrift Update
+
+### Overview
+Enhanced the "What is this" page with parallax background, 3D spinning logo improvements, and updated the RQ email template Snowdrift section to match the website's dark starry design.
+
+### Commits Made
+
+15. **65b408c** - `feat(what-is-this): add missing images and fix parallax background`
+    - Added clouds-bg.jpg, color-bars.png, logo-white1.svg to repo
+    - Initial parallax attempt with CSS background-attachment: fixed
+
+16. **584e418** - `feat: enhance what-is-this page and RQ email template`
+    - Created JS-based ParallaxBackground component
+    - Updated RQ email Snowdrift section with dark starry design
+
+### What-is-this Page Changes
+
+**ParallaxBackground Component (New):**
+- Fixed position container with scroll-based transform
+- Starry background layer (#0a0a0d) with CSS radial gradients
+- Cloud image parallax at 30% scroll speed
+- Feathered top edge (50% gradient mask) for smooth star transition
+- GPU-accelerated with `translate3d` transforms
+
+**Why JS instead of CSS:**
+- `background-attachment: fixed` was broken by `overflow-x` on parent
+- JS approach works reliably across all browsers
+
+**3D Spinning Logo:**
+- Reduced size by 20%: `clamp(96px, 16vw, 160px)`
+- Added margin-left to shift further right
+
+**Section Spacing:**
+- Added 100vh padding below final section
+- Adjusted globe: `bottom: 100vh` to stay behind headline
+- Adjusted bars: `height: calc(100% - 200vh)` to not extend into empty space
+
+### RQ Email Snowdrift Section Update
+
+**Before → After:**
+- Background: `#fafafa` (light) → `#0a0a0d` (dark with CSS star gradients)
+- Added Snowdrift logo image
+- Text: Dark → White (70% opacity for description)
+- Button: White with gray border → Semi-transparent with white border
+- Added rounded corners (12px)
+
+### New Files
+- `apps/web/src/components/ParallaxBackground.tsx`
+- `apps/web/src/components/ParallaxBackground.module.css`
+
+### Modified Files
+- `apps/web/src/app/what-is-this/page.tsx`
+- `apps/web/src/app/what-is-this/page.module.css`
+- `apps/web/src/components/SpinningLogo3D.module.css`
+- `apps/web/src/app/api/rq-submissions/route.ts`
