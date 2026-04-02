@@ -455,25 +455,25 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                     </p>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="padding: 12px 16px; background: #f8f8f8; border-radius: 8px; border: 1px solid #e8e8e8; margin-bottom: 8px;">
+                        <td style="padding: 12px 16px; background: rgba(100, 180, 255, 0.08); border-radius: 0 8px 8px 0; border-left: 4px solid #5eb5ff;">
                           <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
-                            <strong style="color: #c4880d;">Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
+                            <strong style="color: #3b9eff;">Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
                           </p>
                         </td>
                       </tr>
                       <tr><td style="height: 8px;"></td></tr>
                       <tr>
-                        <td style="padding: 12px 16px; background: #f8f8f8; border-radius: 8px; border: 1px solid #e8e8e8; margin-bottom: 8px;">
+                        <td style="padding: 12px 16px; background: rgba(251, 173, 37, 0.08); border-radius: 0 8px 8px 0; border-left: 4px solid #fbad25;">
                           <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
-                            <strong style="color: #c4880d;">Middle numbers (4–5)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
+                            <strong style="color: #e09800;">Middle numbers (4–6)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
                           </p>
                         </td>
                       </tr>
                       <tr><td style="height: 8px;"></td></tr>
                       <tr>
-                        <td style="padding: 12px 16px; background: #f8f8f8; border-radius: 8px; border: 1px solid #e8e8e8;">
+                        <td style="padding: 12px 16px; background: rgba(80, 220, 130, 0.08); border-radius: 0 8px 8px 0; border-left: 4px solid #4ade80;">
                           <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
-                            <strong style="color: #c4880d;">Higher numbers (6–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
+                            <strong style="color: #22c55e;">Higher numbers (7–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
                           </p>
                         </td>
                       </tr>
@@ -689,10 +689,10 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     "• Lower numbers (1–3): Ambient signal—present, but flexible.",
     "  You likely have range here and can move across the spectrum without much friction.",
     "",
-    "• Middle numbers (4–5): Balanced signal—you have a clear leaning, but with openness.",
+    "• Middle numbers (4–6): Balanced signal—you have a clear leaning, but with openness.",
     "  You can adapt without losing yourself.",
     "",
-    "• Higher numbers (6–10): Emphatic signal—this is a defining part of how you operate.",
+    "• Higher numbers (7–10): Emphatic signal—this is a defining part of how you operate.",
     "  Alignment here matters more, and mismatches are easier to feel.",
     "",
     "This isn't about better or worse. It's about clarity and intensity—how loudly or",

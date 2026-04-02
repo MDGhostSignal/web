@@ -1192,13 +1192,38 @@ html:has(.rq-results-page) {
   color: var(--rq-text);
   line-height: 1.6;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 4px solid;
 }
 
-.rq-numbers-list li strong {
-  color: var(--rq-accent);
+/* Color-coded number range items matching signal strength colors */
+.rq-numbers-item-light {
+  background: rgba(100, 180, 255, 0.08);
+  border-color: #5eb5ff;
+}
+
+.rq-numbers-item-light strong {
+  color: #5eb5ff;
+  font-weight: 600;
+}
+
+.rq-numbers-item-balanced {
+  background: rgba(251, 173, 37, 0.08);
+  border-color: #fbad25;
+}
+
+.rq-numbers-item-balanced strong {
+  color: #fbad25;
+  font-weight: 600;
+}
+
+.rq-numbers-item-strong {
+  background: rgba(80, 220, 130, 0.08);
+  border-color: #4ade80;
+}
+
+.rq-numbers-item-strong strong {
+  color: #4ade80;
   font-weight: 600;
 }
 

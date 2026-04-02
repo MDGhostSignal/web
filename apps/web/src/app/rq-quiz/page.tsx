@@ -740,14 +740,14 @@ export default function RQIndexPage() {
                   Each letter in your RQ is paired with a number from 1 to 10. This number reflects how strongly that signal shows up in you.
                 </p>
                 <ul className="rq-numbers-list">
-                  <li>
+                  <li className="rq-numbers-item-light">
                     <strong>Lower numbers (1–3)</strong> indicate an <em>ambient signal</em>—present, but flexible. You likely have range here and can move across the spectrum without much friction.
                   </li>
-                  <li>
-                    <strong>Middle numbers (4–5)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
+                  <li className="rq-numbers-item-balanced">
+                    <strong>Middle numbers (4–6)</strong> suggest a <em>balanced signal</em>—you have a clear leaning, but with openness. You can adapt without losing yourself.
                   </li>
-                  <li>
-                    <strong>Higher numbers (6–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
+                  <li className="rq-numbers-item-strong">
+                    <strong>Higher numbers (7–10)</strong> indicate an <em>emphatic signal</em>—this is a defining part of how you operate. Alignment here matters more, and mismatches are easier to feel.
                   </li>
                 </ul>
                 <p className="rq-numbers-note">
