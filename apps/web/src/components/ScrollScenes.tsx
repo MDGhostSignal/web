@@ -28,7 +28,9 @@ uniform float uTime;
 uniform vec2 uResolution;
 uniform float uScroll;
 uniform sampler2D uEarthTexture;
+uniform sampler2D uCloudTexture;
 uniform float uTextureLoaded;
+uniform float uCloudLoaded;
 uniform float uRotationX;
 uniform float uRotationY;
 
@@ -46,72 +48,23 @@ float sphereIntersect(vec3 ro, vec3 rd, float r) {
   return -b - sqrt(h);
 }
 
-// Fast city light - single sharp point with early culling
-float cityLight(vec2 pos, vec2 city, float size) {
-  vec2 d = pos - city;
-  float dist2 = d.x * d.x + d.y * d.y; // Squared distance (no sqrt)
-  float r2 = size * size;
-  return dist2 < r2 ? 1.0 : 0.0; // Sharp cutoff, no gradient
-}
-
-// City lights - optimized with early culling
-float cityLights(float lat, float lon) {
-  vec2 p = vec2(lat, lon);
-  float light = 0.0;
-  float s = 0.012; // Light point size
-
-  // Early culling by region (skip distant cities entirely)
-  // Europe (lat 0.7-1.0, lon -0.1-0.7)
-  if (lat > 0.6 && lat < 1.1 && lon > -0.2 && lon < 0.8) {
-    light += cityLight(p, vec2(0.899, -0.002), s);  // London
-    light += cityLight(p, vec2(0.854, 0.041), s);   // Paris
-    light += cityLight(p, vec2(0.916, 0.234), s);   // Berlin
-    light += cityLight(p, vec2(0.974, 0.656), s);   // Moscow
-    light += cityLight(p, vec2(0.706, -0.064), s);  // Madrid
-  }
-
-  // Africa (lat -0.5-0.6, lon 0.0-0.7)
-  if (lat > -0.6 && lat < 0.6 && lon > -0.1 && lon < 0.8) {
-    light += cityLight(p, vec2(0.113, 0.059), s);   // Lagos
-    light += cityLight(p, vec2(0.524, 0.545), s);   // Cairo
-    light += cityLight(p, vec2(-0.457, 0.489), s);  // Johannesburg
-    light += cityLight(p, vec2(-0.022, 0.643), s);  // Nairobi
-    light += cityLight(p, vec2(-0.076, 0.268), s);  // Kinshasa
-  }
-
-  // Americas (lon -2.2 to -0.7)
-  if (lon > -2.3 && lon < -0.6) {
-    light += cityLight(p, vec2(0.711, -1.291), s);  // New York
-    light += cityLight(p, vec2(0.595, -2.063), s);  // Los Angeles
-    light += cityLight(p, vec2(-0.410, -0.813), s); // São Paulo
-  }
-
-  // Asia (lon 0.9-2.7)
-  if (lon > 0.8 && lon < 2.8) {
-    light += cityLight(p, vec2(0.623, 2.438), s);   // Tokyo
-    light += cityLight(p, vec2(0.696, 2.032), s);   // Beijing
-    light += cityLight(p, vec2(0.333, 1.272), s);   // Mumbai
-    light += cityLight(p, vec2(0.440, 0.965), s);   // Dubai
-    light += cityLight(p, vec2(0.023, 1.812), s);   // Singapore
-    light += cityLight(p, vec2(0.388, 1.992), s);   // Hong Kong
-    light += cityLight(p, vec2(-0.592, 2.639), s);  // Sydney
-  }
-
-  return light;
-}
-
 void main() {
   vec2 p = (vUv - 0.5) * 2.0;
   p.x *= uResolution.x / uResolution.y;
 
   float earthRotation = uRotationX;
   float earthTilt = uRotationY * 0.5;
+  // Clouds rotate in opposite direction, slower
+  float cloudRotation = -uRotationX * 0.3 + uTime * 0.015;
 
   vec3 ro = vec3(0.0, 0.0, 2.8);
   vec3 rd = normalize(vec3(p, -1.5));
 
   float earthRadius = 1.0;
+  float cloudRadius = 1.025; // Just above earth surface
   float atmoRadius = 1.12;
+
+  vec3 lightDir = normalize(vec3(0.5, 0.3, 0.8));
 
   // Dark space background
   vec3 col = vec3(0.01, 0.012, 0.018);
@@ -125,6 +78,41 @@ void main() {
     fresnel = pow(fresnel, 2.5);
     vec3 atmoColor = vec3(0.3, 0.35, 0.45);
     col += atmoColor * fresnel * 0.5;
+  }
+
+  // Cloud layer (rendered first, will be blended over earth)
+  float cloudAlpha = 0.0;
+  vec3 cloudColor = vec3(0.0);
+  float cloudT = sphereIntersect(ro, rd, cloudRadius);
+  if (cloudT > 0.0 && uCloudLoaded > 0.5) {
+    vec3 cloudPos = ro + rd * cloudT;
+    vec3 cloudNormal = normalize(cloudPos);
+
+    float cosT = cos(earthTilt);
+    float sinT = sin(earthTilt);
+    vec3 tiltedCloudNormal = vec3(
+      cloudNormal.x,
+      cloudNormal.y * cosT - cloudNormal.z * sinT,
+      cloudNormal.y * sinT + cloudNormal.z * cosT
+    );
+
+    float cloudLon = atan(tiltedCloudNormal.x, tiltedCloudNormal.z) + cloudRotation;
+    float cloudLat = asin(clamp(tiltedCloudNormal.y, -1.0, 1.0));
+
+    vec2 cloudUv = vec2(
+      0.5 + cloudLon / (2.0 * PI),
+      0.5 - cloudLat / PI
+    );
+    cloudUv.x = fract(cloudUv.x);
+
+    float cloudDensity = texture2D(uCloudTexture, cloudUv).r;
+
+    // Cloud lighting
+    float cloudDiff = max(dot(cloudNormal, lightDir), 0.0);
+    float cloudLighting = 0.4 + cloudDiff * 0.6;
+
+    cloudAlpha = cloudDensity * 0.7; // Semi-transparent clouds
+    cloudColor = vec3(0.9, 0.92, 0.95) * cloudLighting;
   }
 
   // Earth surface
@@ -157,7 +145,6 @@ void main() {
 
     float isLand = smoothstep(0.03, 0.08, height);
 
-    vec3 lightDir = normalize(vec3(0.5, 0.3, 0.8));
     float diff = max(dot(normal, lightDir), 0.0);
     float ambient = 0.15;
     float lighting = ambient + diff * 0.85;
@@ -185,19 +172,14 @@ void main() {
     float spec = pow(max(dot(normal, halfVec), 0.0), 48.0);
     surfaceColor += vec3(0.25) * spec * (1.0 - isLand) * terminator;
 
-    // City lights - sharp white points, brighter on dark side
-    float cityGlow = cityLights(lat, lon);
-    float nightFactor = 1.0 - terminator;
-    float cityIntensity = cityGlow * (nightFactor * 0.7 + 0.3);
-    surfaceColor += vec3(1.0) * cityIntensity * 0.8;
-
     float limb = 1.0 - abs(dot(rd, normal));
     limb = pow(limb, 2.0);
     vec3 limbColor = vec3(0.15, 0.18, 0.24);
     surfaceColor = mix(surfaceColor, limbColor, limb * 0.6);
     surfaceColor += vec3(0.06, 0.08, 0.12) * limb * terminator;
 
-    col = surfaceColor;
+    // Blend clouds over earth surface
+    col = mix(surfaceColor, cloudColor, cloudAlpha);
   }
 
   // Subtle vignette
@@ -309,7 +291,9 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
     const resLoc = gl.getUniformLocation(program, "uResolution");
     const scrollLoc = gl.getUniformLocation(program, "uScroll");
     const texLoc = gl.getUniformLocation(program, "uEarthTexture");
+    const cloudTexLoc = gl.getUniformLocation(program, "uCloudTexture");
     const texLoadedLoc = gl.getUniformLocation(program, "uTextureLoaded");
+    const cloudLoadedLoc = gl.getUniformLocation(program, "uCloudLoaded");
     const rotXLoc = gl.getUniformLocation(program, "uRotationX");
     const rotYLoc = gl.getUniformLocation(program, "uRotationY");
 
@@ -326,7 +310,7 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
     const earthTexture = gl.createTexture();
     let textureLoaded = false;
 
-    const loadTexture = () => {
+    const loadEarthTexture = () => {
       const img = new Image();
       img.crossOrigin = "anonymous";
 
@@ -348,7 +332,34 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
       img.src = "https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png";
     };
 
-    loadTexture();
+    // Load Cloud texture
+    const cloudTexture = gl.createTexture();
+    let cloudLoaded = false;
+
+    const loadCloudTexture = () => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      img.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, cloudTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        cloudLoaded = true;
+      };
+
+      img.onerror = () => {
+        console.warn("Failed to load cloud texture");
+        cloudLoaded = false;
+      };
+
+      img.src = "https://unpkg.com/three-globe@2.31.0/example/img/earth-clouds.png";
+    };
+
+    loadEarthTexture();
+    loadCloudTexture();
 
     // Scroll tracking
     const updateScroll = () => {
@@ -458,6 +469,11 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
       gl.uniform1i(texLoc, 0);
       gl.uniform1f(texLoadedLoc, textureLoaded ? 1.0 : 0.0);
 
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, cloudTexture);
+      gl.uniform1i(cloudTexLoc, 1);
+      gl.uniform1f(cloudLoadedLoc, cloudLoaded ? 1.0 : 0.0);
+
       gl.uniform1f(timeLoc, time);
       gl.uniform2f(resLoc, canvas.width, canvas.height);
       gl.uniform1f(scrollLoc, scrollRef.current);
@@ -482,6 +498,7 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
       cancelAnimationFrame(rafRef.current);
       gl.deleteBuffer(quad);
       gl.deleteTexture(earthTexture);
+      gl.deleteTexture(cloudTexture);
       gl.deleteProgram(program);
     };
   }, [isClient]);
