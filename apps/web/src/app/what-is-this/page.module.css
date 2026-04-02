@@ -5,16 +5,21 @@
   position: relative;
   min-height: 100dvh;
   overflow-x: hidden;
-  background: #0a0c10;
+  background: transparent;
 }
 
 /* =============================================================================
-   GLOBE WRAPPER - Globe positioned behind final section
+   GLOBE WRAPPER - Cloud background for entire section, globe behind final
    ============================================================================= */
 
 .globeWrapper {
   position: relative;
   width: 100%;
+  background-image: url('/images/what-is-this/clouds-bg.jpg');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .globeSticky {
@@ -25,10 +30,6 @@
   height: 100vh;
   z-index: 1;
   pointer-events: none;
-  background-image: url('/images/what-is-this/clouds-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
 .scrollScenes {
