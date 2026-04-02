@@ -30,6 +30,18 @@ export default function WhatIsThisPage() {
 
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>
+        {/* Centered decorative bars */}
+        <div className={styles.decorativeBars}>
+          <Image
+            src="/images/what-is-this/color-bars.png"
+            alt=""
+            width={652}
+            height={7548}
+            className={styles.barsImage}
+            aria-hidden="true"
+          />
+        </div>
+
         <div className={styles.globeSticky}>
           <ScrollScenes className={styles.scrollScenes} />
         </div>
