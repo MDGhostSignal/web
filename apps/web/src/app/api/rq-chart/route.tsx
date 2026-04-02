@@ -5,16 +5,7 @@ export const runtime = "edge";
 
 /**
  * Generates an RQ radar chart as a PNG image
- *
- * Query params:
- * - vl: Values letter (F or I)
- * - vs: Values score (1-10)
- * - al: Authenticity letter (R or S)
- * - as: Authenticity score (1-10)
- * - hl: Horizon letter (L or C)
- * - hs: Horizon score (1-10)
- *
- * Example: /api/rq-chart?vl=F&vs=7&al=R&as=8&hl=C&hs=5
+ * Uses pure HTML/CSS for maximum compatibility with Satori
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -30,57 +21,39 @@ export async function GET(request: NextRequest) {
   // Chart dimensions
   const size = 400;
   const center = size / 2;
-  const maxRadius = (size / 2) - 60;
+  const maxRadius = 140;
   const minRadius = 20;
 
   // Convert polar to cartesian
-  const polarToCartesian = (r: number, angle: number) => {
-    const rad = ((angle - 90) * Math.PI) / 180;
-    return { x: center + r * Math.cos(rad), y: center + r * Math.sin(rad) };
+  const polarToCartesian = (r: number, angleDeg: number) => {
+    const rad = ((angleDeg - 90) * Math.PI) / 180;
+    return {
+      x: center + r * Math.cos(rad),
+      y: center + r * Math.sin(rad)
+    };
   };
 
-  // Score to radius (5 at center, spreading outward)
+  // Score to radius (1-10 scale)
   const scoreToRadius = (score: number) => {
-    const normalized = score <= 5
-      ? ((score - 1) / 4) * 0.5
-      : 0.5 + ((score - 5) / 5) * 0.5;
+    const normalized = (score - 1) / 9;
     return minRadius + normalized * (maxRadius - minRadius);
   };
 
-  // Axis configuration (Values at top, Authenticity bottom-right, Horizon bottom-left)
-  const axes = [
-    { key: "values", angle: 270, letter: valuesLetter, score: valuesScore, name: "Values", left: "I", right: "F" },
-    { key: "authenticity", angle: 30, letter: authLetter, score: authScore, name: "Authenticity", left: "S", right: "R" },
-    { key: "horizon", angle: 150, letter: horizonLetter, score: horizonScore, name: "Horizon", left: "L", right: "C" },
-  ];
+  // Axis angles: Values at top (270°), Authenticity bottom-right (30°), Horizon bottom-left (150°)
+  const valuesPos = polarToCartesian(scoreToRadius(valuesScore), 270);
+  const authPos = polarToCartesian(scoreToRadius(authScore), 30);
+  const horizonPos = polarToCartesian(scoreToRadius(horizonScore), 150);
 
-  // Calculate data points for the polygon
-  const dataPoints = axes.map(axis => {
-    const radius = scoreToRadius(axis.score);
-    const point = polarToCartesian(radius, axis.angle);
-    return { ...axis, ...point };
-  });
-
-  // Create polygon path
-  const polygonPoints = dataPoints.map(p => `${p.x},${p.y}`).join(" ");
-
-  // Ring radii for scale markers
-  const ringScores = [1, 3, 5, 7, 10];
-  const rings = ringScores.map(score => ({
-    score,
-    radius: scoreToRadius(score),
-  }));
+  // Label positions (further out)
+  const valuesLabelPos = polarToCartesian(maxRadius + 50, 270);
+  const authLabelPos = polarToCartesian(maxRadius + 50, 30);
+  const horizonLabelPos = polarToCartesian(maxRadius + 50, 150);
 
   // Colors
-  const bgColor = "#fafafa";
-  const ringColor = "rgba(0, 0, 0, 0.08)";
-  const ringColorMid = "rgba(0, 0, 0, 0.15)";
-  const axisColor = "rgba(0, 0, 0, 0.12)";
-  const polygonFill = "rgba(251, 173, 37, 0.25)";
-  const polygonStroke = "#FBAD25";
-  const pointColor = "#FBAD25";
-  const textMuted = "#888888";
-  const textActive = "#c4880d";
+  const accentColor = "#FBAD25";
+  const activeTextColor = "#c4880d";
+  const mutedColor = "#888888";
+  const inactiveColor = "rgba(0,0,0,0.3)";
 
   return new ImageResponse(
     (
@@ -91,99 +64,191 @@ export async function GET(request: NextRequest) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: bgColor,
+          backgroundColor: "#fafafa",
           borderRadius: 12,
+          position: "relative",
         }}
       >
+        {/* Center rings - using borders */}
+        <div
+          style={{
+            position: "absolute",
+            width: maxRadius * 2,
+            height: maxRadius * 2,
+            borderRadius: "50%",
+            border: "2px solid rgba(0,0,0,0.12)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: maxRadius * 1.4,
+            height: maxRadius * 1.4,
+            borderRadius: "50%",
+            border: "1px solid rgba(0,0,0,0.08)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: maxRadius,
+            height: maxRadius,
+            borderRadius: "50%",
+            border: "2px solid rgba(0,0,0,0.15)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            width: maxRadius * 0.5,
+            height: maxRadius * 0.5,
+            borderRadius: "50%",
+            border: "1px solid rgba(0,0,0,0.08)",
+          }}
+        />
+
+        {/* Center dot */}
+        <div
+          style={{
+            position: "absolute",
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            backgroundColor: mutedColor,
+          }}
+        />
+
+        {/* Triangle polygon area - using SVG for the polygon only */}
         <svg
           width={size}
           height={size}
           viewBox={`0 0 ${size} ${size}`}
           style={{ position: "absolute" }}
         >
-          {/* Background rings */}
-          {rings.map((ring) => (
-            <circle
-              key={ring.score}
-              cx={center}
-              cy={center}
-              r={ring.radius}
-              fill="none"
-              stroke={ring.score === 5 ? ringColorMid : ringColor}
-              strokeWidth={ring.score === 5 || ring.score === 10 ? 2 : 1}
-            />
-          ))}
-
-          {/* Axis lines */}
-          {axes.map((axis) => {
-            const outer = polarToCartesian(maxRadius + 10, axis.angle);
-            return (
-              <line
-                key={axis.key}
-                x1={center}
-                y1={center}
-                x2={outer.x}
-                y2={outer.y}
-                stroke={axisColor}
-                strokeWidth={1}
-              />
-            );
-          })}
-
-          {/* Filled polygon */}
           <polygon
-            points={polygonPoints}
-            fill={polygonFill}
-            stroke={polygonStroke}
-            strokeWidth={3}
+            points={`${valuesPos.x},${valuesPos.y} ${authPos.x},${authPos.y} ${horizonPos.x},${horizonPos.y}`}
+            fill="rgba(251, 173, 37, 0.25)"
+            stroke={accentColor}
+            strokeWidth="3"
             strokeLinejoin="round"
           />
-
-          {/* Data points */}
-          {dataPoints.map((p) => (
-            <g key={p.key}>
-              <circle cx={p.x} cy={p.y} r={10} fill="rgba(251, 173, 37, 0.3)" />
-              <circle cx={p.x} cy={p.y} r={7} fill={pointColor} stroke="#ffffff" strokeWidth={2} />
-            </g>
-          ))}
-
-          {/* Center marker */}
-          <circle cx={center} cy={center} r={3} fill={textMuted} />
         </svg>
 
-        {/* Labels - positioned with absolute divs since SVG text doesn't work well in Satori */}
-        {axes.map((axis) => {
-          const labelPos = polarToCartesian(maxRadius + 45, axis.angle);
-          const isActive = (side: string) => axis.letter === side;
+        {/* Data points */}
+        <div
+          style={{
+            position: "absolute",
+            left: valuesPos.x - 10,
+            top: valuesPos.y - 10,
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            backgroundColor: accentColor,
+            border: "3px solid white",
+            boxShadow: "0 2px 8px rgba(251, 173, 37, 0.5)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: authPos.x - 10,
+            top: authPos.y - 10,
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            backgroundColor: accentColor,
+            border: "3px solid white",
+            boxShadow: "0 2px 8px rgba(251, 173, 37, 0.5)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: horizonPos.x - 10,
+            top: horizonPos.y - 10,
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            backgroundColor: accentColor,
+            border: "3px solid white",
+            boxShadow: "0 2px 8px rgba(251, 173, 37, 0.5)",
+          }}
+        />
 
-          return (
-            <div
-              key={`label-${axis.key}`}
-              style={{
-                position: "absolute",
-                left: labelPos.x - 50,
-                top: labelPos.y - 25,
-                width: 100,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-              }}
-            >
-              <span style={{ fontSize: 11, fontWeight: 600, color: textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                {axis.name}
-              </span>
-              <span style={{ fontSize: 13, marginTop: 2 }}>
-                <span style={{ color: isActive(axis.left) ? textActive : "rgba(0,0,0,0.3)", fontWeight: isActive(axis.left) ? 700 : 400 }}>{axis.left}</span>
-                <span style={{ color: "rgba(0,0,0,0.3)" }}> / </span>
-                <span style={{ color: isActive(axis.right) ? textActive : "rgba(0,0,0,0.3)", fontWeight: isActive(axis.right) ? 700 : 400 }}>{axis.right}</span>
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: textActive, marginTop: 2 }}>
-                {axis.letter}({axis.score})
-              </span>
-            </div>
-          );
-        })}
+        {/* Values Label (top) */}
+        <div
+          style={{
+            position: "absolute",
+            left: valuesLabelPos.x - 60,
+            top: valuesLabelPos.y - 45,
+            width: 120,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: mutedColor, textTransform: "uppercase" }}>
+            Values
+          </span>
+          <span style={{ fontSize: 14, marginTop: 2, display: "flex" }}>
+            <span style={{ color: valuesLetter === "I" ? activeTextColor : inactiveColor, fontWeight: valuesLetter === "I" ? 700 : 400 }}>I</span>
+            <span style={{ color: inactiveColor, margin: "0 4px" }}>/</span>
+            <span style={{ color: valuesLetter === "F" ? activeTextColor : inactiveColor, fontWeight: valuesLetter === "F" ? 700 : 400 }}>F</span>
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: activeTextColor, marginTop: 2 }}>
+            {valuesLetter}({valuesScore})
+          </span>
+        </div>
+
+        {/* Authenticity Label (bottom-right) */}
+        <div
+          style={{
+            position: "absolute",
+            left: authLabelPos.x - 60,
+            top: authLabelPos.y - 20,
+            width: 120,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: mutedColor, textTransform: "uppercase" }}>
+            Authenticity
+          </span>
+          <span style={{ fontSize: 14, marginTop: 2, display: "flex" }}>
+            <span style={{ color: authLetter === "S" ? activeTextColor : inactiveColor, fontWeight: authLetter === "S" ? 700 : 400 }}>S</span>
+            <span style={{ color: inactiveColor, margin: "0 4px" }}>/</span>
+            <span style={{ color: authLetter === "R" ? activeTextColor : inactiveColor, fontWeight: authLetter === "R" ? 700 : 400 }}>R</span>
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: activeTextColor, marginTop: 2 }}>
+            {authLetter}({authScore})
+          </span>
+        </div>
+
+        {/* Horizon Label (bottom-left) */}
+        <div
+          style={{
+            position: "absolute",
+            left: horizonLabelPos.x - 60,
+            top: horizonLabelPos.y - 20,
+            width: 120,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 600, color: mutedColor, textTransform: "uppercase" }}>
+            Horizon
+          </span>
+          <span style={{ fontSize: 14, marginTop: 2, display: "flex" }}>
+            <span style={{ color: horizonLetter === "L" ? activeTextColor : inactiveColor, fontWeight: horizonLetter === "L" ? 700 : 400 }}>L</span>
+            <span style={{ color: inactiveColor, margin: "0 4px" }}>/</span>
+            <span style={{ color: horizonLetter === "C" ? activeTextColor : inactiveColor, fontWeight: horizonLetter === "C" ? 700 : 400 }}>C</span>
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: activeTextColor, marginTop: 2 }}>
+            {horizonLetter}({horizonScore})
+          </span>
+        </div>
       </div>
     ),
     {
