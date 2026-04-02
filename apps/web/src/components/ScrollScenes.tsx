@@ -47,71 +47,65 @@ float sphereIntersect(vec3 ro, vec3 rd, float r) {
   return -b - sqrt(h);
 }
 
+// Generate cluster of tiny lights around a city center
+float cityCluster(vec2 pos, vec2 cityCenter, float seed, int numLights) {
+  float glow = 0.0;
+  float clusterRadius = 0.04; // Spread of lights around city center
+  float lightRadius = 0.004;  // Size of each tiny light
+
+  for (int i = 0; i < 24; i++) {
+    if (i >= numLights) break;
+
+    // Generate random offset for each light using seed
+    float fi = float(i);
+    float angle = hash(vec2(seed, fi)) * 2.0 * PI;
+    float dist = hash(vec2(fi, seed)) * clusterRadius;
+
+    // Offset position from city center
+    vec2 lightPos = cityCenter + vec2(cos(angle), sin(angle)) * dist;
+
+    // Sharp tiny point light
+    float d = distance(pos, lightPos);
+    glow += smoothstep(lightRadius, lightRadius * 0.3, d);
+  }
+
+  return glow;
+}
+
 // City lights - returns glow intensity at given lat/lon
 float cityLights(float lat, float lon, float time) {
-  // Major cities: lat (radians), lon (radians)
-  // Europe
-  vec2 london = vec2(0.899, -0.002);      // 51.5°N, 0.1°W
-  vec2 paris = vec2(0.854, 0.041);        // 48.9°N, 2.3°E
-  vec2 berlin = vec2(0.916, 0.234);       // 52.5°N, 13.4°E
-  vec2 moscow = vec2(0.974, 0.656);       // 55.8°N, 37.6°E
-  vec2 madrid = vec2(0.706, -0.064);      // 40.4°N, 3.7°W
-
-  // Africa
-  vec2 lagos = vec2(0.113, 0.059);        // 6.5°N, 3.4°E
-  vec2 cairo = vec2(0.524, 0.545);        // 30.0°N, 31.2°E
-  vec2 johannesburg = vec2(-0.457, 0.489);// 26.2°S, 28.0°E
-  vec2 nairobi = vec2(-0.022, 0.643);     // 1.3°S, 36.8°E
-  vec2 kinshasa = vec2(-0.076, 0.268);    // 4.4°S, 15.3°E (center Africa)
-
-  // Americas
-  vec2 newYork = vec2(0.711, -1.291);     // 40.7°N, 74.0°W
-  vec2 losAngeles = vec2(0.595, -2.063);  // 34.1°N, 118.2°W
-  vec2 saoPaulo = vec2(-0.410, -0.813);   // 23.5°S, 46.6°W
-
-  // Asia
-  vec2 tokyo = vec2(0.623, 2.438);        // 35.7°N, 139.7°E
-  vec2 beijing = vec2(0.696, 2.032);      // 39.9°N, 116.4°E
-  vec2 mumbai = vec2(0.333, 1.272);       // 19.1°N, 72.9°E
-  vec2 dubai = vec2(0.440, 0.965);        // 25.2°N, 55.3°E
-  vec2 singapore = vec2(0.023, 1.812);    // 1.3°N, 103.8°E
-  vec2 hongKong = vec2(0.388, 1.992);     // 22.3°N, 114.2°E
-
-  // Oceania
-  vec2 sydney = vec2(-0.592, 2.639);      // 33.9°S, 151.2°E
-
   vec2 currentPos = vec2(lat, lon);
   float glow = 0.0;
-  float radius = 0.08; // Size of city glow
 
-  // Calculate distance to each city and add glow
-  glow += smoothstep(radius, 0.0, distance(currentPos, london)) * 1.2;
-  glow += smoothstep(radius, 0.0, distance(currentPos, paris)) * 1.1;
-  glow += smoothstep(radius, 0.0, distance(currentPos, berlin)) * 1.0;
-  glow += smoothstep(radius, 0.0, distance(currentPos, moscow)) * 1.0;
-  glow += smoothstep(radius, 0.0, distance(currentPos, madrid)) * 0.9;
+  // Europe - dense clusters
+  glow += cityCluster(currentPos, vec2(0.899, -0.002), 1.0, 20);  // London
+  glow += cityCluster(currentPos, vec2(0.854, 0.041), 2.0, 18);   // Paris
+  glow += cityCluster(currentPos, vec2(0.916, 0.234), 3.0, 16);   // Berlin
+  glow += cityCluster(currentPos, vec2(0.974, 0.656), 4.0, 18);   // Moscow
+  glow += cityCluster(currentPos, vec2(0.706, -0.064), 5.0, 14);  // Madrid
 
-  glow += smoothstep(radius, 0.0, distance(currentPos, lagos)) * 1.0;
-  glow += smoothstep(radius, 0.0, distance(currentPos, cairo)) * 1.0;
-  glow += smoothstep(radius, 0.0, distance(currentPos, johannesburg)) * 0.9;
-  glow += smoothstep(radius, 0.0, distance(currentPos, nairobi)) * 0.8;
-  glow += smoothstep(radius, 0.0, distance(currentPos, kinshasa)) * 0.8;
+  // Africa
+  glow += cityCluster(currentPos, vec2(0.113, 0.059), 6.0, 16);   // Lagos
+  glow += cityCluster(currentPos, vec2(0.524, 0.545), 7.0, 14);   // Cairo
+  glow += cityCluster(currentPos, vec2(-0.457, 0.489), 8.0, 12);  // Johannesburg
+  glow += cityCluster(currentPos, vec2(-0.022, 0.643), 9.0, 12);  // Nairobi
+  glow += cityCluster(currentPos, vec2(-0.076, 0.268), 10.0, 14); // Kinshasa
 
-  glow += smoothstep(radius, 0.0, distance(currentPos, newYork)) * 1.3;
-  glow += smoothstep(radius, 0.0, distance(currentPos, losAngeles)) * 1.1;
-  glow += smoothstep(radius, 0.0, distance(currentPos, saoPaulo)) * 1.0;
+  // Americas
+  glow += cityCluster(currentPos, vec2(0.711, -1.291), 11.0, 24); // New York
+  glow += cityCluster(currentPos, vec2(0.595, -2.063), 12.0, 20); // Los Angeles
+  glow += cityCluster(currentPos, vec2(-0.410, -0.813), 13.0, 18);// São Paulo
 
-  glow += smoothstep(radius, 0.0, distance(currentPos, tokyo)) * 1.3;
-  glow += smoothstep(radius, 0.0, distance(currentPos, beijing)) * 1.2;
-  glow += smoothstep(radius, 0.0, distance(currentPos, mumbai)) * 1.1;
-  glow += smoothstep(radius, 0.0, distance(currentPos, dubai)) * 1.0;
-  glow += smoothstep(radius, 0.0, distance(currentPos, singapore)) * 1.0;
-  glow += smoothstep(radius, 0.0, distance(currentPos, hongKong)) * 1.0;
+  // Asia
+  glow += cityCluster(currentPos, vec2(0.623, 2.438), 14.0, 24);  // Tokyo
+  glow += cityCluster(currentPos, vec2(0.696, 2.032), 15.0, 22);  // Beijing
+  glow += cityCluster(currentPos, vec2(0.333, 1.272), 16.0, 20);  // Mumbai
+  glow += cityCluster(currentPos, vec2(0.440, 0.965), 17.0, 16);  // Dubai
+  glow += cityCluster(currentPos, vec2(0.023, 1.812), 18.0, 14);  // Singapore
+  glow += cityCluster(currentPos, vec2(0.388, 1.992), 19.0, 16);  // Hong Kong
 
-  glow += smoothstep(radius, 0.0, distance(currentPos, sydney)) * 1.0;
-
-  // Subtle pulsing effect
-  glow *= 0.8 + 0.2 * sin(time * 2.0 + lat * 10.0);
+  // Oceania
+  glow += cityCluster(currentPos, vec2(-0.592, 2.639), 20.0, 16); // Sydney
 
   return glow;
 }
@@ -201,13 +195,13 @@ void main() {
     float spec = pow(max(dot(normal, halfVec), 0.0), 48.0);
     surfaceColor += vec3(0.25) * spec * (1.0 - isLand) * terminator;
 
-    // City lights - brighter on dark side, visible on light side too
+    // City lights - tiny white points, brighter on dark side
     float cityGlow = cityLights(lat, lon, uTime);
     float nightFactor = 1.0 - terminator; // Stronger on night side
-    float dayVisibility = 0.3; // Still visible during day
-    float cityIntensity = cityGlow * (nightFactor + dayVisibility);
-    vec3 cityColor = vec3(1.0, 0.85, 0.5); // Warm golden glow
-    surfaceColor += cityColor * cityIntensity * 0.6;
+    float dayVisibility = 0.25; // Slightly visible during day
+    float cityIntensity = cityGlow * (nightFactor * 0.8 + dayVisibility);
+    vec3 cityColor = vec3(1.0, 1.0, 1.0); // Pure white
+    surfaceColor += cityColor * cityIntensity * 0.5;
 
     float limb = 1.0 - abs(dot(rd, normal));
     limb = pow(limb, 2.0);
