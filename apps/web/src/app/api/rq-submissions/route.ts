@@ -362,8 +362,8 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
                     <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #333333;">
                       Each word corresponds to one axis of the Resonance Index—Values, Authenticity, and Time Horizon—and reflects both your direction and your strength on that axis. Taken together, they form your "call sign": a quick, intuitive way to understand how you interact in partnerships, how you communicate, and how you build.
                     </p>
-                    <p style="margin: 16px 0 0; padding-top: 16px; border-top: 1px solid #e8e8e8; font-size: 15px; line-height: 1.6; color: #666666; font-style: italic; text-align: center;">
-                      (It's not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance.)
+                    <p style="margin: 20px 0 0; padding-top: 20px; border-top: 1px solid #e8e8e8; font-size: 22px; line-height: 1.4; color: #666666; font-style: italic; text-align: center;">
+                      "It's not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance."
                     </p>
                   </td>
                 </tr>
@@ -577,8 +577,8 @@ async function sendUserSummaryEmail(payload: SubmissionPayload) {
     "",
     "───────────────────────────────────",
     "",
-    "(It's not a label to live inside, but a way to recognize yourself—and to help",
-    "others recognize you—at a glance.)",
+    "\"It's not a label to live inside, but a way to recognize yourself—and to help",
+    "others recognize you—at a glance.\"",
     "",
     "═══════════════════════════════════",
     "",

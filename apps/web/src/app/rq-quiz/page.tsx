@@ -765,7 +765,7 @@ export default function RQIndexPage() {
                   Each word corresponds to one axis of the Resonance Index—Values, Authenticity, and Time Horizon—and reflects both your direction and your strength on that axis. Taken together, they form your &ldquo;call sign&rdquo;: a quick, intuitive way to understand how you interact in partnerships, how you communicate, and how you build.
                 </p>
                 <p className="rq-name-quote">
-                  (It&apos;s not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance.)
+                  &ldquo;It&apos;s not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance.&rdquo;
                 </p>
               </div>
             </article>
