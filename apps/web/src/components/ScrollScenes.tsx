@@ -106,14 +106,15 @@ void main() {
     cloudUv.x = fract(cloudUv.x);
 
     vec4 cloudSample = texture2D(uCloudTexture, cloudUv);
-    float cloudDensity = cloudSample.a; // Cloud coverage is in alpha channel
+    // Try both RGB (white clouds) and alpha channel
+    float cloudDensity = max(cloudSample.r, cloudSample.a);
 
     // Cloud lighting
     float cloudDiff = max(dot(cloudNormal, lightDir), 0.0);
-    float cloudLighting = 0.4 + cloudDiff * 0.6;
+    float cloudLighting = 0.5 + cloudDiff * 0.5;
 
-    cloudAlpha = cloudDensity * 0.7; // Semi-transparent clouds
-    cloudColor = vec3(0.9, 0.92, 0.95) * cloudLighting;
+    cloudAlpha = cloudDensity * 0.85; // More visible clouds
+    cloudColor = vec3(1.0) * cloudLighting;
   }
 
   // Earth surface
@@ -356,7 +357,8 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
         cloudLoaded = false;
       };
 
-      img.src = "https://raw.githubusercontent.com/matteason/live-cloud-maps/main/clouds_2048.png";
+      // Cloud texture - using Three.js example texture
+      img.src = "https://threejs.org/examples/textures/planets/earth_clouds_1024.png";
     };
 
     loadEarthTexture();
