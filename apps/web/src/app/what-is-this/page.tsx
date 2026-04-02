@@ -114,10 +114,10 @@ export default function WhatIsThisPage() {
             <div className={styles.finalContent}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <Image
-                  src="/images/brand/gs-logo-white.png"
+                  src="/images/brand/brandmark-horizontal-white@4.png"
                   alt="GhostSignal"
-                  width={200}
-                  height={200}
+                  width={600}
+                  height={120}
                   className={styles.finalLogo}
                 />
               </ScrollFadeUp>
