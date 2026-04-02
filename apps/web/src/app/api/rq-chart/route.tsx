@@ -175,12 +175,12 @@ export async function GET(request: NextRequest) {
           }}
         />
 
-        {/* Values Label (top) */}
+        {/* Values Label (top) - centered horizontally */}
         <div
           style={{
             position: "absolute",
-            left: valuesLabelPos.x - 60,
-            top: valuesLabelPos.y - 45,
+            left: center - 60,
+            top: 10,
             width: 120,
             display: "flex",
             flexDirection: "column",
@@ -204,8 +204,8 @@ export async function GET(request: NextRequest) {
         <div
           style={{
             position: "absolute",
-            left: authLabelPos.x - 60,
-            top: authLabelPos.y - 20,
+            left: size - 130,
+            top: size - 80,
             width: 120,
             display: "flex",
             flexDirection: "column",
@@ -229,8 +229,8 @@ export async function GET(request: NextRequest) {
         <div
           style={{
             position: "absolute",
-            left: horizonLabelPos.x - 60,
-            top: horizonLabelPos.y - 20,
+            left: 10,
+            top: size - 80,
             width: 120,
             display: "flex",
             flexDirection: "column",
