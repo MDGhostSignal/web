@@ -4,8 +4,12 @@
   --footer-max: calc(var(--gs-n-1664, 1664) * var(--gs-px));
   position: relative;
   min-height: 100dvh;
-  overflow-x: hidden;
-  background: transparent;
+  overflow-x: clip;
+  background-image: url('/images/what-is-this/clouds-bg.jpg');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* =============================================================================
@@ -15,19 +19,19 @@
 .globeWrapper {
   position: relative;
   width: 100%;
-  background-image: url('/images/what-is-this/clouds-bg.jpg');
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+}
+
+/* Not needed with background on .page */
+.parallaxBg {
+  display: none;
 }
 
 .decorativeBars {
   position: absolute;
-  top: 0;
+  top: 100vh;
   left: 50%;
   transform: translateX(-50%);
-  height: 100%;
+  height: calc(100% - 100vh);
   z-index: 0;
   pointer-events: none;
   opacity: 0.6;

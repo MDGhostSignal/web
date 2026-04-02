@@ -28,6 +28,9 @@ export default function WhatIsThisPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
+      {/* Fixed parallax background */}
+      <div className={styles.parallaxBg} aria-hidden="true" />
+
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>
         {/* Centered decorative bars */}
