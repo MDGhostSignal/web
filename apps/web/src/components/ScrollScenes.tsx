@@ -62,10 +62,6 @@ void main() {
   // Dark space background
   vec3 col = vec3(0.01, 0.012, 0.018);
 
-  // Subtle stars
-  float stars = step(0.998, hash(floor(vUv * 200.0)));
-  col += vec3(0.5, 0.5, 0.6) * stars;
-
   // Atmosphere glow
   float atmoT = sphereIntersect(ro, rd, atmoRadius);
   if (atmoT > 0.0) {
