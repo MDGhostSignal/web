@@ -105,7 +105,8 @@ void main() {
     );
     cloudUv.x = fract(cloudUv.x);
 
-    float cloudDensity = texture2D(uCloudTexture, cloudUv).r;
+    vec4 cloudSample = texture2D(uCloudTexture, cloudUv);
+    float cloudDensity = cloudSample.a; // Cloud coverage is in alpha channel
 
     // Cloud lighting
     float cloudDiff = max(dot(cloudNormal, lightDir), 0.0);
@@ -355,7 +356,7 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
         cloudLoaded = false;
       };
 
-      img.src = "https://unpkg.com/three-globe@2.31.0/example/img/earth-clouds.png";
+      img.src = "https://raw.githubusercontent.com/matteason/live-cloud-maps/main/clouds_2048.png";
     };
 
     loadEarthTexture();
