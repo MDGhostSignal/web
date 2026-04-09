@@ -38,6 +38,7 @@ export default function DesignTasksPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -294,7 +295,7 @@ export default function DesignTasksPage() {
               </p>
             </div>
           ) : (
-            filteredTasks.map((task) => (
+            filteredTasks.map((task, index) => (
               <div
                 key={task.id}
                 className={`${styles.taskCard} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]}`}
@@ -309,7 +310,10 @@ export default function DesignTasksPage() {
                 }}
               >
                 <div className={styles.taskHeader}>
-                  <h3 className={styles.taskTitle}>{task.title}</h3>
+                  <div className={styles.taskTitleRow}>
+                    <span className={styles.taskNumber}>{index + 1}</span>
+                    <h3 className={styles.taskTitle}>{task.title}</h3>
+                  </div>
                   <div className={styles.taskHeaderRight}>
                     {(task.comment_count ?? 0) > 0 && (
                       <span className={styles.commentCount}>
@@ -364,7 +368,7 @@ export default function DesignTasksPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(task.id)}
+                    onClick={() => setDeleteConfirmId(task.id)}
                     className={styles.deleteButton}
                   >
                     Delete
@@ -515,6 +519,36 @@ export default function DesignTasksPage() {
           }}
           currentUser={createdBy}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className={styles.modalOverlay} onClick={() => setDeleteConfirmId(null)}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.confirmIcon}>⚠️</div>
+            <h3 className={styles.confirmTitle}>Delete Task?</h3>
+            <p className={styles.confirmText}>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className={styles.cancelButton}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDelete(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                }}
+                className={styles.confirmDeleteButton}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
