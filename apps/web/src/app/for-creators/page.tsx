@@ -1,10 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import Lottie from "lottie-react";
 
 import { SiteHeader } from "@/components/SiteHeader";
+import { ParallaxBackground } from "@/components/ParallaxBackground";
+import { Footer } from "@/components/Footer";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
+import creatorsAnimation from "@/../public/images/for-creators/creators.json";
 import styles from "./page.module.css";
 
 const navLinks = [
@@ -53,100 +59,224 @@ const journeySteps = [
   },
 ] as const;
 
-export const metadata = {
-  title: "For Creators | GhostSignal",
-  description: "Your podcast is cultural architecture. Monetize while maintaining your voice and values with soul-aligned brand partnerships.",
-};
-
 export default function ForCreatorsPage() {
   return (
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
+      {/* Parallax background */}
+      <ParallaxBackground
+        imageSrc="/images/for-creators/hero-bg.jpg"
+        speed={0.3}
+      />
+
+      {/* Static overlay effect */}
+      <div className={styles.staticOverlay} aria-hidden="true" />
+
       {/* Hero Section */}
       <section className={styles.hero}>
-        <div className={styles.heroSky} aria-hidden="true" />
         <div className={styles.heroContent}>
+          <div className={styles.heroLogos}>
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+          </div>
           <SplitLinesReveal duration={2.2} stagger={0.3}>
             <h1 className={styles.heroHeadline}>
-              Your podcast is cultural architecture. You are building the future.
+              Your podcast is<br />
+              Cultural architecture.<br />
+              You are building the future.
             </h1>
           </SplitLinesReveal>
+          <div className={styles.heroLogos}>
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt="GhostSignal"
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+          </div>
           <ScrollFadeUp index={0} duration={1.8}>
             <p className={styles.heroSubhead}>
-              Your voice is not for sale. Your audience is not a data point. Your work is not merely &quot;content.&quot;
+              Your voice is not for sale.<br />
+              Your audience is not a data point.<br />
+              Your work is not merely content.
             </p>
           </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.8}>
-            <p className={styles.heroBody}>
-              What if you could monetize your podcast while maintaining your voice and values? The traditional ad model forces impossible choices: compromise your voice, risk your audience&apos;s trust, or drown in administrative tasks.
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={2} duration={1.8}>
-            <p className={styles.heroCta}>
-              We are here to protect your voice, honor your audience, and help you find the partners who will make the world alongside you.
-            </p>
-          </ScrollFadeUp>
+          <div className={styles.heroLogos}>
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+          </div>
+          <div className={styles.heroBodyGrid}>
+            <ScrollFadeUp index={1} duration={1.8}>
+              <p className={styles.heroBodyText}>
+                What if you could monetize your podcast while maintaining your voice and values? The traditional ad model forces impossible choices: compromise your voice, risk your audience&apos;s trust, or drown in administrative tasks.
+              </p>
+            </ScrollFadeUp>
+            <ScrollFadeUp index={2} duration={1.8}>
+              <p className={styles.heroBodyText}>
+                We are here to protect your voice, honor your audience, and help you find the partners who will make the world alongside you.
+              </p>
+            </ScrollFadeUp>
+          </div>
+          <div className={styles.heroLogos}>
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+            <Image
+              src="/images/for-creators/lettermark-white.png"
+              alt=""
+              width={30}
+              height={30}
+              className={styles.heroLogo}
+            />
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
       <section className={styles.featuresSection}>
         <div className={styles.featuresContainer}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <h2 className={styles.sectionTitle}>Why this works</h2>
-          </ScrollFadeUp>
-          <div className={styles.featuresGrid}>
-            {features.map((feature, index) => (
-              <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
-                <article className={styles.featureCard}>
-                  <h3 className={styles.featureTitle}>{feature.title}</h3>
-                  <p className={styles.featureDescription}>{feature.description}</p>
-                </article>
-              </ScrollFadeUp>
-            ))}
+          <div className={styles.featuresHeader}>
+            <ScrollFadeUp index={0} duration={1.6}>
+              <p className={styles.featuresSubhead}>Why this works</p>
+            </ScrollFadeUp>
+            <SplitLinesReveal duration={2} stagger={0.28}>
+              <h2 className={styles.featuresHeadline}>
+                GHOSTSignal is<br />
+                Advertising-as-Support-System
+              </h2>
+            </SplitLinesReveal>
+            <ScrollFadeUp index={1} duration={1.6}>
+              <p className={styles.featuresTagline}>
+                We remove the static, so you can focus on the signal.
+              </p>
+            </ScrollFadeUp>
+            <Image
+              src="/images/for-creators/color-bars-hor.png"
+              alt=""
+              width={800}
+              height={69}
+              className={styles.featuresColorBars}
+            />
           </div>
-          <ScrollFadeUp index={4} duration={1.6}>
-            <Link href="/get-in-touch" className={styles.primaryButton}>
-              Get In Touch
-            </Link>
-          </ScrollFadeUp>
-        </div>
-      </section>
-
-      {/* Core Concept Section */}
-      <section className={styles.conceptSection}>
-        <div className={styles.conceptContent}>
-          <SplitLinesReveal duration={2} stagger={0.28}>
-            <h2 className={styles.conceptHeadline}>
-              GHOSTSignal is Advertising-as-Support-System
-            </h2>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.conceptSubhead}>
-              We remove the static, so you can focus on the signal.
-            </p>
-          </ScrollFadeUp>
+          <div className={styles.featuresLayout}>
+            <div className={styles.featuresGrid}>
+              {features.map((feature, index) => (
+                <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
+                  <article className={styles.featureCard}>
+                    <h3 className={styles.featureTitle}>{feature.title}</h3>
+                    <p className={styles.featureDescription}>{feature.description}</p>
+                  </article>
+                </ScrollFadeUp>
+              ))}
+              <ScrollFadeUp index={4} duration={1.6}>
+                <Link href="/get-in-touch" className={styles.primaryButton}>
+                  Get In Touch
+                </Link>
+              </ScrollFadeUp>
+            </div>
+            <div className={styles.featuresAnimation}>
+              <Lottie
+                animationData={creatorsAnimation}
+                loop={true}
+                autoplay={true}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Membership Journey Section */}
       <section className={styles.journeySection}>
-        <div className={styles.journeyContainer}>
-          <div className={styles.journeyHeader}>
-            <ScrollFadeUp index={0} duration={1.6}>
-              <h2 className={styles.journeyTitle}>Your Membership Journey</h2>
-            </ScrollFadeUp>
-            <ScrollFadeUp index={1} duration={1.6}>
-              <p className={styles.journeySubtitle}>how it works</p>
-            </ScrollFadeUp>
-            <ScrollFadeUp index={2} duration={1.6}>
-              <p className={styles.journeyIntro}>
-                Our process is simple, unhurried, and sensitive to your voice and mission. Here&apos;s how it goes:
-              </p>
-            </ScrollFadeUp>
-          </div>
+        <div className={styles.journeyBackground} aria-hidden="true" />
+        <div className={styles.journeyHeader}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <p className={styles.journeySubtitle}>how it works</p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={1} duration={1.6}>
+            <h2 className={styles.journeyTitle}>Your Membership Journey</h2>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={2} duration={1.6}>
+            <p className={styles.journeyIntro}>
+              Our process is simple, unhurried, and sensitive to your voice and mission. Here&apos;s how it goes:
+            </p>
+          </ScrollFadeUp>
+        </div>
 
+        <div className={styles.journeyLayout}>
+          <div className={styles.journeyImageWrapper}>
+            <Image
+              src="/images/for-creators/journey-statue.png"
+              alt="Metallic sculpture"
+              width={800}
+              height={1000}
+              className={styles.journeyImage}
+            />
+          </div>
           <ol className={styles.journeySteps}>
             {journeySteps.map((step, index) => (
               <ScrollFadeUp key={step.number} index={index} duration={1.8}>
@@ -168,14 +298,16 @@ export default function ForCreatorsPage() {
         <div className={styles.closingContent}>
           <SplitLinesReveal duration={2.2} stagger={0.3}>
             <h2 className={styles.closingHeadline}>
-              You don&apos;t need a million downloads to matter.
+              You don&apos;t need<br />
+              A million downloads<br />
+              To <span className={styles.matterText}>matter</span>.
             </h2>
           </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.6}>
+          <SplitLinesReveal duration={1.8} stagger={0.25}>
             <p className={styles.closingSubhead}>
               You just need conviction and the right partner to amplify your voice.
             </p>
-          </ScrollFadeUp>
+          </SplitLinesReveal>
           <ScrollFadeUp index={1} duration={1.6}>
             <Link href="/get-in-touch" className={styles.closingCta}>
               Find Your Frequency
@@ -229,116 +361,18 @@ export default function ForCreatorsPage() {
               height={300}
               className={styles.contactBars}
             />
+            <Image
+              src="/images/for-creators/jeremycontact.jpg"
+              alt="Jeremy"
+              width={350}
+              height={350}
+              className={styles.contactPhoto}
+            />
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerTop}>
-          <Image
-            src="/images/home/figma/footer-mark-dark.gif"
-            alt="Ghost Signal mark"
-            width={155}
-            height={145}
-            unoptimized
-            className={styles.footerMark}
-          />
-          <div className={styles.footerWordmark}>
-            <Image
-              src="/images/home/figma/footer-wordmark-ghost.svg"
-              alt="Ghost"
-              width={289.978}
-              height={57.7955}
-              className={styles.footerWordmarkLeft}
-            />
-            <Image
-              src="/images/home/figma/footer-wordmark-signal.svg"
-              alt="Signal"
-              width={219.702}
-              height={71.9804}
-              className={styles.footerWordmarkRight}
-            />
-          </div>
-        </div>
-
-        <nav className={styles.footerNav} aria-label="Footer">
-          <div className={styles.footerCol}>
-            <h4 className={styles.footerColTitle}>Discover</h4>
-            <ul className={styles.footerColLinks}>
-              <li><Link href="/for-creators">FOR CREATORS</Link></li>
-              <li><Link href="/for-brands">FOR BRANDS</Link></li>
-            </ul>
-          </div>
-          <div className={styles.footerCol}>
-            <h4 className={styles.footerColTitle}>Company</h4>
-            <ul className={styles.footerColLinks}>
-              <li><Link href="/who-are-we">WHO WE ARE</Link></li>
-              <li><Link href="/what-is-this">WHAT IS THIS</Link></li>
-            </ul>
-          </div>
-          <div className={styles.footerCol}>
-            <h4 className={styles.footerColTitle}>Learn</h4>
-            <ul className={styles.footerColLinks}>
-              <li><Link href="/snowdrift">SNOWDRIFT</Link></li>
-            </ul>
-          </div>
-        </nav>
-
-        <div className={styles.footerMorse}>
-          <p className={styles.morseCode}>
-            -.-. -. - ... - --- .--. - .... . ... .. --. -. .- .-..
-          </p>
-        </div>
-
-        <div className={styles.footerSocial}>
-          <a
-            href="https://www.instagram.com/ghostsignal.cloud"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            className={styles.socialLink}
-          >
-            <Image
-              src="/images/home/figma/social-instagram.svg"
-              alt=""
-              width={24}
-              height={24}
-              className={styles.socialIcon}
-            />
-          </a>
-          <a
-            href="https://www.linkedin.com/company/108297128"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-            className={styles.socialLink}
-          >
-            <Image
-              src="/images/home/figma/social-linkedin-outline.svg"
-              alt=""
-              width={24}
-              height={24}
-              className={styles.socialIcon}
-            />
-          </a>
-          <a
-            href="https://www.facebook.com/ghostsignal.cloud"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook"
-            className={styles.socialLink}
-          >
-            <Image
-              src="/images/home/figma/social-facebook.svg"
-              alt=""
-              width={24}
-              height={24}
-              className={styles.socialIcon}
-            />
-          </a>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
