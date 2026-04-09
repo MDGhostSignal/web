@@ -5,6 +5,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
+import SplineEmbed from "./SplineEmbed";
+import { FoundersSection } from "./FoundersSection";
 
 import styles from "./page.module.css";
 
@@ -15,41 +17,6 @@ const navLinks = [
   { href: "/who-are-we", label: "Who Are We" },
   { href: "/snowdrift", label: "SNOWDRIFT" },
   { href: "/get-in-touch", label: "Get In Touch" },
-] as const;
-
-const founders = [
-  {
-    name: "Jack W Harding",
-    role: "Cultural & Business Strategist",
-    location: "Cambridge, UK",
-    linkedin: "https://www.linkedin.com/in/jackwharding",
-    bio: "Jack is animated by the belief that the world changes when good creators and good brands find each other. With a background in business strategy, research, and podcasting, he loves to help meaningful ideas reach their audience. In co-founding GHOSTSignal, Jack's aim is to amplify good signals that cut through static that dulls culture. He also serves with a Christian cultural apologetics ministry based in the United States.",
-    image: "/images/team/GS-EmailSignatures-jackw.gif",
-  },
-  {
-    name: "Jeremy Reeves",
-    role: "Creative Strategist",
-    location: "Colorado Springs, CO",
-    linkedin: "https://www.linkedin.com/in/jeremy-reeves-5365b036a/",
-    bio: "Jeremy is driven by the moment a person sees something new—an insight, a possibility, a truer version of themselves—and by helping them reach it. He has guided individuals through coaching, shaped brand culture and identity for companies, and supported institutions navigating major change. His motivation in co-founding GHOSTSignal is to help build a future where good creators and good companies meet in alignment and make the kind of world we all want.",
-    image: "/images/team/GS-EmailSignatures-jeremyw.gif",
-  },
-  {
-    name: "Martin Drexler",
-    role: "Design",
-    location: "Munich, Germany",
-    linkedin: "https://www.linkedin.com/in/whoismartindrexler/",
-    bio: "Martin is an award-winning German designer known for blending creativity, strategy, and measurable impact. With more than 25 international honors—including the German Brand Award in Gold and D&AD Gold—he has led branding and digital experience projects across Europe and the U.S. His craft is rooted in storytelling, user-centered design, and analytical clarity. As a co-founder of GHOSTSignal, Martin brings his passion for shaping meaningful experiences to a new frontier of creator–brand partnership.",
-    image: "/images/team/GS-EmailSignatures-martinw.gif",
-  },
-  {
-    name: "Mike Sense",
-    role: "Vision & Partnerships",
-    location: "Prague, Czechia",
-    linkedin: "https://www.linkedin.com/in/mike-sense/",
-    bio: "Mike is good at understanding two important questions: What is a person? And what is shaping the future? He has an appetite for risk-taking adventures, which has resulted in starting two companies that solve real problems that real people encounter in the real world. For him, GHOSTSignal is not just a fun company with friends, but a mission fuelled by curiosity and conviction. Mike resides in Prague, Czech Republic with his family.",
-    image: "/images/team/GS-EmailSignatures-mikew.gif",
-  },
 ] as const;
 
 const promises = [
@@ -80,17 +47,118 @@ export default function WhoAreWePage() {
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroSky} aria-hidden="true" />
+
+        {/* Hero clouds - background layer */}
+        <div className={styles.heroCloudWrapper}>
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.heroCloud1}`}
+            aria-hidden="true"
+          />
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.heroCloud2}`}
+            aria-hidden="true"
+          />
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.heroCloud3}`}
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Hero clouds - foreground layer */}
+        <div className={styles.heroCloudWrapperFront}>
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.heroCloud4}`}
+            aria-hidden="true"
+          />
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.heroCloud5}`}
+            aria-hidden="true"
+          />
+        </div>
+
+        <div className={styles.heroLogos}>
+          <Image
+            src="/images/who-are-we/lettermark-white.png"
+            alt=""
+            width={300}
+            height={60}
+            className={styles.heroLogoSide}
+          />
+          <Image
+            src="/images/who-are-we/logomark-white.png"
+            alt="GhostSignal"
+            width={60}
+            height={60}
+            className={styles.heroLogoMark}
+          />
+          <Image
+            src="/images/who-are-we/lettermark-white.png"
+            alt=""
+            width={300}
+            height={60}
+            className={styles.heroLogoSide}
+          />
+        </div>
         <div className={styles.heroContent}>
           <SplitLinesReveal duration={2.2} stagger={0.3}>
             <h1 className={styles.heroHeadline}>
-              GHOSTSignal is a partner-making force.
+              WE ARE A TEAM<br />
+              COMMITTED<br />
+              TO THE WORLD<br />
+              WE ARE MAKING.
             </h1>
           </SplitLinesReveal>
+          <div className={styles.morseCodeWrapper}>
+            <Image
+              src="/images/who-are-we/morsecod.png"
+              alt=""
+              width={200}
+              height={20}
+              className={styles.morseCodeImage}
+            />
+          </div>
           <ScrollFadeUp index={0} duration={1.8}>
             <p className={styles.heroSubhead}>
               We believe the future of advertising is soulful.
             </p>
           </ScrollFadeUp>
+          <SplineEmbed scene="https://prod.spline.design/gzlQ1P24v0imBh-L/scene.splinecode" />
+        </div>
+        <div className={styles.heroLogosBottom}>
+          <Image
+            src="/images/who-are-we/lettermark-white.png"
+            alt=""
+            width={300}
+            height={60}
+            className={styles.heroLogoSide}
+          />
+          <Image
+            src="/images/who-are-we/lettermark-white.png"
+            alt=""
+            width={300}
+            height={60}
+            className={styles.heroLogoSide}
+          />
         </div>
       </section>
 
@@ -98,66 +166,18 @@ export default function WhoAreWePage() {
       <section className={styles.missionSection}>
         <div className={styles.missionContent}>
           <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.missionText}>
-              GHOSTSignal was created as an act of world making, to help you make yours.
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <p className={styles.missionText}>
-              We believe that advertising doesn&apos;t have to be extractive, it can be creative and good.
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={2} duration={1.6}>
-            <p className={styles.missionText}>
-              Our goal is to see creators, thinkers, and doers in good partnerships that support their work, and good companies to have their story heard by audiences with whom they resonate.
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={3} duration={1.6}>
-            <p className={styles.missionHighlight}>
-              We make partnerships with soul and resonance, so you can make a world of harmony and goodness.
-            </p>
+            <div className={styles.missionText}>
+              <p>GHOSTSignal was created as an act of world making, to help you make yours.</p>
+              <p>We believe that advertising doesn&apos;t have to be extractive, it can be creative and good.</p>
+              <p>Our goal is to see creators, thinkers, and doers in good partnerships that support their work, and good companies to have their story heard by audiences with whom they resonate.</p>
+              <p>We make partnerships with soul and resonance, so you can make a world of harmony and goodness.</p>
+            </div>
           </ScrollFadeUp>
         </div>
       </section>
 
       {/* Team Section */}
-      <section className={styles.teamSection}>
-        <div className={styles.teamContainer}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <h2 className={styles.teamHeadline}>
-              WE are a team COMMITTED TO the world we are making.
-            </h2>
-          </ScrollFadeUp>
-
-          <div className={styles.foundersGrid}>
-            {founders.map((founder, index) => (
-              <ScrollFadeUp key={founder.name} index={index} duration={1.8}>
-                <article className={styles.founderCard}>
-                  <Image
-                    src={founder.image}
-                    alt={`${founder.name} - Co-Founder, ${founder.role}, ${founder.location}`}
-                    width={400}
-                    height={100}
-                    unoptimized
-                    className={styles.founderCardImage}
-                  />
-                  <div className={styles.founderBio}>
-                    <p>{founder.bio}</p>
-                    <a
-                      href={founder.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.linkedinLink}
-                    >
-                      Connect on LinkedIn
-                    </a>
-                  </div>
-                </article>
-              </ScrollFadeUp>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FoundersSection />
 
       {/* Promises Section */}
       <section className={styles.promisesSection}>
@@ -228,6 +248,13 @@ export default function WhoAreWePage() {
               width={400}
               height={300}
               className={styles.contactBars}
+            />
+            <Image
+              src="/images/for-creators/jeremycontact.jpg"
+              alt="Jeremy"
+              width={350}
+              height={350}
+              className={styles.contactPhoto}
             />
           </div>
         </div>
