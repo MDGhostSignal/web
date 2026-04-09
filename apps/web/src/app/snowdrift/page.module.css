@@ -5,16 +5,6 @@
   position: relative;
   min-height: 100dvh;
   overflow-x: clip;
-  background: #0a0a0c;
-}
-
-/* =============================================================================
-   HERO SECTION
-   ============================================================================= */
-
-.hero {
-  width: 100%;
-  min-height: calc(var(--gs-n-720, 720) * var(--gs-px));
   background:
     radial-gradient(
       56% 52% at 50% 30%,
@@ -23,18 +13,15 @@
       rgba(10, 10, 12, 0) 70%
     ),
     linear-gradient(180deg, #12141a 0%, #0a0a0c 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
-  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad);
+  background-attachment: fixed;
 }
 
-.heroSky {
-  position: absolute;
+/* Stars overlay spanning entire page */
+.page::before {
+  content: "";
+  position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
   opacity: 0.3;
   background:
@@ -49,6 +36,28 @@
     radial-gradient(circle at 92% 10%, rgba(255, 255, 255, 0.3) 0 1px, transparent 1.5px),
     radial-gradient(circle at 35% 55%, rgba(255, 255, 255, 0.25) 0 0.8px, transparent 1.2px),
     radial-gradient(circle at 82% 48%, rgba(255, 255, 255, 0.3) 0 1px, transparent 1.5px);
+}
+
+/* =============================================================================
+   HERO SECTION
+   ============================================================================= */
+
+.hero {
+  width: 100%;
+  min-height: calc(var(--gs-n-720, 720) * var(--gs-px));
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad);
+}
+
+/* heroSky no longer needed - stars are on page level */
+.heroSky {
+  display: none;
 }
 
 .heroContent {
@@ -71,10 +80,12 @@
 .heroHeadline {
   margin: 0;
   font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: clamp(36px, 6vw, 72px);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(36px, 6vw, 80px);
   line-height: 1.1;
   color: var(--gs-tw-white);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
 }
 
 .heroTagline {
@@ -99,7 +110,9 @@
 
 .signupSection {
   padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad);
-  background: var(--gs-tw-white);
+  background: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .signupContainer {
@@ -118,7 +131,7 @@
   font-weight: var(--gs-font-weight-medium);
   font-size: clamp(28px, 4vw, 42px);
   line-height: 1.2;
-  color: var(--gs-tw-gray-950);
+  color: var(--gs-tw-white);
 }
 
 .signupSubhead {
@@ -127,7 +140,7 @@
   font-weight: var(--gs-font-weight-normal);
   font-size: var(--gs-text-lg-size);
   line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-gray-600);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .signupForm,
@@ -145,7 +158,7 @@
   font-weight: var(--gs-font-weight-medium);
   font-size: var(--gs-text-sm-size);
   line-height: var(--gs-text-sm-leading);
-  color: var(--gs-tw-gray-700);
+  color: rgba(255, 255, 255, 0.7);
   text-align: left;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -162,21 +175,21 @@
   font-family: var(--font-body);
   font-size: var(--gs-text-base-size);
   line-height: var(--gs-text-base-leading);
-  color: var(--gs-tw-gray-900);
-  background: var(--gs-tw-white);
-  border: 1px solid var(--gs-tw-gray-300);
+  color: var(--gs-tw-white);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .formInput:focus {
   outline: none;
-  border-color: var(--gs-tw-gray-500);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
 .formInput::placeholder {
-  color: var(--gs-tw-gray-400);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .formButton {
@@ -185,8 +198,8 @@
   font-weight: var(--gs-font-weight-medium);
   font-size: var(--gs-text-base-size);
   line-height: var(--gs-text-base-leading);
-  color: var(--gs-tw-white);
-  background: var(--gs-tw-gray-950);
+  color: var(--gs-tw-gray-950);
+  background: var(--gs-tw-white);
   border: none;
   border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
   cursor: pointer;
@@ -197,7 +210,7 @@
 }
 
 .formButton:hover {
-  background: var(--gs-tw-gray-800);
+  background: rgba(255, 255, 255, 0.9);
   transform: translateY(-2px);
 }
 
@@ -207,7 +220,9 @@
 
 .descriptionSection {
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
-  background: #f2f2f2;
+  background: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .descriptionContainer {
@@ -224,9 +239,9 @@
   font-weight: var(--gs-font-weight-medium);
   font-size: clamp(20px, 3vw, 28px);
   line-height: 1.5;
-  color: var(--gs-tw-gray-950);
+  color: var(--gs-tw-white);
   text-align: center;
-  border-left: 4px solid var(--gs-tw-gray-950);
+  border-left: 4px solid rgba(255, 255, 255, 0.6);
   padding-left: calc(var(--gs-n-24) * var(--gs-px));
   text-align: left;
 }
@@ -243,7 +258,7 @@
   font-weight: var(--gs-font-weight-normal);
   font-size: var(--gs-text-xl-size);
   line-height: 1.8;
-  color: var(--gs-tw-gray-700);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .descriptionHighlight {
@@ -253,7 +268,7 @@
   font-weight: var(--gs-font-weight-medium);
   font-size: var(--gs-text-2xl-size);
   line-height: 1.5;
-  color: var(--gs-tw-gray-950);
+  color: var(--gs-tw-white);
   font-style: italic;
 }
 
@@ -263,7 +278,9 @@
 
 .ctaSection {
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
-  background: var(--gs-tw-gray-950);
+  background: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .ctaContainer {
@@ -285,29 +302,7 @@
   color: var(--gs-tw-white);
 }
 
-.ctaForm .formInput {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: var(--gs-tw-white);
-}
-
-.ctaForm .formInput:focus {
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-}
-
-.ctaForm .formInput::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.ctaForm .formButton {
-  background: var(--gs-tw-white);
-  color: var(--gs-tw-gray-950);
-}
-
-.ctaForm .formButton:hover {
-  background: rgba(255, 255, 255, 0.9);
-}
+/* CTA form uses same dark-theme form styles */
 
 .ctaClosing {
   margin: 0;

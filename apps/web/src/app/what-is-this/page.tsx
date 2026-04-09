@@ -50,9 +50,7 @@ export default function WhatIsThisPage() {
           />
         </div>
 
-        <div className={styles.globeSticky}>
-          <ScrollScenes className={styles.scrollScenes} />
-        </div>
+        {/* Globe moved to finalSection - keeping wrapper for layout */}
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
@@ -133,7 +131,7 @@ export default function WhatIsThisPage() {
             </div>
           </section>
 
-          {/* Final Section: This is the Signal - with globe behind */}
+          {/* Final Section: This is the Signal - with globe below */}
           <section className={styles.finalSection}>
             <div className={styles.finalContent}>
               <ScrollFadeUp index={0} duration={1.6}>
@@ -160,6 +158,10 @@ export default function WhatIsThisPage() {
                   Everything else is just static.
                 </p>
               </ScrollFadeUp>
+            </div>
+            {/* Globe directly below the headline */}
+            <div className={styles.finalGlobeWrapper}>
+              <ScrollScenes className={styles.finalGlobe} />
             </div>
           </section>
 
