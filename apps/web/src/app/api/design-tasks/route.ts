@@ -9,6 +9,63 @@ interface TaskPayload {
   status: "pending" | "in_progress" | "completed";
   priority: "low" | "medium" | "high";
   due_date?: string | null;
+  created_by?: string;
+}
+
+// Founder mapping based on country
+const FOUNDER_BY_COUNTRY: Record<string, { name: string; location: string }> = {
+  GB: { name: "Jack W Harding", location: "UK" },
+  DE: { name: "Martin Drexler", location: "Germany" },
+  US: { name: "Jeremy Reeves", location: "US" },
+  CZ: { name: "Mike Sense", location: "Czech Republic" },
+};
+
+// Get founder from IP using free ip-api.com service
+async function getFounderFromIP(ip: string): Promise<string | null> {
+  // Skip for localhost/development
+  if (ip === "127.0.0.1" || ip === "::1" || ip.startsWith("192.168.") || ip.startsWith("10.")) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const countryCode = data.countryCode;
+
+    if (countryCode && FOUNDER_BY_COUNTRY[countryCode]) {
+      return FOUNDER_BY_COUNTRY[countryCode].name;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Extract client IP from request headers
+function getClientIP(request: NextRequest): string {
+  // Check various headers for the real IP (in order of reliability)
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  const realIP = request.headers.get("x-real-ip");
+  if (realIP) {
+    return realIP;
+  }
+
+  const cfConnectingIP = request.headers.get("cf-connecting-ip");
+  if (cfConnectingIP) {
+    return cfConnectingIP;
+  }
+
+  return "127.0.0.1";
 }
 
 function getSupabaseConfig() {
@@ -30,7 +87,7 @@ function getSupabaseConfig() {
   };
 }
 
-// GET - Fetch all tasks
+// GET - Fetch all tasks with comment counts
 export async function GET() {
   const config = getSupabaseConfig();
 
@@ -42,7 +99,8 @@ export async function GET() {
   }
 
   try {
-    const response = await fetch(
+    // Fetch tasks
+    const tasksResponse = await fetch(
       `${config.url}/rest/v1/${TABLE_NAME}?select=*&order=created_at.desc`,
       {
         method: "GET",
@@ -51,19 +109,46 @@ export async function GET() {
       }
     );
 
-    if (!response.ok) {
-      const detail = await response.text();
+    if (!tasksResponse.ok) {
+      const detail = await tasksResponse.text();
       return NextResponse.json(
         { error: "Failed to fetch tasks.", detail },
         { status: 502 }
       );
     }
 
-    const tasks = await response.json();
+    const tasks = await tasksResponse.json();
+
+    // Fetch comment counts for all tasks
+    const commentsResponse = await fetch(
+      `${config.url}/rest/v1/design_task_comments?select=task_id`,
+      {
+        method: "GET",
+        headers: config.headers,
+        cache: "no-store",
+      }
+    );
+
+    let commentCounts: Record<string, number> = {};
+
+    if (commentsResponse.ok) {
+      const comments = await commentsResponse.json();
+      // Count comments per task
+      commentCounts = comments.reduce((acc: Record<string, number>, comment: { task_id: string }) => {
+        acc[comment.task_id] = (acc[comment.task_id] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    // Add comment counts to tasks
+    const tasksWithCounts = tasks.map((task: { id: string }) => ({
+      ...task,
+      comment_count: commentCounts[task.id] || 0,
+    }));
 
     return NextResponse.json({
       ok: true,
-      tasks,
+      tasks: tasksWithCounts,
     });
   } catch (error) {
     return NextResponse.json(
@@ -94,12 +179,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use creator from request body, or detect from IP as fallback
+    let founderName = body.created_by;
+    if (!founderName || founderName === "Unknown") {
+      const clientIP = getClientIP(request);
+      founderName = await getFounderFromIP(clientIP) || "Unknown";
+    }
+
     const taskData = {
       title: body.title.trim(),
       description: body.description?.trim() || null,
       status: body.status || "pending",
       priority: body.priority || "medium",
       due_date: body.due_date || null,
+      created_by: founderName,
     };
 
     const response = await fetch(

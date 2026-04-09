@@ -4,9 +4,18 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { TaskDetailPanel } from "./TaskDetailPanel";
 
 type TaskStatus = "pending" | "in_progress" | "completed";
 type TaskPriority = "low" | "medium" | "high";
+type Founder = "Mike Sense" | "Jack W Harding" | "Martin Drexler" | "Jeremy Reeves";
+
+const FOUNDERS: { name: Founder; location: string }[] = [
+  { name: "Mike Sense", location: "Prague, CZ" },
+  { name: "Jack W Harding", location: "Cambridge, UK" },
+  { name: "Martin Drexler", location: "Munich, DE" },
+  { name: "Jeremy Reeves", location: "Colorado, US" },
+];
 
 interface Task {
   id: string;
@@ -16,6 +25,8 @@ interface Task {
   priority: TaskPriority;
   created_at: string;
   due_date?: string | null;
+  created_by?: string;
+  comment_count?: number;
 }
 
 export default function DesignTasksPage() {
@@ -26,12 +37,14 @@ export default function DesignTasksPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [dueDate, setDueDate] = useState("");
+  const [createdBy, setCreatedBy] = useState<Founder>("Mike Sense");
 
   // Fetch tasks from API
   const fetchTasks = useCallback(async () => {
@@ -62,6 +75,7 @@ export default function DesignTasksPage() {
     setDescription("");
     setPriority("medium");
     setDueDate("");
+    setCreatedBy("Mike Sense");
     setEditingId(null);
   }, []);
 
@@ -118,6 +132,7 @@ export default function DesignTasksPage() {
               status: "pending",
               priority,
               due_date: dueDate || null,
+              created_by: createdBy,
             }),
           });
 
@@ -137,7 +152,7 @@ export default function DesignTasksPage() {
         setIsSaving(false);
       }
     },
-    [title, description, priority, dueDate, editingId, isSaving, closeModal]
+    [title, description, priority, dueDate, createdBy, editingId, isSaving, closeModal]
   );
 
   const handleEdit = useCallback((task: Task) => {
@@ -146,6 +161,7 @@ export default function DesignTasksPage() {
     setDescription(task.description || "");
     setPriority(task.priority);
     setDueDate(task.due_date || "");
+    setCreatedBy((task.created_by as Founder) || "Mike Sense");
     setIsModalOpen(true);
   }, []);
 
@@ -282,14 +298,30 @@ export default function DesignTasksPage() {
               <div
                 key={task.id}
                 className={`${styles.taskCard} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]}`}
+                onClick={() => setSelectedTask(task)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedTask(task);
+                  }
+                }}
               >
                 <div className={styles.taskHeader}>
                   <h3 className={styles.taskTitle}>{task.title}</h3>
-                  <span
-                    className={`${styles.priorityBadge} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}Badge`]}`}
-                  >
-                    {task.priority}
-                  </span>
+                  <div className={styles.taskHeaderRight}>
+                    {(task.comment_count ?? 0) > 0 && (
+                      <span className={styles.commentCount}>
+                        💬 {task.comment_count}
+                      </span>
+                    )}
+                    <span
+                      className={`${styles.priorityBadge} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}Badge`]}`}
+                    >
+                      {task.priority}
+                    </span>
+                  </div>
                 </div>
 
                 {task.description && (
@@ -297,6 +329,11 @@ export default function DesignTasksPage() {
                 )}
 
                 <div className={styles.taskMeta}>
+                  {task.created_by && (
+                    <span className={styles.taskCreator}>
+                      By: {task.created_by}
+                    </span>
+                  )}
                   <span className={styles.taskDate}>
                     Created: {new Date(task.created_at).toLocaleDateString()}
                   </span>
@@ -307,7 +344,7 @@ export default function DesignTasksPage() {
                   )}
                 </div>
 
-                <div className={styles.taskActions}>
+                <div className={styles.taskActions} onClick={(e) => e.stopPropagation()}>
                   <select
                     value={task.status}
                     onChange={(e) =>
@@ -384,6 +421,27 @@ export default function DesignTasksPage() {
                 />
               </div>
 
+              {!editingId && (
+                <div className={styles.formGroup}>
+                  <label htmlFor="createdBy" className={styles.label}>
+                    Created By
+                  </label>
+                  <select
+                    id="createdBy"
+                    value={createdBy}
+                    onChange={(e) => setCreatedBy(e.target.value as Founder)}
+                    className={styles.select}
+                    disabled={isSaving}
+                  >
+                    {FOUNDERS.map((founder) => (
+                      <option key={founder.name} value={founder.name}>
+                        {founder.name} ({founder.location})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label htmlFor="priority" className={styles.label}>
@@ -441,6 +499,22 @@ export default function DesignTasksPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Task Detail Panel */}
+      {selectedTask && (
+        <TaskDetailPanel
+          task={selectedTask}
+          isOpen={!!selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onTaskUpdate={(updatedTask) => {
+            setTasks((prev) =>
+              prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+            );
+            setSelectedTask(updatedTask);
+          }}
+          currentUser={createdBy}
+        />
       )}
     </main>
   );
