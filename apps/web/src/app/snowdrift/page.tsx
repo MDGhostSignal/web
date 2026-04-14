@@ -65,22 +65,14 @@ export default function SnowdriftPage() {
             </p>
           </ScrollFadeUp>
           <ScrollFadeUp index={2} duration={1.6}>
-            <form className={styles.signupForm} action="https://ghostsignal.substack.com/subscribe" method="GET" target="_blank">
-              <label htmlFor="email" className={styles.formLabel}>Email Address</label>
-              <div className={styles.formRow}>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  required
-                  className={styles.formInput}
-                />
-                <button type="submit" className={styles.formButton}>
-                  Sign Up
-                </button>
-              </div>
-            </form>
+            <a
+              href="https://snowdriftghostsignal.substack.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.formButton}
+            >
+              Subscribe on Substack
+            </a>
           </ScrollFadeUp>
         </div>
       </section>
@@ -116,36 +108,6 @@ export default function SnowdriftPage() {
               </p>
             </ScrollFadeUp>
           </div>
-        </div>
-      </section>
-
-      {/* Second CTA Section */}
-      <section className={styles.ctaSection}>
-        <div className={styles.ctaContainer}>
-          <SplitLinesReveal duration={2} stagger={0.28}>
-            <h2 className={styles.ctaHeadline}>
-              Subscribe now, and get the signals shaping what&apos;s next.
-            </h2>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <form className={styles.ctaForm} action="https://ghostsignal.substack.com/subscribe" method="GET" target="_blank">
-              <div className={styles.formRow}>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  required
-                  className={styles.formInput}
-                />
-                <button type="submit" className={styles.formButton}>
-                  Sign Up Now
-                </button>
-              </div>
-            </form>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <p className={styles.ctaClosing}>Welcome to the Snowdrift</p>
-          </ScrollFadeUp>
         </div>
       </section>
 

@@ -193,6 +193,7 @@
 }
 
 .formButton {
+  display: inline-block;
   padding: calc(var(--gs-n-14) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-medium);
@@ -205,6 +206,8 @@
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-decoration: none;
+  text-align: center;
   transition: background 200ms ease, transform 200ms ease;
   white-space: nowrap;
 }

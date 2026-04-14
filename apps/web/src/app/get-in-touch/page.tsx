@@ -1,20 +1,10 @@
 import Image from "next/image";
 
-import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
 import styles from "./page.module.css";
-
-const navLinks = [
-  { href: "/what-is-this", label: "What is this" },
-  { href: "/for-creators", label: "For Creators" },
-  { href: "/for-advertisers", label: "For Advertisers" },
-  { href: "/who-are-we", label: "Who Are We" },
-  { href: "/snowdrift", label: "SNOWDRIFT" },
-  { href: "/get-in-touch", label: "Get In Touch" },
-] as const;
 
 export const metadata = {
   title: "Get In Touch | GhostSignal",
@@ -24,7 +14,6 @@ export const metadata = {
 export default function GetInTouchPage() {
   return (
     <main className={styles.page}>
-      <SiteHeader links={navLinks} />
 
       {/* Contact Section */}
       <section className={styles.contactSection}>

@@ -69,7 +69,9 @@ export function SiteHeader({
         defaults: { duration: 0.75, ease: "snappy" },
       });
 
-      // Initial state: links visible, CTA in place.
+      // Initial state: header visible, links visible, CTA in place.
+      const el = rootRef.current;
+      if (el) gsap.set(el, { yPercent: 0 });
       if (ctaEl) gsap.set(ctaEl, { xPercent: 0 });
       gsap.set(linkEls, { yPercent: 0, alpha: 1 });
       if (hideLinkEls.length) gsap.set(hideLinkEls, { display: "inline-flex" });

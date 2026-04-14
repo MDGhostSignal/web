@@ -31,29 +31,13 @@
   height: calc(var(--gs-n-145) * var(--gs-px));
 }
 
-/* Wordmark at 50% size */
-.footerWordmark {
-  position: relative;
-  width: calc(var(--gs-n-280, 280) * var(--gs-px));
-  height: calc(var(--gs-n-68, 68) * var(--gs-px));
-  margin-top: calc(var(--gs-n-5, 5) * var(--gs-px));
-  overflow: hidden;
+.footerLogoLink {
+  display: block;
+  transition: transform 300ms ease;
 }
 
-.footerWordmarkLeft {
-  position: absolute;
-  left: calc(var(--gs-n-12, 12) * var(--gs-px));
-  top: calc(var(--gs-n-22, 22) * var(--gs-px));
-  width: calc(var(--gs-n-145, 145) * var(--gs-px));
-  height: calc(var(--gs-n-29, 29) * var(--gs-px));
-}
-
-.footerWordmarkRight {
-  position: absolute;
-  left: calc(var(--gs-n-163, 163) * var(--gs-px));
-  top: calc(var(--gs-n-23, 23) * var(--gs-px));
-  width: calc(var(--gs-n-110, 110) * var(--gs-px));
-  height: calc(var(--gs-n-36, 36) * var(--gs-px));
+.footerLogoLink:hover {
+  transform: scale(1.15);
 }
 
 .footerNav {
@@ -96,6 +80,13 @@
   line-height: var(--gs-text-2xl-leading);
   color: var(--gs-tw-white);
   text-decoration: none;
+  transition: color 200ms ease, transform 200ms ease;
+  display: inline-block;
+}
+
+.footerColLinks a:hover {
+  color: #80838d;
+  transform: translateX(8px);
 }
 
 .footerMorse {
@@ -114,7 +105,7 @@
 
 .footerSocial {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: calc(var(--gs-n-80) * var(--gs-px));
 }
 
@@ -168,12 +159,6 @@
     min-height: auto;
     gap: calc(var(--gs-n-24) * var(--gs-px));
   }
-
-  .footerWordmark {
-    width: 100%;
-    justify-content: flex-start;
-    min-height: auto;
-  }
 }
 
 @media (max-width: 768px) {
@@ -209,7 +194,6 @@
   }
 
   .footerSocial {
-    justify-content: flex-start;
     gap: calc(var(--gs-n-24) * var(--gs-px));
   }
 }
