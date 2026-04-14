@@ -87,9 +87,96 @@ Created new shared component at `src/components/ContactSection/`:
 - `apps/web/public/images/who-are-we/promise1.jpg`
 - `apps/web/public/images/who-are-we/promise2.jpg`
 
-## Commit
+## Commit (Session 1)
 ```
 feat(who-are-we): enhance page with animations and refactor ContactSection
+```
+
+---
+
+# Session 2 - Footer & Snowdrift Updates
+
+## Summary
+Enhanced the Footer component with animations and hover effects, fixed social icons, updated Snowdrift page to link to Substack, removed navigation from Get in Touch page, and fixed header visibility issues.
+
+## Changes Made
+
+### 7. Footer Enhancements (`Footer.tsx`, `Footer.module.css`)
+
+**Converted to Client Component:**
+- Added `"use client"` directive to support GSAP animations
+- Imported `ScrollFadeUp` for scroll-triggered reveal animations
+
+**Animation Updates:**
+- Added staggered `ScrollFadeUp` animations to all footer elements
+- Logo (index 0), section titles (index 1), links (index 2-3), morse code (index 4), social icons (index 5-7)
+
+**Visual Changes:**
+- Centered social icons below morse code (changed from `flex-end` to `center`)
+- Made spinning logo clickable (links to home page)
+- Added hover effect on logo: `scale(1.15)` transform
+- Added hover effects on footer links: slide right (`translateX(8px)`) + color change to `#80838d`
+- Removed the written-out GhostSignal wordmark from right side
+
+### 8. Fixed Social Icons
+Replaced corrupt/broken SVG icons:
+
+**Facebook (`social-facebook.svg`):**
+- Was displaying as single pixel
+- Replaced with proper Facebook "F" outline icon
+
+**LinkedIn (`social-linkedin-outline.svg`):**
+- Was displaying incorrectly
+- Replaced with proper LinkedIn outline icon with person and connection paths
+
+### 9. Snowdrift Page Updates (`snowdrift/page.tsx`, `snowdrift/page.module.css`)
+
+**Removed Email Signup Forms:**
+- Removed email input field and subscribe button form elements
+
+**Added Substack Link:**
+- Single "Subscribe on Substack" button linking to `https://snowdriftghostsignal.substack.com/`
+- Styled button with `display: inline-block` for anchor element
+
+**Removed Bottom CTA Section:**
+- Entire second signup section removed
+
+### 10. Get in Touch Page (`get-in-touch/page.tsx`)
+- Removed `SiteHeader` component import and usage
+- Removed unused `navLinks` constant
+- Page now displays without navigation bar
+
+### 11. Header Visibility Fix (`SiteHeader.tsx`)
+**Issue:** When clicking footer logo to navigate home, the navigation bar remained hidden (stuck at `yPercent: -100` from scroll-triggered hide animation).
+
+**Fix:** Added initial state reset in `useIsomorphicLayoutEffect`:
+```tsx
+const el = rootRef.current;
+if (el) gsap.set(el, { yPercent: 0 });
+```
+This ensures the header is visible on page load/navigation.
+
+## Files Modified (Session 2)
+- `apps/web/src/components/Footer.tsx` - Client component, animations, logo link
+- `apps/web/src/components/Footer.module.css` - Centered icons, hover effects, removed wordmark styles
+- `apps/web/src/components/SiteHeader.tsx` - Header visibility fix
+- `apps/web/src/app/snowdrift/page.tsx` - Substack link, removed forms
+- `apps/web/src/app/snowdrift/page.module.css` - Button styling for anchor
+- `apps/web/src/app/get-in-touch/page.tsx` - Removed navigation
+- `apps/web/public/images/home/figma/social-facebook.svg` - Fixed icon
+- `apps/web/public/images/home/figma/social-linkedin-outline.svg` - Fixed icon
+
+## Technical Notes
+
+### Footer Header Hide Pattern
+The footer uses the `js-s-hide-sh` class which triggers a `ScrollTrigger` in `SiteHeader.tsx` to hide the header when the footer is in view. This prevents the "Get in Touch" navigation button from being visible over the footer.
+
+### Animation Stagger Pattern
+Footer elements use incrementing `index` values with `ScrollFadeUp` to create a cascading reveal effect as the user scrolls down to the footer.
+
+## Commit (Session 2)
+```
+feat: footer enhancements, Snowdrift updates, and various fixes
 ```
 
 Pushed to: `origin/main` (https://github.com/MDGhostSignal/web.git)
