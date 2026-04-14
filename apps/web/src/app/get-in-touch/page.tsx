@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
@@ -27,19 +26,40 @@ export default function GetInTouchPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <SplitLinesReveal duration={2.2} stagger={0.3}>
-            <h1 className={styles.heroHeadline}>
-              Every Partnership Starts With a Chat
-            </h1>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.8}>
-            <p className={styles.heroSubhead}>
-              Are we right for each other?
-            </p>
-          </ScrollFadeUp>
+      {/* Contact Section */}
+      <section className={styles.contactSection}>
+        <div className={styles.contactContent}>
+          <div className={styles.contactText}>
+            <ScrollFadeUp index={0} duration={1.6}>
+              <p className={styles.contactEyebrow}>GET IN TOUCH</p>
+            </ScrollFadeUp>
+            <SplitLinesReveal duration={1.8} stagger={0.28}>
+              <h1 className={styles.contactHeadline}>
+                EVERY PARTNERSHIP STARTS WITH A CHAT
+              </h1>
+            </SplitLinesReveal>
+            <ScrollFadeUp index={1} duration={1.6}>
+              <p className={styles.contactBody}>
+                Podcaster or Advertiser, ready to find your frequency? Schedule a call.
+              </p>
+            </ScrollFadeUp>
+          </div>
+          <div className={styles.contactVisual}>
+            <Image
+              src="/images/home/figma/bars.png"
+              alt="Colorful horizontal lines representing the signal"
+              width={400}
+              height={300}
+              className={styles.contactBars}
+            />
+            <Image
+              src="/images/for-creators/jeremycontact.jpg"
+              alt="Jeremy"
+              width={350}
+              height={350}
+              className={styles.contactPhoto}
+            />
+          </div>
         </div>
       </section>
 
@@ -142,54 +162,6 @@ export default function GetInTouchPage() {
               </button>
             </form>
           </ScrollFadeUp>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className={styles.ctaSection}>
-        <div className={styles.ctaContent}>
-          <div className={styles.ctaText}>
-            <ScrollFadeUp index={0} duration={1.6}>
-              <h2 className={styles.ctaHeadline}>
-                Ready to find your frequency? Schedule a call.
-              </h2>
-            </ScrollFadeUp>
-            <ScrollFadeUp index={1} duration={1.6}>
-              <a href="mailto:jeremy@ghostsignal.cloud" className={styles.ctaLink}>
-                Email Us
-                <Image
-                  src="/images/home/icon-arrow-right.svg"
-                  alt=""
-                  width={24}
-                  height={24}
-                  className={styles.ctaArrow}
-                />
-              </a>
-            </ScrollFadeUp>
-          </div>
-          <div className={styles.ctaVisual}>
-            <ScrollFadeUp index={0} duration={1.8}>
-              <div className={styles.visualStack}>
-                <Image
-                  src="/images/team/GS-EmailSignatures-jeremyw.gif"
-                  alt="Jeremy Reeves - Creative Strategist"
-                  width={400}
-                  height={100}
-                  unoptimized
-                  className={styles.ctaImage}
-                />
-                <div className={styles.barsOverlay}>
-                  <Image
-                    src="/images/home/figma/bars.png"
-                    alt=""
-                    width={120}
-                    height={200}
-                    className={styles.barsImage}
-                  />
-                </div>
-              </div>
-            </ScrollFadeUp>
-          </div>
         </div>
       </section>
 

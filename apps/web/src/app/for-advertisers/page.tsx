@@ -1,12 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import Lottie from "lottie-react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
+import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
+import advertisersAnimation from "@/../public/images/for-advertisers/advertisers.json";
+import StarFogBackground from "./StarFogBackground";
 import styles from "./page.module.css";
 
 const navLinks = [
@@ -22,22 +28,18 @@ const features = [
   {
     title: "Highly-Attuned Audiences",
     description: "We locate you in front of considered communities where alignment runs deep.",
-    gradient: "linear-gradient(135deg, #e8d5c4 0%, #c4a882 100%)",
   },
   {
     title: "Administrative Simplicity",
     description: "We handle invoicing, payments, ensuring efficiency and transparency — without individual podcaster contracts, simplifying your process.",
-    gradient: "linear-gradient(135deg, #d4e5f7 0%, #a8c5e0 100%)",
   },
   {
     title: "Real Conversion",
     description: "Audiences who are aligned and feel seen are far more likely to become customers.",
-    gradient: "linear-gradient(135deg, #f5d0d0 0%, #e8a8b8 100%)",
   },
   {
     title: "Targeted Spending",
     description: "Every dollar is focused on maximizing impact, not impressions.",
-    gradient: "linear-gradient(135deg, #d5e8d4 0%, #a8c4a0 100%)",
   },
 ] as const;
 
@@ -59,19 +61,22 @@ const journeySteps = [
   },
 ] as const;
 
-export const metadata = {
-  title: "For Advertisers | GhostSignal",
-  description: "The right audience changes everything. We help you reach aligned audiences by pairing your brand with creators who share your convictions.",
-};
-
 export default function ForAdvertisersPage() {
   return (
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
+      {/* Parallax background */}
+      <ParallaxBackground
+        imageSrc="/images/home/sunset-hero.png"
+        speed={0.3}
+      />
+
+      {/* Static overlay effect */}
+      <div className={styles.staticOverlay} aria-hidden="true" />
+
       {/* Hero Section */}
       <section className={styles.hero}>
-        <div className={styles.heroSky} aria-hidden="true" />
         <div className={styles.heroContent}>
           <ScrollFadeUp index={0} duration={1.6}>
             <Image
@@ -100,61 +105,56 @@ export default function ForAdvertisersPage() {
         <div className={styles.featuresContainer}>
           <div className={styles.featuresHeader}>
             <ScrollFadeUp index={0} duration={1.6}>
-              <h2 className={styles.sectionTitle}>Why This Works</h2>
+              <p className={styles.featuresSubhead}>Why this works</p>
             </ScrollFadeUp>
+            <SplitLinesReveal duration={2} stagger={0.28}>
+              <h2 className={styles.featuresHeadline}>
+                THE BUSINESS CASE
+              </h2>
+            </SplitLinesReveal>
             <ScrollFadeUp index={1} duration={1.6}>
-              <Image
-                src="/images/home/figma/bars.png"
-                alt="Decorative colorful stripes"
-                width={200}
-                height={80}
-                className={styles.decorativeBars}
-              />
+              <p className={styles.featuresTagline}>
+                We connect you with audiences who already believe what you believe.
+              </p>
             </ScrollFadeUp>
+            <Image
+              src="/images/for-advertisers/color-bars-hor.png"
+              alt=""
+              width={800}
+              height={69}
+              className={styles.featuresColorBars}
+            />
           </div>
-
-          <div className={styles.featuresGrid}>
-            {features.map((feature, index) => (
-              <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
-                <article className={styles.featureRow}>
-                  <div className={styles.featureText}>
+          <div className={styles.featuresLayout}>
+            <div className={styles.featuresGrid}>
+              {features.map((feature, index) => (
+                <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
+                  <article className={styles.featureCard}>
                     <h3 className={styles.featureTitle}>{feature.title}</h3>
                     <p className={styles.featureDescription}>{feature.description}</p>
-                  </div>
-                  <div
-                    className={styles.featureImage}
-                    style={{ background: feature.gradient }}
-                    aria-hidden="true"
-                  />
-                </article>
+                  </article>
+                </ScrollFadeUp>
+              ))}
+              <ScrollFadeUp index={4} duration={1.6}>
+                <Link href="/get-in-touch" className={styles.primaryButton}>
+                  Find Your Frequency
+                </Link>
               </ScrollFadeUp>
-            ))}
+            </div>
+            <div className={styles.featuresAnimation}>
+              <Lottie
+                animationData={advertisersAnimation}
+                loop={true}
+                autoplay={true}
+              />
+            </div>
           </div>
-
-          <ScrollFadeUp index={4} duration={1.6}>
-            <Link href="/get-in-touch" className={styles.primaryButton}>
-              Find Your Frequency
-            </Link>
-          </ScrollFadeUp>
         </div>
       </section>
 
       {/* The Pitch Section */}
       <section className={styles.pitchSection}>
-        <div className={styles.pitchImageGrid} aria-hidden="true">
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #2d3436 0%, #636e72 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #55efc4 0%, #00b894 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #fab1a0 0%, #e17055 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #81ecec 0%, #00cec9 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #ff7675 0%, #d63031 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #ffeaa7 0%, #f39c12 100%)' }} />
-          <div className={styles.pitchImageCell} style={{ background: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)' }} />
-        </div>
+        <StarFogBackground />
         <div className={styles.pitchContent}>
           <SplitLinesReveal duration={2} stagger={0.28}>
             <h2 className={styles.pitchHeadline}>
@@ -186,7 +186,10 @@ export default function ForAdvertisersPage() {
         <div className={styles.businessContainer}>
           <div className={styles.businessContent}>
             <ScrollFadeUp index={0} duration={1.6}>
-              <h2 className={styles.businessTitle}>The Business Case</h2>
+              <h2 className={styles.businessTitle}>GHOSTSignal is about resonance.</h2>
+              <p className={styles.businessSubhead}>
+                We only match you with creators who make sense for your mission. Every partnership is considered.
+              </p>
             </ScrollFadeUp>
 
             <ol className={styles.businessSteps}>
@@ -235,22 +238,6 @@ export default function ForAdvertisersPage() {
         </div>
       </section>
 
-      {/* Resonance Section */}
-      <section className={styles.resonanceSection}>
-        <div className={styles.resonanceContent}>
-          <SplitLinesReveal duration={2.2} stagger={0.3}>
-            <h2 className={styles.resonanceHeadline}>
-              GHOSTSignal is about <em>resonance</em>.
-            </h2>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.resonanceSubhead}>
-              We only match you with creators who make sense for your mission. Every partnership is considered.
-            </p>
-          </ScrollFadeUp>
-        </div>
-      </section>
-
       {/* Contact Section */}
       <section className={styles.contactSection}>
         <div className={styles.contactContent}>
@@ -276,7 +263,7 @@ export default function ForAdvertisersPage() {
                   alt=""
                   width={24}
                   height={24}
-                  className={styles.ctaArrowDark}
+                  className={styles.ctaArrow}
                 />
               </Link>
             </ScrollFadeUp>
@@ -288,6 +275,13 @@ export default function ForAdvertisersPage() {
               width={400}
               height={300}
               className={styles.contactBars}
+            />
+            <Image
+              src="/images/for-advertisers/jeremycontact.jpg"
+              alt="Jeremy"
+              width={350}
+              height={350}
+              className={styles.contactPhoto}
             />
           </div>
         </div>

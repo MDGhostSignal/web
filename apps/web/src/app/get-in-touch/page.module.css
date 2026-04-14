@@ -9,28 +9,42 @@
 }
 
 /* =============================================================================
-   HERO SECTION
+   CONTACT SECTION
    ============================================================================= */
 
-.hero {
-  width: 100%;
-  padding: calc(var(--gs-n-180) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-80) * var(--gs-px));
+.contactSection {
+  padding: calc(var(--gs-n-240) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-220) * var(--gs-px));
   background: var(--gs-tw-gray-950);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: visible;
 }
 
-.heroContent {
+.contactContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--gs-n-80) * var(--gs-px));
+  max-width: var(--content-max);
+  margin-inline: auto;
+  align-items: center;
+}
+
+.contactText {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   gap: calc(var(--gs-n-24) * var(--gs-px));
-  max-width: calc(var(--gs-n-900, 900) * var(--gs-px));
 }
 
-.heroHeadline {
+.contactEyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.contactHeadline {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
@@ -40,13 +54,76 @@
   text-transform: uppercase;
 }
 
-.heroSubhead {
+.contactBody {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
   font-size: var(--gs-text-2xl-size);
   line-height: var(--gs-text-2xl-leading);
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: calc(var(--gs-n-560, 560) * var(--gs-px));
+}
+
+.contactCta {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  margin-top: calc(var(--gs-n-16) * var(--gs-px));
+  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-lg-size);
+  line-height: var(--gs-text-lg-leading);
+  color: var(--gs-tw-gray-950);
+  background: var(--gs-tw-white);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  text-decoration: none;
+  transition: background 200ms ease, transform 200ms ease;
+  width: fit-content;
+}
+
+.contactCta:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+.ctaArrow {
+  width: calc(var(--gs-n-24) * var(--gs-px));
+  height: calc(var(--gs-n-24) * var(--gs-px));
+  filter: none;
+  transition: transform 200ms ease;
+}
+
+.contactCta:hover .ctaArrow {
+  transform: translateX(4px);
+}
+
+.contactVisual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  min-height: calc(var(--gs-n-400, 400) * var(--gs-px));
+}
+
+.contactBars {
+  width: 100%;
+  max-width: calc(var(--gs-n-480, 480) * var(--gs-px));
+  height: auto;
+  object-fit: contain;
+}
+
+.contactPhoto {
+  position: absolute;
+  top: calc(var(--gs-n-24) * var(--gs-px));
+  left: 50%;
+  transform: translateX(-40%);
+  width: clamp(200px, 60%, 350px);
+  height: auto;
+  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1;
 }
 
 /* =============================================================================
@@ -54,8 +131,12 @@
    ============================================================================= */
 
 .formSection {
+  position: relative;
   padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-128) * var(--gs-px));
+  padding-top: calc(var(--gs-n-160) * var(--gs-px));
   background: var(--gs-tw-white);
+  clip-path: polygon(0 60px, 50% 0, 100% 60px, 100% 100%, 0 100%);
+  margin-top: -60px;
 }
 
 .formContainer {
@@ -172,102 +253,6 @@
   transform: translateY(-2px);
 }
 
-/* =============================================================================
-   CTA SECTION
-   ============================================================================= */
-
-.ctaSection {
-  padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad);
-  background: #f2f2f2;
-}
-
-.ctaContent {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(var(--gs-n-80) * var(--gs-px));
-  max-width: var(--content-max);
-  margin-inline: auto;
-  align-items: center;
-}
-
-.ctaText {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-32) * var(--gs-px));
-}
-
-.ctaHeadline {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: clamp(28px, 4vw, 48px);
-  line-height: 1.2;
-  color: var(--gs-tw-gray-950);
-}
-
-.ctaLink {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--gs-n-12) * var(--gs-px));
-  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-white);
-  background: var(--gs-tw-gray-950);
-  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
-  text-decoration: none;
-  transition: background 200ms ease, transform 200ms ease;
-  width: fit-content;
-}
-
-.ctaLink:hover {
-  background: var(--gs-tw-gray-800);
-  transform: translateY(-2px);
-}
-
-.ctaArrow {
-  width: calc(var(--gs-n-24) * var(--gs-px));
-  height: calc(var(--gs-n-24) * var(--gs-px));
-  filter: invert(1);
-  transition: transform 200ms ease;
-}
-
-.ctaLink:hover .ctaArrow {
-  transform: translateX(4px);
-}
-
-.ctaVisual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.visualStack {
-  position: relative;
-  display: inline-block;
-}
-
-.ctaImage {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
-}
-
-.barsOverlay {
-  position: absolute;
-  right: calc(var(--gs-n-20) * var(--gs-px) * -1);
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.barsImage {
-  width: calc(var(--gs-n-80, 80) * var(--gs-px));
-  height: auto;
-}
 
 /* =============================================================================
    FOOTER
@@ -414,12 +399,8 @@
     --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
   }
 
-  .heroHeadline {
-    font-size: clamp(32px, 5.5vw, 60px);
-  }
-
-  .ctaHeadline {
-    font-size: clamp(24px, 3.5vw, 42px);
+  .contactHeadline {
+    font-size: clamp(32px, 5vw, 60px);
   }
 
   .footer {
@@ -432,13 +413,18 @@
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .ctaContent {
+  .contactContent {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .ctaVisual {
+  .contactVisual {
     order: -1;
+  }
+
+  .contactPhoto {
+    transform: translateX(-50%);
+    width: clamp(150px, 50%, 250px);
   }
 
   .footerNav {
@@ -476,21 +462,15 @@
     --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
   }
 
-  .hero {
-    padding: calc(var(--gs-n-140) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-60) * var(--gs-px));
+  .contactSection {
+    padding: calc(var(--gs-n-140) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-80) * var(--gs-px));
   }
 
-  .heroHeadline {
+  .contactHeadline {
     font-size: clamp(28px, 7vw, 48px);
   }
 
-  .heroSubhead {
-    font-size: var(--gs-text-xl-size);
-    line-height: var(--gs-text-xl-leading);
-  }
-
-  .formSection,
-  .ctaSection {
+  .formSection {
     padding: calc(var(--gs-n-64) * var(--gs-px)) var(--edge-pad);
   }
 
@@ -507,14 +487,6 @@
     width: 100%;
     justify-content: center;
     text-align: center;
-  }
-
-  .ctaHeadline {
-    font-size: clamp(22px, 5vw, 36px);
-  }
-
-  .barsOverlay {
-    display: none;
   }
 
   .footer {
@@ -537,20 +509,15 @@
     --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
   }
 
-  .hero {
-    padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-48) * var(--gs-px));
+  .contactSection {
+    padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-64) * var(--gs-px));
   }
 
-  .heroHeadline {
+  .contactHeadline {
     font-size: clamp(24px, 8vw, 36px);
   }
 
-  .heroSubhead {
-    font-size: var(--gs-text-lg-size);
-    line-height: var(--gs-text-lg-leading);
-  }
-
-  .ctaLink {
+  .contactCta {
     width: 100%;
     justify-content: center;
   }
@@ -581,8 +548,8 @@
     --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
   }
 
-  .hero {
-    padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-40) * var(--gs-px));
+  .contactSection {
+    padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-56) * var(--gs-px));
   }
 
   .footer {
