@@ -83,9 +83,7 @@ This repo has a **comprehensive design token system** synced from Figma. Agents 
 | `apps/web/public/variables/` | Source token JSON files from Figma |
 | `apps/web/scripts/build-tokens.mjs` | Token generation script |
 
-### Available Token Categories
-
-**Colors (semantic):**
+### Available Token Categories**Colors (semantic):**
 - `--gs-background`, `--gs-foreground`, `--gs-primary`, `--gs-secondary`
 - `--gs-muted`, `--gs-accent`, `--gs-destructive`, `--gs-border`
 - Full light/dark mode support via `.theme-dark` class
