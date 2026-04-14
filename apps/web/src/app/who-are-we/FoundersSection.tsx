@@ -173,8 +173,8 @@ export function FoundersSection() {
                 <Image
                   src={selectedFounder.image}
                   alt={selectedFounder.name}
-                  width={120}
-                  height={120}
+                  width={80}
+                  height={100}
                   className={styles.modalAvatar}
                 />
                 <div className={styles.modalInfo}>
@@ -185,16 +185,6 @@ export function FoundersSection() {
               </div>
 
               <p className={styles.modalBio}>{selectedFounder.bio}</p>
-
-              <div className={styles.modalSignature}>
-                <Image
-                  src={selectedFounder.signature}
-                  alt={`${selectedFounder.name}'s signature`}
-                  width={320}
-                  height={120}
-                  unoptimized
-                />
-              </div>
 
               <a
                 href={selectedFounder.linkedin}

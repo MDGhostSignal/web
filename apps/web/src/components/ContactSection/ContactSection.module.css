@@ -1,0 +1,157 @@
+.contactSection {
+  padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad, 112px);
+  background: #000000;
+}
+
+.contactContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--gs-n-80) * var(--gs-px));
+  max-width: calc(var(--gs-n-1696, 1696) * var(--gs-px));
+  margin-inline: auto;
+  align-items: center;
+}
+
+.contactText {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+}
+
+.contactEyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.contactHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: clamp(36px, 6vw, 72px);
+  line-height: 1.1;
+  color: var(--gs-tw-white);
+  text-transform: uppercase;
+}
+
+.contactBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: calc(var(--gs-n-560, 560) * var(--gs-px));
+}
+
+.contactCta {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  margin-top: calc(var(--gs-n-16) * var(--gs-px));
+  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-lg-size);
+  line-height: var(--gs-text-lg-leading);
+  color: #000000;
+  background: var(--gs-tw-white);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  text-decoration: none;
+  transition: background 200ms ease, transform 200ms ease;
+  width: fit-content;
+}
+
+.contactCta:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+.ctaArrow {
+  width: calc(var(--gs-n-24) * var(--gs-px));
+  height: calc(var(--gs-n-24) * var(--gs-px));
+  transition: transform 200ms ease;
+  filter: none;
+}
+
+.contactCta:hover .ctaArrow {
+  transform: translateX(4px);
+}
+
+.contactVisual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--gs-n-400, 400) * var(--gs-px));
+  overflow: visible;
+}
+
+.contactBars {
+  width: 100%;
+  max-width: calc(var(--gs-n-480, 480) * var(--gs-px));
+  height: auto;
+  object-fit: contain;
+}
+
+.contactPhoto {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-40%, -50%);
+  width: clamp(200px, 60%, 350px);
+  height: auto;
+  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+/* =============================================================================
+   RESPONSIVE STYLES
+   ============================================================================= */
+
+@media (max-width: 1024px) {
+  .contactContent {
+    grid-template-columns: 1fr;
+    gap: calc(var(--gs-n-48) * var(--gs-px));
+  }
+
+  .contactVisual {
+    order: -1;
+  }
+
+  .contactPhoto {
+    transform: translate(-50%, -50%);
+    width: clamp(150px, 50%, 250px);
+  }
+}
+
+@media (max-width: 768px) {
+  .contactSection {
+    padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad, 28px);
+  }
+
+  .contactHeadline {
+    font-size: clamp(28px, 8vw, 48px);
+  }
+}
+
+@media (max-width: 560px) {
+  .contactCta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .contactEyebrow {
+    font-size: var(--gs-text-lg-size);
+  }
+
+  .contactBody {
+    font-size: var(--gs-text-lg-size);
+  }
+}
