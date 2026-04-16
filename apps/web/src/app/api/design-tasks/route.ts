@@ -119,9 +119,9 @@ export async function GET() {
 
     const tasks = await tasksResponse.json();
 
-    // Fetch comment counts for all tasks
+    // Fetch comment counts and latest comment timestamps for all tasks
     const commentsResponse = await fetch(
-      `${config.url}/rest/v1/design_task_comments?select=task_id`,
+      `${config.url}/rest/v1/design_task_comments?select=task_id,created_at`,
       {
         method: "GET",
         headers: config.headers,
@@ -130,20 +130,26 @@ export async function GET() {
     );
 
     let commentCounts: Record<string, number> = {};
+    let latestCommentAt: Record<string, string> = {};
 
     if (commentsResponse.ok) {
       const comments = await commentsResponse.json();
-      // Count comments per task
-      commentCounts = comments.reduce((acc: Record<string, number>, comment: { task_id: string }) => {
-        acc[comment.task_id] = (acc[comment.task_id] || 0) + 1;
-        return acc;
-      }, {});
+      // Count comments per task and track latest comment timestamp
+      comments.forEach((comment: { task_id: string; created_at: string }) => {
+        commentCounts[comment.task_id] = (commentCounts[comment.task_id] || 0) + 1;
+
+        // Track latest comment timestamp
+        if (!latestCommentAt[comment.task_id] || comment.created_at > latestCommentAt[comment.task_id]) {
+          latestCommentAt[comment.task_id] = comment.created_at;
+        }
+      });
     }
 
-    // Add comment counts to tasks
+    // Add comment counts and latest timestamps to tasks
     const tasksWithCounts = tasks.map((task: { id: string }) => ({
       ...task,
       comment_count: commentCounts[task.id] || 0,
+      latest_comment_at: latestCommentAt[task.id] || null,
     }));
 
     return NextResponse.json({

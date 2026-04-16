@@ -298,6 +298,41 @@
   border-radius: 12px;
 }
 
+/* New comment indicator styles */
+.newCommentIndicator {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px rgba(34, 197, 94, 0.3);
+  }
+}
+
+.newBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  margin-left: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #22c55e;
+  color: #000;
+  border-radius: 4px;
+}
+
+.hasNewComments {
+  border-left: 3px solid #22c55e;
+}
+
 .taskTitle {
   margin: 0;
   font-family: var(--font-body);

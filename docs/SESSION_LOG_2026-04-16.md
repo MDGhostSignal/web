@@ -149,3 +149,62 @@ delay: delay + 0.14 * index
 
 ### Scrollbar Gutter
 `scrollbar-gutter: stable` reserves space for scrollbar on all pages, preventing ~15-17px layout shift on Windows when navigating between pages with different content lengths.
+
+---
+
+## Part 3: Design Tasks Enhancements
+
+### 14. Commenter Selector in Task Panel
+- Added dropdown selector to choose which founder to comment as
+- Clickable avatar button with dropdown indicator
+- Shows all 4 founders with their colored avatars
+- Selected commenter highlighted in dropdown
+- Placeholder text updates to show selected commenter name
+- Click outside closes dropdown
+
+### 15. New Comment Indicator on Task Cards
+- API now returns `latest_comment_at` timestamp per task
+- localStorage tracks when user last viewed each task's comments
+- Task cards show visual indicators for new/unread comments:
+  - Green "NEW" badge next to comment count
+  - Green left border highlight on card
+  - Pulsing glow animation on comment count
+  - Comment count changes from blue to green
+- Indicators clear when user opens the task
+
+### 16. Temporary Design Feedback Button (Homepage)
+- Added fixed-position button in top-right corner
+- Signal red color (#D66157) with hover effects
+- Links to `/design-tasks` page
+- Easy to remove later (just delete the Link and CSS)
+
+## Additional Files Modified (Part 3)
+- `apps/web/src/app/api/design-tasks/route.ts` - Added latest_comment_at to API response
+- `apps/web/src/app/design-tasks/TaskDetailPanel.tsx` - Commenter selector dropdown
+- `apps/web/src/app/design-tasks/TaskDetailPanel.module.css` - Commenter picker styles
+- `apps/web/src/app/design-tasks/page.tsx` - New comment tracking with localStorage
+- `apps/web/src/app/design-tasks/page.module.css` - New comment indicator styles
+- `apps/web/src/app/page.tsx` - Temporary design feedback button
+- `apps/web/src/app/page.module.css` - Design feedback button styles
+
+### Technical Notes (Part 3)
+
+#### New Comment Detection
+```typescript
+// localStorage key for tracking
+const VIEWED_COMMENTS_KEY = "ghostsignal_viewed_comments";
+
+// Check if task has new comments
+function hasNewComments(task: Task, viewedComments: Record<string, string>): boolean {
+  if (!task.latest_comment_at || task.comment_count === 0) return false;
+  const lastViewed = viewedComments[task.id];
+  if (!lastViewed) return true; // Never viewed = new
+  return task.latest_comment_at > lastViewed;
+}
+```
+
+#### Founder Colors (for commenter selector)
+- Mike Sense: #8b5cf6 (purple)
+- Jack W Harding: #3b82f6 (blue)
+- Martin Drexler: #10b981 (green)
+- Jeremy Reeves: #f59e0b (amber)

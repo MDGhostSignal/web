@@ -78,9 +78,12 @@ export function TaskDetailPanel({
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const [showCommenterPicker, setShowCommenterPicker] = useState(false);
+  const [selectedCommenter, setSelectedCommenter] = useState<Founder>(currentUser);
   const [error, setError] = useState<string | null>(null);
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const commenterPickerRef = useRef<HTMLDivElement>(null);
 
   // Fetch comments when panel opens
   const fetchComments = useCallback(async () => {
@@ -140,6 +143,21 @@ export function TaskDetailPanel({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
+  // Close commenter picker on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (commenterPickerRef.current && !commenterPickerRef.current.contains(e.target as Node)) {
+        setShowCommenterPicker(false);
+      }
+    };
+
+    if (showCommenterPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showCommenterPicker]);
+
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || isSubmitting) return;
@@ -153,7 +171,7 @@ export function TaskDetailPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           task_id: task.id,
-          author: currentUser,
+          author: selectedCommenter,
           content: newComment.trim(),
         }),
       });
@@ -491,17 +509,49 @@ export function TaskDetailPanel({
 
         {/* Comment Input */}
         <form onSubmit={handleSubmitComment} className={styles.commentForm}>
-          <div
-            className={styles.currentUserAvatar}
-            style={{ backgroundColor: getFounderInfo(currentUser).color }}
-          >
-            {getFounderInfo(currentUser).initials}
+          <div className={styles.commenterPickerWrapper} ref={commenterPickerRef}>
+            <button
+              type="button"
+              onClick={() => setShowCommenterPicker(!showCommenterPicker)}
+              className={styles.commenterPickerButton}
+              style={{ backgroundColor: getFounderInfo(selectedCommenter).color }}
+              title={`Commenting as ${selectedCommenter}`}
+            >
+              {getFounderInfo(selectedCommenter).initials}
+              <span className={styles.commenterDropdownIcon}>▼</span>
+            </button>
+            {showCommenterPicker && (
+              <div className={styles.commenterDropdown}>
+                <div className={styles.commenterDropdownHeader}>Comment as:</div>
+                {FOUNDERS.map((founder) => (
+                  <button
+                    key={founder.name}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCommenter(founder.name);
+                      setShowCommenterPicker(false);
+                    }}
+                    className={`${styles.commenterOption} ${
+                      selectedCommenter === founder.name ? styles.commenterOptionActive : ""
+                    }`}
+                  >
+                    <span
+                      className={styles.commenterOptionAvatar}
+                      style={{ backgroundColor: founder.color }}
+                    >
+                      {founder.initials}
+                    </span>
+                    <span className={styles.commenterOptionName}>{founder.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <input
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
+            placeholder={`Comment as ${selectedCommenter}...`}
             className={styles.commentInput}
             disabled={isSubmitting}
           />

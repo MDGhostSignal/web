@@ -191,6 +191,37 @@
 }
 
 /* ========================================
+   Temporary Design Feedback Button
+   ======================================== */
+.designFeedbackBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  color: #fff;
+  background: #D66157;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(214, 97, 87, 0.4);
+  transition: all 200ms ease;
+}
+
+.designFeedbackBtn:hover {
+  background: #c54d43;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(214, 97, 87, 0.5);
+}
+
+/* ========================================
    Responsive
    ======================================== */
 

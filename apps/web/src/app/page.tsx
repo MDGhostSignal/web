@@ -23,6 +23,11 @@ export default function LegacyHomePage() {
     <main className={styles.legacyHome}>
       <SiteHeader links={navLinks} animateIn />
 
+      {/* Temporary Design Feedback Button */}
+      <Link href="/design-tasks" className={styles.designFeedbackBtn}>
+        DESIGN Feedback
+      </Link>
+
       {/* Cloud Video Background */}
       <div className={styles.cloudBackground} aria-hidden="true">
         <video

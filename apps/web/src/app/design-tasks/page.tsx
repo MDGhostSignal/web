@@ -27,6 +27,41 @@ interface Task {
   due_date?: string | null;
   created_by?: string;
   comment_count?: number;
+  latest_comment_at?: string | null;
+}
+
+// Local storage key for tracking viewed comments
+const VIEWED_COMMENTS_KEY = "ghostsignal_viewed_comments";
+
+// Get viewed timestamps from localStorage
+function getViewedComments(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = localStorage.getItem(VIEWED_COMMENTS_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+// Save viewed timestamp to localStorage
+function markCommentsViewed(taskId: string, timestamp: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const viewed = getViewedComments();
+    viewed[taskId] = timestamp;
+    localStorage.setItem(VIEWED_COMMENTS_KEY, JSON.stringify(viewed));
+  } catch {
+    // Ignore localStorage errors
+  }
+}
+
+// Check if task has new comments
+function hasNewComments(task: Task, viewedComments: Record<string, string>): boolean {
+  if (!task.latest_comment_at || task.comment_count === 0) return false;
+  const lastViewed = viewedComments[task.id];
+  if (!lastViewed) return true; // Never viewed = new
+  return task.latest_comment_at > lastViewed;
 }
 
 export default function DesignTasksPage() {
@@ -39,6 +74,7 @@ export default function DesignTasksPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [viewedComments, setViewedComments] = useState<Record<string, string>>({});
 
   // Form state
   const [title, setTitle] = useState("");
@@ -70,6 +106,11 @@ export default function DesignTasksPage() {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // Load viewed comments from localStorage on mount
+  useEffect(() => {
+    setViewedComments(getViewedComments());
+  }, []);
 
   const resetForm = useCallback(() => {
     setTitle("");
@@ -164,6 +205,19 @@ export default function DesignTasksPage() {
     setDueDate(task.due_date || "");
     setCreatedBy((task.created_by as Founder) || "Mike Sense");
     setIsModalOpen(true);
+  }, []);
+
+  // Handle task selection and mark comments as viewed
+  const handleSelectTask = useCallback((task: Task) => {
+    setSelectedTask(task);
+    // Mark comments as viewed when opening the task
+    if (task.latest_comment_at) {
+      markCommentsViewed(task.id, task.latest_comment_at);
+      setViewedComments((prev) => ({
+        ...prev,
+        [task.id]: task.latest_comment_at!,
+      }));
+    }
   }, []);
 
   const handleStatusChange = useCallback(
@@ -295,17 +349,19 @@ export default function DesignTasksPage() {
               </p>
             </div>
           ) : (
-            filteredTasks.map((task, index) => (
+            filteredTasks.map((task, index) => {
+              const isNewComment = hasNewComments(task, viewedComments);
+              return (
               <div
                 key={task.id}
-                className={`${styles.taskCard} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]}`}
-                onClick={() => setSelectedTask(task)}
+                className={`${styles.taskCard} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]} ${isNewComment ? styles.hasNewComments : ""}`}
+                onClick={() => handleSelectTask(task)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    setSelectedTask(task);
+                    handleSelectTask(task);
                   }
                 }}
               >
@@ -316,8 +372,9 @@ export default function DesignTasksPage() {
                   </div>
                   <div className={styles.taskHeaderRight}>
                     {(task.comment_count ?? 0) > 0 && (
-                      <span className={styles.commentCount}>
+                      <span className={`${styles.commentCount} ${isNewComment ? styles.newCommentIndicator : ""}`}>
                         💬 {task.comment_count}
+                        {isNewComment && <span className={styles.newBadge}>NEW</span>}
                       </span>
                     )}
                     <span
@@ -375,7 +432,8 @@ export default function DesignTasksPage() {
                   </button>
                 </div>
               </div>
-            ))
+            );
+            })
           )}
         </section>
       </div>
