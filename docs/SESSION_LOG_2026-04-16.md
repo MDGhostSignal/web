@@ -208,3 +208,20 @@ function hasNewComments(task: Task, viewedComments: Record<string, string>): boo
 - Jack W Harding: #3b82f6 (blue)
 - Martin Drexler: #10b981 (green)
 - Jeremy Reeves: #f59e0b (amber)
+
+---
+
+## Part 4: Navigation Updates
+
+### 17. RQ Quiz Link Added to Navbar
+- Added "RQ Quiz" link to navigation across all 7 pages
+- Link points to `/rq-quiz`
+- Positioned between "SNOWDRIFT" and "Get In Touch"
+- Pages updated:
+  - `apps/web/src/app/page.tsx`
+  - `apps/web/src/app/what-is-this/page.tsx`
+  - `apps/web/src/app/snowdrift/page.tsx`
+  - `apps/web/src/app/for-creators/page.tsx`
+  - `apps/web/src/app/for-advertisers/page.tsx`
+  - `apps/web/src/app/who-are-we/page.tsx`
+  - `apps/web/src/app/home-future/page.tsx`
