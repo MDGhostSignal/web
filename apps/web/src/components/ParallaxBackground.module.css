@@ -36,6 +36,7 @@
     radial-gradient(1px 1px at 90% 40%, rgba(255, 255, 255, 0.5), transparent),
     radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.7), transparent);
   background-size: 250px 250px;
+  animation: twinkle1 4s ease-in-out infinite;
 }
 
 .stars::after {
@@ -49,6 +50,18 @@
     radial-gradient(1px 1px at 35% 5%, rgba(255, 255, 255, 0.6), transparent),
     radial-gradient(1px 1px at 65% 35%, rgba(255, 255, 255, 0.4), transparent);
   background-size: 300px 300px;
+  animation: twinkle2 6s ease-in-out infinite;
+}
+
+/* Twinkling animations for starfield */
+@keyframes twinkle1 {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes twinkle2 {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 .background {

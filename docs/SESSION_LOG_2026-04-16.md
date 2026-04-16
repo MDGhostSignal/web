@@ -1,9 +1,9 @@
 # Session Log - April 16, 2026
 
 ## Summary
-Enhanced the homepage hero animations with staggered reveals, improved navbar animations globally, fixed scrollbar layout shift, and added Monster Headline typography token.
+Enhanced the homepage hero animations with staggered reveals, improved navbar animations globally, fixed scrollbar layout shift, and added Monster Headline typography token. Later, major enhancements to the "What Is This" page including split-screen hero, 3D globe with orbital rings, twinkling starfield, and various animation improvements.
 
-## Changes Made
+## Part 1: Homepage Enhancements
 
 ### 1. Hero Headline Staggered Animation
 - Split the hero headline into two separate `SplitLinesReveal` animations
@@ -35,15 +35,103 @@ Enhanced the homepage hero animations with staggered reveals, improved navbar an
 - 10% larger than standard hero headline (32px/6vw/80px)
 - Applied to homepage hero headline
 
+---
+
+## Part 2: "What Is This" Page Major Enhancements
+
+### 6. Split-Screen Hero Section
+- Created split-screen hero with white left panel (text) and image right panel
+- Added GSAP scroll animation that slides panels apart on scroll (white to left, image to right)
+- Left panel: Black text on white background with staggered headline animations
+- Right panel: Full-bleed image (`top.jpg`) with TV static overlay effect
+- Added lettermark logos as decorative framing above headline
+- Headline split into two lines with SplitLinesReveal animations
+- Subtitle in all caps, non-italic, split into two lines
+
+### 7. TV Static Flicker Overlay
+- Added noise pattern overlay on hero image using base64 PNG
+- Subtle opacity animation (12-18%) with 4-step flicker
+- Mix-blend-mode: overlay for realistic CRT effect
+
+### 8. BrandedGhostSignal Component (New)
+- Created reusable component for consistent brand typography
+- "GHOST" rendered in bold, uppercase
+- "Signal" rendered in thin weight (100), mixed case
+- Supports color variants: light, dark, inherit
+- Used in "Who is GhostSignal" section and whitepaper CTA
+
+### 9. Harmony Circles Animation
+- Added two animated circles behind "harmony" headline
+- Magnetic push/pull animation over 16 seconds
+- Creates visual representation of values alignment
+
+### 10. 3D Globe with Orbital Rings (Major Feature)
+- Added 5 orbital rings around the Earth globe in ScrollScenes
+- Each ring uses a brand color:
+  - Ring 1 (innermost): Red #D66157
+  - Ring 2: Purple #9F71AF
+  - Ring 3: Green #00B29C
+  - Ring 4: Pink #FF7BAD
+  - Ring 5 (outermost): Orange #FBAD25
+- Rings are ultra-thin (~1-2px) with subtle wavy pattern
+- Tilted at 10° X-axis and -40° Z-axis for diagonal appearance (bottom-left to top-right)
+- Slow rotation animation (~60 seconds per full rotation)
+- Ring radii: 1.50x to 1.98x globe radius
+- Added `scale` prop to ScrollScenes for camera zoom control (set to 0.88)
+
+### 11. Twinkling Starfield Animation
+- Enhanced ParallaxBackground starfield with twinkling effect
+- Two star layers with different animation timings:
+  - Layer 1: 4s cycle, opacity 0.3 to 1.0
+  - Layer 2: 6s cycle, opacity 0.4 to 1.0 (opposite phase)
+- Creates natural twinkling effect where stars brighten/dim independently
+
+### 12. Whitepaper Section Improvements
+- Changed "GhostSignal" to use BrandedGhostSignal component
+- Moved section up closer to 3D globe (negative top margin)
+- Adjusted spacing for smooth transition to footer
+
+### 13. SplitLinesReveal Fix
+- Increased initial yPercent from 101 to 110
+- Prevents visible pixels before animation starts
+
 ## Files Modified
 - `apps/web/src/app/page.tsx` - Staggered headline animations, navbar animateIn
 - `apps/web/src/app/page.module.css` - heroLine class, Monster Headline M1 size
 - `apps/web/src/app/globals.css` - scrollbar-gutter fix
+- `apps/web/src/app/what-is-this/page.tsx` - Split-screen hero, BrandedGhostSignal usage
+- `apps/web/src/app/what-is-this/page.module.css` - Hero styles, harmony circles, layout adjustments
 - `apps/web/src/components/SiteHeader.tsx` - animateIn props, logo animation
+- `apps/web/src/components/ScrollScenes.tsx` - Orbital rings, scale prop, container fixes
+- `apps/web/src/components/ParallaxBackground.module.css` - Twinkling starfield animation
 - `apps/web/src/motion/ScrollFadeUp.tsx` - Added delay prop
+- `apps/web/src/motion/SplitLinesReveal.tsx` - Increased yPercent to 110
 - `apps/web/src/styles/typography.css` - Monster Headline M1 token
 
+## New Files Created
+- `apps/web/src/components/BrandedGhostSignal.tsx` - Brand name typography component
+- `apps/web/src/components/BrandedGhostSignal.module.css` - Styles for brand component
+- `apps/web/public/images/what-is-this/top.jpg` - Hero image
+- `apps/web/public/images/what-is-this/lettermark-black.png` - Decorative logo
+
 ## Technical Notes
+
+### Orbital Rings Shader Implementation
+The rings are rendered in WebGL using ray-disk intersection:
+```glsl
+// Ring tilt angles
+const float RING_TILT_X = 0.1745;  // 10 degrees
+const float RING_TILT_Z = -0.70;   // -40 degrees (diagonal)
+
+// Ring radii (thin rings ~0.006 width)
+const float RING_INNER_1 = 1.50;
+const float RING_OUTER_1 = 1.506;
+// ... up to ring 5 at 1.98
+
+// Wavy pattern on ring edges
+float wave = sin(angle * 12.0 + uTime * 0.3) * 0.002 +
+             sin(angle * 7.0 - uTime * 0.2) * 0.0015;
+```
 
 ### Animation Timeline (Homepage)
 1. **0.0s** - Logo starts animating in

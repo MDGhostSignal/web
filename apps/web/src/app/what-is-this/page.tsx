@@ -1,13 +1,17 @@
+"use client";
+
+import { useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScrollScenes } from "@/components/ScrollScenes";
-import { SpinningLogo3D } from "@/components/SpinningLogo3D";
 import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { Footer } from "@/components/Footer";
+import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
+import { gsap } from "@/motion/gsap";
+import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
 import styles from "./page.module.css";
 
@@ -20,21 +24,121 @@ const navLinks = [
   { href: "/get-in-touch", label: "Get In Touch" },
 ] as const;
 
-export const metadata = {
-  title: "What Is This | GhostSignal",
-  description: "GhostSignal is the values-based podcast advertising network. We create partnerships that feel good because they are good.",
-};
-
 export default function WhatIsThisPage() {
+  const heroWrapperRef = useRef<HTMLDivElement>(null);
+  const whitePanelRef = useRef<HTMLDivElement>(null);
+  const imagePanelRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    const heroWrapper = heroWrapperRef.current;
+    const whitePanel = whitePanelRef.current;
+    const imagePanel = imagePanelRef.current;
+
+    if (!heroWrapper || !whitePanel || !imagePanel) return;
+
+    // Create scroll-triggered animation for the split panels
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroWrapper,
+        start: "top top",
+        end: "bottom top",
+        scrub: 1,
+        pin: false,
+      },
+    });
+
+    // Animate white panel to the left
+    tl.to(whitePanel, {
+      xPercent: -100,
+      ease: "none",
+    }, 0);
+
+    // Animate image panel to the right
+    tl.to(imagePanel, {
+      xPercent: 100,
+      ease: "none",
+    }, 0);
+
+    return () => {
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
+  }, []);
+
   return (
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Parallax background */}
+      {/* Parallax background - visible after hero slides away */}
       <ParallaxBackground
         imageSrc="/images/what-is-this/clouds-bg.jpg"
         speed={0.3}
       />
+
+      {/* Split-screen Hero Section */}
+      <div ref={heroWrapperRef} className={styles.splitHeroWrapper}>
+        {/* White left panel with text */}
+        <div ref={whitePanelRef} className={styles.splitHeroLeft}>
+          <div className={styles.splitHeroTextContainer}>
+            {/* Top logo row */}
+            <div className={styles.logoRow}>
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.framingLogo}
+              />
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.framingLogo}
+              />
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.framingLogo}
+              />
+            </div>
+
+            <h1 className={styles.splitHeroHeadline}>
+              <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                <span>The values-based podcast</span>
+              </SplitLinesReveal>
+              <SplitLinesReveal duration={1.8} stagger={0.25} delay={1.5} className={styles.headlineLine}>
+                <span>Advertising network</span>
+              </SplitLinesReveal>
+            </h1>
+
+            <h3 className={styles.splitHeroSubtitle}>
+              <SplitLinesReveal duration={1.4} stagger={0.2} delay={2.6} className={styles.subtitleLine}>
+                <span>We create partnerships that feel good.</span>
+              </SplitLinesReveal>
+              <SplitLinesReveal duration={1.4} stagger={0.2} delay={3.0} className={styles.subtitleLine}>
+                <span>Because they are good.</span>
+              </SplitLinesReveal>
+            </h3>
+
+          </div>
+        </div>
+
+        {/* Image right panel */}
+        <div ref={imagePanelRef} className={styles.splitHeroRight}>
+          <Image
+            src="/images/what-is-this/top.jpg"
+            alt="GhostSignal values-based advertising"
+            fill
+            className={styles.splitHeroImage}
+            priority
+          />
+          {/* Static flicker overlay */}
+          <div className={styles.staticFlicker} aria-hidden="true" />
+        </div>
+      </div>
 
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>
@@ -50,42 +154,34 @@ export default function WhatIsThisPage() {
           />
         </div>
 
-        {/* Globe moved to finalSection - keeping wrapper for layout */}
-
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
-          {/* Section 1: Values-Based Network - LEFT with spinning logo */}
-          <section className={`${styles.textSection} ${styles.alignLeft}`}>
-            <div className={styles.sectionWithLogo}>
-              <div className={styles.textContainer}>
-                <SplitLinesReveal duration={1.8} stagger={0.25}>
-                  <h1 className={styles.sectionHeadline}>
-                    The values-based podcast advertising network
-                  </h1>
-                </SplitLinesReveal>
-                <ScrollFadeUp index={0} duration={1.6}>
-                  <p className={styles.sectionSubtitle}>
-                    We create partnerships that feel good because they are good.
-                  </p>
-                </ScrollFadeUp>
-                <ScrollFadeUp index={1} duration={1.6}>
-                  <p className={styles.sectionBody}>
-                    Values-based advertising is an approach that evaluates podcasters and brands on a matrix of commitments like lifestyle resonance, tone, aesthetic fit, and mission alignment.
-                  </p>
-                </ScrollFadeUp>
+          {/* Section 2: Advertising Harmony */}
+          <section className={styles.harmonySection}>
+            {/* Headline centered */}
+            <div className={styles.centeredHeadlineContainer}>
+              {/* Animated overlapping circles behind headline */}
+              <div className={styles.harmonyCircles} aria-hidden="true">
+                <div className={styles.harmonyCircle1} />
+                <div className={styles.harmonyCircle2} />
               </div>
-              <SpinningLogo3D className={styles.spinningLogo} />
+              <h2 className={styles.sectionHeadline}>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>What if</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>advertising</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>could make</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>harmony</span>
+                </SplitLinesReveal>
+              </h2>
             </div>
-          </section>
-
-          {/* Section 2: Advertising Harmony - RIGHT */}
-          <section className={`${styles.textSection} ${styles.alignRight}`}>
-            <div className={styles.textContainer}>
-              <SplitLinesReveal duration={1.8} stagger={0.25}>
-                <h2 className={styles.sectionHeadline}>
-                  What if advertising could make harmony
-                </h2>
-              </SplitLinesReveal>
+            {/* Body text centered on page, left-aligned inside */}
+            <div className={styles.centeredBodyContainer}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
                   Using this shared values matrix, we connect podcasters and brands who believe in the same things about people, purpose, moral imagination, and meaning. Our values determine the kind of world we are making and when we share values we are all building in the same direction to the world we want.
@@ -102,11 +198,17 @@ export default function WhatIsThisPage() {
           {/* Section 3: Values Create Value - LEFT */}
           <section className={`${styles.textSection} ${styles.alignLeft}`}>
             <div className={styles.textContainer}>
-              <SplitLinesReveal duration={1.8} stagger={0.25}>
-                <h2 className={styles.sectionHeadline}>
-                  Values Create Value
-                </h2>
-              </SplitLinesReveal>
+              <h2 className={styles.sectionHeadline}>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>Values</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>Create</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>Value</span>
+                </SplitLinesReveal>
+              </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
                   When a partnership shares soul, trust flows naturally. Trust becomes resonance. Resonance drives results. 75% of listeners happily pay more for brands that feel right (Edelman 2025) and shared loves create deep lasting trust that low-trust systems can never match.
@@ -118,11 +220,14 @@ export default function WhatIsThisPage() {
           {/* Section 4: Who is GhostSignal - RIGHT */}
           <section className={`${styles.textSection} ${styles.alignRight}`}>
             <div className={styles.textContainer}>
-              <SplitLinesReveal duration={1.8} stagger={0.25}>
-                <h2 className={styles.sectionHeadline}>
-                  Who is GhostSignal?
-                </h2>
-              </SplitLinesReveal>
+              <h2 className={styles.sectionHeadline}>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span>Who is</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
+                  <span><BrandedGhostSignal />?</span>
+                </SplitLinesReveal>
+              </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
                   We are a network that connects podcasters and brands who share soul—those who know their work shapes the future and take that responsibility seriously. As a creator or advertiser, whether you are value-sensitive, faith-based, or simply aware of the ethical impact of what you make, you belong in GhostSignal if you sense that your work is making the world.
@@ -148,20 +253,23 @@ export default function WhatIsThisPage() {
                   This is values-based advertising. This is world making.
                 </p>
               </ScrollFadeUp>
-              <SplitLinesReveal duration={2} stagger={0.3}>
-                <h2 className={styles.finalHeadline}>
-                  This is the signal
-                </h2>
-              </SplitLinesReveal>
+              <h2 className={styles.finalHeadline}>
+                <SplitLinesReveal duration={3.6} stagger={0.5} className={styles.headlineLine}>
+                  <span>This is the</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={3.6} stagger={0.5} className={styles.headlineLine}>
+                  <span>Signal</span>
+                </SplitLinesReveal>
+              </h2>
               <ScrollFadeUp index={2} duration={1.6}>
                 <p className={styles.finalTagline}>
                   Everything else is just static.
                 </p>
               </ScrollFadeUp>
             </div>
-            {/* Globe directly below the headline */}
+            {/* Globe behind the headline */}
             <div className={styles.finalGlobeWrapper}>
-              <ScrollScenes className={styles.finalGlobe} />
+              <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
             </div>
           </section>
 
@@ -170,7 +278,7 @@ export default function WhatIsThisPage() {
             <div className={styles.whitepaperContent}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.whitepaperText}>
-                  Access our white paper and read about how GhostSignal can help you make the world.
+                  Access our white paper and read about how <BrandedGhostSignal /> can help you make the world.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>

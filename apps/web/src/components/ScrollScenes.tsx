@@ -33,8 +33,35 @@ uniform float uTextureLoaded;
 uniform float uCloudLoaded;
 uniform float uRotationX;
 uniform float uRotationY;
+uniform float uVerticalOffset;
+uniform float uScale;
+uniform float uRingRotation;
 
 #define PI 3.14159265359
+
+// Brand colors for orbital rings
+const vec3 RING_COLOR_1 = vec3(0.839, 0.380, 0.341); // #D66157 Red
+const vec3 RING_COLOR_2 = vec3(0.624, 0.443, 0.686); // #9F71AF Purple
+const vec3 RING_COLOR_3 = vec3(0.0, 0.698, 0.612);   // #00B29C Green
+const vec3 RING_COLOR_4 = vec3(1.0, 0.482, 0.678);   // #FF7BAD Pink
+const vec3 RING_COLOR_5 = vec3(0.984, 0.678, 0.145); // #FBAD25 Orange
+
+// Ring parameters - inner and outer radii for each ring
+// Rings are further from globe and very thin (~1-2px)
+const float RING_INNER_1 = 1.50;
+const float RING_OUTER_1 = 1.506;
+const float RING_INNER_2 = 1.62;
+const float RING_OUTER_2 = 1.626;
+const float RING_INNER_3 = 1.74;
+const float RING_OUTER_3 = 1.746;
+const float RING_INNER_4 = 1.86;
+const float RING_OUTER_4 = 1.866;
+const float RING_INNER_5 = 1.98;
+const float RING_OUTER_5 = 1.986;
+
+// Ring tilt angles (diagonal from bottom-left to top-right)
+const float RING_TILT_X = 0.26;    // 15 degrees on X-axis (forward tilt)
+const float RING_TILT_Z = -0.70;   // -40 degrees on Z-axis (diagonal tilt)
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -48,16 +75,116 @@ float sphereIntersect(vec3 ro, vec3 rd, float r) {
   return -b - sqrt(h);
 }
 
+// Rotate a point around Y axis
+vec3 rotateY(vec3 p, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z);
+}
+
+// Rotate a point around X axis (for ring tilt)
+vec3 rotateX(vec3 p, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
+}
+
+// Rotate a point around Z axis (for diagonal tilt)
+vec3 rotateZ(vec3 p, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
+}
+
+// Check if ray intersects a tilted ring disk and return distance
+// Returns -1.0 if no intersection, otherwise returns distance
+float ringIntersect(vec3 ro, vec3 rd, float innerR, float outerR, float tiltX, float tiltZ, float rotation) {
+  // Transform ray into ring space (rotate by tilts and rotation)
+  // Z rotation for diagonal, X for forward tilt, Y for spin animation
+  vec3 roRing = rotateY(rotateX(rotateZ(ro, -tiltZ), -tiltX), -rotation);
+  vec3 rdRing = rotateY(rotateX(rotateZ(rd, -tiltZ), -tiltX), -rotation);
+
+  // Ring is in XZ plane (y = 0)
+  // Find intersection with y = 0 plane
+  if (abs(rdRing.y) < 0.0001) return -1.0; // Ray parallel to plane
+
+  float t = -roRing.y / rdRing.y;
+  if (t < 0.0) return -1.0; // Behind camera
+
+  vec3 hitPoint = roRing + rdRing * t;
+  float dist = length(hitPoint.xz);
+
+  // Add wavy pattern to ring boundaries (very subtle for ultra-thin rings)
+  float angle = atan(hitPoint.z, hitPoint.x);
+  float wave = sin(angle * 12.0 + uTime * 0.3) * 0.002 +
+               sin(angle * 7.0 - uTime * 0.2) * 0.0015;
+
+  float wavyInner = innerR + wave;
+  float wavyOuter = outerR + wave;
+
+  if (dist >= wavyInner && dist <= wavyOuter) {
+    return t;
+  }
+
+  return -1.0;
+}
+
+// Get ring color and alpha at a given point
+vec4 getRingColor(vec3 ro, vec3 rd, float earthT) {
+  vec4 result = vec4(0.0);
+
+  // Check all 5 rings, front to back ordering
+  float ringDists[5];
+  int ringIndices[5];
+
+  // Calculate distances for all rings
+  float d1 = ringIntersect(ro, rd, RING_INNER_1, RING_OUTER_1, RING_TILT_X, RING_TILT_Z, uRingRotation);
+  float d2 = ringIntersect(ro, rd, RING_INNER_2, RING_OUTER_2, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.2);
+  float d3 = ringIntersect(ro, rd, RING_INNER_3, RING_OUTER_3, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.4);
+  float d4 = ringIntersect(ro, rd, RING_INNER_4, RING_OUTER_4, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.6);
+  float d5 = ringIntersect(ro, rd, RING_INNER_5, RING_OUTER_5, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.8);
+
+  // Simple blending - render rings that are in front of earth
+  // Check each ring and blend if it's closer than the earth
+
+  if (d5 > 0.0 && (earthT < 0.0 || d5 < earthT)) {
+    result = vec4(RING_COLOR_5, 0.7);
+  }
+  if (d4 > 0.0 && (earthT < 0.0 || d4 < earthT)) {
+    vec4 ringCol = vec4(RING_COLOR_4, 0.7);
+    result = mix(result, ringCol, ringCol.a);
+  }
+  if (d3 > 0.0 && (earthT < 0.0 || d3 < earthT)) {
+    vec4 ringCol = vec4(RING_COLOR_3, 0.7);
+    result = mix(result, ringCol, ringCol.a);
+  }
+  if (d2 > 0.0 && (earthT < 0.0 || d2 < earthT)) {
+    vec4 ringCol = vec4(RING_COLOR_2, 0.7);
+    result = mix(result, ringCol, ringCol.a);
+  }
+  if (d1 > 0.0 && (earthT < 0.0 || d1 < earthT)) {
+    vec4 ringCol = vec4(RING_COLOR_1, 0.7);
+    result = mix(result, ringCol, ringCol.a);
+  }
+
+  return result;
+}
+
 void main() {
   vec2 p = (vUv - 0.5) * 2.0;
   p.x *= uResolution.x / uResolution.y;
+
+  // Apply vertical offset (positive = up, negative = down)
+  p.y += uVerticalOffset;
 
   float earthRotation = uRotationX;
   float earthTilt = uRotationY * 0.5;
   // Clouds rotate in opposite direction, slower
   float cloudRotation = -uRotationX * 0.3 + uTime * 0.015;
 
-  vec3 ro = vec3(0.0, 0.0, 2.8);
+  // Camera distance affected by scale (smaller value = larger globe)
+  float camDist = 2.8 / uScale;
+  vec3 ro = vec3(0.0, 0.0, camDist);
   vec3 rd = normalize(vec3(p, -1.5));
 
   float earthRadius = 1.0;
@@ -187,6 +314,23 @@ void main() {
     alpha = 1.0; // Earth is fully opaque
   }
 
+  // Render orbital rings
+  float earthT = sphereIntersect(ro, rd, earthRadius);
+  vec4 ringColor = getRingColor(ro, rd, earthT);
+
+  // Blend rings with existing color
+  if (ringColor.a > 0.0) {
+    // If we hit earth, only show rings in front
+    if (earthT > 0.0) {
+      // Check ring distances and only show if closer
+      col = mix(col, ringColor.rgb, ringColor.a * 0.8);
+    } else {
+      // No earth hit, show full ring
+      col = mix(col, ringColor.rgb, ringColor.a);
+      alpha = max(alpha, ringColor.a);
+    }
+  }
+
   // Subtle vignette
   float vignette = 1.0 - length((vUv - 0.5) * 1.2) * 0.25;
   col *= vignette;
@@ -242,9 +386,13 @@ function createProgram(gl: WebGLRenderingContext, vertexSource: string, fragment
 
 type ScrollScenesProps = {
   className?: string;
+  /** Vertical offset for the globe position (-1 to 1, negative = up) */
+  verticalOffset?: number;
+  /** Scale multiplier for globe size (default 1.0) */
+  scale?: number;
 };
 
-export function ScrollScenes({ className = "" }: ScrollScenesProps) {
+export function ScrollScenes({ className = "", verticalOffset = 0, scale = 1.0 }: ScrollScenesProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number>(0);
@@ -302,6 +450,9 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
     const cloudLoadedLoc = gl.getUniformLocation(program, "uCloudLoaded");
     const rotXLoc = gl.getUniformLocation(program, "uRotationX");
     const rotYLoc = gl.getUniformLocation(program, "uRotationY");
+    const vertOffsetLoc = gl.getUniformLocation(program, "uVerticalOffset");
+    const scaleLoc = gl.getUniformLocation(program, "uScale");
+    const ringRotLoc = gl.getUniformLocation(program, "uRingRotation");
 
     // Mouse interaction state
     // Initial rotation centered on Europe (lon ~15°E, tilt to show northern hemisphere)
@@ -486,6 +637,12 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
       gl.uniform1f(scrollLoc, scrollRef.current);
       gl.uniform1f(rotXLoc, rotation.x);
       gl.uniform1f(rotYLoc, rotation.y);
+      gl.uniform1f(vertOffsetLoc, verticalOffset);
+      gl.uniform1f(scaleLoc, scale);
+
+      // Slow ring rotation - completes one full rotation every ~60 seconds
+      const ringRotation = prefersReducedMotion ? 0 : time * 0.1;
+      gl.uniform1f(ringRotLoc, ringRotation);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -508,17 +665,17 @@ export function ScrollScenes({ className = "" }: ScrollScenesProps) {
       gl.deleteTexture(cloudTexture);
       gl.deleteProgram(program);
     };
-  }, [isClient]);
+  }, [isClient, verticalOffset, scale]);
 
   if (!isClient) {
-    return <div className={className} style={{ height: "100vh", background: "#0a0a0d" }} />;
+    return <div className={className} style={{ height: "100%", background: "transparent" }} />;
   }
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{ height: "100vh", position: "relative" }}
+      style={{ height: "100%", position: "relative", overflow: "visible" }}
     >
       <canvas
         ref={canvasRef}

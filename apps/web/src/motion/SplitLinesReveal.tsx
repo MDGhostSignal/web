@@ -67,7 +67,7 @@ export function SplitLinesReveal({
 
     const tween = gsap.fromTo(
       splitInner.lines ?? [],
-      { yPercent: 101 },
+      { yPercent: 110 },
       {
         yPercent: 0,
         duration,

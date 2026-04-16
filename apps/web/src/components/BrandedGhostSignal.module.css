@@ -1,0 +1,28 @@
+.brand {
+  display: inline;
+  white-space: nowrap;
+}
+
+.ghost {
+  font-weight: var(--gs-font-weight-bold, 700);
+  text-transform: uppercase;
+}
+
+.signal {
+  font-weight: 100;
+  text-transform: none;
+  opacity: 0.85;
+}
+
+/* Color variants */
+.light {
+  color: var(--gs-tw-white, #ffffff);
+}
+
+.dark {
+  color: var(--gs-tw-black, #000000);
+}
+
+.inherit {
+  color: inherit;
+}
