@@ -20,6 +20,7 @@ const navLinks = [
   { href: "/for-advertisers", label: "For Advertisers" },
   { href: "/who-are-we", label: "Who Are We" },
   { href: "/snowdrift", label: "SNOWDRIFT" },
+  { href: "/rq-quiz", label: "RQ Quiz" },
   { href: "/get-in-touch", label: "Get In Touch" },
 ] as const;
 
