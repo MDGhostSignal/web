@@ -18,6 +18,11 @@ type Props = {
   start?: string;
   duration?: number;
   /**
+   * Optional fixed delay (in seconds) before the animation starts.
+   * Added to index-based stagger delay.
+   */
+  delay?: number;
+  /**
    * Optional className to apply to the wrapper div.
    * Helps reduce unnecessary nesting when the wrapper can serve double duty.
    */
@@ -28,7 +33,7 @@ type Props = {
  * Mirrors Motto's common scroll entrance animation:
  * `fromTo(el, { y:60, opacity:0 }, { y:0, opacity:1, duration:1, ease:"power2.out", delay: 0.1*index, scrollTrigger:{trigger: el, start:"top bottom"} })`
  */
-export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration = 1.7, className }: Props) {
+export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration = 1.7, delay = 0, className }: Props) {
   const id = useId();
 
   useIsomorphicLayoutEffect(() => {
@@ -44,7 +49,7 @@ export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration 
         opacity: 1,
         duration,
         ease: "power2.out",
-        delay: 0.14 * index,
+        delay: delay + 0.14 * index,
         scrollTrigger: { trigger: el, start },
       },
     );
@@ -53,7 +58,7 @@ export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration 
       tween.scrollTrigger?.kill();
       tween.kill();
     };
-  }, [duration, id, index, start]);
+  }, [delay, duration, id, index, start]);
 
   return <div data-gs-sfu={id} className={className}>{children}</div>;
 }

@@ -75,12 +75,12 @@
   text-align: center;
 }
 
-/* Hero Headline */
+/* Hero Headline - Monster Headline M1 (10% larger than standard) */
 .heroHeadline {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(32px, 6vw, 80px);
+  font-size: clamp(35px, 6.6vw, 88px);
   line-height: 1.1;
   color: #ffffff;
   text-transform: uppercase;
@@ -101,6 +101,11 @@
   font-weight: 100;
   text-transform: none;
   opacity: 0.85;
+}
+
+/* Each headline line wrapper for staggered animation */
+.heroLine {
+  display: block;
 }
 
 /* Hero Subtitle */

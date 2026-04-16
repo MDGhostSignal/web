@@ -32,12 +32,19 @@ const linkFrameWidths: Record<string, number> = {
 export function SiteHeader({
   links,
   cta,
+  animateIn = false,
+  animateInDelay = 0,
 }: {
   links: readonly NavLink[];
   cta?: { href: string; label: string };
+  /** If true, links animate in on mount (like the scroll-up reveal) */
+  animateIn?: boolean;
+  /** Delay in seconds before the animate-in starts */
+  animateInDelay?: number;
 }) {
   const { rootRef, contextRef } = useGsapContext<HTMLDivElement>();
 
+  const logoRef = useRef<HTMLAnchorElement | null>(null);
   const linksWrapRef = useRef<HTMLDivElement | null>(null);
   const ctaRef = useRef<HTMLAnchorElement | null>(null);
 
@@ -50,6 +57,7 @@ export function SiteHeader({
   useIsomorphicLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
+    const logoEl = logoRef.current;
     const linksWrap = linksWrapRef.current;
     const ctaEl = ctaRef.current;
     if (!linksWrap) return;
@@ -69,18 +77,39 @@ export function SiteHeader({
         defaults: { duration: 0.75, ease: "snappy" },
       });
 
-      // Initial state: header visible, links visible, CTA in place.
+      // Initial state: header visible
       const el = rootRef.current;
       if (el) gsap.set(el, { yPercent: 0 });
       if (ctaEl) gsap.set(ctaEl, { xPercent: 0 });
-      gsap.set(linkEls, { yPercent: 0, alpha: 1 });
+
+      // Start logo and links hidden, then animate in
+      gsap.set(logoEl, { yPercent: -100, alpha: 0 });
+      gsap.set(linkEls, { yPercent: -100, alpha: 0 });
       if (hideLinkEls.length) gsap.set(hideLinkEls, { display: "inline-flex" });
+
+      // Animate logo in first, then links with stagger
+      gsap.to(logoEl, {
+        yPercent: 0,
+        alpha: 1,
+        duration: 1,
+        ease: "expo",
+        delay: animateInDelay,
+      });
+      gsap.to(linkEls, {
+        yPercent: 0,
+        alpha: 1,
+        duration: 1,
+        stagger: 0.035,
+        ease: "expo",
+        delay: animateInDelay + 0.05,
+      });
     });
 
     const runOut = () => {
       document.body.classList.add("is-head-active");
       tlRef.current
         ?.clear()
+        .to(logoEl ?? {}, { yPercent: -100, alpha: 0 }, 0)
         .to(hideLinkEls, { yPercent: -100, alpha: 0, stagger: -0.035 }, 0)
         .to(ctaEl ?? {}, { xPercent: -100 }, 0)
         .set(hideLinkEls, { display: "none" }, 0.75)
@@ -92,8 +121,9 @@ export function SiteHeader({
       tlRef.current
         ?.clear()
         .set(hideLinkEls, { display: "inline-flex" }, 0)
+        .to(logoEl ?? {}, { yPercent: 0, alpha: 1, duration: 1, ease: "expo" }, 0)
         .to(ctaEl ?? {}, { xPercent: 0, duration: 1 }, 0)
-        .to(hideLinkEls, { yPercent: 0, alpha: 1, duration: 1, stagger: 0.035, ease: "expo" }, 0)
+        .to(hideLinkEls, { yPercent: 0, alpha: 1, duration: 1, stagger: 0.035, ease: "expo" }, 0.05)
         .restart();
     };
 
@@ -115,6 +145,7 @@ export function SiteHeader({
         document.body.classList.remove("is-head-active");
         activeRef.current = false;
         tlRef.current?.pause(0);
+        if (logoEl) gsap.set(logoEl, { yPercent: 0, alpha: 1 });
         if (ctaEl) gsap.set(ctaEl, { xPercent: 0 });
         gsap.set(linkEls, { yPercent: 0, alpha: 1 });
         if (hideLinkEls.length) gsap.set(hideLinkEls, { display: "inline-flex" });
@@ -152,12 +183,12 @@ export function SiteHeader({
       tlRef.current?.kill();
       tlRef.current = null;
     };
-  }, [THRESHOLD_Y, contextRef, rootRef]);
+  }, [THRESHOLD_Y, animateIn, animateInDelay, contextRef, rootRef]);
 
   return (
     <div ref={rootRef} className={styles.headerRoot}>
       <header className={`${styles.header} js-sh`}>
-        <Link href="/" className={`${styles.logoWrap} js-sh-logo-wrap`}>
+        <Link ref={logoRef} href="/" className={`${styles.logoWrap} js-sh-logo-wrap`}>
           <Image
             src="/images/home/figma/logo-black-1.svg"
             alt="Ghost Signal"

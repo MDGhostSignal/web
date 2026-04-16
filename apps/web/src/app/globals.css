@@ -62,6 +62,8 @@ body.is-head-active .js-sh-main-link[data-sh-role="hide"] {
     text-rendering: geometricPrecision;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Reserve space for scrollbar to prevent layout shift between pages */
+    scrollbar-gutter: stable;
   }
 
   a {

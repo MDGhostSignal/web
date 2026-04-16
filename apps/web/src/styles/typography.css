@@ -680,3 +680,21 @@
     calc(var(--gs-font-size-3xl) * var(--gs-px))
   );
 }
+
+/* =============================================================================
+   MONSTER HEADLINES
+   Extra-large display headlines for hero sections.
+   ============================================================================= */
+
+/**
+ * Monster Headline M1
+ * 10% larger than standard hero headline (clamp 32px/6vw/80px → 35px/6.6vw/88px)
+ * Used for: Main home landing page hero
+ */
+.text-monster-1 {
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: clamp(35px, 6.6vw, 88px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}

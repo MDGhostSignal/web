@@ -21,7 +21,7 @@ const navLinks = [
 export default function LegacyHomePage() {
   return (
     <main className={styles.legacyHome}>
-      <SiteHeader links={navLinks} />
+      <SiteHeader links={navLinks} animateIn />
 
       {/* Cloud Video Background */}
       <div className={styles.cloudBackground} aria-hidden="true">
@@ -41,25 +41,28 @@ export default function LegacyHomePage() {
 
       {/* Hero Section */}
       <section className={styles.heroSection}>
-        <SplitLinesReveal duration={1.8} stagger={0.25}>
-          <h1 className={styles.heroHeadline}>
-            <span className={styles.heroHeadlineBrand}>
-              <span className={styles.heroGhost}>GHOST</span>
-              <span className={styles.heroSignal}>Signal</span>
+        <h1 className={styles.heroHeadline}>
+          <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.heroLine}>
+            <span>
+              <span className={styles.heroHeadlineBrand}>
+                <span className={styles.heroGhost}>GHOST</span>
+                <span className={styles.heroSignal}>Signal</span>
+              </span>
+              {" "}is for people
             </span>
-            {" "}is for people
-            <br />
-            who are making the world.
-          </h1>
-        </SplitLinesReveal>
+          </SplitLinesReveal>
+          <SplitLinesReveal duration={1.8} stagger={0.25} delay={1.5} className={styles.heroLine}>
+            <span>who are making the world.</span>
+          </SplitLinesReveal>
+        </h1>
 
-        <ScrollFadeUp index={0} duration={1.4} start="top 90%">
+        <ScrollFadeUp index={0} duration={1.4} delay={3.0} start="top 90%">
           <p className={styles.heroSubtitle}>
             Soulful partnerships for podcasters and advertisers who care
           </p>
         </ScrollFadeUp>
 
-        <ScrollFadeUp index={1} duration={1.4} start="top 90%">
+        <ScrollFadeUp index={1} duration={1.4} delay={3.0} start="top 90%">
           <Link href="/what-is-this" className={styles.ctaButton}>
             Learn more
           </Link>
