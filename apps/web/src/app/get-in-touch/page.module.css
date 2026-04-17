@@ -248,11 +248,95 @@
   align-self: flex-start;
 }
 
-.submitButton:hover {
+.submitButton:hover:not(:disabled) {
   background: var(--gs-tw-gray-800);
   transform: translateY(-2px);
 }
 
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   SUCCESS & ERROR STATES
+   ============================================================================= */
+
+.successMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: calc(var(--gs-n-48) * var(--gs-px));
+  background: rgba(34, 197, 94, 0.04);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
+}
+
+.successIcon {
+  margin-bottom: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+.successTitle {
+  margin: 0 0 calc(var(--gs-n-8) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
+  color: var(--gs-tw-gray-900);
+}
+
+.successText {
+  margin: 0 0 calc(var(--gs-n-24) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-base-size);
+  line-height: var(--gs-text-base-leading);
+  color: var(--gs-tw-gray-600);
+}
+
+.resetButton {
+  padding: calc(var(--gs-n-12) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-sm-size);
+  line-height: var(--gs-text-sm-leading);
+  color: var(--gs-tw-gray-700);
+  background: var(--gs-tw-white);
+  border: 1px solid var(--gs-tw-gray-300);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.resetButton:hover {
+  background: var(--gs-tw-gray-50);
+  border-color: var(--gs-tw-gray-400);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  padding: calc(var(--gs-n-14) * var(--gs-px)) calc(var(--gs-n-16) * var(--gs-px));
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  line-height: var(--gs-text-sm-leading);
+  color: #b91c1c;
+}
+
+.errorMessage svg {
+  flex-shrink: 0;
+}
+
+.formInput:disabled,
+.formTextarea:disabled {
+  background: var(--gs-tw-gray-50);
+  cursor: not-allowed;
+}
 
 /* =============================================================================
    FOOTER
