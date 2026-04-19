@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Lottie from "lottie-react";
-
+import { LazyLottie } from "@/components/LazyLottie";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { Footer } from "@/components/Footer";
@@ -11,7 +10,6 @@ import { ContactSection } from "@/components/ContactSection";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
-import creatorsAnimation from "@/../public/images/for-creators/creators.json";
 import styles from "./page.module.css";
 
 const navLinks = [
@@ -242,11 +240,7 @@ export default function ForCreatorsPage() {
               </ScrollFadeUp>
             </div>
             <div className={styles.featuresAnimation}>
-              <Lottie
-                animationData={creatorsAnimation}
-                loop={true}
-                autoplay={true}
-              />
+              <LazyLottie src="/images/for-creators/creators.json" />
             </div>
           </div>
         </div>

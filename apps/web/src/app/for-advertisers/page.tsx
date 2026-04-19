@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Lottie from "lottie-react";
+import { LazyLottie } from "@/components/LazyLottie";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
@@ -12,7 +12,6 @@ import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
-import advertisersAnimation from "@/../public/images/for-advertisers/advertisers.json";
 import StarFogBackground from "./StarFogBackground";
 import styles from "./page.module.css";
 
@@ -144,11 +143,7 @@ export default function ForAdvertisersPage() {
               </ScrollFadeUp>
             </div>
             <div className={styles.featuresAnimation}>
-              <Lottie
-                animationData={advertisersAnimation}
-                loop={true}
-                autoplay={true}
-              />
+              <LazyLottie src="/images/for-advertisers/advertisers.json" />
             </div>
           </div>
         </div>
