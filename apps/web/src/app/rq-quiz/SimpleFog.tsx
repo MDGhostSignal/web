@@ -2,22 +2,15 @@
 
 import { useEffect, useRef } from "react";
 
+import { startFullscreenShader } from "@/lib/webgl";
+
 /**
- * Simple, performant fog effect using 2D noise
- * Much lighter than raymarching - suitable for background use
+ * Simple, performant fog effect using 2D noise, reacting to mouse
+ * position and velocity. Much lighter than raymarching — suitable as
+ * a background layer while still feeling alive.
  */
 
-const VERTEX_SHADER = `
-attribute vec2 aPosition;
-varying vec2 vUv;
-
-void main() {
-  vUv = aPosition * 0.5 + 0.5;
-  gl_Position = vec4(aPosition, 0.0, 1.0);
-}
-`;
-
-const FRAGMENT_SHADER = `
+const FRAGMENT_SHADER = /* glsl */ `
 precision mediump float;
 
 varying vec2 vUv;
@@ -248,89 +241,16 @@ void main() {
 
 export default function SimpleFog() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
   const mouseRef = useRef({ x: 0.5, y: 0.5, vx: 0, vy: 0, prevX: 0.5, prevY: 0.5 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext("webgl", {
-      alpha: false,
-      antialias: false,
-    });
-
-    if (!gl) {
-      console.error("WebGL not supported");
-      return;
-    }
-
-    // Compile shaders
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-    gl.shaderSource(vertexShader, VERTEX_SHADER);
-    gl.compileShader(vertexShader);
-
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      console.error("Vertex shader error:", gl.getShaderInfoLog(vertexShader));
-      return;
-    }
-
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-    gl.shaderSource(fragmentShader, FRAGMENT_SHADER);
-    gl.compileShader(fragmentShader);
-
-    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      console.error("Fragment shader error:", gl.getShaderInfoLog(fragmentShader));
-      return;
-    }
-
-    const program = gl.createProgram()!;
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Program link error:", gl.getProgramInfoLog(program));
-      return;
-    }
-
-    gl.useProgram(program);
-
-    // Create fullscreen quad
-    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-    const aPosition = gl.getAttribLocation(program, "aPosition");
-    gl.enableVertexAttribArray(aPosition);
-    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
-
-    // Uniforms
-    const uTime = gl.getUniformLocation(program, "uTime");
-    const uResolution = gl.getUniformLocation(program, "uResolution");
-    const uMouse = gl.getUniformLocation(program, "uMouse");
-    const uMouseVelocity = gl.getUniformLocation(program, "uMouseVelocity");
-
-    // Handle resize
-    const handleResize = () => {
-      const dpr = Math.min(window.devicePixelRatio, 1.5); // Lower DPR for performance
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    // Mouse tracking
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = 1.0 - (e.clientY - rect.top) / rect.height;
-
       const mouse = mouseRef.current;
       mouse.vx = (x - mouse.prevX) * 3.5;
       mouse.vy = (y - mouse.prevY) * 3.5;
@@ -339,39 +259,42 @@ export default function SimpleFog() {
       mouse.x += (x - mouse.x) * 0.2;
       mouse.y += (y - mouse.y) * 0.2;
     };
-
     window.addEventListener("mousemove", handleMouseMove);
 
-    // Animation loop
-    const startTime = performance.now();
-    const render = () => {
-      const currentTime = (performance.now() - startTime) * 0.001;
+    let uTime: WebGLUniformLocation | null = null;
+    let uResolution: WebGLUniformLocation | null = null;
+    let uMouse: WebGLUniformLocation | null = null;
+    let uMouseVelocity: WebGLUniformLocation | null = null;
 
-      gl.uniform1f(uTime, currentTime);
-      gl.uniform2f(uResolution, canvas.width, canvas.height);
-      gl.uniform2f(uMouse, mouseRef.current.x, mouseRef.current.y);
-      gl.uniform2f(uMouseVelocity, mouseRef.current.vx, mouseRef.current.vy);
+    const stop = startFullscreenShader(canvas, FRAGMENT_SHADER, {
+      contextAttributes: { alpha: false, antialias: false },
+      dprCap: 1.5,
+      respectReducedMotion: false, // mouse emitter is the point — always render
+      onInit: ({ gl, program }) => {
+        uTime = gl.getUniformLocation(program, "uTime");
+        uResolution = gl.getUniformLocation(program, "uResolution");
+        uMouse = gl.getUniformLocation(program, "uMouse");
+        uMouseVelocity = gl.getUniformLocation(program, "uMouseVelocity");
+      },
+      onFrame: ({ gl, time, width, height }) => {
+        gl.uniform1f(uTime, time);
+        gl.uniform2f(uResolution, width, height);
+        gl.uniform2f(uMouse, mouseRef.current.x, mouseRef.current.y);
+        gl.uniform2f(
+          uMouseVelocity,
+          mouseRef.current.vx,
+          mouseRef.current.vy,
+        );
+        // Decay velocity — slower for lingering effect.
+        mouseRef.current.vx *= 0.93;
+        mouseRef.current.vy *= 0.93;
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      },
+    });
 
-      // Decay velocity - slower for lingering effect
-      mouseRef.current.vx *= 0.93;
-      mouseRef.current.vy *= 0.93;
-
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-      rafRef.current = requestAnimationFrame(render);
-    };
-
-    render();
-
-    // Cleanup
     return () => {
-      window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(rafRef.current);
-      gl.deleteProgram(program);
-      gl.deleteShader(vertexShader);
-      gl.deleteShader(fragmentShader);
-      gl.deleteBuffer(positionBuffer);
+      stop();
     };
   }, []);
 

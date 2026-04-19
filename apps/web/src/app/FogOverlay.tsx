@@ -2,23 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
+import { startFullscreenShader } from "@/lib/webgl";
+
 /**
- * Ethereal fog overlay effect - renders on top of existing content
- * Inspired by modern tech sites with flowing, wispy fog animations
- * Uses WebGL for smooth performance
+ * Ethereal fog overlay effect — an animated, translucent WebGL layer
+ * rendered on top of the homepage hero video for a wispy fog look.
  */
 
-const VERTEX_SHADER = `
-attribute vec2 aPosition;
-varying vec2 vUv;
-
-void main() {
-  vUv = aPosition * 0.5 + 0.5;
-  gl_Position = vec4(aPosition, 0.0, 1.0);
-}
-`;
-
-const FRAGMENT_SHADER = `
+const FRAGMENT_SHADER = /* glsl */ `
 precision mediump float;
 
 varying vec2 vUv;
@@ -140,129 +131,38 @@ interface FogOverlayProps {
 
 export default function FogOverlay({ className = "" }: FogOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) {
-      return;
-    }
+    let uTime: WebGLUniformLocation | null = null;
+    let uResolution: WebGLUniformLocation | null = null;
 
-    const gl = canvas.getContext("webgl", {
-      alpha: true, // Enable transparency
-      premultipliedAlpha: false,
-      antialias: false,
-      powerPreference: "low-power",
+    return startFullscreenShader(canvas, FRAGMENT_SHADER, {
+      contextAttributes: {
+        alpha: true,
+        premultipliedAlpha: false,
+        antialias: false,
+        powerPreference: "low-power",
+      },
+      targetFps: 30,
+      dprCap: 1.5,
+      onInit: ({ gl, program }) => {
+        // Alpha blending so the hero video shows through.
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        uTime = gl.getUniformLocation(program, "uTime");
+        uResolution = gl.getUniformLocation(program, "uResolution");
+      },
+      onFrame: ({ gl, time, width, height }) => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniform1f(uTime, time);
+        gl.uniform2f(uResolution, width, height);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      },
     });
-
-    if (!gl) {
-      console.warn("WebGL not supported for fog overlay");
-      return;
-    }
-
-    // Enable blending for transparency
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-    // Compile vertex shader
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-    gl.shaderSource(vertexShader, VERTEX_SHADER);
-    gl.compileShader(vertexShader);
-
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      console.error("Vertex shader error:", gl.getShaderInfoLog(vertexShader));
-      return;
-    }
-
-    // Compile fragment shader
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-    gl.shaderSource(fragmentShader, FRAGMENT_SHADER);
-    gl.compileShader(fragmentShader);
-
-    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      console.error("Fragment shader error:", gl.getShaderInfoLog(fragmentShader));
-      return;
-    }
-
-    // Link program
-    const program = gl.createProgram()!;
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Program link error:", gl.getProgramInfoLog(program));
-      return;
-    }
-
-    gl.useProgram(program);
-
-    // Create fullscreen quad
-    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-    const aPosition = gl.getAttribLocation(program, "aPosition");
-    gl.enableVertexAttribArray(aPosition);
-    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
-
-    // Get uniform locations
-    const uTime = gl.getUniformLocation(program, "uTime");
-    const uResolution = gl.getUniformLocation(program, "uResolution");
-
-    // Handle resize
-    const handleResize = () => {
-      const dpr = Math.min(window.devicePixelRatio, 1.5);
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    // Animation loop
-    const startTime = performance.now();
-    let lastFrame = 0;
-    const targetFPS = 30;
-    const frameInterval = 1000 / targetFPS;
-
-    const render = (currentTime: number) => {
-      rafRef.current = requestAnimationFrame(render);
-
-      // Throttle to target FPS
-      const elapsed = currentTime - lastFrame;
-      if (elapsed < frameInterval) return;
-      lastFrame = currentTime - (elapsed % frameInterval);
-
-      const time = (currentTime - startTime) * 0.001;
-
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-
-      gl.uniform1f(uTime, time);
-      gl.uniform2f(uResolution, canvas.width, canvas.height);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    };
-
-    rafRef.current = requestAnimationFrame(render);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(rafRef.current);
-      gl.deleteProgram(program);
-      gl.deleteShader(vertexShader);
-      gl.deleteShader(fragmentShader);
-      gl.deleteBuffer(positionBuffer);
-    };
   }, []);
 
   return (
