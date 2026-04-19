@@ -31,5 +31,5 @@
   --color-accent2: var(--gs-accent-1);
 
   --font-sans: var(--font-body);
-  --font-display: var(--font-heading);
+  --font-display: var(--font-body);
 }

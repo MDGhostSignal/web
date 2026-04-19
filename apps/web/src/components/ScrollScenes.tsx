@@ -486,7 +486,7 @@ export function ScrollScenes({ className = "", verticalOffset = 0, scale = 1.0 }
         textureLoaded = false;
       };
 
-      img.src = "https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png";
+      img.src = "/images/globe/earth-topology.png";
     };
 
     // Load Cloud texture

@@ -315,7 +315,7 @@ export function EarthGlobe({ className = "" }: EarthGlobeProps) {
 
       // NASA Blue Marble Earth texture (public domain) - grayscale version
       // This is a monochrome equirectangular projection of Earth
-      img.src = "https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png";
+      img.src = "/images/globe/earth-topology.png";
     };
 
     const createFallbackTexture = () => {

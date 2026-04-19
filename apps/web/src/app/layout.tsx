@@ -5,16 +5,14 @@ import "../styles/typography.css";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 
-const displayFont = Inter({
-  variable: "--font-heading",
+// Inter is used for both heading and body copy. Load it once and expose
+// the same font under two CSS variables so downstream CSS can keep the
+// heading/body distinction without fetching the file twice.
+const inter = Inter({
   subsets: ["latin"],
   weight: ["500", "700", "800"],
-});
-
-const bodyFont = Inter({
+  display: "swap",
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["500", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${displayFont.variable} ${bodyFont.variable} bg-background text-foreground antialiased`}
+        className={`${inter.variable} bg-background text-foreground antialiased`}
       >
         <Providers>{children}</Providers>
       </body>
