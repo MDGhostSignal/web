@@ -486,10 +486,6 @@
   .contactHeadline {
     font-size: clamp(32px, 5vw, 60px);
   }
-
-  .footer {
-    padding: calc(var(--gs-n-96) * var(--gs-px));
-  }
 }
 
 @media (max-width: 1024px) {
@@ -509,35 +505,6 @@
   .contactPhoto {
     transform: translateX(-50%);
     width: clamp(150px, 50%, 250px);
-  }
-
-  .footerNav {
-    grid-template-columns: 1fr;
-    row-gap: calc(var(--gs-n-32) * var(--gs-px));
-  }
-
-  .footer {
-    padding: calc(var(--gs-n-64) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .footerTop,
-  .footerNav,
-  .footerMorse,
-  .footerSocial {
-    width: 100%;
-  }
-
-  .footerTop {
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: auto;
-    gap: calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .footerWordmark {
-    width: 100%;
-    justify-content: flex-start;
-    min-height: auto;
   }
 }
 
@@ -572,20 +539,6 @@
     justify-content: center;
     text-align: center;
   }
-
-  .footer {
-    padding: calc(var(--gs-n-56) * var(--gs-px)) calc(var(--gs-n-20) * var(--gs-px));
-    gap: calc(var(--gs-n-56) * var(--gs-px));
-  }
-
-  .footerColTitle {
-    font-size: var(--gs-text-4xl-size);
-    line-height: var(--gs-text-4xl-leading);
-  }
-
-  .footerSocial {
-    gap: calc(var(--gs-n-32) * var(--gs-px));
-  }
 }
 
 @media (max-width: 560px) {
@@ -600,31 +553,6 @@
   .contactHeadline {
     font-size: clamp(24px, 8vw, 36px);
   }
-
-  .contactCta {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .footerMark {
-    width: calc(var(--gs-n-124) * var(--gs-px));
-    height: calc(var(--gs-n-116) * var(--gs-px));
-  }
-
-  .footerColTitle {
-    font-size: var(--gs-text-3xl-size);
-    line-height: var(--gs-text-3xl-leading);
-  }
-
-  .footerCol {
-    gap: calc(var(--gs-n-20) * var(--gs-px));
-    padding-inline: 0;
-  }
-
-  .footerSocial {
-    justify-content: flex-start;
-    gap: calc(var(--gs-n-24) * var(--gs-px));
-  }
 }
 
 @media (max-width: 420px) {
@@ -634,10 +562,5 @@
 
   .contactSection {
     padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-56) * var(--gs-px));
-  }
-
-  .footer {
-    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
-    gap: calc(var(--gs-n-40) * var(--gs-px));
   }
 }

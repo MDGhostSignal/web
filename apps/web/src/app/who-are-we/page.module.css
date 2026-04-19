@@ -689,18 +689,31 @@
   .floatingCloud {
     animation: none !important;
   }
+
   .cloud1 { top: 10%; left: 5%; opacity: 0.2; transform: scale(1); }
+
   .cloud2 { top: 40%; left: 60%; opacity: 0.15; transform: scaleX(-1) scale(0.6); }
+
   .cloud3 { top: 25%; left: 30%; opacity: 0.15; transform: scale(0.35); }
+
   .cloud4 { top: 35%; left: 50%; opacity: 0.1; transform: scaleX(-1) scale(0.5); }
+
   .cloud5 { top: 20%; left: 15%; opacity: 0.08; transform: scale(0.25); }
+
   .heroCloud1 { top: 5%; left: 10%; opacity: 0.18; transform: scale(0.85); }
+
   .heroCloud2 { top: 35%; left: 55%; opacity: 0.14; transform: scaleX(-1) scale(0.55); }
+
   .heroCloud3 { top: 20%; left: 25%; opacity: 0.12; transform: scale(1); }
+
   .heroCloud4 { top: 30%; left: 45%; opacity: 0.08; transform: scaleX(-1) scale(0.4); }
+
   .heroCloud5 { top: 15%; left: 70%; opacity: 0.06; transform: scale(0.25); }
+
   .promiseCloud1 { top: 10%; left: 15%; opacity: 0.15; transform: scale(1); }
+
   .promiseCloud2 { top: 45%; left: 55%; opacity: 0.12; transform: scaleX(-1) scale(0.6); }
+
   .promiseCloud3 { top: 70%; left: 25%; opacity: 0.1; transform: scale(0.35); }
 }
 
@@ -1337,10 +1350,6 @@
     grid-template-columns: repeat(4, 1fr);
     gap: calc(var(--gs-n-24) * var(--gs-px));
   }
-
-  .footer {
-    padding: calc(var(--gs-n-96) * var(--gs-px));
-  }
 }
 
 @media (max-width: 1024px) {
@@ -1381,35 +1390,6 @@
   .promiseImageWrapper:last-of-type {
     order: 3;
   }
-
-  .footerNav {
-    grid-template-columns: 1fr;
-    row-gap: calc(var(--gs-n-32) * var(--gs-px));
-  }
-
-  .footer {
-    padding: calc(var(--gs-n-64) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .footerTop,
-  .footerNav,
-  .footerMorse,
-  .footerSocial {
-    width: 100%;
-  }
-
-  .footerTop {
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: auto;
-    gap: calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .footerWordmark {
-    width: 100%;
-    justify-content: flex-start;
-    min-height: auto;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1430,10 +1410,6 @@
     width: calc(var(--gs-n-40, 40) * var(--gs-px));
   }
 
-  .heroLogoWordmark {
-    width: clamp(140px, 40vw, 200px);
-  }
-
   .heroHeadline {
     font-size: clamp(28px, 7vw, 48px);
   }
@@ -1451,10 +1427,6 @@
 
   .missionText {
     font-size: var(--gs-text-lg-size);
-  }
-
-  .teamHeadline {
-    font-size: clamp(24px, 6vw, 36px);
   }
 
   .foundersGrid {
@@ -1482,20 +1454,6 @@
 
   .modalLinkedIn {
     align-self: flex-start;
-  }
-
-  .footer {
-    padding: calc(var(--gs-n-56) * var(--gs-px)) calc(var(--gs-n-20) * var(--gs-px));
-    gap: calc(var(--gs-n-56) * var(--gs-px));
-  }
-
-  .footerColTitle {
-    font-size: var(--gs-text-4xl-size);
-    line-height: var(--gs-text-4xl-leading);
-  }
-
-  .footerSocial {
-    gap: calc(var(--gs-n-32) * var(--gs-px));
   }
 }
 
@@ -1540,26 +1498,6 @@
   .promiseCard {
     padding: calc(var(--gs-n-24) * var(--gs-px));
   }
-
-  .footerMark {
-    width: calc(var(--gs-n-124) * var(--gs-px));
-    height: calc(var(--gs-n-116) * var(--gs-px));
-  }
-
-  .footerColTitle {
-    font-size: var(--gs-text-3xl-size);
-    line-height: var(--gs-text-3xl-leading);
-  }
-
-  .footerCol {
-    gap: calc(var(--gs-n-20) * var(--gs-px));
-    padding-inline: 0;
-  }
-
-  .footerSocial {
-    justify-content: flex-start;
-    gap: calc(var(--gs-n-24) * var(--gs-px));
-  }
 }
 
 @media (max-width: 420px) {
@@ -1569,10 +1507,5 @@
 
   .hero {
     padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
-  }
-
-  .footer {
-    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
-    gap: calc(var(--gs-n-40) * var(--gs-px));
   }
 }

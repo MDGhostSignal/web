@@ -464,48 +464,11 @@
   .heroHeadline {
     font-size: clamp(32px, 5.5vw, 60px);
   }
-
-  .ctaHeadline {
-    font-size: clamp(24px, 3.5vw, 42px);
-  }
-
-  .footer {
-    padding: calc(var(--gs-n-96) * var(--gs-px));
-  }
 }
 
 @media (max-width: 1024px) {
   .page {
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
-
-  .footerNav {
-    grid-template-columns: 1fr;
-    row-gap: calc(var(--gs-n-32) * var(--gs-px));
-  }
-
-  .footer {
-    padding: calc(var(--gs-n-64) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .footerTop,
-  .footerNav,
-  .footerMorse,
-  .footerSocial {
-    width: 100%;
-  }
-
-  .footerTop {
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: auto;
-    gap: calc(var(--gs-n-24) * var(--gs-px));
-  }
-
-  .footerWordmark {
-    width: 100%;
-    justify-content: flex-start;
-    min-height: auto;
   }
 }
 
@@ -542,10 +505,6 @@
     font-size: clamp(24px, 6vw, 36px);
   }
 
-  .formRow {
-    flex-direction: column;
-  }
-
   .formButton {
     width: 100%;
   }
@@ -562,24 +521,6 @@
   .descriptionHighlight {
     font-size: var(--gs-text-xl-size);
     line-height: 1.5;
-  }
-
-  .ctaHeadline {
-    font-size: clamp(22px, 5vw, 36px);
-  }
-
-  .footer {
-    padding: calc(var(--gs-n-56) * var(--gs-px)) calc(var(--gs-n-20) * var(--gs-px));
-    gap: calc(var(--gs-n-56) * var(--gs-px));
-  }
-
-  .footerColTitle {
-    font-size: var(--gs-text-4xl-size);
-    line-height: var(--gs-text-4xl-leading);
-  }
-
-  .footerSocial {
-    gap: calc(var(--gs-n-32) * var(--gs-px));
   }
 }
 
@@ -613,26 +554,6 @@
   .descriptionHighlight {
     font-size: var(--gs-text-lg-size);
   }
-
-  .footerMark {
-    width: calc(var(--gs-n-124) * var(--gs-px));
-    height: calc(var(--gs-n-116) * var(--gs-px));
-  }
-
-  .footerColTitle {
-    font-size: var(--gs-text-3xl-size);
-    line-height: var(--gs-text-3xl-leading);
-  }
-
-  .footerCol {
-    gap: calc(var(--gs-n-20) * var(--gs-px));
-    padding-inline: 0;
-  }
-
-  .footerSocial {
-    justify-content: flex-start;
-    gap: calc(var(--gs-n-24) * var(--gs-px));
-  }
 }
 
 @media (max-width: 420px) {
@@ -642,10 +563,5 @@
 
   .hero {
     padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad);
-  }
-
-  .footer {
-    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
-    gap: calc(var(--gs-n-40) * var(--gs-px));
   }
 }
