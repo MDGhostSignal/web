@@ -59,6 +59,7 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | `179ffef` | Enable AVIF + 1-week cache TTL; add `sizes` to hero `<Image fill>` |
 | `c0058d0` | Complete sitemap + per-page metadata + OG defaults |
 | `e0915b2` | Change home hero video `preload` from `"auto"` to `"metadata"` |
+| `8f8d33d` | A11y: global reduced-motion fallback, founders modal dialog semantics, radio fieldset |
 
 ## What was removed
 
@@ -231,6 +232,46 @@ All 3 errors and 9 warnings resolved. Notable:
   for this audit.
 - **Route renaming** (`for-advertisers`, `get-in-touch`) left alone
   per your instruction; those pages stand as-is.
+
+## Accessibility pass (round 4)
+
+One final, targeted a11y pass — only things that ship user-visible
+improvements:
+
+- **Reduced-motion fallback in `globals.css`** — a single
+  `prefers-reduced-motion: reduce` block that zeroes out animation and
+  transition durations across the whole app. The WebGL canvases
+  already honour the preference via `startFullscreenShader`'s
+  `respectReducedMotion`; this catches the CSS keyframes and
+  GSAP-driven motion that weren't gated.
+- **Founders modal** (`/who-are-we`) now behaves like a real dialog:
+  `role="dialog"`, `aria-modal="true"`, `aria-labelledby` pointing
+  at the founder's name (which got an id), Escape key closes it,
+  and the close button auto-focuses on open so keyboard users aren't
+  stranded on the card behind it. The inner portrait `<Image>` drops
+  its redundant name-as-alt (the dialog label already provides it)
+  and the close icon's `<svg>` is marked `aria-hidden`.
+- **"Podcast or Advertiser?" radio group** on `/get-in-touch` is now
+  a real `<fieldset>` with `<legend>` instead of a `<span>` over two
+  radios. Screen readers now announce the group label with each
+  choice automatically.
+
+## What's intentionally *not* in this audit
+
+After weighing reward-to-risk, a few flagged items were explicitly
+left alone:
+
+- **`EarthGlobe` / `ScrollScenes` WebGL helper migration.** They layer
+  textures, mouse state, and scroll-driven uniforms on top of the base
+  pattern; savings are small (~100 LOC) and regression surface large.
+- **Lossless PNG/JPG re-encoding.** `next/image` already transcodes
+  everything to AVIF+WebP at request time, so users never see the
+  originals. Optimising source files would save repo bytes only.
+- **Transcoding the 25 MB hero MP4.** This is the single biggest
+  remaining perf lever, but `ffmpeg` isn't available in the audit
+  sandbox. Needs to be done on your local machine (or CloudFlare
+  Stream / Mux). A well-encoded cloud loop at 1080p should land at
+  2–5 MB; recommend when you have a moment.
 
 ## Outstanding action on your side
 
