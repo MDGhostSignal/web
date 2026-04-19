@@ -26,6 +26,8 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | External-CDN runtime calls | 3 (unpkg × 3) | 0 |
 | CSS module total LOC | ~9,705 | ~8,140 (−16 %) |
 | npm packages installed | baseline | **−72 packages** |
+| Largest source file | `rq-quiz/page.tsx` 960 LOC | 660 LOC (split into 3 files) |
+| TypeScript `any` usages | — | 0 |
 
 ## Commits (in order)
 
@@ -43,6 +45,9 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | `3ab7660` | Self-host the Spline viewer script |
 | `aab6caa` | Prune 235 orphaned rules from page-level CSS modules |
 | `e16f304` | Prune orphaned mobile-menu rules from SiteHeader |
+| `1db933f` | Extend pruner to global CSS; drop 3 stale rq-quiz rules |
+| `20a5b85` | Extract ResultsScreen from rq-quiz/page.tsx (982 → 742 LOC) |
+| `ea05d1f` | Extract IntroStep (742 → 660 LOC) |
 
 ## What was removed
 
@@ -155,17 +160,25 @@ All 3 errors and 9 warnings resolved. Notable:
   Spline viewer landing there, linting 2.2 MB of minified JS produced
   5 000+ junk warnings.
 
+## Extended optimization phase (addressed after first post-log)
+
+- **rq-quiz/page.tsx decomposed.** 982 → 660 LOC. The results screen
+  moved to `ResultsScreen.tsx` (337 LOC), the welcome / research
+  screen to `IntroStep.tsx` (123 LOC). Inside ResultsScreen, the three
+  near-identical "Axis 1/2/3" blocks collapsed into one
+  `<AxisExplanation>` driven by a three-entry `AXES` config, so the
+  axis template now lives exactly once. Behaviour preserved.
+- **`rq-quiz.css` global pruner.** Extended
+  `scripts/prune-unused-css.mjs` with a `mode: "global"` for plain CSS
+  (kebab-case classes referenced via `className="…"`). It recognises
+  string-literal, ={"…"}, and template-literal class attributes, and
+  accepts per-target `assumeUsedPrefixes` for dynamic patterns (e.g.
+  `rq-axis-*`, `rq-clarity-*`). After all that care, only 3 rules
+  were genuinely dead (stale @media overrides for removed elements);
+  those were removed.
+
 ## What was **not** touched (still flagged)
 
-- **`rq-quiz/page.tsx` is still 960 LOC in one file.** Breaking it
-  into an `<IntroStep>`, `<QuestionStep>`, `<ResultsScreen>` trio is
-  a genuine refactor that needs a proper regression plan; skipped to
-  keep this audit's blast radius contained.
-- **`rq-quiz.css` (plain CSS, kebab-case classes) — 131 selectors.**
-  The pruner doesn't handle kebab-case plain CSS, and the rq-quiz
-  page uses dynamic className concatenation in a few places, so
-  automatic cleanup would risk false positives. Worth a targeted
-  follow-up.
 - **`EarthGlobe.tsx` (514 LOC) and `ScrollScenes.tsx` (693 LOC)**
   share WebGL setup boilerplate but have very different fragment
   shaders. Unification would save ~100 LOC at best and carries real
@@ -174,6 +187,11 @@ All 3 errors and 9 warnings resolved. Notable:
   `TaskDetailPanel`, `BrandedGhostSignal`) were intentionally excluded
   from the pruner — the tool doesn't model template-literal class
   access and would produce false positives there.
+- **Large media in `public/`** — `desktopblankcloud2.mp4` (25 MB) and
+  a few raster PNGs/JPGs over 2 MB each are the biggest files shipped.
+  Converting to WebP / re-encoding the video would be a real perf win
+  but needs tooling (sharp, ffmpeg) and visual sign-off; out of scope
+  for this audit.
 - **Route renaming** (`for-advertisers`, `get-in-touch`) left alone
   per your instruction; those pages stand as-is.
 
