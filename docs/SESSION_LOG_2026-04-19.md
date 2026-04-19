@@ -1,7 +1,9 @@
 # Session Log — 2026-04-19
 
 Full-codebase audit + optimization pass on `apps/web/`. 26 commits
-between the `pre-audit-2026-04-19` and `post-audit-2026-04-19` tags.
+between the `pre-audit-2026-04-19` and `post-audit-2026-04-19` tags,
+plus a first installment of the design-system primitives library
+(one post-audit commit) and a push to `origin/main`.
 
 ## Outcomes
 
@@ -28,6 +30,24 @@ between the `pre-audit-2026-04-19` and `post-audit-2026-04-19` tags.
   `EarthGlobe` / `ScrollScenes` deliberately stay on their bespoke
   implementations.
 - Duplicated `navLinks` unified into `lib/nav.ts`.
+
+### Design system — first primitive (post-audit, commit `f831b1d`)
+- New `src/components/ui/` folder with a `<Button>` primitive backed
+  by `Button.module.css`. Four variants: `primary` (dark uppercase
+  pill, replaces the copy-pasted `.primaryButton` on three pages),
+  `secondary` (replaces `.pitchCta` on `/for-advertisers`), `pill`
+  (homepage style, ready for the `.ctaButton` migration), and
+  `ghost`. Polymorphic — renders as `<button>`, `<Link>`, or
+  `<a target="_blank">` based on props. Mobile full-width at
+  ≤ 420 px is baked in, replacing the per-page media-query overrides
+  that used to name each button class.
+- Migrated `/for-creators`, `/who-are-we`, `/for-advertisers` to
+  use `<Button>`. Net: three duplicated `.primaryButton` rules and
+  one `.pitchCta` rule removed, along with their responsive
+  overrides. `<Section>`, `<Container>`, `<Card>` primitives were
+  deliberately **not** built in this pass — they need a design
+  decision on canonical max-widths / card styles before they
+  deliver value over what they cost in abstraction.
 
 ### Performance
 - Hero video transcoded: 25 MB → 1.69 MB WebM (−93 %) + 2.97 MB MP4
@@ -122,7 +142,12 @@ between the `pre-audit-2026-04-19` and `post-audit-2026-04-19` tags.
 ## Restore points
 
 - `pre-audit-2026-04-19` (commit `9354b11`) — rollback target.
-- `post-audit-2026-04-19` (commit `d758c59`) — final state.
+- `post-audit-2026-04-19` (commit `d758c59`) — end of the audit phase.
+- `origin/main` — 28 audit commits + session log + `<Button>` primitive
+  all pushed (`9d50c83` then `f831b1d`). `main` now tracks
+  `origin/main`; previously it tracked the abandoned `old-origin/main`
+  (`MDDMUC/ghostsignal`), which is 174 commits behind and not being
+  pushed to anymore.
 
 Roll back everything: `git reset --hard pre-audit-2026-04-19`.
 
