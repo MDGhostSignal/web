@@ -1,14 +1,14 @@
 # Audit Post-Log — 2026-04-19
 
-Companion to `AUDIT_PRELOG_2026-04-19.md`. Records what the audit actually
-changed and the final state of the codebase.
+Companion to `AUDIT_PRELOG_2026-04-19.md`. Records what the audit
+actually changed and the final state of the codebase.
 
 ## Restore points
 
 | Tag | Purpose | Commit |
 |-----|---------|--------|
 | `pre-audit-2026-04-19` | State **before** any audit change | `9354b11` |
-| *(post-log commit)* | State **after** the audit | this commit |
+| `post-audit-2026-04-19` | Final state | this commit |
 
 Rollback: `git reset --hard pre-audit-2026-04-19`.
 
@@ -18,151 +18,177 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 |-------|----------------|--------------|
 | `npm run typecheck` | ✅ pass | ✅ pass |
 | `npm run lint` | ❌ 3 errors / 9 warnings | ✅ 0 errors / 0 warnings |
-| `npm run assets:audit` | ✅ 47 assets | ✅ 41 assets |
+| `npm run assets:audit` | ✅ 47 assets | ✅ 43 assets |
 | `npm run build` | ✅ 22 static pages | ✅ 21 static pages (home-future gone) |
-| `.next/static` size | ~3.3 MB | **~2.3 MB (-30%)** |
-| npm packages installed | (baseline) | **–72 packages** |
+| `.next/static` size | ~3.3 MB | ~2.4 MB (−27 %) |
+| Lottie JSON on initial page chunk | ~940 KB bundled | 0 KB (fetched lazily) |
+| Inter font fetches | 2× (duplicate) | 1× |
+| External-CDN runtime calls | 3 (unpkg × 3) | 0 |
+| CSS module total LOC | ~9,705 | ~8,140 (−16 %) |
+| npm packages installed | baseline | **−72 packages** |
 
 ## Commits (in order)
 
 | Commit | What it does |
 |--------|--------------|
-| `9354b11` | Restore point + `test-email.mjs` sanitised (Resend key removed from working tree) |
-| `85cc28e` | `docs/AUDIT_INVENTORY.md` — read-only repo map |
+| `9354b11` | Pre-audit restore point + `test-email.mjs` sanitized |
+| `85cc28e` | `AUDIT_INVENTORY.md` (read-only) |
 | `5f179a0` | Delete dead code + 10 unused npm deps |
 | `b8abc22` | Fix all ESLint errors / warnings |
 | `9f18d03` | Extract email templates out of `api/rq-submissions/route.ts` |
-| `62ad440` | Load Inter once; self-host Earth topology texture |
+| `62ad440` | Load Inter once; self-host Earth texture |
 | `d25aeef` | Lazy-fetch Lottie JSON (~940 KB out of initial bundle) |
+| `8401559` | First post-log (superseded by this file) |
+| `6a1e5c4` | Dynamic-import heavy WebGL backgrounds |
+| `3ab7660` | Self-host the Spline viewer script |
+| `aab6caa` | Prune 235 orphaned rules from page-level CSS modules |
+| `e16f304` | Prune orphaned mobile-menu rules from SiteHeader |
 
 ## What was removed
 
-### Dead files (no inbound imports)
+### Dead files (zero inbound imports)
 
 - `src/app/home-future/` — parked alternate homepage (page + 939-LOC CSS).
 - `src/app/rq-quiz/VolumetricFog.tsx` (482 LOC).
 - `src/app/rq-quiz/LiquidBackground.tsx` (596 LOC).
 - `src/app/rq-quiz/rq-index-old.css`.
 - `src/components/SpinningLogo3D.tsx` + module.
-- `src/components/GhostSignalLiquidWordmark.tsx` (710 LOC — only used by
-  home-future).
+- `src/components/GhostSignalLiquidWordmark.tsx` (710 LOC — only used
+  by home-future).
 - `src/motion/RotateOnScroll.tsx`, `AccordionHeight.tsx`,
   `SmoothScrollLenis.tsx`, `ScrollGrowToContainer.tsx`,
   `ScrollGrowDockPin.tsx`.
 
-Net: **~5,000 LOC of dead source** removed from `apps/web/src/`. Updated
-`AGENTS.md` and `docs/MOTTO_MOTION_LIBRARY.md` so their component tables
-match what actually exists.
+Net: **~5,000 LOC of dead source** removed from `apps/web/src/`.
+Updated `AGENTS.md` and `docs/MOTTO_MOTION_LIBRARY.md` so their
+component tables match what actually exists.
 
-### Dead npm dependencies (zero imports found via grep)
+### Dead npm dependencies
 
 `three`, `@react-three/fiber`, `@react-three/drei`,
 `@react-three/postprocessing`, `postprocessing`,
 `@splinetool/react-spline`, `class-variance-authority`, `clsx`,
-`tailwind-merge`, `lenis`. 72 transitive packages also removed.
+`tailwind-merge`, `lenis`. 72 transitive packages also dropped.
 
-The surprise here: `EarthGlobe` and `ScrollScenes` use **hand-written
-WebGL shaders**, not three.js. And `SplineEmbed` loads the Spline viewer
-as a `<Script>`-based web component, not via the React wrapper. So the
-advertised stack and the actual runtime stack had drifted.
+Key discovery: `EarthGlobe` and `ScrollScenes` use hand-written WebGL
+shaders (not three.js), and `SplineEmbed` loads the Spline viewer as a
+Web-Component script (not via the React wrapper). The declared stack
+and the actual runtime stack had drifted apart.
+
+### Orphaned CSS
+
+247 rules removed across 7 CSS modules. Most were left-over footer
+styling (after `Footer.tsx` was extracted) and a legacy mobile-menu
+that no longer exists in `SiteHeader.tsx`. Added
+`apps/web/scripts/prune-unused-css.mjs` as a repeatable tool; it's
+conservative (only removes rules whose selector list references only
+unused locally-defined classes, never touches `@keyframes`, tag
+selectors, or selectors chaining into unknown/external classes).
 
 ## What was refactored
 
 ### 1. Email templates extracted
 
 `src/app/api/rq-submissions/route.ts` went from **921 → 238 LOC** by
-moving `sendUserSummaryEmail`, `sendNotificationEmail`, and the `escapeHtml`
-helper into `emails.ts` in the same folder. Byte-for-byte identical
-output — pure move, no rewrite of the HTML itself.
+moving `sendUserSummaryEmail`, `sendNotificationEmail`, and the
+`escapeHtml` helper into `emails.ts` in the same folder. Byte-for-byte
+identical output — pure move, no rewrite of the HTML.
 
 ### 2. Font loading — Inter loaded once
 
-`app/layout.tsx` was calling `Inter()` twice (once for `--font-heading`,
-once for `--font-body`) with identical subsets and weights. Consolidated
-into a single call and updated `globals.css` + `tokens.css` so
-`--font-display` aliases `--font-body` directly. Also added
-`display: "swap"` so rendering isn't blocked by the font fetch.
+`app/layout.tsx` was instantiating `Inter()` twice with identical
+subsets and weights. Consolidated into one call and updated the two
+places in CSS (`globals.css`, `tokens.css`) where `--font-display`
+aliased a now-redundant `--font-heading` variable. Added
+`display: "swap"` so paint isn't blocked on the font fetch.
 
 ### 3. Earth texture self-hosted
 
-`EarthGlobe.tsx` and `ScrollScenes.tsx` were fetching the Earth-topology
-PNG from `unpkg.com/three-globe@2.31.0/…` at runtime — a live third-party
-CDN dependency with no SRI. Copied the 378 KB PNG into
-`public/images/globe/` and pointed both components at the local path.
+`EarthGlobe.tsx` and `ScrollScenes.tsx` pulled the topology PNG from
+`unpkg.com/three-globe` at runtime. Copied the 378 KB PNG into
+`public/images/globe/` and updated both components to use the local
+path — removes a third-party CDN dependency with no SRI.
 
-### 4. Lottie JSON lazy-fetched
+### 4. Spline viewer self-hosted
 
-`/for-creators` and `/for-advertisers` each had `import creators.json`
-(470 KB each) baked into the route's client chunk. Added a tiny
-`components/LazyLottie.tsx` that fetches the JSON on mount, and wired
-both pages to use it. ~940 KB of JSON moves out of the initial bundle
-into a cacheable runtime fetch.
+`SplineEmbed.tsx` loaded `@splinetool/viewer@1.12.79/build/spline-viewer.js`
+from `unpkg.com` via `<Script strategy="lazyOnload">`. Pinned that
+version into `public/vendor/spline/spline-viewer-1.12.79.js` (2.2 MB)
+and switched the src. Still lazy-loaded, but now served from our own
+origin with normal caching.
 
-### 5. Lint debt cleared
+### 5. Lottie JSON lazy-fetched
 
-All 3 errors and 9 warnings resolved — see commit `b8abc22` for the
-full list. Notable fixes:
+`/for-creators` and `/for-advertisers` each imported a ~470 KB Lottie
+JSON at build time, baking the entire animation payload into that
+route's initial JS chunk. Added a small `components/LazyLottie.tsx`
+that fetches the JSON on mount, and wired both pages to use it.
+~940 KB moves out of the initial bundle into a lazy, cacheable fetch.
 
-- `FoundersSection.tsx` — body-overflow lock moved out of click handlers
-  into a `useEffect`, satisfying React Compiler's immutability rule and
+### 6. Dynamic-imported heavy WebGL backgrounds
+
+Added `next/dynamic` (`ssr: false`) for purely-decorative WebGL
+canvases so they don't sit in each route's initial chunk:
+
+| Route | Deferred components |
+|-------|---------------------|
+| `/` | `FogOverlay` |
+| `/for-advertisers` | `StarFogBackground` |
+| `/what-is-this` | `ScrollScenes` (also transitively defers `EarthGlobe`) |
+| `/rq-quiz` | `SimpleFog`, `DesertFog`, `SnowAnimation` |
+
+`ssr: false` is safe here — none of these components contain
+SEO-relevant content; they're fullscreen animated backgrounds.
+
+### 7. Lint debt cleared
+
+All 3 errors and 9 warnings resolved. Notable:
+
+- `FoundersSection.tsx` body-overflow lock moved out of click handlers
+  into a `useEffect`, satisfying React Compiler immutability and
   restoring the previous overflow value on unmount.
-- `rq-quiz/page.tsx` — keyboard listener rewritten to bind once and read
-  the latest callbacks through refs, rather than rebinding on every
-  render.
+- `rq-quiz/page.tsx` keyboard listener rewritten to bind once and read
+  the latest callbacks through refs instead of rebinding per render.
 - Three raw `<img>` tags converted to `next/image` with appropriate
   `unoptimized` / `priority` flags.
+- ESLint now globally ignores `public/**` — with the self-hosted
+  Spline viewer landing there, linting 2.2 MB of minified JS produced
+  5 000+ junk warnings.
 
-## What was **not** touched (deferred, flagged for you)
+## What was **not** touched (still flagged)
 
-### Big-risk refactors
+- **`rq-quiz/page.tsx` is still 960 LOC in one file.** Breaking it
+  into an `<IntroStep>`, `<QuestionStep>`, `<ResultsScreen>` trio is
+  a genuine refactor that needs a proper regression plan; skipped to
+  keep this audit's blast radius contained.
+- **`rq-quiz.css` (plain CSS, kebab-case classes) — 131 selectors.**
+  The pruner doesn't handle kebab-case plain CSS, and the rq-quiz
+  page uses dynamic className concatenation in a few places, so
+  automatic cleanup would risk false positives. Worth a targeted
+  follow-up.
+- **`EarthGlobe.tsx` (514 LOC) and `ScrollScenes.tsx` (693 LOC)**
+  share WebGL setup boilerplate but have very different fragment
+  shaders. Unification would save ~100 LOC at best and carries real
+  visual risk; not done.
+- **CSS modules using dynamic `styles[`key_${x}`]`** (`design-tasks`,
+  `TaskDetailPanel`, `BrandedGhostSignal`) were intentionally excluded
+  from the pruner — the tool doesn't model template-literal class
+  access and would produce false positives there.
+- **Route renaming** (`for-advertisers`, `get-in-touch`) left alone
+  per your instruction; those pages stand as-is.
 
-- **`rq-quiz/page.tsx` is still 960 LOC in one file** — it's a genuinely
-  hard state machine (intro, 15 questions, results, email send). Breaking
-  it into an `<IntroStep>`, `<QuestionStep>`, `<ResultsScreen>` trio
-  would be valuable but needs deliberate planning; not worth doing
-  mid-audit without a clear regression plan.
-- **`who-are-we/page.module.css` is still 1,578 LOC.** Reading the page
-  structure, every wrapper I inspected has a CSS responsibility (absolute
-  positioning parents, noise-texture overlays, flex columns, etc.), so
-  the file isn't padded — it's doing real work. A proper CSS audit would
-  need visual coverage, not just a LOC count.
-- **`EarthGlobe.tsx` (514 LOC) and `ScrollScenes.tsx` (693 LOC) share a
-  lot of shader / loop code.** Unifying them into one WebGL core + two
-  thin wrappers is probably a day's work and needs visual verification
-  across three pages. Flagged, not done.
-- **Spline viewer is still loaded from unpkg** in `SplineEmbed.tsx`.
-  Self-hosting means pulling a 1.3 MB+ script and watching for Spline
-  version drift. Worth doing; needs a small decision from you first
-  (pin version and self-host, or add SRI and keep the CDN link).
+## Outstanding action on your side
 
-### Route naming
-
-Still not touched per your instruction: `/for-advertisers` and
-`/get-in-touch` are distinct from `/for-brands` / `/contact` canonical
-names in `PROJECT_INFO.md`. If "For Brands" is intended as a separate
-page (as you implied), that would be a net new page to design and add,
-not a rename.
-
-### Visual QA
-
-The audit did not run a dev-server walkthrough of every page, so I
-can't claim "visually identical" with certainty — only that no CSS
-selectors or DOM structure changed in the pages themselves. Recommend
-one manual pass across: `/`, `/for-creators`, `/for-advertisers`,
-`/what-is-this`, `/who-are-we`, `/get-in-touch`, `/snowdrift`,
-`/rq-quiz` before you consider the audit closed.
-
-## Security action (reminder)
-
-`apps/web/test-email.mjs` once contained a hard-coded Resend API key
-starting with `re_efqvYHZ7…`. The sanitised script is committed; the
-key was **never** pushed to GitHub (verified with `git log -S`). But
-because the key sat in a plaintext working-tree file and was seen by
-this audit session, it should still be rotated at
-`https://resend.com/api-keys`.
+- **Rotate the Resend API key.** `apps/web/test-email.mjs` once held a
+  hard-coded key (`re_efqvYHZ7…`). The sanitized script is committed;
+  the key was never pushed to GitHub (verified with `git log -S`), but
+  because it sat in a plaintext working-tree file it should be
+  rotated at `https://resend.com/api-keys`.
+- **Dev-server walkthrough** across every page to confirm no visual
+  regression. The audit did not run a browser walkthrough.
 
 ---
 
-End of post-log. The audit is in a stable state: all checks green,
-every change is isolated in its own commit, and the `pre-audit-2026-04-19`
-tag is still the one-command rollback.
+End of post-log. All checks green. Every change is isolated in its
+own commit and the `pre-audit-2026-04-19` tag is still the one-command
+rollback.
