@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui";
 import { LazyLottie } from "@/components/LazyLottie";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ParallaxBackground } from "@/components/ParallaxBackground";
@@ -225,9 +226,7 @@ export default function ForCreatorsPage() {
                 </ScrollFadeUp>
               ))}
               <ScrollFadeUp index={4} duration={1.6}>
-                <Link href="/get-in-touch" className={styles.primaryButton}>
-                  Get In Touch
-                </Link>
+                <Button href="/get-in-touch">Get In Touch</Button>
               </ScrollFadeUp>
             </div>
             <div className={styles.featuresAnimation}>

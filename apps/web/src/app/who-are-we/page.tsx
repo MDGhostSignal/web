@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 
+import { Button } from "@/components/ui";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
@@ -310,9 +310,7 @@ export default function WhoAreWePage() {
           </ScrollFadeUp>
 
           <ScrollFadeUp index={8} duration={1.6}>
-            <Link href="/get-in-touch" className={styles.primaryButton}>
-              Find Your Frequency
-            </Link>
+            <Button href="/get-in-touch">Find Your Frequency</Button>
           </ScrollFadeUp>
         </div>
       </section>

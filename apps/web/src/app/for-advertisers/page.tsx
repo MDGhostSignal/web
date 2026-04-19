@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import Link from "next/link";
+import { Button } from "@/components/ui";
 import { LazyLottie } from "@/components/LazyLottie";
 
 import { SiteHeader } from "@/components/SiteHeader";
@@ -132,9 +132,7 @@ export default function ForAdvertisersPage() {
                 </ScrollFadeUp>
               ))}
               <ScrollFadeUp index={4} duration={1.6}>
-                <Link href="/get-in-touch" className={styles.primaryButton}>
-                  Find Your Frequency
-                </Link>
+                <Button href="/get-in-touch">Find Your Frequency</Button>
               </ScrollFadeUp>
             </div>
             <div className={styles.featuresAnimation}>
@@ -159,7 +157,7 @@ export default function ForAdvertisersPage() {
             </p>
           </ScrollFadeUp>
           <ScrollFadeUp index={1} duration={1.6}>
-            <Link href="/get-in-touch" className={styles.pitchCta}>
+            <Button variant="secondary" href="/get-in-touch">
               Find Your Frequency
               <Image
                 src="/images/home/icon-arrow-right.svg"
@@ -168,7 +166,7 @@ export default function ForAdvertisersPage() {
                 height={24}
                 className={styles.ctaArrow}
               />
-            </Link>
+            </Button>
           </ScrollFadeUp>
         </div>
       </section>
@@ -208,9 +206,7 @@ export default function ForAdvertisersPage() {
             </ScrollFadeUp>
 
             <ScrollFadeUp index={5} duration={1.6}>
-              <Link href="/get-in-touch" className={styles.primaryButton}>
-                Find Your Frequency
-              </Link>
+              <Button href="/get-in-touch">Find Your Frequency</Button>
             </ScrollFadeUp>
           </div>
 

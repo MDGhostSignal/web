@@ -1,0 +1,116 @@
+/*
+ * Shared button primitive. All variants share the same layout + type
+ * treatment; only colour + border-radius + hover effect differ.
+ * Values mirror the per-page .primaryButton / .pitchCta / .ctaButton
+ * styles that used to be copy-pasted into each page.module.css.
+ */
+
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition:
+    background 200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+.root:disabled,
+.root[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Sizes ---------------------------------------------------------------- */
+
+.md {
+  padding: calc(var(--gs-n-18) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+  font-size: var(--gs-text-lg-size);
+  line-height: var(--gs-text-lg-leading);
+}
+
+.sm {
+  padding: calc(var(--gs-n-12) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
+  font-size: var(--gs-text-base-size);
+  line-height: var(--gs-text-base-leading);
+}
+
+/* Variants ------------------------------------------------------------- */
+
+/* primary — dark, uppercase, small radius (used on inner pages). */
+.primary {
+  color: var(--gs-tw-white);
+  background: var(--gs-tw-gray-950);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--gs-tw-gray-800);
+  transform: translateY(-2px);
+}
+
+/* secondary — inverted primary (white with dark text), matches the
+ * hero-pitch CTA on /for-advertisers. */
+.secondary {
+  color: var(--gs-tw-gray-950);
+  background: var(--gs-tw-white);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* pill — white, fully rounded, bigger and floatier; used on the
+ * homepage hero. */
+.pill {
+  color: #0a0a0b;
+  background: #ffffff;
+  border-radius: calc(var(--gs-radius-full, 9999) * var(--gs-px));
+  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+}
+
+.pill:hover:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.15);
+}
+
+.pill:active {
+  transform: translateY(0);
+}
+
+/* ghost — text-only, no background. Useful for inline secondary
+ * actions like "Back" or "Cancel". */
+.ghost {
+  color: var(--gs-foreground);
+  background: transparent;
+  padding: calc(var(--gs-n-12) * var(--gs-px)) calc(var(--gs-n-16) * var(--gs-px));
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+}
+
+.ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Mobile — buttons stack full-width at narrow viewports (mirrors the
+ * per-page responsive overrides that used to target .primaryButton /
+ * .pitchCta / etc.). */
+@media (max-width: 420px) {
+  .root {
+    width: 100%;
+  }
+}

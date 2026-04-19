@@ -231,28 +231,6 @@
   color: var(--gs-tw-gray-600);
 }
 
-.primaryButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--gs-n-18) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-white);
-  background: var(--gs-tw-gray-950);
-  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: background 200ms ease, transform 200ms ease;
-}
-
-.primaryButton:hover {
-  background: var(--gs-tw-gray-800);
-  transform: translateY(-2px);
-}
 
 /* =============================================================================
    MEMBERSHIP JOURNEY SECTION

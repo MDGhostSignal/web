@@ -216,29 +216,6 @@
   color: var(--gs-tw-gray-600);
 }
 
-.primaryButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--gs-n-18) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-white);
-  background: var(--gs-tw-gray-950);
-  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: background 200ms ease, transform 200ms ease;
-}
-
-.primaryButton:hover {
-  background: var(--gs-tw-gray-800);
-  transform: translateY(-2px);
-}
-
 /* =============================================================================
    PITCH SECTION - Image Grid with Overlay
    ============================================================================= */
@@ -305,37 +282,16 @@
   max-width: calc(var(--gs-n-640, 640) * var(--gs-px));
 }
 
-.pitchCta {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--gs-n-12) * var(--gs-px));
-  margin-top: calc(var(--gs-n-16) * var(--gs-px));
-  padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-medium);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
-  color: var(--gs-tw-gray-950);
-  background: var(--gs-tw-white);
-  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: background 200ms ease, transform 200ms ease;
-}
-
-.pitchCta:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
-}
-
+/* .pitchCta now comes from <Button variant="secondary" />. The arrow
+ * icon inside it keeps a small translate-on-hover effect targeted at
+ * the shared Button root. */
 .ctaArrow {
   width: calc(var(--gs-n-24) * var(--gs-px));
   height: calc(var(--gs-n-24) * var(--gs-px));
   transition: transform 200ms ease;
 }
 
-.pitchCta:hover .ctaArrow {
+.pitchSection :global(a):hover .ctaArrow {
   transform: translateX(4px);
 }
 
@@ -830,11 +786,6 @@
     font-size: 36px;
   }
 
-  .primaryButton,
-  .pitchCta {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 @media (max-width: 420px) {
