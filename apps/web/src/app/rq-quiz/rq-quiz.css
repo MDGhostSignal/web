@@ -1454,10 +1454,6 @@ html:has(.rq-results-page) {
     padding: 12px 12px 12px 14px;
   }
 
-  .rq-intro-collapsible-header > span:first-child {
-    font-size: 13px;
-  }
-
   .rq-intro-collapsible p {
     font-size: 13px;
   }
@@ -1472,14 +1468,6 @@ html:has(.rq-results-page) {
 
   .rq-intro-link {
     font-size: 13px;
-  }
-
-  .rq-results-card {
-    padding: 32px 20px;
-  }
-
-  .rq-profile-section {
-    padding-left: 16px;
   }
 
   .rq-nav-buttons {

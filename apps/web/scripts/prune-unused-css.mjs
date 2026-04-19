@@ -16,13 +16,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoWeb = path.resolve(__dirname, "..");
 
 /**
- * Map of CSS module path -> list of tsx files that consume it.
+ * Map of CSS file path -> list of tsx files that consume it.
  *
- * Note on dynamic access: this pruner captures `styles.foo` and
- * `styles["foo"]` but NOT template-literal access like
- * `styles[`priority_${x}`]`. For CSS modules that use that pattern
- * (design-tasks, TaskDetailPanel, BrandedGhostSignal's variant keys),
- * don't add them here — they'd produce false-positive removals.
+ * `mode: "module"` (default) — treats the file as a CSS Module and
+ *   looks for `styles.foo` and `styles["foo"]` in the tsx files.
+ * `mode: "global"` — treats the file as plain (global) CSS referenced
+ *   via string-literal `className="foo"` tokens; also recognises
+ *   template-literal `className={`...${x}...`}` and (per the target's
+ *   `assumeUsedPrefixes` list) whitelists any class name that starts
+ *   with a given prefix so dynamic-prefix patterns don't false-positive.
+ *
+ * Note on dynamic access for modules: this pruner doesn't model
+ * template-literal `styles[`priority_${x}`]`, so modules that rely on
+ * that (design-tasks, TaskDetailPanel, BrandedGhostSignal's variant
+ * keys) aren't listed here.
  */
 const targets = [
   {
@@ -53,18 +60,76 @@ const targets = [
     css: "src/app/snowdrift/page.module.css",
     tsx: ["src/app/snowdrift/page.tsx"],
   },
+  {
+    css: "src/app/rq-quiz/rq-quiz.css",
+    mode: "global",
+    tsx: [
+      "src/app/rq-quiz/page.tsx",
+      "src/app/rq-quiz/DesertFog.tsx",
+      "src/app/rq-quiz/SimpleFog.tsx",
+      "src/app/rq-quiz/SnowAnimation.tsx",
+      "src/components/rq/ChoiceQuestion.tsx",
+      "src/components/rq/ScaleQuestion.tsx",
+      "src/components/rq/TextInput.tsx",
+      "src/components/rq/TextArea.tsx",
+      "src/components/rq/MorseProgress.tsx",
+      "src/components/rq/RQResultsGraph.tsx",
+      "src/components/rq/RQRadarChart.tsx",
+    ],
+    // The quiz page uses dynamic classnames like `rq-axis-*`, `rq-clarity-*`
+    // built from RQ result data, so keep anything under these prefixes.
+    assumeUsedPrefixes: ["rq-clarity-", "rq-axis-", "rq-spectrum-"],
+  },
 ];
 
-function classesUsedInTsx(files) {
+/** Extract class names referenced by a CSS Module consumer tsx. */
+function classesUsedAsStyles(src) {
+  const used = new Set();
+  // styles.xxx
+  for (const m of src.matchAll(/\bstyles\.([A-Za-z0-9_]+)/g)) used.add(m[1]);
+  // styles["xxx"] or styles['xxx']
+  for (const m of src.matchAll(/\bstyles\[['"]([A-Za-z0-9_-]+)['"]\]/g)) used.add(m[1]);
+  return used;
+}
+
+/** Extract class-name tokens appearing inside className=..., used for
+ *  global stylesheets (kebab-case class names referenced as string
+ *  literals). */
+function classesUsedAsClassName(src) {
+  const used = new Set();
+
+  // className="foo bar baz"
+  for (const m of src.matchAll(/\bclassName\s*=\s*"([^"]*)"/g)) {
+    for (const tok of m[1].split(/\s+/)) if (tok) used.add(tok);
+  }
+  // className={'foo bar'} or ={"foo bar"}
+  for (const m of src.matchAll(/\bclassName\s*=\s*\{\s*['"]([^'"]*)['"]\s*\}/g)) {
+    for (const tok of m[1].split(/\s+/)) if (tok) used.add(tok);
+  }
+  // className={`a b ${x} c d`} — grab all static tokens from template
+  // literals, discarding the interpolations themselves.
+  for (const m of src.matchAll(/\bclassName\s*=\s*\{\s*`([^`]*)`\s*\}/g)) {
+    const literalOnly = m[1].replace(/\$\{[^}]*\}/g, " ");
+    for (const tok of literalOnly.split(/\s+/)) if (tok) used.add(tok);
+  }
+  // Loose fallback for tokens inside larger template-literal class
+  // expressions (e.g. inside ternaries): scan the full source for
+  // kebab-case identifiers that look like CSS class names.
+  for (const m of src.matchAll(/["'`]([a-z][a-z0-9-]{2,})["'`]/g)) {
+    if (/^[a-z]+(-[a-z0-9]+)+$/.test(m[1])) used.add(m[1]);
+  }
+  return used;
+}
+
+function classesUsedInTsx(files, mode) {
   const used = new Set();
   for (const rel of files) {
     const p = path.join(repoWeb, rel);
     if (!fs.existsSync(p)) continue;
     const src = fs.readFileSync(p, "utf8");
-    // styles.xxx
-    for (const m of src.matchAll(/\bstyles\.([A-Za-z0-9_]+)/g)) used.add(m[1]);
-    // styles["xxx"] or styles['xxx']
-    for (const m of src.matchAll(/\bstyles\[['"]([A-Za-z0-9_-]+)['"]\]/g)) used.add(m[1]);
+    const subset =
+      mode === "global" ? classesUsedAsClassName(src) : classesUsedAsStyles(src);
+    for (const c of subset) used.add(c);
   }
   return used;
 }
@@ -289,8 +354,18 @@ for (const target of targets) {
     continue;
   }
   const src = fs.readFileSync(cssPath, "utf8");
-  const used = classesUsedInTsx(target.tsx);
-  const { output, removedSelectors } = pruneCss(src, used);
+  const mode = target.mode ?? "module";
+  const used = classesUsedInTsx(target.tsx, mode);
+  // Whitelist: anything under an "assume-used" prefix survives.
+  const prefixes = target.assumeUsedPrefixes ?? [];
+  const isUsed = (cls) => {
+    if (used.has(cls)) return true;
+    return prefixes.some((p) => cls.startsWith(p));
+  };
+  const usedSetWithPrefixes = {
+    has: (cls) => isUsed(cls),
+  };
+  const { output, removedSelectors } = pruneCss(src, usedSetWithPrefixes);
   totalRemoved += removedSelectors;
   totalBytesBefore += src.length;
   totalBytesAfter += output.length;
