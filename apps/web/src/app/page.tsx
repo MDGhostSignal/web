@@ -33,7 +33,7 @@ export default function LegacyHomePage() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           disablePictureInPicture
         />
         <div className={styles.cloudOverlay} />
