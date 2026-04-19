@@ -131,6 +131,7 @@ export default function WhatIsThisPage() {
             src="/images/what-is-this/top.jpg"
             alt="GhostSignal values-based advertising"
             fill
+            sizes="(max-width: 900px) 100vw, 50vw"
             className={styles.splitHeroImage}
             priority
           />
