@@ -25,6 +25,7 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | Inter font fetches | 2× (duplicate) | 1× |
 | External-CDN runtime calls | 3 (unpkg × 3) | 0 |
 | Home hero video preload | `auto` (~25 MB) | `metadata` (~tens of KB) |
+| Home hero video size | 25 MB (H.264 @ 10 Mbps) | 1.7 MB WebM / 3 MB MP4 (−93 % / −88 %) |
 | Image formats served | WebP | **AVIF + WebP** |
 | CSS module total LOC | ~9,705 | ~8,140 (−16 %) |
 | npm packages installed | baseline | **−72 packages** |
@@ -60,6 +61,7 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | `c0058d0` | Complete sitemap + per-page metadata + OG defaults |
 | `e0915b2` | Change home hero video `preload` from `"auto"` to `"metadata"` |
 | `8f8d33d` | A11y: global reduced-motion fallback, founders modal dialog semantics, radio fieldset |
+| `27268e9` | Transcode hero video — 25 MB → 1.7 MB WebM + 3 MB MP4 fallback |
 
 ## What was removed
 
@@ -267,11 +269,12 @@ left alone:
 - **Lossless PNG/JPG re-encoding.** `next/image` already transcodes
   everything to AVIF+WebP at request time, so users never see the
   originals. Optimising source files would save repo bytes only.
-- **Transcoding the 25 MB hero MP4.** This is the single biggest
-  remaining perf lever, but `ffmpeg` isn't available in the audit
-  sandbox. Needs to be done on your local machine (or CloudFlare
-  Stream / Mux). A well-encoded cloud loop at 1080p should land at
-  2–5 MB; recommend when you have a moment.
+- **Hero video transcode — done in-place.** Used a temporary install
+  of `ffmpeg-static` (via `--no-save`, so it isn't in `package.json`)
+  to produce a 1.7 MB VP9 WebM and a 3 MB H.264 MP4 fallback. The
+  `<video>` element now lists them as two `<source>` tags so browsers
+  pick the format they can decode. Original 25 MB MP4 deleted from
+  the working tree; recoverable from git history if ever needed.
 
 ## Outstanding action on your side
 
