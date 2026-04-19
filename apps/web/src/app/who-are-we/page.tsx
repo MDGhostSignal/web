@@ -28,8 +28,9 @@ const promises = [
 ] as const;
 
 export const metadata = {
-  title: "Who Are We | GhostSignal",
-  description: "GHOSTSignal is a partner-making force. We believe the future of advertising is soulful.",
+  title: "Who Are We",
+  description:
+    "GhostSignal is a partner-making force. We believe the future of advertising is soulful.",
 };
 
 export default function WhoAreWePage() {

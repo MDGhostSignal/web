@@ -16,8 +16,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ghost Signal",
-  description: "High-performance website with cinematic visuals.",
+  title: {
+    default: "GhostSignal — Values-based partnerships for podcasters and advertisers",
+    template: "%s | GhostSignal",
+  },
+  description:
+    "GhostSignal is a values-based podcast advertising network. We create partnerships between creators and brands who share soul — so every ad feels like an extension of the mission, not an interruption.",
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
+    : undefined,
+  openGraph: {
+    type: "website",
+    siteName: "GhostSignal",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

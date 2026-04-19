@@ -9,8 +9,9 @@ import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
 
 export const metadata = {
-  title: "SnowDrift | Signals from the Future",
-  description: "A monthly transmission for creators and brands building in the new age of value-based advertising — where meaning matters more than reach.",
+  title: "Snowdrift — Signals from the Future",
+  description:
+    "A monthly transmission for creators and brands building in the new age of value-based advertising — where meaning matters more than reach.",
 };
 
 export default function SnowdriftPage() {
