@@ -1,10 +1,17 @@
 "use client";
 
 import { useRef } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 
 import { SiteHeader } from "@/components/SiteHeader";
-import { ScrollScenes } from "@/components/ScrollScenes";
+// ScrollScenes pulls in a custom WebGL globe + ring system (~700 LOC of
+// shader and JS). Defer it off the initial route chunk — the globe only
+// becomes visible well below the fold anyway.
+const ScrollScenes = dynamic(
+  () => import("@/components/ScrollScenes").then((m) => m.ScrollScenes),
+  { ssr: false },
+);
 import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { Footer } from "@/components/Footer";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";

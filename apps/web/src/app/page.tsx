@@ -1,11 +1,15 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
-import FogOverlay from "./FogOverlay";
+
+// FogOverlay is a purely decorative WebGL layer — load it after the page
+// has hydrated so it doesn't block the hero's initial paint.
+const FogOverlay = dynamic(() => import("./FogOverlay"), { ssr: false });
 
 import styles from "./page.module.css";
 

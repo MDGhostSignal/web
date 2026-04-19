@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { MorseProgress } from "@/components/rq/MorseProgress";
 import { ScaleQuestion } from "@/components/rq/ScaleQuestion";
@@ -8,9 +9,16 @@ import { ChoiceQuestion } from "@/components/rq/ChoiceQuestion";
 import { TextInput } from "@/components/rq/TextInput";
 import { TextArea } from "@/components/rq/TextArea";
 import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
-import SimpleFog from "./SimpleFog";
-import DesertFog from "./DesertFog";
-import { SnowAnimation } from "./SnowAnimation";
+
+// Fog/snow backgrounds are purely decorative WebGL canvases. Load them
+// on the client after hydration so they don't slow the first render of
+// the quiz form.
+const SimpleFog = dynamic(() => import("./SimpleFog"), { ssr: false });
+const DesertFog = dynamic(() => import("./DesertFog"), { ssr: false });
+const SnowAnimation = dynamic(
+  () => import("./SnowAnimation").then((m) => m.SnowAnimation),
+  { ssr: false },
+);
 import { computeRQ, computeSignalClarity, type RQAnswers, type RQResult, type SignalClarity } from "@/lib/rq/scoring";
 import { BRAND } from "@/lib/rq/constants";
 import "./rq-quiz.css";

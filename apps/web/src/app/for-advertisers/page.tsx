@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { LazyLottie } from "@/components/LazyLottie";
@@ -12,7 +13,10 @@ import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
-import StarFogBackground from "./StarFogBackground";
+// Heavy WebGL background — keep it off the initial chunk.
+const StarFogBackground = dynamic(() => import("./StarFogBackground"), {
+  ssr: false,
+});
 import styles from "./page.module.css";
 
 const navLinks = [
