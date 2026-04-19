@@ -11,16 +11,7 @@ import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
 import styles from "./page.module.css";
-
-const navLinks = [
-  { href: "/what-is-this", label: "What is this" },
-  { href: "/for-creators", label: "For Creators" },
-  { href: "/for-advertisers", label: "For Advertisers" },
-  { href: "/who-are-we", label: "Who Are We" },
-  { href: "/snowdrift", label: "SNOWDRIFT" },
-  { href: "/rq-quiz", label: "RQ Quiz" },
-  { href: "/get-in-touch", label: "Get In Touch" },
-] as const;
+import { navLinks } from "@/lib/nav";
 
 const features = [
   {
