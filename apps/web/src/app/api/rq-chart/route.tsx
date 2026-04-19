@@ -44,11 +44,6 @@ export async function GET(request: NextRequest) {
   const authPos = polarToCartesian(scoreToRadius(authScore), 30);
   const horizonPos = polarToCartesian(scoreToRadius(horizonScore), 150);
 
-  // Label positions (further out)
-  const valuesLabelPos = polarToCartesian(maxRadius + 50, 270);
-  const authLabelPos = polarToCartesian(maxRadius + 50, 30);
-  const horizonLabelPos = polarToCartesian(maxRadius + 50, 150);
-
   // Colors
   const accentColor = "#FBAD25";
   const activeTextColor = "#c4880d";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import styles from "./page.module.css";
@@ -49,14 +49,21 @@ type Founder = (typeof founders)[number];
 export function FoundersSection() {
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null);
 
+  useEffect(() => {
+    if (!selectedFounder) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [selectedFounder]);
+
   const openModal = (founder: Founder) => {
     setSelectedFounder(founder);
-    document.body.style.overflow = "hidden";
   };
 
   const closeModal = () => {
     setSelectedFounder(null);
-    document.body.style.overflow = "";
   };
 
   return (

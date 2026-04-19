@@ -129,8 +129,8 @@ export async function GET() {
       }
     );
 
-    let commentCounts: Record<string, number> = {};
-    let latestCommentAt: Record<string, string> = {};
+    const commentCounts: Record<string, number> = {};
+    const latestCommentAt: Record<string, string> = {};
 
     if (commentsResponse.ok) {
       const comments = await commentsResponse.json();

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import * as React from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { MorseProgress } from "@/components/rq/MorseProgress";
 import { ScaleQuestion } from "@/components/rq/ScaleQuestion";
 import { ChoiceQuestion } from "@/components/rq/ChoiceQuestion";
@@ -374,7 +374,7 @@ export default function RQIndexPage() {
   const [statusVisible, setStatusVisible] = useState(true);
 
   // Fade out status notification after 10 seconds
-  React.useEffect(() => {
+  useEffect(() => {
     if (submitStatus && submitStatus.type === "success") {
       const timer = setTimeout(() => {
         setStatusVisible(false);
@@ -419,20 +419,26 @@ export default function RQIndexPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  // Keyboard navigation
-  React.useEffect(() => {
+  // Keyboard navigation — bind once, read latest callbacks via refs so the
+  // listener doesn't need to rebind on every render.
+  const canProceedRef = useRef(canProceed);
+  const handleNextRef = useRef(handleNext);
+  canProceedRef.current = canProceed;
+  handleNextRef.current = handleNext;
+
+  useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (canProceed()) {
-          handleNext();
+        if (canProceedRef.current()) {
+          handleNextRef.current();
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentStep, form, result, submitting]);
+  }, []);
 
   const handleSubmit = async () => {
     // Count "No preference" from choice questions only
@@ -521,7 +527,7 @@ export default function RQIndexPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         setSubmitStatus({
           type: "success",
           message: "Your RQ Index has been emailed to you.",
@@ -788,10 +794,13 @@ export default function RQIndexPage() {
                   mike@ghostsignal.cloud
                 </a>
                 <a href="mailto:mike@ghostsignal.cloud" className="rq-founder-card">
-                  <img
+                  <Image
                     src="/images/brand/GS-EmailSignatures-mikew.gif"
                     alt="Mike Sense - Co-Founder, Vision & Partnerships"
                     className="rq-founder-image"
+                    width={640}
+                    height={180}
+                    unoptimized
                   />
                 </a>
               </aside>
@@ -803,10 +812,12 @@ export default function RQIndexPage() {
                 <SnowAnimation />
               </div>
               <div className="rq-snowdrift-content">
-                <img
+                <Image
                   src="/images/brand/snowdrift-logo-white.png"
                   alt="Snowdrift"
                   className="rq-snowdrift-logo-large"
+                  width={400}
+                  height={120}
                 />
                 <p className="rq-snowdrift-description">
                   <span className="rq-snowdrift-tagline">Snowdrift is a <span className="gs-brand"><span className="gs-brand-ghost">GHOST</span><span className="gs-brand-signal">Signal</span></span> transmission.</span>
@@ -849,10 +860,13 @@ export default function RQIndexPage() {
               <div className="rq-intro-liquid-bg" aria-hidden="true">
                 <SimpleFog />
               </div>
-              <img
+              <Image
                 src="/images/brand/brandmark-vert-white.svg"
                 alt="GhostSignal"
                 className="rq-brand-logo"
+                width={309}
+                height={263}
+                priority
               />
               <h1 className="rq-intro-title">
                 Welcome<br />
@@ -861,10 +875,10 @@ export default function RQIndexPage() {
               </h1>
               <p className="rq-intro-description">
                 {currentStepData.description?.split('\n').map((line, i) => (
-                  <React.Fragment key={i}>
+                  <Fragment key={i}>
                     {line}
                     {i < (currentStepData.description?.split('\n').length || 0) - 1 && <br />}
-                  </React.Fragment>
+                  </Fragment>
                 ))}
               </p>
 
