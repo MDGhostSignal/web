@@ -69,6 +69,24 @@ body.is-head-active .js-sh-main-link[data-sh-role="hide"] {
   a {
     @apply text-foreground;
   }
+
+  /*
+   * Respect the user's OS-level reduced-motion preference across the
+   * whole app. GSAP timelines driven by ScrollTrigger, any CSS keyframes,
+   * and smooth-scroll interactions fall back to instantaneous transitions.
+   * Components that need a subtle animation even under reduced-motion
+   * (e.g. a loading spinner) must opt out with their own media query.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @media (max-width: 991px) {

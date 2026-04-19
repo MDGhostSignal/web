@@ -51,10 +51,17 @@ export function FoundersSection() {
 
   useEffect(() => {
     if (!selectedFounder) return;
-    const previous = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedFounder(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedFounder]);
 
@@ -148,10 +155,12 @@ export function FoundersSection() {
         </div>
       </div>
 
-      {/* Modal */}
       {selectedFounder && (
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="founder-modal-title"
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
@@ -159,6 +168,7 @@ export function FoundersSection() {
               className={styles.modalClose}
               onClick={closeModal}
               aria-label="Close modal"
+              autoFocus
             >
               <svg
                 width="24"
@@ -169,6 +179,7 @@ export function FoundersSection() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
@@ -179,13 +190,15 @@ export function FoundersSection() {
               <div className={styles.modalHeader}>
                 <Image
                   src={selectedFounder.image}
-                  alt={selectedFounder.name}
+                  alt=""
                   width={80}
                   height={100}
                   className={styles.modalAvatar}
                 />
                 <div className={styles.modalInfo}>
-                  <h3 className={styles.modalName}>{selectedFounder.name}</h3>
+                  <h3 id="founder-modal-title" className={styles.modalName}>
+                    {selectedFounder.name}
+                  </h3>
                   <p className={styles.modalRole}>{selectedFounder.role}</p>
                   <p className={styles.modalLocation}>{selectedFounder.location}</p>
                 </div>

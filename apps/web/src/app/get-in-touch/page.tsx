@@ -176,8 +176,8 @@ export default function GetInTouchPage() {
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <span className={styles.formLabel}>Podcast or Advertiser?</span>
+                <fieldset className={styles.formGroup}>
+                  <legend className={styles.formLabel}>Podcast or Advertiser?</legend>
                   <div className={styles.radioGroup}>
                     <label className={styles.radioLabel}>
                       <input
@@ -200,7 +200,7 @@ export default function GetInTouchPage() {
                       <span className={styles.radioText}>Advertiser</span>
                     </label>
                   </div>
-                </div>
+                </fieldset>
 
                 <div className={styles.formGroup}>
                   <label htmlFor="website" className={styles.formLabel}>Your Website</label>
