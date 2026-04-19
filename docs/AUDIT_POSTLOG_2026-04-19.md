@@ -24,9 +24,15 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | Lottie JSON on initial page chunk | ~940 KB bundled | 0 KB (fetched lazily) |
 | Inter font fetches | 2× (duplicate) | 1× |
 | External-CDN runtime calls | 3 (unpkg × 3) | 0 |
+| Home hero video preload | `auto` (~25 MB) | `metadata` (~tens of KB) |
+| Image formats served | WebP | **AVIF + WebP** |
 | CSS module total LOC | ~9,705 | ~8,140 (−16 %) |
 | npm packages installed | baseline | **−72 packages** |
 | Largest source file | `rq-quiz/page.tsx` 960 LOC | 660 LOC (split into 3 files) |
+| Duplicated `navLinks` copies | 6 | 1 (shared) |
+| WebGL-setup boilerplate copies | 6 | 0 (+1 helper module) |
+| Sitemap routes | 1 (homepage only) | 8 public routes |
+| Pages with per-page metadata | 3 | all 7 public pages |
 | TypeScript `any` usages | — | 0 |
 
 ## Commits (in order)
@@ -48,6 +54,11 @@ Rollback: `git reset --hard pre-audit-2026-04-19`.
 | `1db933f` | Extend pruner to global CSS; drop 3 stale rq-quiz rules |
 | `20a5b85` | Extract ResultsScreen from rq-quiz/page.tsx (982 → 742 LOC) |
 | `ea05d1f` | Extract IntroStep (742 → 660 LOC) |
+| `c132fd6` | Extract duplicated `navLinks` into a single shared module |
+| `4125ff3` | Extract WebGL fullscreen-shader boilerplate into `lib/webgl.ts`; migrate 4 components |
+| `179ffef` | Enable AVIF + 1-week cache TTL; add `sizes` to hero `<Image fill>` |
+| `c0058d0` | Complete sitemap + per-page metadata + OG defaults |
+| `e0915b2` | Change home hero video `preload` from `"auto"` to `"metadata"` |
 
 ## What was removed
 
@@ -176,13 +187,39 @@ All 3 errors and 9 warnings resolved. Notable:
   `rq-axis-*`, `rq-clarity-*`). After all that care, only 3 rules
   were genuinely dead (stale @media overrides for removed elements);
   those were removed.
+- **Duplicate `navLinks` unified.** The identical 9-line nav array
+  was copy-pasted into all six public page files. Moved to
+  `src/lib/nav.ts`; 60 → 17 LOC across seven files.
+- **WebGL boilerplate helper.** Each decorative WebGL background was
+  hand-rolling ~80 LOC of shader compile / program link / quad buffer
+  / resize / rAF / cleanup. Extracted to
+  `src/lib/webgl.ts::startFullscreenShader` and migrated
+  `FogOverlay`, `DesertFog`, `SimpleFog`, `StarFogBackground` (1,211
+  → 829 LOC in the components). `EarthGlobe` and `ScrollScenes` stay
+  on their bespoke implementations — textures, multi-uniform,
+  scroll-driven state made the payoff-to-risk less clear there.
+- **SEO repaired.** `sitemap.ts` only listed the homepage; expanded
+  to all seven public routes with proper `changeFrequency` /
+  `priority`. Root `layout.tsx` got a real value-prop description,
+  a `title.template` so every page gets "| GhostSignal" for free,
+  and OG / Twitter defaults. Added `layout.tsx` metadata for
+  `/for-creators`, `/what-is-this`, `/get-in-touch`, `/rq-quiz`.
+- **Image optimizer config.** Enabled AVIF + WebP in `next.config.ts`
+  (AVIF is 30-50 % smaller than WebP for photos), raised
+  `minimumCacheTTL` to a week, and added `sizes` to the only
+  `<Image fill>` so it stops generating unused srcset widths.
+- **Hero video preload fix.** The 25 MB home-hero MP4 was loading
+  with `preload="auto"`, dragging the whole file onto the initial
+  page load. Switched to `preload="metadata"` — the browser now
+  fetches just enough to start autoplay, nothing else.
 
 ## What was **not** touched (still flagged)
 
-- **`EarthGlobe.tsx` (514 LOC) and `ScrollScenes.tsx` (693 LOC)**
-  share WebGL setup boilerplate but have very different fragment
-  shaders. Unification would save ~100 LOC at best and carries real
-  visual risk; not done.
+- **`EarthGlobe.tsx` and `ScrollScenes.tsx`** were not migrated to
+  `startFullscreenShader` because they layer texture loading,
+  mouse/scroll state, and velocity/friction on top of the base WebGL
+  pattern. The savings would be smaller and the regression surface
+  larger.
 - **CSS modules using dynamic `styles[`key_${x}`]`** (`design-tasks`,
   `TaskDetailPanel`, `BrandedGhostSignal`) were intentionally excluded
   from the pruner — the tool doesn't model template-literal class
