@@ -82,7 +82,7 @@ export default function SplineEmbed({ scene }: SplineEmbedProps) {
     <div ref={wrapperRef} className={styles.splineWrapper}>
       <Script
         type="module"
-        src="https://unpkg.com/@splinetool/viewer@1.12.79/build/spline-viewer.js"
+        src="/vendor/spline/spline-viewer-1.12.79.js"
         strategy="lazyOnload"
       />
       {/* @ts-expect-error - spline-viewer is a custom element */}

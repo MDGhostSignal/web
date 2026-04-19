@@ -4,7 +4,7 @@ import Lottie from "lottie-react";
 import { useEffect, useState } from "react";
 
 type LazyLottieProps = {
-  /** Public path to the Lottie JSON (e.g. "/images/x/animation.json"). */
+  /** Public path to the Lottie JSON file. */
   src: string;
   loop?: boolean;
   autoplay?: boolean;
