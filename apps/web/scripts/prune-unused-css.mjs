@@ -15,8 +15,20 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoWeb = path.resolve(__dirname, "..");
 
-/** Map of CSS module path -> list of tsx files that consume it. */
+/**
+ * Map of CSS module path -> list of tsx files that consume it.
+ *
+ * Note on dynamic access: this pruner captures `styles.foo` and
+ * `styles["foo"]` but NOT template-literal access like
+ * `styles[`priority_${x}`]`. For CSS modules that use that pattern
+ * (design-tasks, TaskDetailPanel, BrandedGhostSignal's variant keys),
+ * don't add them here — they'd produce false-positive removals.
+ */
 const targets = [
+  {
+    css: "src/components/SiteHeader.module.css",
+    tsx: ["src/components/SiteHeader.tsx"],
+  },
   {
     css: "src/app/who-are-we/page.module.css",
     tsx: ["src/app/who-are-we/page.tsx", "src/app/who-are-we/FoundersSection.tsx", "src/app/who-are-we/SplineEmbed.tsx"],
