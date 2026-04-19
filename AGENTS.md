@@ -165,11 +165,6 @@ This repo includes a **Motto-inspired motion library** (GSAP + ScrollTrigger pat
 | `SplitLinesReveal` | Text line-by-line reveal on scroll | Headings, quotes |
 | `ScrollFadeUp` | Fade + slide up on scroll | Cards, paragraphs |
 | `ParallaxY` | Vertical parallax effect | Background layers |
-| `RotateOnScroll` | Rotation on scroll | Icons, decorations |
-| `ScrollGrowDockPin` | Pin + scale + dock to target | Hero media |
-| `ScrollGrowToContainer` | Scale to container width | Media sections |
-| `AccordionHeight` | Collapsible height animation | FAQs, dropdowns |
-| `SmoothScrollLenis` | Smooth scroll wrapper | App root |
 
 ### Quick Usage
 

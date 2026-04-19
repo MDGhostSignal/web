@@ -37,10 +37,8 @@ These are directly observed in their minified bundle. Numbers/eases below reflec
   - `fromTo(el, { y: from }, { y: to, ease:"none", scrollTrigger:{ trigger: parent, scrub:true } })`
 - **Scrubbed parallax yPercent (hero)** → (planned) `ParallaxYPercent`
   - Example in their code: `.js-p-hero` `yPercent: 0 → 25`, `scrub:true`, `start:"top top"`
-- **Scrubbed rotation** → `RotateOnScroll`
-  - `fromTo(el, { rotation:0 }, { rotation:-270, ease:"none", scrub:true })`
-- **Accordion/dropdown height tween** → `AccordionHeight`
-  - Timeline defaults `duration:.5`, `ease:"expo.inOut"` and `height: 0 → auto`
+- **Scrubbed rotation** → (not currently implemented; add back as `RotateOnScroll` if a design calls for it)
+- **Accordion/dropdown height tween** → (not currently implemented; add back as `AccordionHeight` if needed)
 - **Mobile menu open** → (planned) `MobileMenuReveal`
   - Overlay `yPercent` in from `[-100, 100]` to `0`
   - Borders scaleX `0 → 1` with `duration:1.25`, `stagger:.075`, `ease:"expo"`
@@ -96,89 +94,11 @@ import { ParallaxY } from "@/motion/ParallaxY";
 </ParallaxY>
 ```
 
-### `RotateOnScroll`
-
-Motto pattern:
-`rotation: 0` → `rotation: -270`, `ease:"none"`, `scrub:true`.
-
-Usage:
-
-```tsx
-import { RotateOnScroll } from "@/motion/RotateOnScroll";
-
-<RotateOnScroll>
-  <svg>{/* ... */}</svg>
-</RotateOnScroll>
-```
-
-### `AccordionHeight`
-
-Motto pattern:
-height tween `0` → `auto` using a timeline with `duration: .5`, `ease: "expo.inOut"`.
-
-Usage:
-
-```tsx
-import { AccordionHeight } from "@/motion/AccordionHeight";
-
-<AccordionHeight summary="Open">
-  <div>Content</div>
-</AccordionHeight>
-```
-
-### `SmoothScrollLenis`
-
-Wraps the app in a Lenis RAF loop.
-
-Usage:
-
-```tsx
-import { SmoothScrollLenis } from "@/motion/SmoothScrollLenis";
-
-<SmoothScrollLenis>
-  {children}
-</SmoothScrollLenis>
-```
-
-### `ScrollGrowToContainer`
-
-Motto-style “screen grows on scroll” behavior:
-- Starts scaled down
-- Scrubs up to a computed scale that matches the container width (measured at refresh time)
-- Optionally pins the wrapper while scaling
-
-Usage:
-
-```tsx
-import { ScrollGrowToContainer } from "@/motion/ScrollGrowToContainer";
-
-<ScrollGrowToContainer pin start="top center" end="+=140%">
-  <div>{/* image/video */}</div>
-</ScrollGrowToContainer>
-```
-
-### `ScrollGrowDockPin`
-
-Motto-like “screen grows, then docks into a new position” (single element):
-- Pin the media while scrubbing
-- Grow towards the container width
-- Then shrink + move into a dock target element
-- Remains pinned at that docked position while scrolling through the section
-
-Usage:
-
-```tsx
-import { ScrollGrowDockPin } from "@/motion/ScrollGrowDockPin";
-
-<ScrollGrowDockPin
-  dockTargetSelector="[data-gs-home-media-target]"
-  pinUntilSelector="[data-gs-home-harmony]"
-  start="top center"
-  dockAt="top center"
->
-  <div>{/* image/video */}</div>
-</ScrollGrowDockPin>
-```
+> **Removed primitives.** Earlier iterations also shipped `RotateOnScroll`,
+> `AccordionHeight`, `SmoothScrollLenis`, `ScrollGrowToContainer`, and
+> `ScrollGrowDockPin`. They had no active consumers as of the 2026-04-19
+> audit and were deleted. Re-add them if a future design genuinely needs
+> them — the Motto patterns they mirrored are still documented above.
 
 ---
 
