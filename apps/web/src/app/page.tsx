@@ -28,14 +28,18 @@ export default function LegacyHomePage() {
       <div className={styles.cloudBackground} aria-hidden="true">
         <video
           className={styles.cloudVideo}
-          src="/images/home/desktopblankcloud2.mp4"
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
           disablePictureInPicture
-        />
+        >
+          {/* VP9/WebM first (Chrome, Edge, Firefox) — ~1.7 MB. */}
+          <source src="/images/home/desktopblankcloud2.webm" type="video/webm" />
+          {/* H.264 MP4 fallback (Safari / older browsers) — ~3 MB. */}
+          <source src="/images/home/desktopblankcloud2-optimized.mp4" type="video/mp4" />
+        </video>
         <div className={styles.cloudOverlay} />
         <FogOverlay className={styles.fogOverlay} />
       </div>
