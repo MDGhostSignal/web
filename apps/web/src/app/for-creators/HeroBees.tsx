@@ -65,6 +65,10 @@ export default function HeroBees({
       jitterPhaseY: number;
       jitterRateX: number;
       jitterRateY: number;
+      // Hover bobble — high-freq y oscillation characteristic of
+      // bees holding station in mid-air.
+      bobPhase: number;
+      bobRate: number;
       // Follow rate — smaller = more lag behind cursor
       followRate: number;
       // Wing flap phase
@@ -77,14 +81,16 @@ export default function HeroBees({
     const bees: Bee[] = Array.from({ length: COUNT }, (_, i) => ({
       x: 0,
       y: 0,
-      baseRadius: 14 + i * 6, // 14, 20, 26, 32
+      baseRadius: 16 + i * 7, // 16, 23, 30, 37
       angleOffset: (i / COUNT) * Math.PI * 2,
-      angleSpeed: 1.1 + Math.random() * 0.9,
+      angleSpeed: 2.6 + Math.random() * 1.6,
       jitterPhaseX: Math.random() * Math.PI * 2,
       jitterPhaseY: Math.random() * Math.PI * 2,
-      jitterRateX: 6 + Math.random() * 4,
-      jitterRateY: 7 + Math.random() * 4,
-      followRate: 0.18 + i * 0.02,
+      jitterRateX: 8 + Math.random() * 5,
+      jitterRateY: 9 + Math.random() * 5,
+      bobPhase: Math.random() * Math.PI * 2,
+      bobRate: 13 + Math.random() * 6,
+      followRate: 0.24 + i * 0.03,
       wingPhase: Math.random() * Math.PI * 2,
       heading: 0,
     }));
@@ -139,19 +145,36 @@ export default function HeroBees({
       ctx.rotate(b.heading);
       ctx.globalAlpha = alpha;
 
-      // Wings — two ellipses above the body with a rapid flap
-      // scaling X width. shadowBlur gives them a motion-blurred
-      // read consistent with how real bee wings look in flight.
-      const flap = 0.55 + 0.45 * Math.abs(Math.sin(t * 26 + b.wingPhase));
-      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-      ctx.shadowBlur = 3;
-      ctx.shadowColor = "rgba(255, 255, 255, 0.75)";
+      // Wings are drawn BEFORE the body and extend perpendicular to
+      // the heading axis (one above, one below), anchored at the
+      // body centre-line. `flap` scales the wing's perpendicular
+      // radius from ~0.12 (edge-on mid-flap) to 1 (fully spread) —
+      // that full edge-on-to-spread sweep is what reads as flapping
+      // rather than crawling. Cycle is ~5 Hz; a whitish translucent
+      // fill + soft shadow gives the motion-blurred "haze of wings"
+      // look. Wings swept slightly back (rotated ~-0.25 rad) so they
+      // don't look like helicopter blades.
+      const flap = 0.12 + 0.88 * Math.abs(Math.sin(t * 34 + b.wingPhase));
+      const wingR = 3.6 * flap;
+
+      ctx.fillStyle = "rgba(235, 242, 255, 0.55)";
+      ctx.strokeStyle = "rgba(170, 190, 225, 0.7)";
+      ctx.lineWidth = 0.22;
+      ctx.shadowBlur = 3.5;
+      ctx.shadowColor = "rgba(255, 255, 255, 0.65)";
+
+      // Upper wing (-y side of body axis)
       ctx.beginPath();
-      ctx.ellipse(-0.6, -1.6, 2.4 * flap, 1.25, -0.25, 0, Math.PI * 2);
+      ctx.ellipse(-0.4, -wingR, 2.6, wingR, -0.22, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
+
+      // Lower wing (+y side)
       ctx.beginPath();
-      ctx.ellipse(0.6, -1.6, 2.4 * flap, 1.25, 0.25, 0, Math.PI * 2);
+      ctx.ellipse(-0.4, wingR, 2.6, wingR, 0.22, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
+
       ctx.shadowBlur = 0;
 
       // Abdomen + thorax: yellow oval with three dark vertical
@@ -203,12 +226,18 @@ export default function HeroBees({
         const orbitX = Math.cos(a) * b.baseRadius;
         const orbitY = Math.sin(a) * b.baseRadius * 0.75;
 
-        // Jitter — high-frequency darting so bees don't glide
-        const jitterX = Math.sin(tSec * b.jitterRateX + b.jitterPhaseX) * 4;
-        const jitterY = Math.cos(tSec * b.jitterRateY + b.jitterPhaseY) * 3;
+        // Jitter — high-frequency darting so bees don't glide.
+        const jitterX = Math.sin(tSec * b.jitterRateX + b.jitterPhaseX) * 5;
+        const jitterY = Math.cos(tSec * b.jitterRateY + b.jitterPhaseY) * 4;
+
+        // Hover bobble — fast vertical twitch at ~2 Hz. Real bees
+        // holding station bob on their wingbeats; without this the
+        // orbit path reads as a smooth glide (crawling) rather than
+        // hovering flight.
+        const bob = Math.sin(tSec * b.bobRate + b.bobPhase) * 1.8;
 
         const targetX = cursorX + orbitX + jitterX;
-        const targetY = cursorY + orbitY + jitterY;
+        const targetY = cursorY + orbitY + jitterY + bob;
 
         const prevX = b.x;
         const prevY = b.y;
@@ -254,6 +283,11 @@ export default function HeroBees({
         height: "100%",
         pointerEvents: "none",
         zIndex: 4,
+        // Single GPU-compositor blur over the whole canvas softens
+        // body outlines and smears the flapping wings into the
+        // motion-blur read a flying bee has on camera — much more
+        // than per-stroke shadowBlur alone can give.
+        filter: "blur(0.55px)",
       }}
     />
   );
