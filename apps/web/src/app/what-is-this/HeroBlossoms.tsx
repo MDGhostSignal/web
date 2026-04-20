@@ -46,6 +46,11 @@ export default function HeroBlossoms() {
       y: number;
       vx: number;
       vy: number;
+      // Baseline drift — what vx/vy relax back to after a cursor push, so
+      // pushed petals smoothly rejoin the natural fall instead of
+      // permanently changing course.
+      vx0: number;
+      vy0: number;
       r: number;
       alpha: number;
       rot: number;
@@ -58,11 +63,15 @@ export default function HeroBlossoms() {
 
     const spawn = (initial = false): Blossom => {
       const z = 0.25 + Math.random() * 0.75; // depth: 0 far, 1 near
+      const vx = (-0.22 + Math.random() * 0.44) * (0.6 + z);
+      const vy = (0.22 + Math.random() * 0.55) * (0.6 + z);
       return {
         x: Math.random() * width,
         y: initial ? Math.random() * height : -20,
-        vx: (-0.22 + Math.random() * 0.44) * (0.6 + z),
-        vy: (0.22 + Math.random() * 0.55) * (0.6 + z),
+        vx,
+        vy,
+        vx0: vx,
+        vy0: vy,
         r: 4.1 + z * 9.6,
         alpha: 0.18 + z * 0.35,
         rot: Math.random() * Math.PI * 2,
@@ -114,6 +123,30 @@ export default function HeroBlossoms() {
       return () => ro.disconnect();
     }
 
+    // Cursor repulsion. Canvas is pointer-events: none, so mousemove
+    // events never fire on it — listen on window and convert to canvas
+    // coords via getBoundingClientRect. Gated on fine pointer (no touch
+    // hover) and skipped under reduced motion.
+    const REPEL_RADIUS = 130;     // px — influence zone around the cursor
+    const REPEL_STRENGTH = 2.2;   // max impulse per frame at the cursor
+    const DAMP_TO_BASELINE = 0.03; // how fast pushed petals rejoin drift
+    let mouseX = -9999;
+    let mouseY = -9999;
+    const onMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    };
+    const clearMouse = () => {
+      mouseX = -9999;
+      mouseY = -9999;
+    };
+    if (!isCoarse) {
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseout", clearMouse);
+      window.addEventListener("blur", clearMouse);
+    }
+
     let last = performance.now();
     const targetFps = isCoarse ? 30 : 60;
     const frameInterval = 1000 / targetFps;
@@ -128,7 +161,29 @@ export default function HeroBlossoms() {
       if (acc < frameInterval) return;
       acc -= frameInterval;
 
+      const radiusSq = REPEL_RADIUS * REPEL_RADIUS;
       for (const b of blossoms) {
+        // Repulsion impulse when the cursor is within REPEL_RADIUS.
+        // Falloff is linear in distance so petals ease into motion
+        // instead of snapping once they cross the boundary.
+        const dx = b.x - mouseX;
+        const dy = b.y - mouseY;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < radiusSq && distSq > 0.01) {
+          const dist = Math.sqrt(distSq);
+          const falloff = (REPEL_RADIUS - dist) / REPEL_RADIUS;
+          const force = falloff * REPEL_STRENGTH;
+          b.vx += (dx / dist) * force;
+          b.vy += (dy / dist) * force;
+          // Nudge rotation so pushed petals tumble, not glide.
+          b.vr += falloff * 0.002 * (dx >= 0 ? 1 : -1);
+        }
+
+        // Spring-damp velocity back to the petal's baseline drift so
+        // the push decays smoothly rather than accumulating.
+        b.vx += (b.vx0 - b.vx) * DAMP_TO_BASELINE;
+        b.vy += (b.vy0 - b.vy) * DAMP_TO_BASELINE;
+
         b.x += b.vx;
         b.y += b.vy;
         b.rot += b.vr;
@@ -143,6 +198,11 @@ export default function HeroBlossoms() {
     return () => {
       cancelAnimationFrame(rafId);
       ro.disconnect();
+      if (!isCoarse) {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseout", clearMouse);
+        window.removeEventListener("blur", clearMouse);
+      }
     };
   }, []);
 

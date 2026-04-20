@@ -68,16 +68,10 @@
 
 .heroVideoWrapper {
   position: absolute;
-  /* Negative top offset nudges the scaled video upward on the vertical
-     axis without affecting the scale anchor. */
   top: -10%;
-  /* Shift the whole anchored video further left of the right edge so
-     it sits cleanly next to the headline. */
   right: calc(var(--gs-n-160, 160) * var(--gs-px));
-  width: 66.666%;
+  width: 60%;
   height: 100%;
-  transform: scale(0.66);
-  transform-origin: right center;
   z-index: 1;
   pointer-events: none;
 }
@@ -85,18 +79,16 @@
 .heroVideoTilt {
   width: 100%;
   height: 100%;
-  /* 2D transforms only. Any 3D transform (perspective / rotateX / rotateY)
-     on an ancestor of <video> causes Chromium to flatten the video into
-     a texture that only updates at recomposition cadence — the visible
-     result is jitter and freezing mid-hover. translate3d still runs on
-     the GPU without entering 3D-context territory. */
-  transform:
-    translate3d(
-      calc(var(--mx, 0) * 32px),
-      calc(var(--my, 0) * 26px),
-      0
-    )
-    rotate(calc(var(--mx, 0) * 1.4deg));
+  /* Pure translate3d. Any transform on an ancestor whose matrix changes
+     frame-to-frame (including a 2D rotate) causes Chromium to rebuild
+     the video's compositor layer intermittently — the visible result
+     is jitter and freezing mid-hover. Translation-only keeps the video
+     layer stable while the tilt still reads as motion. */
+  transform: translate3d(
+    calc(var(--mx, 0) * 32px),
+    calc(var(--my, 0) * 26px),
+    0
+  );
   transform-origin: center;
   will-change: transform;
 }
@@ -110,10 +102,11 @@
      pure black, so any letterbox gap just blends into the background. */
   object-fit: contain;
   object-position: center;
-  /* Promote the video onto its own compositor layer so its decoded
-     frames keep streaming while ancestor transforms change. */
+  /* translateZ(0) alone promotes the video onto its own compositor
+     layer. Avoid `will-change: transform` here — combined with the
+     promoted ancestor it causes Chromium to fold the layer back in
+     right as the ancestor transform updates, which shows as a freeze. */
   transform: translateZ(0);
-  will-change: transform;
 }
 
 .heroContent {

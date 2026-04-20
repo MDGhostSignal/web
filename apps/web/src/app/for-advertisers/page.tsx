@@ -137,10 +137,11 @@ export default function ForAdvertisersPage() {
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               disablePictureInPicture
               aria-hidden="true"
             >
+              <source src="/images/for-advertisers/loop5.webm" type="video/webm" />
               <source src="/images/for-advertisers/loop5.mp4" type="video/mp4" />
             </video>
           </div>
