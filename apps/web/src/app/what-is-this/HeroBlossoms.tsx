@@ -63,7 +63,7 @@ export default function HeroBlossoms() {
         y: initial ? Math.random() * height : -20,
         vx: (-0.22 + Math.random() * 0.44) * (0.6 + z),
         vy: (0.22 + Math.random() * 0.55) * (0.6 + z),
-        r: 6 + z * 14,
+        r: 4.1 + z * 9.6,
         alpha: 0.18 + z * 0.35,
         rot: Math.random() * Math.PI * 2,
         vr: -0.01 + Math.random() * 0.02,

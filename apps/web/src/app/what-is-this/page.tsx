@@ -46,17 +46,16 @@ export default function WhatIsThisPage() {
       scrub: 1,
     } as const;
 
-    // Video: parallax (y translates downward a little, so the video
-    // visually lags behind the scroll and "sticks" longer) + gradual
-    // fade with a gentle scale-up and blur to soften the dissolve.
+    // Video: opacity fade ONLY. Every other property (filter, transform,
+    // scale, y) has been removed after repeated Chromium decoder-stall
+    // freezes — the browser will happily composite an opacity-only layer
+    // while keeping the video decoder running. Parallax on the video is
+    // not worth a frozen loop.
     const videoTween = gsap.fromTo(
       video,
-      { opacity: 1, scale: 1, y: 0, filter: "blur(0px)" },
+      { opacity: 1 },
       {
         opacity: 0,
-        scale: 1.08,
-        y: 180,
-        filter: "blur(18px)",
         ease: "power1.inOut",
         scrollTrigger: trigger,
       },
@@ -83,7 +82,32 @@ export default function WhatIsThisPage() {
         )
       : null;
 
+    // Belt-and-suspenders looping. The `loop` attribute is the primary
+    // guarantee; these event listeners are safety-nets for cases where a
+    // browser pauses an autoplaying video (tab backgrounded, heavy
+    // scroll-fade blur, etc.). All wait for the video to be *ready* to
+    // play — we never force a seek mid-load or fight the initial
+    // buffering stage (an earlier attempt with a currentTime=0 watchdog
+    // created a reload loop before first frame ever arrived).
+    const ensurePlaying = () => {
+      if (video.readyState < 2) return; // not ready — let the browser load
+      void video.play().catch(() => {
+        /* autoplay rejection — ignore */
+      });
+    };
+    const onPause = () => ensurePlaying();
+    const onEnded = () => ensurePlaying();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") ensurePlaying();
+    };
+    video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onEnded);
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onEnded);
+      document.removeEventListener("visibilitychange", onVisibility);
       videoTween.scrollTrigger?.kill();
       videoTween.kill();
       textTween?.scrollTrigger?.kill();
@@ -338,10 +362,10 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
               <h2 className={styles.finalHeadline}>
                 <SplitLinesReveal duration={3.6} stagger={0.5} className={styles.headlineLine}>
-                  <span>This is the</span>
+                  <span>This is</span>
                 </SplitLinesReveal>
-                <SplitLinesReveal duration={3.6} stagger={0.5} className={styles.headlineLine}>
-                  <span>Signal</span>
+                <SplitLinesReveal duration={3.6} stagger={0.5} delay={0.6} className={styles.headlineLine}>
+                  <span>the signal</span>
                 </SplitLinesReveal>
               </h2>
               <ScrollFadeUp index={2} duration={1.6}>

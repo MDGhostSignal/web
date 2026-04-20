@@ -35,10 +35,12 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  /* Promote to its own compositor layer so frame decode stays smooth
-     and the scroll-driven opacity / scale / blur don't stall. */
-  transform: translateZ(0);
-  will-change: transform, opacity, filter;
+  /* Deliberately no CSS transform or filter here — any of those
+     triggers Chromium's "flatten video into static texture" behaviour
+     and the decoder stops advancing frames. `will-change: opacity`
+     alone is enough hint for the compositor to handle the scroll-
+     driven fade efficiently. */
+  will-change: opacity;
 }
 
 /* Text overlay — left half of the video, matching the original white
@@ -307,7 +309,7 @@
   top: 100vh;
   left: 50%;
   transform: translateX(-50%);
-  height: calc(93% - 200vh);
+  height: calc(83% - 200vh);
   z-index: 0;
   pointer-events: none;
   opacity: 0.6;
