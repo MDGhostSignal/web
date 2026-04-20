@@ -26,11 +26,12 @@ export function ContactSection({
           <ScrollFadeUp index={0} duration={1.6}>
             <p className={styles.contactEyebrow}>GET IN TOUCH</p>
           </ScrollFadeUp>
-          <SplitLinesReveal duration={1.8} stagger={0.28}>
-            <h2 className={styles.contactHeadline}>
-              EVERY PARTNERSHIP STARTS WITH A CHAT
-            </h2>
-          </SplitLinesReveal>
+          <h2 className={styles.contactHeadline}>
+            <SplitLinesReveal duration={1.8}>EVERY PARTNERSHIP</SplitLinesReveal>
+            <SplitLinesReveal duration={1.8} delay={0.3}>
+              STARTS WITH A CHAT
+            </SplitLinesReveal>
+          </h2>
           <ScrollFadeUp index={1} duration={1.6}>
             <p className={styles.contactBody}>
               Podcaster or Advertiser, ready to find your frequency? Schedule a call.

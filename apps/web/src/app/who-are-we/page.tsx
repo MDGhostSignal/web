@@ -114,14 +114,18 @@ export default function WhoAreWePage() {
           />
         </div>
         <div className={styles.heroContent}>
-          <SplitLinesReveal duration={2.2} stagger={0.3}>
-            <h1 className={styles.heroHeadline}>
-              WE ARE A TEAM<br />
-              COMMITTED<br />
-              TO THE WORLD<br />
+          <h1 className={styles.heroHeadline}>
+            <SplitLinesReveal duration={2.2}>WE ARE A TEAM</SplitLinesReveal>
+            <SplitLinesReveal duration={2.2} delay={0.3}>
+              COMMITTED
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={2.2} delay={0.6}>
+              TO THE WORLD
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={2.2} delay={0.9}>
               WE ARE MAKING.
-            </h1>
-          </SplitLinesReveal>
+            </SplitLinesReveal>
+          </h1>
           <div className={styles.morseCodeWrapper}>
             <Image
               src="/images/who-are-we/morsecod.png"
@@ -131,11 +135,14 @@ export default function WhoAreWePage() {
               className={styles.morseCodeImage}
             />
           </div>
-          <ScrollFadeUp index={0} duration={1.8}>
-            <p className={styles.heroSubhead}>
-              We believe the future of advertising is soulful.
-            </p>
-          </ScrollFadeUp>
+          <div className={styles.heroSubhead}>
+            <SplitLinesReveal duration={1.8}>
+              We believe the future of
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={1.8} delay={0.3}>
+              advertising is soulful.
+            </SplitLinesReveal>
+          </div>
           <SplineEmbed scene="https://prod.spline.design/gzlQ1P24v0imBh-L/scene.splinecode" />
         </div>
         <div className={styles.heroLogosBottom}>
@@ -253,9 +260,9 @@ export default function WhoAreWePage() {
                 />
               </div>
             </ScrollFadeUp>
-            <ScrollFadeUp index={1} duration={1.6}>
+            <SplitLinesReveal duration={2}>
               <h2 className={styles.promisesHeadline}>WE PROMISE</h2>
-            </ScrollFadeUp>
+            </SplitLinesReveal>
           </div>
 
           {/* Three-column layout */}

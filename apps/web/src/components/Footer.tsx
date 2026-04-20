@@ -35,7 +35,7 @@ export function Footer() {
               <li><Link href="/for-creators">FOR CREATORS</Link></li>
             </ScrollFadeUp>
             <ScrollFadeUp index={3} duration={1.4}>
-              <li><Link href="/for-advertisers">FOR BRANDS</Link></li>
+              <li><Link href="/for-advertisers">FOR ADVERTISERS</Link></li>
             </ScrollFadeUp>
           </ul>
         </div>
@@ -45,7 +45,7 @@ export function Footer() {
           </ScrollFadeUp>
           <ul className={styles.footerColLinks}>
             <ScrollFadeUp index={2} duration={1.4}>
-              <li><Link href="/who-are-we">WHO WE ARE</Link></li>
+              <li><Link href="/who-are-we">WHO ARE WE?</Link></li>
             </ScrollFadeUp>
             <ScrollFadeUp index={3} duration={1.4}>
               <li><Link href="/what-is-this">WHAT IS THIS</Link></li>
@@ -59,6 +59,16 @@ export function Footer() {
           <ul className={styles.footerColLinks}>
             <ScrollFadeUp index={2} duration={1.4}>
               <li><Link href="/snowdrift">SNOWDRIFT</Link></li>
+            </ScrollFadeUp>
+          </ul>
+        </div>
+        <div className={styles.footerCol}>
+          <ScrollFadeUp index={1} duration={1.4}>
+            <h4 className={styles.footerColTitle}>Resources</h4>
+          </ScrollFadeUp>
+          <ul className={styles.footerColLinks}>
+            <ScrollFadeUp index={2} duration={1.4}>
+              <li><Link href="/signal-sheet">THE SIGNAL SHEET</Link></li>
             </ScrollFadeUp>
           </ul>
         </div>

@@ -12,6 +12,125 @@
    SPLIT-SCREEN HERO - White left panel + Image right panel
    ============================================================================= */
 
+/* Fullscreen hero video that fades + disperses as the user scrolls,
+   revealing the starry background beneath. `overflow: visible` so the
+   downward-translating (parallax) video isn't clipped at the section's
+   bottom edge — it eases into the next section as it fades.
+   Transparent bg so the fixed starry layer is visible wherever the
+   video isn't opaque, including during its fade-out. No horizontal
+   seam at the wrapper's bottom edge. */
+.heroVideoWrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  z-index: 10;
+  overflow: visible;
+  background: transparent;
+}
+
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* Promote to its own compositor layer so frame decode stays smooth
+     and the scroll-driven opacity / scale / blur don't stall. */
+  transform: translateZ(0);
+  will-change: transform, opacity, filter;
+}
+
+/* Text overlay — left half of the video, matching the original white
+   panel's footprint (same 50% width / padding / flex-center), but no
+   background and white copy so it reads over the sunset loop. */
+.heroTextOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gs-n-80) * var(--gs-px));
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.heroTextContainer {
+  max-width: calc(var(--gs-n-700, 700) * var(--gs-px));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+}
+
+/* One logo flush left, one centered, one flush right — frames the
+   headline block beneath it like a rule-of-thirds grid. */
+.heroLogoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.heroFramingLogo {
+  width: calc(var(--gs-n-24) * var(--gs-px));
+  height: auto;
+  opacity: 0.75;
+  /* Swap black lettermark → white so it reads over the dark video. */
+  filter: invert(1);
+}
+
+.heroHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(32px, 5vw, 72px);
+  line-height: 1.1;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: clamp(18px, 2.5vw, 28px);
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 1024px) {
+  .heroTextOverlay {
+    width: 55%;
+    padding: calc(var(--gs-n-64) * var(--gs-px));
+  }
+  .heroTextContainer {
+    max-width: 100%;
+  }
+  .heroFramingLogo {
+    width: calc(var(--gs-n-20) * var(--gs-px));
+  }
+}
+
+@media (max-width: 768px) {
+  .heroTextOverlay {
+    width: 100%;
+    padding: calc(var(--gs-n-48) * var(--gs-px));
+  }
+  .heroHeadline {
+    font-size: clamp(28px, 8vw, 48px);
+  }
+  .heroSubtitle {
+    font-size: clamp(16px, 4vw, 22px);
+  }
+}
+
 .splitHeroWrapper {
   position: relative;
   width: 100%;

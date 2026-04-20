@@ -1,0 +1,434 @@
+"use client";
+
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
+
+import { SiteHeader } from "@/components/SiteHeader";
+import { Footer } from "@/components/Footer";
+import { ContactSection } from "@/components/ContactSection";
+import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
+import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
+
+import styles from "./page.module.css";
+import { navLinks } from "@/lib/nav";
+
+type Term = {
+  title: string;
+  body: ReactNode;
+};
+
+type Category = {
+  id: string;
+  label: string;
+  intro: string;
+  terms: Term[];
+};
+
+const categories: Category[] = [
+  {
+    id: "philosophical-anchors",
+    label: "Philosophical Anchors",
+    intro:
+      "The framing ideas that orient every partnership we take on — the vocabulary for the kind of world we want to help make.",
+    terms: [
+      {
+        title: "World-Making",
+        body: (
+          <>
+            The recognition that every story told, every ad placed, and every
+            partnership formed is an intentional act of shaping the future. The
+            best world-making, in the GHOSTSignal sense, occurs when good
+            brands partner with good creators and their good communities to
+            support and point one another in the right direction.
+          </>
+        ),
+      },
+      {
+        title: "Membership Doorway",
+        body: (
+          <>
+            While we are all making the world one way or another, not all are
+            “world-makers.” We discern each potential member along three
+            dimensions: <strong>Values</strong>, <strong>Authenticity</strong>,
+            and <strong>Flourishing Impact</strong>. These are the thresholds
+            into the GHOSTSignal ecosystem.
+          </>
+        ),
+      },
+      {
+        title: "The Signal",
+        body: (
+          <>
+            The integrated relationship between good brands, good creators, and
+            their good communities — where values, authenticity, and
+            flourishing harmonize.
+          </>
+        ),
+      },
+      {
+        title: "The Static",
+        body: (
+          <>
+            A state where secondary goods — profits, raw listen counts, and
+            hype — are prioritized over primary mission. Static is the
+            cacophony of disruptive, misaligned messaging.
+          </>
+        ),
+      },
+      {
+        title: "Flourishing vs. Restlessness",
+        body: (
+          <>
+            Flourishing is the state of being built up, encouraged, and
+            furthered. Restlessness is a state of constant consumption driven
+            by scarcity and FOMO. We appeal to what is good rather than merely
+            running from what is bad.
+          </>
+        ),
+      },
+      {
+        title: "Ad Copy Guidelines",
+        body: (
+          <>
+            Our moral and stylistic guardrails for ad scriptwriting. They
+            ensure every brand partnership speaks to flourishing, not
+            restlessness.
+          </>
+        ),
+      },
+      {
+        title: "SnowDrift",
+        body: (
+          <>
+            The name of our journal newsletter —{" "}
+            <Link href="/snowdrift" className={styles.inlineLink}>
+              read the latest entries
+            </Link>
+            .
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    id: "technical-terms",
+    label: "Technical Terms",
+    intro:
+      "The infrastructure that carries the signal — the pieces that need to work cleanly so the human part of the work can show through.",
+    terms: [
+      {
+        title: "Resonance Quotient (RQ™)",
+        body: (
+          <>
+            Like a personality assessment for your podcast or brand, the RQ
+            summarizes your partnership values so you match with partners you’d
+            be proud to work with. Podcasters: advertisements on your show
+            deepen audience trust. Brands: you’ll be paired with podcasters
+            whose audience is already tuned to what you are doing. Resonance is
+            the new reach.{" "}
+            <Link href="/rq-quiz" className={styles.inlineLink}>
+              Take the assessment
+            </Link>
+            .
+          </>
+        ),
+      },
+      {
+        title: "RSS Feed",
+        body: (
+          <>
+            The fundamental spine of podcasting — the protocol that lets shows
+            be syndicated and owned by the creator, independent of any single
+            platform, so the signal can flow freely to listeners on whatever
+            app they prefer.
+          </>
+        ),
+      },
+      {
+        title: "Listening Platform",
+        body: (
+          <>
+            Spotify, Apple Podcasts, Overcast — the environments where
+            listeners access our work. While these services amplify reach, we
+            remember that our true relationship is with the listener, not the
+            interface.
+          </>
+        ),
+      },
+      {
+        title: "Host",
+        body: (
+          <>
+            The technical infrastructure providers — ART19, Megaphone and the
+            like — that store and distribute our media. They are silent
+            partners that enable transformative impact by handling the
+            mechanics so we can focus on the mission.
+          </>
+        ),
+      },
+      {
+        title: "Dynamic Ad Insertion (DAI)",
+        body: (
+          <>
+            Technology that serves audio in real time, swapping fresh ads into
+            older episodes. It turns static audio into a living ecosystem —
+            content stays evergreen and ad messages remain relevant to the
+            episode’s mission.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    id: "adverts",
+    label: "Adverts",
+    intro:
+      "The working language of ad buying. Read this once and the rest of the industry gets easier to parse.",
+    terms: [
+      {
+        title: "CPM (Cost Per Mille)",
+        body: (
+          <>
+            Shorthand for the cost of reaching 1,000 listeners. Depending on
+            the historic moment, length, position, or whether the host reads
+            it, CPM varies — and at GHOSTSignal we believe high resonance and
+            signal warrant high CPMs.
+          </>
+        ),
+      },
+      {
+        title: "Pre-Roll / Mid-Roll / Post-Roll",
+        body: (
+          <>
+            The temporal placement of a message within a podcast episode —
+            Pre at the start, Mid in the middle, Post at the end.
+          </>
+        ),
+      },
+      {
+        title: "Baked-In",
+        body: <>Ads permanently recorded into the original audio file — non-swappable.</>,
+      },
+      {
+        title: "Programmatic",
+        body: (
+          <>
+            An automated, algorithm-driven marketplace for ad space. Efficient,
+            but often lacking signal fidelity — we view it as a tool to be
+            carefully curated so it never overwhelms the listener with static.
+          </>
+        ),
+      },
+      {
+        title: "Host Read",
+        body: (
+          <>
+            An ad voiced by the creator themselves. The highest form of
+            endorsement because it relies on the pre-existing, hard-won trust
+            between host and listener — often 3–7× higher conversion than
+            standard ads.
+          </>
+        ),
+      },
+      {
+        title: "Signal Pool / Spot Ad",
+        body: (
+          <>
+            Our dedicated, hand-curated collective of values-based creators and
+            brands. This is at the heart of our value-driven revenue, where
+            partnerships are matched for mutual flourishing rather than mere
+            reach. These are pre-produced ads.
+          </>
+        ),
+      },
+      {
+        title: "Excess Inventory",
+        body: (
+          <>
+            Open ad slots within an episode not currently occupied by a Signal
+            partner. We steward this space redemptively — using automated
+            systems only where the creator is happy, and even then filtering
+            out static.
+          </>
+        ),
+      },
+      {
+        title: "Revenue Share",
+        body: (
+          <>
+            Our partnership model: the creator and GHOSTSignal share ad revenue
+            in order to keep making the world.
+          </>
+        ),
+      },
+      {
+        title: "Promo Swap",
+        body: (
+          <>
+            A mutual, mostly-free agreement between two shows — often on the
+            same network — to promote one another. It fosters fraternity and
+            grows our collective reach through a sacrificial exchange of
+            airtime.
+          </>
+        ),
+      },
+    ],
+  },
+];
+
+export default function SignalSheetPage() {
+  const [activeId, setActiveId] = useState<string>(categories[0].id);
+  const [navVisible, setNavVisible] = useState<boolean>(true);
+  const endSentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Track which section is currently in the middle band of the viewport
+    // so the sticky category nav can highlight it.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Prefer the most-intersecting section if multiple are in view.
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveId(visible.target.id);
+      },
+      {
+        rootMargin: "-35% 0px -45% 0px",
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      },
+    );
+
+    categories.forEach((cat) => {
+      const el = document.getElementById(cat.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    // Hide the bottom nav once the user has scrolled past the glossary so
+    // it doesn't sit on top of the ContactSection or the Footer.
+    const el = endSentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setNavVisible(!entry.isIntersecting),
+      { rootMargin: "0px 0px -15% 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <main className={styles.page}>
+      <SiteHeader links={navLinks} />
+
+      <div className={styles.staticOverlay} aria-hidden="true" />
+
+      {/* Hero */}
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <ScrollFadeUp duration={1.4} distance={16}>
+            <p className={styles.eyebrow}>Resources</p>
+          </ScrollFadeUp>
+          <h1 className={styles.headline}>
+            <SplitLinesReveal duration={2.2}>The Signal Sheet</SplitLinesReveal>
+          </h1>
+          <ScrollFadeUp duration={1.6} delay={0.35}>
+            <p className={styles.lead}>
+              A working glossary of the terms that shape GhostSignal&apos;s
+              world — the philosophical anchors, technical grammar, and
+              advertising vocabulary that keep the signal coherent.
+            </p>
+          </ScrollFadeUp>
+          <ScrollFadeUp duration={1.6} delay={0.55}>
+            <div className={styles.heroMeta}>
+              <span className={styles.metaLabel}>Version 01</span>
+              <span className={styles.metaDot} aria-hidden="true" />
+              <span className={styles.metaLabel}>
+                {categories.reduce((n, c) => n + c.terms.length, 0)} entries
+              </span>
+              <span className={styles.metaDot} aria-hidden="true" />
+              <span className={styles.metaLabel}>
+                {categories.length} categories
+              </span>
+            </div>
+          </ScrollFadeUp>
+        </div>
+      </section>
+
+      {/* Bottom-fixed category navigation */}
+      <nav
+        className={`${styles.categoryNav} ${navVisible ? "" : styles.categoryNavHidden}`}
+        aria-label="Glossary categories"
+      >
+        <ul className={styles.categoryList}>
+          {categories.map((cat, i) => (
+            <li key={cat.id}>
+              <a
+                href={`#${cat.id}`}
+                className={`${styles.categoryLink} ${activeId === cat.id ? styles.categoryLinkActive : ""}`}
+              >
+                <span className={styles.categoryIndex}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className={styles.categoryLabel}>{cat.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Glossary sections */}
+      {categories.map((cat, catIndex) => (
+        <section key={cat.id} id={cat.id} className={styles.section}>
+          <div className={styles.sectionContainer}>
+            <header className={styles.sectionHeader}>
+              <ScrollFadeUp duration={1.4} distance={16}>
+                <p className={styles.sectionNumber}>
+                  {String(catIndex + 1).padStart(2, "0")} / {" "}
+                  {String(categories.length).padStart(2, "0")}
+                </p>
+              </ScrollFadeUp>
+              <h2 className={styles.sectionTitle}>
+                <SplitLinesReveal duration={2}>{cat.label}</SplitLinesReveal>
+              </h2>
+              <ScrollFadeUp duration={1.6} delay={0.3}>
+                <p className={styles.sectionIntro}>{cat.intro}</p>
+              </ScrollFadeUp>
+            </header>
+
+            <ol className={styles.termList}>
+              {cat.terms.map((term, i) => (
+                <ScrollFadeUp
+                  key={term.title}
+                  duration={1.5}
+                  delay={Math.min(i * 0.06, 0.36)}
+                  className={styles.termItem}
+                >
+                  <article className={styles.termCard}>
+                    <div className={styles.termCardInner}>
+                      <span className={styles.termNumber} aria-hidden="true">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <h3 className={styles.termTitle}>{term.title}</h3>
+                      <div className={styles.termBody}>{term.body}</div>
+                    </div>
+                  </article>
+                </ScrollFadeUp>
+              ))}
+            </ol>
+          </div>
+        </section>
+      ))}
+
+      {/* Sentinel: once this enters the viewport the bottom nav retracts. */}
+      <div ref={endSentinelRef} aria-hidden="true" />
+
+      {/* Contact */}
+      <ContactSection />
+
+      <Footer />
+    </main>
+  );
+}

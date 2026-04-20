@@ -12,6 +12,9 @@ const ScrollScenes = dynamic(
   () => import("@/components/ScrollScenes").then((m) => m.ScrollScenes),
   { ssr: false },
 );
+
+// Canvas cherry-blossom overlay — ssr:false since it needs the DOM.
+const HeroBlossoms = dynamic(() => import("./HeroBlossoms"), { ssr: false });
 import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { Footer } from "@/components/Footer";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
@@ -24,43 +27,67 @@ import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
 
 export default function WhatIsThisPage() {
-  const heroWrapperRef = useRef<HTMLDivElement>(null);
-  const whitePanelRef = useRef<HTMLDivElement>(null);
-  const imagePanelRef = useRef<HTMLDivElement>(null);
+  const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const heroTextRef = useRef<HTMLDivElement>(null);
 
   useIsomorphicLayoutEffect(() => {
-    const heroWrapper = heroWrapperRef.current;
-    const whitePanel = whitePanelRef.current;
-    const imagePanel = imagePanelRef.current;
+    const wrapper = heroVideoWrapperRef.current;
+    const video = heroVideoRef.current;
+    const text = heroTextRef.current;
+    if (!wrapper || !video) return;
 
-    if (!heroWrapper || !whitePanel || !imagePanel) return;
+    const trigger = {
+      trigger: wrapper,
+      start: "top top",
+      // Extend the fade well past a single viewport — gives a longer,
+      // more gradual dissolve from sunset loop into the night sky.
+      end: "+=140%",
+      scrub: 1,
+    } as const;
 
-    // Create scroll-triggered animation for the split panels
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: heroWrapper,
-        start: "top top",
-        end: "bottom top",
-        scrub: 1,
-        pin: false,
+    // Video: parallax (y translates downward a little, so the video
+    // visually lags behind the scroll and "sticks" longer) + gradual
+    // fade with a gentle scale-up and blur to soften the dissolve.
+    const videoTween = gsap.fromTo(
+      video,
+      { opacity: 1, scale: 1, y: 0, filter: "blur(0px)" },
+      {
+        opacity: 0,
+        scale: 1.08,
+        y: 180,
+        filter: "blur(18px)",
+        ease: "power1.inOut",
+        scrollTrigger: trigger,
       },
-    });
+    );
 
-    // Animate white panel to the left
-    tl.to(whitePanel, {
-      xPercent: -100,
-      ease: "none",
-    }, 0);
-
-    // Animate image panel to the right
-    tl.to(imagePanel, {
-      xPercent: 100,
-      ease: "none",
-    }, 0);
+    // Text overlay: plain fade + slight lift (no blur — keeps copy sharp
+    // as it leaves). Shorter scroll distance so copy is gone before the
+    // video has fully dispersed, which lets the sky reveal cleanly.
+    const textTween = text
+      ? gsap.fromTo(
+          text,
+          { opacity: 1, y: 0 },
+          {
+            opacity: 0,
+            y: -60,
+            ease: "power1.out",
+            scrollTrigger: {
+              trigger: wrapper,
+              start: "top top",
+              end: "+=80%",
+              scrub: 1,
+            },
+          },
+        )
+      : null;
 
     return () => {
-      tl.scrollTrigger?.kill();
-      tl.kill();
+      videoTween.scrollTrigger?.kill();
+      videoTween.kill();
+      textTween?.scrollTrigger?.kill();
+      textTween?.kill();
     };
   }, []);
 
@@ -68,75 +95,131 @@ export default function WhatIsThisPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Parallax background - visible after hero slides away */}
-      <ParallaxBackground
-        imageSrc="/images/what-is-this/clouds-bg.jpg"
-        speed={0.3}
-      />
+      {/* Starry night background — the feathered cloud overlay has been
+          removed so only the star layer shows through. */}
+      <ParallaxBackground />
 
-      {/* Split-screen Hero Section */}
-      <div ref={heroWrapperRef} className={styles.splitHeroWrapper}>
-        {/* White left panel with text */}
-        <div ref={whitePanelRef} className={styles.splitHeroLeft}>
-          <div className={styles.splitHeroTextContainer}>
-            {/* Top logo row */}
-            <div className={styles.logoRow}>
+      {/* Hero video — fills the viewport, fades/disperses as the user
+          scrolls, revealing the parallax cloud background beneath. */}
+      <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
+        <video
+          ref={heroVideoRef}
+          className={styles.heroVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          aria-hidden="true"
+        >
+          <source src="/images/what-is-this/sunset.mp4" type="video/mp4" />
+        </video>
+        {/* Cherry blossom overlay — sits on top of the video AND the
+            text, extending the video's falling-blossom motif onto the
+            whole hero for a layered 3D read. */}
+        <HeroBlossoms />
+        {/* Headline + subtitle overlaid on the left half of the video,
+            same position and framing the original white panel had, but
+            white text with no panel behind it. */}
+        <div ref={heroTextRef} className={styles.heroTextOverlay}>
+          <div className={styles.heroTextContainer}>
+            <div className={styles.heroLogoRow}>
               <Image
                 src="/images/what-is-this/lettermark-black.png"
                 alt=""
                 width={24}
                 height={24}
-                className={styles.framingLogo}
+                className={styles.heroFramingLogo}
               />
               <Image
                 src="/images/what-is-this/lettermark-black.png"
                 alt=""
                 width={24}
                 height={24}
-                className={styles.framingLogo}
+                className={styles.heroFramingLogo}
               />
               <Image
                 src="/images/what-is-this/lettermark-black.png"
                 alt=""
                 width={24}
                 height={24}
-                className={styles.framingLogo}
+                className={styles.heroFramingLogo}
               />
             </div>
 
-            <h1 className={styles.splitHeroHeadline}>
-              <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
-                <span>The values-based podcast</span>
+            <h1 className={styles.heroHeadline}>
+              <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
+                <span>Values-based</span>
               </SplitLinesReveal>
-              <SplitLinesReveal duration={1.8} stagger={0.25} delay={1.5} className={styles.headlineLine}>
-                <span>Advertising network</span>
+              <SplitLinesReveal duration={1.8} delay={0.6} className={styles.headlineLine}>
+                <span>podcast</span>
+              </SplitLinesReveal>
+              <SplitLinesReveal duration={1.8} delay={1.2} className={styles.headlineLine}>
+                <span>advertising</span>
+              </SplitLinesReveal>
+              <SplitLinesReveal duration={1.8} delay={1.8} className={styles.headlineLine}>
+                <span>network</span>
               </SplitLinesReveal>
             </h1>
 
-            <h3 className={styles.splitHeroSubtitle}>
-              <SplitLinesReveal duration={1.4} stagger={0.2} delay={2.6} className={styles.subtitleLine}>
+            <div className={styles.heroLogoRow}>
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.heroFramingLogo}
+              />
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.heroFramingLogo}
+              />
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.heroFramingLogo}
+              />
+            </div>
+
+            <h3 className={styles.heroSubtitle}>
+              <SplitLinesReveal duration={1.4} delay={2.6} className={styles.subtitleLine}>
                 <span>We create partnerships that feel good.</span>
               </SplitLinesReveal>
-              <SplitLinesReveal duration={1.4} stagger={0.2} delay={3.0} className={styles.subtitleLine}>
+              <SplitLinesReveal duration={1.4} delay={3.1} className={styles.subtitleLine}>
                 <span>Because they are good.</span>
               </SplitLinesReveal>
             </h3>
 
+            <div className={styles.heroLogoRow}>
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.heroFramingLogo}
+              />
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.heroFramingLogo}
+              />
+              <Image
+                src="/images/what-is-this/lettermark-black.png"
+                alt=""
+                width={24}
+                height={24}
+                className={styles.heroFramingLogo}
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Image right panel */}
-        <div ref={imagePanelRef} className={styles.splitHeroRight}>
-          <Image
-            src="/images/what-is-this/top.jpg"
-            alt="GhostSignal values-based advertising"
-            fill
-            sizes="(max-width: 900px) 100vw, 50vw"
-            className={styles.splitHeroImage}
-            priority
-          />
-          {/* Static flicker overlay */}
-          <div className={styles.staticFlicker} aria-hidden="true" />
         </div>
       </div>
 

@@ -62,6 +62,20 @@ export function SiteHeader({
     const ctaEl = ctaRef.current;
     if (!linksWrap) return;
 
+    // Defensive reset: the `.js-s-hide-sh` ScrollTrigger on previous pages
+    // spawns yPercent tweens on this element that live OUTSIDE the gsap
+    // context, so they don't get reverted on unmount. Kill any stragglers,
+    // force the bar back to yPercent=0, and clear the body class before any
+    // further setup, so the bar always boots flush against the bottom of
+    // the viewport.
+    const rootEl = rootRef.current;
+    if (rootEl) {
+      gsap.killTweensOf(rootEl);
+      gsap.set(rootEl, { clearProps: "transform", yPercent: 0 });
+    }
+    activeRef.current = false;
+    document.body.classList.remove("is-head-active");
+
     const linkEls = Array.from(linksWrap.querySelectorAll<HTMLElement>("[data-sh-link]"));
     const keepLinkEl =
       linksWrap.querySelector<HTMLElement>('[data-sh-link][data-sh-key="/get-in-touch"]') ??
@@ -180,8 +194,15 @@ export function SiteHeader({
       window.removeEventListener("scroll", onScroll);
       mq.removeEventListener?.("change", onMqChange);
       hideSt?.kill();
+      if (rootEl) gsap.killTweensOf(rootEl);
       tlRef.current?.kill();
       tlRef.current = null;
+      // The body class is set on `runOut` but only cleared by `runIn`, which
+      // fires on a scroll transition. On client-side navigation the next page's
+      // fresh SiteHeader starts with activeRef=false, so runIn never fires and
+      // the class leaks — CSS rules then hide the logo and nav links on the
+      // new page. Clear it here so every page boots with a clean slate.
+      document.body.classList.remove("is-head-active");
     };
   }, [THRESHOLD_Y, animateIn, animateInDelay, contextRef, rootRef]);
 

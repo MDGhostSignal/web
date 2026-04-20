@@ -23,6 +23,12 @@ type Props = {
    */
   delay?: number;
   /**
+   * Pixel distance the element translates upward during entrance.
+   * Set to `0` when a parent/child already animates `y` (e.g. `ParallaxY`)
+   * to keep the fade opacity-only and avoid fighting transforms.
+   */
+  distance?: number;
+  /**
    * Optional className to apply to the wrapper div.
    * Helps reduce unnecessary nesting when the wrapper can serve double duty.
    */
@@ -33,7 +39,15 @@ type Props = {
  * Mirrors Motto's common scroll entrance animation:
  * `fromTo(el, { y:60, opacity:0 }, { y:0, opacity:1, duration:1, ease:"power2.out", delay: 0.1*index, scrollTrigger:{trigger: el, start:"top bottom"} })`
  */
-export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration = 1.7, delay = 0, className }: Props) {
+export function ScrollFadeUp({
+  children,
+  index = 0,
+  start = "top 78%",
+  duration = 1.7,
+  delay = 0,
+  distance = 60,
+  className,
+}: Props) {
   const id = useId();
 
   useIsomorphicLayoutEffect(() => {
@@ -43,7 +57,7 @@ export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration 
 
     const tween = gsap.fromTo(
       el,
-      { y: 60, opacity: 0 },
+      { y: distance, opacity: 0 },
       {
         y: 0,
         opacity: 1,
@@ -58,7 +72,7 @@ export function ScrollFadeUp({ children, index = 0, start = "top 78%", duration 
       tween.scrollTrigger?.kill();
       tween.kill();
     };
-  }, [delay, duration, id, index, start]);
+  }, [delay, distance, duration, id, index, start]);
 
   return <div data-gs-sfu={id} className={className}>{children}</div>;
 }

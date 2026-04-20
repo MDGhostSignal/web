@@ -5,7 +5,10 @@
   position: relative;
   min-height: 100dvh;
   overflow-x: clip;
-  background: transparent;
+  /* Matches the hero's black base so the V-clip corners at the top of
+     .featuresSection reveal black behind the cream peak instead of a
+     light page fallback. */
+  background: #000;
 }
 
 /* Static/noise overlay effect - spans full page */
@@ -25,16 +28,88 @@
 
 .hero {
   width: 100%;
-  min-height: 100vh;
-  background: transparent;
+  min-height: 120vh;
+  /* Matches the loop video's black — no seam between video and container. */
+  background: #000;
   display: flex;
-  align-items: center;
+  /* align to the top so the headline sits exactly at padding-top,
+     matching the edge-pad side inset rather than being visually
+     re-centred in the leftover space. */
+  align-items: flex-start;
   justify-content: center;
   overflow: hidden;
   position: relative;
   z-index: 2;
-  padding: calc(var(--gs-n-180) * var(--gs-px)) var(--edge-pad);
+  padding: var(--edge-pad);
   padding-bottom: calc(var(--gs-n-256) * var(--gs-px));
+}
+
+/* Three layers so no single element tries to scale, tilt, and render
+   video simultaneously (Chromium freezes video frames when it does):
+     .heroVideoWrapper → static scale + right-anchor
+     .heroVideoTilt    → mouse-driven translate + rotate (perspective)
+     .heroVideo        → pure 2D, renders every frame cleanly.
+   The hero element owns the --mx / --my vars (-1..1 on each axis). */
+/* Pollen layer — spans the whole hero above the video but below the
+   copy. Translates gently opposite to the cursor parallax so pollen and
+   video read as different depth planes. */
+.heroPollenLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform: translate3d(
+    calc(var(--mx, 0) * -10px),
+    calc(var(--my, 0) * -8px),
+    0
+  );
+  will-change: transform;
+}
+
+.heroVideoWrapper {
+  position: absolute;
+  /* Slight negative top offset nudges the scaled video upward on the
+     vertical axis without affecting the scale anchor. */
+  top: -4%;
+  /* Shift the whole anchored video slightly left of the right edge. */
+  right: calc(var(--gs-n-96) * var(--gs-px));
+  width: 66.666%;
+  height: 100%;
+  transform: scale(0.65);
+  transform-origin: right center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.heroVideoTilt {
+  width: 100%;
+  height: 100%;
+  /* 2D transforms only. Any 3D transform (perspective / rotateX / rotateY)
+     on an ancestor of <video> causes Chromium to flatten the video into
+     a texture that only updates at recomposition cadence — the visible
+     result is jitter and freezing mid-hover. translate3d still runs on
+     the GPU without entering 3D-context territory. */
+  transform:
+    translate3d(
+      calc(var(--mx, 0) * 32px),
+      calc(var(--my, 0) * 26px),
+      0
+    )
+    rotate(calc(var(--mx, 0) * 1.4deg));
+  transform-origin: center;
+  will-change: transform;
+}
+
+.heroVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* Promote the video onto its own compositor layer so its decoded
+     frames keep streaming while ancestor transforms change. */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .heroContent {
@@ -96,6 +171,7 @@
 .featuresSection {
   position: relative;
   z-index: 2;
+  margin-top: -60px;
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   padding-top: calc(var(--gs-n-256) * var(--gs-px));
   background: #f6f9fc;
@@ -293,6 +369,198 @@
 
 .pitchSection :global(a):hover .ctaArrow {
   transform: translateX(4px);
+}
+
+/* =============================================================================
+   PITCH HEADLINE — playful accents on "impressions." and "conviction."
+   ============================================================================= */
+
+.impressionsWord,
+.convictionWord {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+/* SplitLinesReveal applies `overflow: hidden` to its outer line wrappers
+   as an entrance-animation mask. That mask also clips the halo and the
+   burst particles, so for the two lines that carry our decorations we
+   let overflow escape the mask. */
+.pitchHeadline :global(.line):has(.impressionsWord),
+.pitchHeadline :global(.line):has(.convictionWord) {
+  overflow: visible !important;
+}
+
+/* The first "O" of "conviction" gets its own positioning context so the
+   halo can sit precisely over that letter rather than over the centre of
+   the whole word. */
+.convictionO {
+  position: relative;
+  display: inline-block;
+}
+
+/* Hearts are direct children of .impressionsWord — each one absolute-
+   positioned at a fixed em offset from the word's top-left, so they
+   land at specific spots across "impressions." regardless of how the
+   enclosing span is measured. No container/grid layer in between. */
+.heart {
+  position: absolute;
+  width: 0.24em;
+  height: 0.24em;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ff5b8a' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 0 3px rgba(255, 91, 138, 0.6));
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: heartPop 3s ease-in-out infinite;
+}
+
+/* Seven fixed em positions scattered over the word. Top values cover
+   ~0 → 1em (cap height of the uppercase word); left values cover
+   ~0.3 → 6em (roughly the width of "impressions." at the heading font). */
+.heart:nth-child(1) {
+  left: 0.4em;
+  top: 0.1em;
+  animation-delay: 0s;
+  animation-duration: 2.8s;
+}
+.heart:nth-child(2) {
+  left: 1.6em;
+  top: 0.8em;
+  animation-delay: 0.6s;
+  animation-duration: 3.3s;
+}
+.heart:nth-child(3) {
+  left: 2.7em;
+  top: 0.05em;
+  animation-delay: 1.2s;
+  animation-duration: 3.0s;
+}
+.heart:nth-child(4) {
+  left: 3.9em;
+  top: 0.7em;
+  animation-delay: 0.3s;
+  animation-duration: 3.2s;
+}
+.heart:nth-child(5) {
+  left: 5.1em;
+  top: 0.2em;
+  animation-delay: 1.6s;
+  animation-duration: 2.9s;
+}
+.heart:nth-child(6) {
+  left: 4.5em;
+  top: 0.95em;
+  animation-delay: 0.9s;
+  animation-duration: 3.4s;
+}
+.heart:nth-child(7) {
+  left: 6em;
+  top: 0.55em;
+  animation-delay: 1.9s;
+  animation-duration: 3.1s;
+}
+
+@keyframes heartPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-8deg);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.1) rotate(4deg);
+  }
+  70% {
+    opacity: 0.9;
+    transform: scale(1) rotate(-2deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(6deg);
+  }
+}
+
+/* Halo on "conviction." — a bright ring + soft glow that hovers above
+   the word, pulsing like the stars drifting across the background. */
+.halo {
+  position: absolute;
+  left: 50%;
+  /* Sits just above the O — bottom of halo just kisses the top of the
+     letter at rest, bobs up a few px via convictionHover. */
+  top: -0.18em;
+  width: 1.1em;
+  height: 0.26em;
+  border: 0.06em solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: transparent;
+  transform: translateX(-50%);
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.65),
+    0 0 28px rgba(255, 255, 255, 0.35);
+  animation: convictionHover 3.2s ease-in-out infinite,
+    convictionPulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.haloGlow {
+  position: absolute;
+  left: 50%;
+  top: -0.45em;
+  width: 2em;
+  height: 1em;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.15) 35%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  filter: blur(6px);
+  animation: convictionHover 3.2s ease-in-out infinite,
+    convictionGlowPulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+@keyframes convictionHover {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+@keyframes convictionPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    box-shadow:
+      0 0 10px rgba(255, 255, 255, 0.55),
+      0 0 22px rgba(255, 255, 255, 0.25);
+  }
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 18px rgba(255, 255, 255, 0.85),
+      0 0 40px rgba(255, 255, 255, 0.5);
+  }
+}
+
+@keyframes convictionGlowPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    filter: blur(8px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(4px);
+  }
 }
 
 /* =============================================================================

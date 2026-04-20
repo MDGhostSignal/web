@@ -22,6 +22,7 @@ const PUBLIC_ROUTES: Array<{
   { path: "/who-are-we", priority: 0.8, changeFrequency: "monthly" },
   { path: "/snowdrift", priority: 0.7, changeFrequency: "weekly" },
   { path: "/rq-quiz", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/signal-sheet", priority: 0.6, changeFrequency: "monthly" },
   { path: "/get-in-touch", priority: 0.7, changeFrequency: "yearly" },
 ];
 

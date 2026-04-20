@@ -5,7 +5,7 @@
   position: relative;
   min-height: 100dvh;
   overflow-x: clip;
-  background: transparent;
+  background: #060812;
 }
 
 /* =============================================================================
@@ -30,14 +30,14 @@
 .hero {
   width: 100%;
   min-height: 120vh;
-  background: transparent;
+  background: #060812;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   overflow: hidden;
   position: relative;
   z-index: 2;
-  padding: calc(var(--gs-n-180) * var(--gs-px)) var(--edge-pad);
+  padding: var(--edge-pad);
   padding-bottom: calc(var(--gs-n-256) * var(--gs-px));
 }
 
@@ -48,8 +48,16 @@
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  gap: calc(var(--gs-n-32) * var(--gs-px));
+  gap: calc(var(--gs-n-96) * var(--gs-px));
   max-width: calc(var(--gs-n-1400, 1400) * var(--gs-px));
+  width: 100%;
+}
+
+/* Fade-up wrappers default to content-width, which collapses the
+   `width: 100%` on .heroLogos and pushes all three logos to the left.
+   Force the direct wrapper to span the container so space-between
+   can put one logo at the left edge, one centered, one at the right. */
+.heroContent > [data-gs-sfu] {
   width: 100%;
 }
 
@@ -111,6 +119,7 @@
 .featuresSection {
   position: relative;
   z-index: 2;
+  margin-top: -60px;
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   padding-top: calc(var(--gs-n-256) * var(--gs-px));
   background: #f6f9fc;
@@ -289,7 +298,7 @@
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(36px, 5vw, 60px);
+  font-size: clamp(32px, 6vw, 80px);
   line-height: 1.1;
   color: var(--gs-tw-white);
   text-transform: uppercase;
@@ -757,7 +766,7 @@
 
   .sectionTitle,
   .journeyTitle {
-    font-size: clamp(28px, 7vw, 48px);
+    font-size: clamp(28px, 7vw, 42px);
   }
 }
 

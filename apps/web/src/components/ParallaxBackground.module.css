@@ -9,11 +9,37 @@
   pointer-events: none;
 }
 
-/* Starry background behind parallax image */
+/* Starry background behind parallax image.
+   The background-image stack adds very faint radial gradient "nebula"
+   clouds — zero runtime cost, purely CSS paint. */
 .stars {
   position: absolute;
   inset: 0;
-  background: #0a0a0d;
+  background-color: #0a0a0d;
+  background-image:
+    /* Large purple nebula — upper-left */
+    radial-gradient(
+      ellipse 55% 42% at 22% 28%,
+      rgba(155, 105, 195, 0.16) 0%,
+      rgba(120, 90, 170, 0.06) 40%,
+      transparent 70%
+    ),
+    /* Cool blue nebula — lower-right */
+    radial-gradient(
+      ellipse 65% 52% at 76% 72%,
+      rgba(85, 130, 205, 0.14) 0%,
+      rgba(70, 110, 175, 0.05) 45%,
+      transparent 72%
+    ),
+    /* Warm pink nebula — centre, very faint */
+    radial-gradient(
+      ellipse 45% 38% at 52% 48%,
+      rgba(205, 120, 150, 0.10) 0%,
+      rgba(170, 100, 140, 0.04) 45%,
+      transparent 70%
+    );
+  background-size: cover;
+  background-position: center;
 }
 
 .stars::before,
