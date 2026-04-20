@@ -21,6 +21,7 @@ export default function HeroPollen() {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    const isCoarse = window.matchMedia("(pointer: coarse)").matches;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let width = 0;
@@ -45,6 +46,11 @@ export default function HeroPollen() {
       y: number;
       vx: number;
       vy: number;
+      // Baseline drift — what vx/vy relax back to after a cursor push,
+      // so pushed pollen smoothly rejoins the natural drift instead of
+      // permanently changing course.
+      vx0: number;
+      vy0: number;
       r: number;
       alpha: number;
     };
@@ -56,11 +62,15 @@ export default function HeroPollen() {
       const z = 0.2 + Math.random() * 0.8; // depth — far to near
       const angle = Math.random() * Math.PI * 2;
       const speed = (0.07 + Math.random() * 0.22) * (0.5 + z);
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
       return {
         x: p.x ?? Math.random() * width,
         y: p.y ?? Math.random() * height,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        vx,
+        vy,
+        vx0: vx,
+        vy0: vy,
         r: 0.5 + z * 1.6,
         alpha: 0.12 + z * 0.30,
       };
@@ -102,9 +112,52 @@ export default function HeroPollen() {
       };
     }
 
+    // Cursor repulsion — same pattern as HeroBlossoms. Canvas has
+    // pointer-events: none, so mousemove is attached to window and
+    // translated into canvas-local coords via getBoundingClientRect.
+    // Strength is lower than on blossoms because pollen drifts roughly
+    // 3–4× slower, so an identical impulse would read as pollen
+    // *fleeing* the cursor rather than being gently pushed.
+    const REPEL_RADIUS = 130;
+    const REPEL_STRENGTH = 0.55;
+    const DAMP_TO_BASELINE = 0.03;
+    let mouseX = -9999;
+    let mouseY = -9999;
+    const onMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    };
+    const clearMouse = () => {
+      mouseX = -9999;
+      mouseY = -9999;
+    };
+    if (!isCoarse) {
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseout", clearMouse);
+      window.addEventListener("blur", clearMouse);
+    }
+
     let rafId = 0;
     const tick = () => {
+      const radiusSq = REPEL_RADIUS * REPEL_RADIUS;
       for (const p of particles) {
+        const dx = p.x - mouseX;
+        const dy = p.y - mouseY;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < radiusSq && distSq > 0.01) {
+          const dist = Math.sqrt(distSq);
+          const falloff = (REPEL_RADIUS - dist) / REPEL_RADIUS;
+          const force = falloff * REPEL_STRENGTH;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+        }
+
+        // Spring-damp velocity back to the particle's baseline drift
+        // so the push decays smoothly rather than accumulating.
+        p.vx += (p.vx0 - p.vx) * DAMP_TO_BASELINE;
+        p.vy += (p.vy0 - p.vy) * DAMP_TO_BASELINE;
+
         p.x += p.vx;
         p.y += p.vy;
         // Respawn when a particle drifts off-canvas so the dusting
@@ -121,6 +174,11 @@ export default function HeroPollen() {
     return () => {
       cancelAnimationFrame(rafId);
       ro.disconnect();
+      if (!isCoarse) {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseout", clearMouse);
+        window.removeEventListener("blur", clearMouse);
+      }
     };
   }, []);
 

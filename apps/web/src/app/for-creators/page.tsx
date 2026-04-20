@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,9 +11,13 @@ import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
+import { gsap } from "@/motion/gsap";
+import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
-// Heavy WebGL background — keep it off the initial chunk.
-const HeroFog = dynamic(() => import("./HeroFog"), { ssr: false });
+// Cursor-driven dandelion-seed drift — client-only (uses window + rAF).
+const HeroDandelion = dynamic(() => import("./HeroDandelion"), { ssr: false });
+// Swarm of bees chasing the cursor — client-only.
+const HeroBees = dynamic(() => import("./HeroBees"), { ssr: false });
 
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
@@ -55,6 +60,60 @@ const journeySteps = [
 ] as const;
 
 export default function ForCreatorsPage() {
+  const heroSectionRef = useRef<HTMLElement>(null);
+  const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Scroll-driven fade + looping safety-net for the hero field video.
+  // Same pattern used on /what-is-this for the sunset: opacity-only
+  // tween so the decoder keeps advancing frames (any transform/filter
+  // on a video layer causes Chromium to flatten it into a static
+  // texture). Extra event listeners restart the loop if a browser
+  // pauses autoplay for tab-visibility or heavy-scroll reasons.
+  useIsomorphicLayoutEffect(() => {
+    const wrapper = heroVideoWrapperRef.current;
+    const video = heroVideoRef.current;
+    if (!wrapper || !video) return;
+
+    const videoTween = gsap.fromTo(
+      video,
+      { opacity: 1 },
+      {
+        opacity: 0,
+        ease: "power1.inOut",
+        scrollTrigger: {
+          trigger: wrapper,
+          start: "top top",
+          end: "+=140%",
+          scrub: 1,
+        },
+      },
+    );
+
+    const ensurePlaying = () => {
+      if (video.readyState < 2) return;
+      void video.play().catch(() => {
+        /* autoplay rejection — ignore */
+      });
+    };
+    const onPause = () => ensurePlaying();
+    const onEnded = () => ensurePlaying();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") ensurePlaying();
+    };
+    video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onEnded);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onEnded);
+      document.removeEventListener("visibilitychange", onVisibility);
+      videoTween.scrollTrigger?.kill();
+      videoTween.kill();
+    };
+  }, []);
+
   return (
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
@@ -63,8 +122,30 @@ export default function ForCreatorsPage() {
       <div className={styles.staticOverlay} aria-hidden="true" />
 
       {/* Hero Section */}
-      <section className={styles.hero}>
-        <HeroFog />
+      <section ref={heroSectionRef} className={styles.hero}>
+        {/* Dandelion-seed drift — same cursor-repulsion pattern as
+            the pollen on /for-advertisers and the blossoms on
+            /what-is-this. Canvas fills the hero, seeds float upward
+            and respawn from below. */}
+        <HeroDandelion />
+        {/* Swarm of bees that chase the cursor inside the hero. */}
+        <HeroBees sectionRef={heroSectionRef} />
+        <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
+          <video
+            ref={heroVideoRef}
+            className={styles.heroVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            aria-hidden="true"
+          >
+            <source src="/images/for-creators/field3.webm" type="video/webm" />
+            <source src="/images/for-creators/field3.mp4" type="video/mp4" />
+          </video>
+        </div>
         <div className={styles.heroContent}>
           <ScrollFadeUp index={0} duration={1.4} distance={24}>
             <div className={styles.heroLogos}>
@@ -171,31 +252,6 @@ export default function ForCreatorsPage() {
               </p>
             </ScrollFadeUp>
           </div>
-          <ScrollFadeUp index={0} duration={1.4} distance={24}>
-            <div className={styles.heroLogos}>
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-            </div>
-          </ScrollFadeUp>
         </div>
       </section>
 

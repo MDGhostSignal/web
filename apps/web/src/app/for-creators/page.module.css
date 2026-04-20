@@ -30,7 +30,7 @@
 .hero {
   width: 100%;
   min-height: 120vh;
-  background: #060812;
+  background: var(--gs-tw-white);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -51,6 +51,39 @@
   gap: calc(var(--gs-n-96) * var(--gs-px));
   max-width: calc(var(--gs-n-1400, 1400) * var(--gs-px));
   width: 100%;
+}
+
+/* Field video — primary hero atmosphere. Fills the hero and fades out
+   on scroll via GSAP (opacity-only — any transform/filter on a video
+   layer triggers Chromium's flatten-into-texture behaviour and the
+   decoder stops advancing frames). Sits below .heroContent. */
+.heroVideoWrapper {
+  position: absolute;
+  /* 100 px frame on top / left / right keeps the hero navy visible as
+     a letterbox edge and shrinks the video's display size, which
+     raises its effective pixel density (the source is 1280×720, so a
+     smaller render means fewer source pixels per display pixel). */
+  top: calc(var(--gs-n-100) * var(--gs-px));
+  left: calc(var(--gs-n-100) * var(--gs-px));
+  right: calc(var(--gs-n-100) * var(--gs-px));
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* `contain` preserves the full 1280×720 frame — no horizontal crop.
+     `object-position: top` anchors the video to the top of the wrapper
+     so the headline (which sits in the upper portion of the hero) is
+     always rendered over video, not over the white frame below it. */
+  object-fit: contain;
+  object-position: top;
+  will-change: opacity;
 }
 
 /* Fade-up wrappers default to content-width, which collapses the
