@@ -1,18 +1,26 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 
-// FogOverlay is a purely decorative WebGL layer — load it after the page
-// has hydrated so it doesn't block the hero's initial paint.
-const FogOverlay = dynamic(() => import("./FogOverlay"), { ssr: false });
-
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
+
+const HOME_IMG_PREFIX = "/images/home/";
+
+/**
+ * 6 grid slots (2 rows × 3 cols, left-to-right, top-to-bottom). Each value
+ * is a base filename under `public/images/home/` — the code appends `.webm`
+ * + `-optimized.mp4`. Leave `null` for empty cells; fill in as videos are
+ * delivered + transcoded.
+ */
+const GRID_SLOTS: (string | null)[] = [
+  "desktop", "cloudblack", "city",
+  "ship2", "country", "twoclouds",
+];
 
 export default function LegacyHomePage() {
   return (
@@ -24,24 +32,27 @@ export default function LegacyHomePage() {
         DESIGN Feedback
       </Link>
 
-      {/* Cloud Video Background */}
+      {/* 2-row × 3-col grid background — cells filled as videos are
+          delivered. Slot index is left-to-right, top-to-bottom (1..6). */}
       <div className={styles.cloudBackground} aria-hidden="true">
-        <video
-          className={styles.cloudVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          disablePictureInPicture
-        >
-          {/* VP9/WebM first (Chrome, Edge, Firefox) — ~1.7 MB. */}
-          <source src="/images/home/desktopblankcloud2.webm" type="video/webm" />
-          {/* H.264 MP4 fallback (Safari / older browsers) — ~3 MB. */}
-          <source src="/images/home/desktopblankcloud2-optimized.mp4" type="video/mp4" />
-        </video>
-        <div className={styles.cloudOverlay} />
-        <FogOverlay className={styles.fogOverlay} />
+        {GRID_SLOTS.map((slot, i) => (
+          <div key={i} className={styles.gridCell} data-slot={i + 1}>
+            {slot && (
+              <video
+                className={styles.gridCellVideo}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                disablePictureInPicture
+              >
+                <source src={HOME_IMG_PREFIX + slot + ".webm"} type="video/webm" />
+                <source src={HOME_IMG_PREFIX + slot + "-optimized.mp4"} type="video/mp4" />
+              </video>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Hero Section */}

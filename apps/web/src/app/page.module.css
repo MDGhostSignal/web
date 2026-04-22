@@ -3,7 +3,7 @@
   min-height: 100dvh;
   width: 100%;
   overflow-x: hidden;
-  background: #0a0a0b;
+  background: #000000;
 }
 
 /* ========================================
@@ -11,52 +11,45 @@
    ======================================== */
 .cloudBackground {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Stop at the top of SiteHeader (fixed to bottom of viewport, 140 * --gs-px tall). */
+  bottom: calc(var(--gs-n-140, 140) * var(--gs-px, 1px));
   z-index: 0;
+  overflow: hidden;
+  background: #000000;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Rows stretch to fill viewport height — grid always reaches the
+     bottom edge, no black gap. Per-cell crop varies with viewport
+     aspect, which is the explicit trade-off for full-bleed coverage. */
+  grid-template-rows: repeat(2, 1fr);
+}
+
+.gridCell {
+  position: relative;
   overflow: hidden;
 }
 
-.cloudVideo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  transform: translate(-50%, -50%);
+.gridCellVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  opacity: 0.6;
-}
-
-/* Gradient overlay for depth */
-.cloudOverlay {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 80% 60% at 50% 40%,
-      transparent 0%,
-      rgba(10, 10, 11, 0.3) 50%,
-      rgba(10, 10, 11, 0.7) 100%
-    ),
-    linear-gradient(
-      to bottom,
-      rgba(10, 10, 11, 0) 0%,
-      rgba(10, 10, 11, 0.2) 60%,
-      rgba(10, 10, 11, 0.9) 100%
-    );
-  pointer-events: none;
-}
-
-/* Fog overlay - WebGL animated fog on top of video */
-.fogOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  opacity: 0.6;
+  /* Kept for parity across cells; a no-op on the pure-black backdrop. */
   mix-blend-mode: screen;
-  pointer-events: none;
+}
+
+/* Tablet + phone: reflow to 2 cols × 3 rows so tiles don't collapse to
+   postage stamps. 1024 is a deliberate cut-off — landscape tablets and
+   up stay on the 3-col mosaic. A 1-col reflow isn't used: six 16/9
+   tiles stacked vertically overflow even tall phone viewports. */
+@media (max-width: 1024px) {
+  .cloudBackground {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
 }
 
 /* ========================================
@@ -85,6 +78,13 @@
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: -0.02em;
+  /* Drop shadow grows in AFTER the SplitLinesReveal on both lines
+     has finished (line 2 delay 1.5 + duration 1.8 ≈ 3.3s), so the
+     reveal reads cleanly and the shadow only builds against the
+     video mosaic once the text is settled. Global
+     prefers-reduced-motion collapses animations to 0.01ms, so the
+     shadow simply appears at the end state for those users. */
+  animation: heroTextShadowGrow 2s ease-out 3.5s forwards;
 }
 
 /* Brand name styling: GHOST (bold, uppercase) + Signal (thin) */
@@ -119,6 +119,25 @@
   color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.02em;
   max-width: calc(var(--gs-n-800, 800) * var(--gs-px, 1px));
+  /* Same drop-shadow growth, delayed to begin after the ScrollFadeUp
+     on this element finishes (delay 3.0 + duration 1.4 ≈ 4.4s). */
+  animation: heroTextShadowGrow 2s ease-out 4.5s forwards;
+}
+
+/* Directional drop-shadow growth for hero headline + subtitle. Two
+   stacked offsets (down + right) build a clean 3D lift rather than an
+   omnidirectional halo — blurs are kept tight so the shadow doesn't
+   bleed past the text and start highlighting the grid-cell seams
+   behind. */
+@keyframes heroTextShadowGrow {
+  from {
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  to {
+    text-shadow:
+      2px 3px 4px rgba(0, 0, 0, 0.7),
+      5px 8px 14px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* CTA Button */
@@ -143,7 +162,7 @@
 
 .ctaButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.2);
 }
 
 .ctaButton:active {
