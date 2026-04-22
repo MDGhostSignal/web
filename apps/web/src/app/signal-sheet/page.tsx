@@ -183,16 +183,16 @@ const categories: Category[] = [
     id: "adverts",
     label: "Adverts",
     intro:
-      "The working language of ad buying. Read this once and the rest of the industry gets easier to parse.",
+      "The working language of ad buying — plotted on a single plane so the relationships between formats, formats, and trust come through at a glance.",
     terms: [
       {
         title: "CPM (Cost Per Mille)",
         body: (
           <>
-            Shorthand for the cost of reaching 1,000 listeners. Depending on
-            the historic moment, length, position, or whether the host reads
-            it, CPM varies — and at GHOSTSignal we believe high resonance and
-            signal warrant high CPMs.
+            The shorthand for the cost of reaching 1,000 listeners. This
+            measure helps to cost an advert. Depending on the historic moment,
+            length, position, or kind of ad, whether the host reads it or not
+            — at GHOSTSignal we believe high-resonance and signal = high CPMs.
           </>
         ),
       },
@@ -200,22 +200,23 @@ const categories: Category[] = [
         title: "Pre-Roll / Mid-Roll / Post-Roll",
         body: (
           <>
-            The temporal placement of a message within a podcast episode —
-            Pre at the start, Mid in the middle, Post at the end.
+            The temporal placement of a message within a podcast episode
+            (Pre = Start, Mid = Middle, or Post = End).
           </>
         ),
       },
       {
         title: "Baked-In",
-        body: <>Ads permanently recorded into the original audio file — non-swappable.</>,
+        body: <>Ads permanently recorded into the original audio file (non-swappable).</>,
       },
       {
         title: "Programmatic",
         body: (
           <>
-            An automated, algorithm-driven marketplace for ad space. Efficient,
-            but often lacking signal fidelity — we view it as a tool to be
-            carefully curated so it never overwhelms the listener with static.
+            An automated, algorithm-driven marketplace for ad space. While
+            efficient, it often lacks signal fidelity; GHOSTSignal views it as
+            a tool to be carefully curated so it never overwhelms the listener
+            with &ldquo;Static.&rdquo;
           </>
         ),
       },
@@ -223,10 +224,10 @@ const categories: Category[] = [
         title: "Host Read",
         body: (
           <>
-            An ad voiced by the creator themselves. The highest form of
-            endorsement because it relies on the pre-existing, hard-won trust
-            between host and listener — often 3–7× higher conversion than
-            standard ads.
+            An ad voiced by the creator themselves. This is the highest form
+            of endorsement because it relies on the pre-existing, hard-won
+            trust between host and listener, often resulting in 3–7× higher
+            conversion than standard ads.
           </>
         ),
       },
@@ -234,10 +235,10 @@ const categories: Category[] = [
         title: "Signal Pool / Spot Ad",
         body: (
           <>
-            Our dedicated, hand-curated collective of values-based creators and
-            brands. This is at the heart of our value-driven revenue, where
-            partnerships are matched for mutual flourishing rather than mere
-            reach. These are pre-produced ads.
+            Our dedicated, hand-curated collective of values-based creators
+            and brands. This is at the heart of our value-driven revenue,
+            where partnerships are matched for mutual flourishing rather than
+            mere reach. These are pre-produced ads.
           </>
         ),
       },
@@ -245,10 +246,10 @@ const categories: Category[] = [
         title: "Excess Inventory",
         body: (
           <>
-            Open ad slots within an episode not currently occupied by a Signal
-            partner. We steward this space redemptively — using automated
-            systems only where the creator is happy, and even then filtering
-            out static.
+            Open ad slots within an episode not currently occupied by a
+            &ldquo;Signal&rdquo; partner. We steward this space redemptively,
+            using automated systems only where the creator is happy, and even
+            then, we filter out static.
           </>
         ),
       },
@@ -256,8 +257,8 @@ const categories: Category[] = [
         title: "Revenue Share",
         body: (
           <>
-            Our partnership model: the creator and GHOSTSignal share ad revenue
-            in order to keep making the world.
+            Our model of partnership where the creator and GHOSTSignal share
+            ad revenue in order to keep making the world.
           </>
         ),
       },
@@ -265,8 +266,8 @@ const categories: Category[] = [
         title: "Promo Swap",
         body: (
           <>
-            A mutual, mostly-free agreement between two shows — often on the
-            same network — to promote one another. It fosters fraternity and
+            A mutual, mostly free, agreement between two shows, often on the
+            same network, to promote one another. This fosters fraternity and
             grows our collective reach through a sacrificial exchange of
             airtime.
           </>
@@ -354,6 +355,23 @@ export default function SignalSheetPage() {
               </span>
             </div>
           </ScrollFadeUp>
+          <ScrollFadeUp duration={1.6} delay={0.7}>
+            <ul className={styles.heroJumpNav} aria-label="Jump to section">
+              {categories.map((cat, i) => (
+                <li key={cat.id}>
+                  <a href={`#${cat.id}`} className={styles.heroJumpLink}>
+                    <span className={styles.heroJumpIndex}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className={styles.heroJumpLabel}>{cat.label}</span>
+                    <span className={styles.heroJumpArrow} aria-hidden="true">
+                      ↓
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </ScrollFadeUp>
         </div>
       </section>
 
@@ -380,47 +398,107 @@ export default function SignalSheetPage() {
       </nav>
 
       {/* Glossary sections */}
-      {categories.map((cat, catIndex) => (
-        <section key={cat.id} id={cat.id} className={styles.section}>
-          <div className={styles.sectionContainer}>
-            <header className={styles.sectionHeader}>
-              <ScrollFadeUp duration={1.4} distance={16}>
-                <p className={styles.sectionNumber}>
-                  {String(catIndex + 1).padStart(2, "0")} / {" "}
-                  {String(categories.length).padStart(2, "0")}
-                </p>
-              </ScrollFadeUp>
-              <h2 className={styles.sectionTitle}>
-                <SplitLinesReveal duration={2}>{cat.label}</SplitLinesReveal>
-              </h2>
-              <ScrollFadeUp duration={1.6} delay={0.3}>
-                <p className={styles.sectionIntro}>{cat.intro}</p>
-              </ScrollFadeUp>
-            </header>
-
-            <ol className={styles.termList}>
-              {cat.terms.map((term, i) => (
-                <ScrollFadeUp
-                  key={term.title}
-                  duration={1.5}
-                  delay={Math.min(i * 0.06, 0.36)}
-                  className={styles.termItem}
-                >
-                  <article className={styles.termCard}>
-                    <div className={styles.termCardInner}>
-                      <span className={styles.termNumber} aria-hidden="true">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <h3 className={styles.termTitle}>{term.title}</h3>
-                      <div className={styles.termBody}>{term.body}</div>
-                    </div>
-                  </article>
+      {categories.map((cat, catIndex) => {
+        const isGraph = cat.id === "adverts";
+        return (
+          <section
+            key={cat.id}
+            id={cat.id}
+            className={`${styles.section} ${isGraph ? styles.sectionGraph : ""}`}
+          >
+            <div className={styles.sectionContainer}>
+              <header className={styles.sectionHeader}>
+                <ScrollFadeUp duration={1.4} distance={16}>
+                  <p className={styles.sectionNumber}>
+                    {String(catIndex + 1).padStart(2, "0")} / {" "}
+                    {String(categories.length).padStart(2, "0")}
+                  </p>
                 </ScrollFadeUp>
-              ))}
-            </ol>
-          </div>
-        </section>
-      ))}
+                <h2 className={styles.sectionTitle}>
+                  <SplitLinesReveal duration={2}>{cat.label}</SplitLinesReveal>
+                </h2>
+                <ScrollFadeUp duration={1.6} delay={0.3}>
+                  <p className={styles.sectionIntro}>{cat.intro}</p>
+                </ScrollFadeUp>
+              </header>
+
+              {isGraph ? (
+                <ScrollFadeUp duration={1.6} delay={0.35}>
+                  <figure
+                    className={styles.graph}
+                    role="group"
+                    aria-label="Advertising terms plotted on a coordinate plane"
+                  >
+                    {/* Axis labels — technical schematic feel. */}
+                    <span className={`${styles.axisLabel} ${styles.axisLabelY}`}>
+                      Y · Resonance ↑
+                    </span>
+                    <span className={`${styles.axisLabel} ${styles.axisLabelX}`}>
+                      X · Format → Reach
+                    </span>
+
+                    {/* Tick labels sit along each axis — tabular 01-03. */}
+                    <ul className={styles.yTicks} aria-hidden="true">
+                      <li>03</li>
+                      <li>02</li>
+                      <li>01</li>
+                    </ul>
+                    <ul className={styles.xTicks} aria-hidden="true">
+                      <li>01</li>
+                      <li>02</li>
+                      <li>03</li>
+                    </ul>
+
+                    {/* 3×3 plot grid. Each term is a data-point cell. */}
+                    <ol className={styles.graphGrid}>
+                      {cat.terms.map((term, i) => {
+                        const col = (i % 3) + 1;
+                        const row = 3 - Math.floor(i / 3);
+                        return (
+                          <li key={term.title} className={styles.graphCell}>
+                            <span className={styles.cellPlot} aria-hidden="true">
+                              +
+                            </span>
+                            <span className={styles.cellCoord} aria-hidden="true">
+                              ({col}, {row})
+                            </span>
+                            <span className={styles.cellNumber}>
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <h3 className={styles.cellTitle}>{term.title}</h3>
+                            <div className={styles.cellBody}>{term.body}</div>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </figure>
+                </ScrollFadeUp>
+              ) : (
+                <ol className={styles.termList}>
+                  {cat.terms.map((term, i) => (
+                    <ScrollFadeUp
+                      key={term.title}
+                      duration={1.5}
+                      delay={Math.min(i * 0.06, 0.36)}
+                      className={styles.termItem}
+                    >
+                      <article className={styles.termCard}>
+                        <div className={styles.termCardInner}>
+                          <span className={styles.termNumber} aria-hidden="true">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <h3 className={styles.termTitle}>{term.title}</h3>
+                          <div className={styles.termBody}>{term.body}</div>
+                        </div>
+                      </article>
+                    </ScrollFadeUp>
+                  ))}
+                </ol>
+              )}
+            </div>
+          </section>
+        );
+      })}
 
       {/* Sentinel: once this enters the viewport the bottom nav retracts. */}
       <div ref={endSentinelRef} aria-hidden="true" />

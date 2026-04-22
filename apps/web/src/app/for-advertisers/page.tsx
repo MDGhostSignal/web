@@ -9,6 +9,7 @@ import { LazyLottie } from "@/components/LazyLottie";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
+import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
@@ -62,6 +63,62 @@ const journeySteps = [
 
 export default function ForAdvertisersPage() {
   const heroRef = useRef<HTMLElement>(null);
+  const businessRef = useRef<HTMLElement>(null);
+
+  // Mouse-driven parallax for the mariah statue PNG in the business
+  // section. Same lerp + rAF pattern as the hero parallax below;
+  // CSS reads --mx / --my off the section with negative multipliers
+  // so the statue drifts opposite the cursor. Skipped on coarse pointers.
+  useEffect(() => {
+    const el = businessRef.current;
+    if (!el) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let rafId: number | null = null;
+
+    const loop = () => {
+      currentX += (targetX - currentX) * 0.09;
+      currentY += (targetY - currentY) * 0.09;
+      el.style.setProperty("--mx", currentX.toFixed(4));
+      el.style.setProperty("--my", currentY.toFixed(4));
+      const dx = targetX - currentX;
+      const dy = targetY - currentY;
+      if (Math.abs(dx) > 0.0005 || Math.abs(dy) > 0.0005) {
+        rafId = requestAnimationFrame(loop);
+      } else {
+        currentX = targetX;
+        currentY = targetY;
+        el.style.setProperty("--mx", currentX.toFixed(4));
+        el.style.setProperty("--my", currentY.toFixed(4));
+        rafId = null;
+      }
+    };
+    const ensureLoop = () => {
+      if (rafId === null) rafId = requestAnimationFrame(loop);
+    };
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      targetX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      targetY = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      ensureLoop();
+    };
+    const handleLeave = () => {
+      targetX = 0;
+      targetY = 0;
+      ensureLoop();
+    };
+    el.addEventListener("mousemove", handleMove);
+    el.addEventListener("mouseleave", handleLeave);
+    return () => {
+      el.removeEventListener("mousemove", handleMove);
+      el.removeEventListener("mouseleave", handleLeave);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -223,16 +280,7 @@ export default function ForAdvertisersPage() {
             <SplitLinesReveal duration={2}>Most ad buys</SplitLinesReveal>
             <SplitLinesReveal duration={2} delay={0.3}>
               Chase{" "}
-              <span className={styles.impressionsWord}>
-                impressions
-                <span className={styles.heart} aria-hidden="true" />
-                <span className={styles.heart} aria-hidden="true" />
-                <span className={styles.heart} aria-hidden="true" />
-                <span className={styles.heart} aria-hidden="true" />
-                <span className={styles.heart} aria-hidden="true" />
-                <span className={styles.heart} aria-hidden="true" />
-                <span className={styles.heart} aria-hidden="true" />
-              </span>
+              <span className={styles.impressionsWord}>impressions</span>
             </SplitLinesReveal>
             <SplitLinesReveal duration={2} delay={0.6}>
               We curate{" "}
@@ -268,13 +316,31 @@ export default function ForAdvertisersPage() {
       </section>
 
       {/* The Business Case Section */}
-      <section className={styles.businessSection}>
+      <section ref={businessRef} className={styles.businessSection}>
+        {/* Floating clouds — same animated pattern as /who-are-we hero,
+            ported here per request. Wrapper is absolute + overflow:hidden
+            so the section can keep position:relative without breaking
+            the sticky businessVisual on the right. */}
+        <div className={styles.businessCloudWrapper} aria-hidden="true">
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud1}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud2}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud3}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud4}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud5}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud6}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud7}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud8}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud9}`} />
+          <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud10}`} />
+        </div>
         <div className={styles.businessContainer}>
           <div className={styles.businessContent}>
             <h2 className={styles.businessTitle}>
-              <SplitLinesReveal duration={2}>GHOSTSignal is about</SplitLinesReveal>
+              <SplitLinesReveal duration={2}>
+                <span><BrandedGhostSignal /></span>
+              </SplitLinesReveal>
               <SplitLinesReveal duration={2} delay={0.3}>
-                resonance.
+                is about resonance
               </SplitLinesReveal>
             </h2>
             <ScrollFadeUp index={0} duration={1.6}>
@@ -300,15 +366,17 @@ export default function ForAdvertisersPage() {
             <ScrollFadeUp index={4} duration={1.6}>
               <div className={styles.businessResult}>
                 <p className={styles.resultLabel}>This is world-making for advertisers.</p>
-                <div className={styles.resultHeadline}>
+                <h2 className={styles.resultHeadlineH2}>
                   <SplitLinesReveal duration={2}>The result?</SplitLinesReveal>
+                </h2>
+                <h3 className={styles.resultHeadlineH3}>
                   <SplitLinesReveal duration={2} delay={0.3}>
                     Advertising that works better
                   </SplitLinesReveal>
                   <SplitLinesReveal duration={2} delay={0.6}>
                     because it <em>is</em> better.
                   </SplitLinesReveal>
-                </div>
+                </h3>
               </div>
             </ScrollFadeUp>
 

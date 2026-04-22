@@ -18,7 +18,7 @@
   min-height: calc(var(--gs-n-140, 140) * var(--gs-px));
   padding-left: calc(var(--gs-n-48) * var(--gs-px));
   padding-right: calc(var(--gs-n-48) * var(--gs-px));
-  background: #f2f2f2;
+  background: #ffffff;
 }
 
 .logoWrap {
@@ -54,6 +54,7 @@
 }
 
 .navLink {
+  position: relative;
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -68,6 +69,43 @@
   color: var(--gs-tw-black);
   text-decoration: none;
   white-space: nowrap;
+  /* Smooth dim transition — when the nav is being hovered, unhovered
+     siblings fade to 0.4, re-brighten to 1 on direct hover. */
+  transition: opacity 320ms ease;
+}
+
+/* Underline that wipes in from left on hover. Inset matches the link's
+   inline padding so the line sits under the text, not the full padded
+   box. currentColor keeps it in sync if the link ever inherits a new
+   color. */
+.navLink::after {
+  content: "";
+  position: absolute;
+  inset-inline: calc(var(--gs-n-32) * var(--gs-px));
+  bottom: calc(var(--gs-n-14, 14) * var(--gs-px));
+  height: calc(1 * var(--gs-px));
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms cubic-bezier(0.2, 0.65, 0.2, 1);
+  pointer-events: none;
+}
+
+.navLink:hover::after,
+.navLink:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Sibling dimming — hovering the nav dims all links; the directly
+   hovered link comes back to full opacity. No dim until the cursor
+   actually enters the nav, so at rest every link stays crisp. */
+.nav:hover .navLink {
+  opacity: 0.4;
+}
+
+.nav:hover .navLink:hover,
+.nav .navLink:focus-visible {
+  opacity: 1;
 }
 
 .cta {

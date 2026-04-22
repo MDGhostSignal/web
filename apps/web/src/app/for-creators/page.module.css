@@ -325,13 +325,23 @@
   object-fit: contain;
   object-position: left bottom;
   display: block;
+  /* Mouse-driven parallax: opposite to the cursor. --mx / --my are
+     written by the rAF lerp on the journey section in page.tsx;
+     translate-only to keep the image's compositor layer stable. */
+  transform: translate3d(
+    calc(var(--mx, 0) * -12px),
+    calc(var(--my, 0) * -10px),
+    0
+  );
+  will-change: transform;
 }
 
 .journeyTitle {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(32px, 6vw, 80px);
+  /* Monster Headline M1 size — matches .text-monster-1 in typography.css. */
+  font-size: clamp(35px, 6.6vw, 88px);
   line-height: 1.1;
   color: var(--gs-tw-white);
   text-transform: uppercase;

@@ -17,6 +17,7 @@ const ScrollScenes = dynamic(
 const HeroBlossoms = dynamic(() => import("./HeroBlossoms"), { ssr: false });
 import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { Footer } from "@/components/Footer";
+import { ContactSection } from "@/components/ContactSection";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
@@ -403,6 +404,40 @@ export default function WhatIsThisPage() {
           </section>
         </div>
       </div>
+
+      {/* Platforms — listening platforms row, all-black monochrome marks
+          on a white backdrop. Sits above the standardised Get-In-Touch
+          contact section. */}
+      <section className={styles.platformsSection}>
+        <div className={styles.platformsContainer}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <h2 className={styles.platformsHeadline}>Platforms</h2>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={1} duration={1.6}>
+            <p className={styles.platformsSubhead}>
+              Listen on your favorite platform.
+            </p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={2} duration={1.6}>
+            <ul className={styles.platformsList} aria-label="Listening platforms">
+              <li className={styles.platformItem}>
+                <Image src="/images/what-is-this/spotify.svg" alt="Spotify" width={150} height={50} />
+              </li>
+              <li className={styles.platformItem}>
+                <Image src="/images/what-is-this/applepodcasts.svg" alt="Apple Podcasts" width={150} height={29} />
+              </li>
+              <li className={styles.platformItem}>
+                <Image src="/images/what-is-this/amazon.svg" alt="Amazon Music" width={150} height={34} />
+              </li>
+              <li className={styles.platformItem}>
+                <Image src="/images/what-is-this/youtube.svg" alt="YouTube" width={150} height={42} />
+              </li>
+            </ul>
+          </ScrollFadeUp>
+        </div>
+      </section>
+
+      <ContactSection />
 
       <Footer />
     </main>

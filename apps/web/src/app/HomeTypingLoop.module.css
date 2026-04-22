@@ -1,0 +1,80 @@
+/* Each typed line occupies its own row. min-height keeps layout stable
+   while a line is empty (before typing starts), so the block doesn't
+   collapse and jump when text arrives. */
+.line {
+  display: block;
+  min-height: 1em;
+}
+
+/* Brand typography — GHOST bold uppercase, Signal thin (100). Kept
+   co-located with the component that renders them so page.module.css
+   doesn't need to know about the typing internals. */
+.ghost {
+  font-weight: var(--gs-font-weight-bold, 700);
+  text-transform: uppercase;
+}
+
+.signal {
+  font-weight: 100;
+  text-transform: none;
+  opacity: 0.85;
+}
+
+.plain {
+  /* Inherits from .heroHeadline. */
+}
+
+/* Per-character entrance — fades from blurred + slightly-lifted into
+   place. Duration intentionally longer than TYPE_MS (130 ms) so
+   adjacent characters overlap: the newest one is still blurring in
+   while the next one starts, giving a continuous flowing feel rather
+   than a discrete pop per key. inline-block so transforms/filters
+   don't break the text baseline. */
+.ch {
+  display: inline-block;
+  animation: homeTypingChar 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  will-change: opacity, filter, transform;
+}
+
+@keyframes homeTypingChar {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* Text-editor caret — sized in em so it scales with the heading font.
+   Blinks hard on/off in a single step (classic editor feel) rather
+   than a soft fade. */
+.cursor {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.85em;
+  margin-left: 0.04em;
+  vertical-align: -0.12em;
+  background: currentColor;
+  animation: homeTypingBlink 1s steps(1, end) infinite;
+}
+
+@keyframes homeTypingBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch {
+    animation: none;
+  }
+}

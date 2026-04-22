@@ -11,45 +11,32 @@
    ======================================== */
 .cloudBackground {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  /* Stop at the top of SiteHeader (fixed to bottom of viewport, 140 * --gs-px tall). */
-  bottom: calc(var(--gs-n-140, 140) * var(--gs-px, 1px));
+  /* Cover the entire viewport. The SiteHeader (z-index 50) overlays
+     the bottom 140px with its own white bg, so we don't need a gap
+     there — leaving one risks a 1px hairline from sub-pixel rounding
+     when the bottom edge butts up against the header. */
+  inset: 0;
   z-index: 0;
   overflow: hidden;
-  background: #000000;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  /* Rows stretch to fill viewport height — grid always reaches the
-     bottom edge, no black gap. Per-cell crop varies with viewport
-     aspect, which is the explicit trade-off for full-bleed coverage. */
-  grid-template-rows: repeat(2, 1fr);
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.gridCell {
-  position: relative;
-  overflow: hidden;
-}
-
-.gridCellVideo {
+.heroVideo {
+  /* Edge-anchored sizing (inset: 0) is more resilient to sub-pixel
+     rounding than width/height: 100% on a position:fixed parent. */
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Kept for parity across cells; a no-op on the pure-black backdrop. */
-  mix-blend-mode: screen;
-}
-
-/* Tablet + phone: reflow to 2 cols × 3 rows so tiles don't collapse to
-   postage stamps. 1024 is a deliberate cut-off — landscape tablets and
-   up stay on the 3-col mosaic. A 1-col reflow isn't used: six 16/9
-   tiles stacked vertically overflow even tall phone viewports. */
-@media (max-width: 1024px) {
-  .cloudBackground {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-  }
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
 }
 
 /* ========================================
@@ -78,34 +65,6 @@
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: -0.02em;
-  /* Drop shadow grows in AFTER the SplitLinesReveal on both lines
-     has finished (line 2 delay 1.5 + duration 1.8 ≈ 3.3s), so the
-     reveal reads cleanly and the shadow only builds against the
-     video mosaic once the text is settled. Global
-     prefers-reduced-motion collapses animations to 0.01ms, so the
-     shadow simply appears at the end state for those users. */
-  animation: heroTextShadowGrow 2s ease-out 3.5s forwards;
-}
-
-/* Brand name styling: GHOST (bold, uppercase) + Signal (thin) */
-.heroHeadlineBrand {
-  display: inline;
-}
-
-.heroGhost {
-  font-weight: var(--gs-font-weight-bold, 700);
-  text-transform: uppercase;
-}
-
-.heroSignal {
-  font-weight: 100;
-  text-transform: none;
-  opacity: 0.85;
-}
-
-/* Each headline line wrapper for staggered animation */
-.heroLine {
-  display: block;
 }
 
 /* Hero Subtitle */
@@ -119,25 +78,6 @@
   color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.02em;
   max-width: calc(var(--gs-n-800, 800) * var(--gs-px, 1px));
-  /* Same drop-shadow growth, delayed to begin after the ScrollFadeUp
-     on this element finishes (delay 3.0 + duration 1.4 ≈ 4.4s). */
-  animation: heroTextShadowGrow 2s ease-out 4.5s forwards;
-}
-
-/* Directional drop-shadow growth for hero headline + subtitle. Two
-   stacked offsets (down + right) build a clean 3D lift rather than an
-   omnidirectional halo — blurs are kept tight so the shadow doesn't
-   bleed past the text and start highlighting the grid-cell seams
-   behind. */
-@keyframes heroTextShadowGrow {
-  from {
-    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  to {
-    text-shadow:
-      2px 3px 4px rgba(0, 0, 0, 0.7),
-      5px 8px 14px rgba(0, 0, 0, 0.5);
-  }
 }
 
 /* CTA Button */

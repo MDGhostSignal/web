@@ -380,10 +380,8 @@
 }
 
 /* SplitLinesReveal applies `overflow: hidden` to its outer line wrappers
-   as an entrance-animation mask. That mask also clips the halo and the
-   burst particles, so for the two lines that carry our decorations we
-   let overflow escape the mask. */
-.pitchHeadline :global(.line):has(.impressionsWord),
+   as an entrance-animation mask. The halo on "conviction" sits outside
+   the line box, so we let overflow escape the mask for that line. */
 .pitchHeadline :global(.line):has(.convictionWord) {
   overflow: visible !important;
 }
@@ -394,90 +392,6 @@
 .convictionO {
   position: relative;
   display: inline-block;
-}
-
-/* Hearts are direct children of .impressionsWord — each one absolute-
-   positioned at a fixed em offset from the word's top-left, so they
-   land at specific spots across "impressions." regardless of how the
-   enclosing span is measured. No container/grid layer in between. */
-.heart {
-  position: absolute;
-  width: 0.24em;
-  height: 0.24em;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ff5b8a' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  filter: drop-shadow(0 0 3px rgba(255, 91, 138, 0.6));
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-  animation: heartPop 3s ease-in-out infinite;
-}
-
-/* Seven fixed em positions scattered over the word. Top values cover
-   ~0 → 1em (cap height of the uppercase word); left values cover
-   ~0.3 → 6em (roughly the width of "impressions." at the heading font). */
-.heart:nth-child(1) {
-  left: 0.4em;
-  top: 0.1em;
-  animation-delay: 0s;
-  animation-duration: 2.8s;
-}
-.heart:nth-child(2) {
-  left: 1.6em;
-  top: 0.8em;
-  animation-delay: 0.6s;
-  animation-duration: 3.3s;
-}
-.heart:nth-child(3) {
-  left: 2.7em;
-  top: 0.05em;
-  animation-delay: 1.2s;
-  animation-duration: 3.0s;
-}
-.heart:nth-child(4) {
-  left: 3.9em;
-  top: 0.7em;
-  animation-delay: 0.3s;
-  animation-duration: 3.2s;
-}
-.heart:nth-child(5) {
-  left: 5.1em;
-  top: 0.2em;
-  animation-delay: 1.6s;
-  animation-duration: 2.9s;
-}
-.heart:nth-child(6) {
-  left: 4.5em;
-  top: 0.95em;
-  animation-delay: 0.9s;
-  animation-duration: 3.4s;
-}
-.heart:nth-child(7) {
-  left: 6em;
-  top: 0.55em;
-  animation-delay: 1.9s;
-  animation-duration: 3.1s;
-}
-
-@keyframes heartPop {
-  0% {
-    opacity: 0;
-    transform: scale(0.3) rotate(-8deg);
-  }
-  25% {
-    opacity: 1;
-    transform: scale(1.1) rotate(4deg);
-  }
-  70% {
-    opacity: 0.9;
-    transform: scale(1) rotate(-2deg);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.5) rotate(6deg);
-  }
 }
 
 /* Halo on "conviction." — a bright ring + soft glow that hovers above
@@ -565,11 +479,200 @@
    ============================================================================= */
 
 .businessSection {
+  position: relative;
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   background: #f2f2f2;
 }
 
+/* Cloud backdrop — same animated pattern as the /who-are-we hero,
+   ported here. Wrapper is absolute with overflow:hidden so the section
+   itself doesn't need overflow:hidden (which would break the sticky
+   .businessVisual on the right column). Clouds get filter:brightness(0)
+   so they read as soft dark drifts on the light gray background
+   instead of disappearing into it. */
+.businessCloudWrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.businessCloud {
+  position: absolute;
+  width: auto;
+  height: auto;
+  max-width: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.businessCloud1 {
+  top: -5%;
+  left: -25%;
+  opacity: 0.55;
+  filter: blur(1px);
+  animation: businessCloudFloat1 160s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud2 {
+  top: 50%;
+  left: 85%;
+  opacity: 0.48;
+  filter: blur(2px);
+  animation: businessCloudFloat2 190s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud3 {
+  top: 20%;
+  left: -30%;
+  opacity: 0.4;
+  filter: blur(3px);
+  animation: businessCloudFloat3 210s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud4 {
+  top: 10%;
+  left: 70%;
+  opacity: 0.34;
+  filter: blur(1px);
+  animation: businessCloudFloat4 170s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud5 {
+  top: 40%;
+  left: -20%;
+  opacity: 0.28;
+  filter: blur(0.5px);
+  animation: businessCloudFloat5 150s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+/* Five extra clouds — mostly smaller than 1-5, scattered at positions
+   the first five don't already cover, with staggered durations so
+   nothing syncs visibly. */
+.businessCloud6 {
+  top: 65%;
+  left: 15%;
+  opacity: 0.42;
+  filter: blur(1.5px);
+  animation: businessCloudFloat6 175s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud7 {
+  top: 5%;
+  left: 40%;
+  opacity: 0.3;
+  filter: blur(2px);
+  animation: businessCloudFloat7 220s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud8 {
+  top: 80%;
+  left: 55%;
+  opacity: 0.38;
+  filter: blur(1px);
+  animation: businessCloudFloat8 140s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud9 {
+  top: 30%;
+  left: 45%;
+  opacity: 0.24;
+  filter: blur(2.5px);
+  animation: businessCloudFloat9 200s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.businessCloud10 {
+  top: 55%;
+  left: 25%;
+  opacity: 0.3;
+  filter: blur(0.5px);
+  animation: businessCloudFloat10 165s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+/* Scales are each ~25 % smaller than the previous pass — clouds feel
+   denser without any single one dominating the section. */
+@keyframes businessCloudFloat1 {
+  0% { transform: translate3d(0, 0, 0) scale(0.32); }
+  25% { transform: translate3d(45vw, 20vh, 0) scale(0.32); }
+  50% { transform: translate3d(90vw, 35vh, 0) scale(0.32); }
+  75% { transform: translate3d(60vw, 15vh, 0) scale(0.32); }
+  100% { transform: translate3d(0, 0, 0) scale(0.32); }
+}
+@keyframes businessCloudFloat2 {
+  0% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.2); }
+  25% { transform: translate3d(-40vw, -20vh, 0) scaleX(-1) scale(0.2); }
+  50% { transform: translate3d(-80vw, -35vh, 0) scaleX(-1) scale(0.2); }
+  75% { transform: translate3d(-105vw, -10vh, 0) scaleX(-1) scale(0.2); }
+  100% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.2); }
+}
+@keyframes businessCloudFloat3 {
+  0% { transform: translate3d(0, 0, 0) scale(0.36); }
+  33% { transform: translate3d(60vw, -15vh, 0) scale(0.36); }
+  66% { transform: translate3d(100vw, 15vh, 0) scale(0.36); }
+  100% { transform: translate3d(0, 0, 0) scale(0.36); }
+}
+@keyframes businessCloudFloat4 {
+  0% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.15); }
+  25% { transform: translate3d(20vw, 15vh, 0) scaleX(-1) scale(0.15); }
+  50% { transform: translate3d(-20vw, 35vh, 0) scaleX(-1) scale(0.15); }
+  75% { transform: translate3d(-60vw, 10vh, 0) scaleX(-1) scale(0.15); }
+  100% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.15); }
+}
+@keyframes businessCloudFloat5 {
+  0% { transform: translate3d(0, 0, 0) scale(0.1); }
+  25% { transform: translate3d(35vw, -25vh, 0) scale(0.1); }
+  50% { transform: translate3d(70vw, -40vh, 0) scale(0.1); }
+  75% { transform: translate3d(100vw, -10vh, 0) scale(0.1); }
+  100% { transform: translate3d(0, 0, 0) scale(0.1); }
+}
+
+/* Keyframes for the five additional clouds — each travels a distinct
+   path so the overall motion never syncs. */
+@keyframes businessCloudFloat6 {
+  0% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.22); }
+  25% { transform: translate3d(-25vw, -15vh, 0) scaleX(-1) scale(0.22); }
+  50% { transform: translate3d(-60vw, -30vh, 0) scaleX(-1) scale(0.22); }
+  75% { transform: translate3d(-80vw, -5vh, 0) scaleX(-1) scale(0.22); }
+  100% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.22); }
+}
+@keyframes businessCloudFloat7 {
+  0% { transform: translate3d(0, 0, 0) scale(0.18); }
+  33% { transform: translate3d(30vw, 25vh, 0) scale(0.18); }
+  66% { transform: translate3d(55vw, 10vh, 0) scale(0.18); }
+  100% { transform: translate3d(0, 0, 0) scale(0.18); }
+}
+@keyframes businessCloudFloat8 {
+  0% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.28); }
+  25% { transform: translate3d(-15vw, -20vh, 0) scaleX(-1) scale(0.28); }
+  50% { transform: translate3d(-50vw, -45vh, 0) scaleX(-1) scale(0.28); }
+  75% { transform: translate3d(-70vw, -25vh, 0) scaleX(-1) scale(0.28); }
+  100% { transform: translate3d(0, 0, 0) scaleX(-1) scale(0.28); }
+}
+@keyframes businessCloudFloat9 {
+  0% { transform: translate3d(0, 0, 0) scale(0.12); }
+  25% { transform: translate3d(25vw, 20vh, 0) scale(0.12); }
+  50% { transform: translate3d(50vw, 5vh, 0) scale(0.12); }
+  75% { transform: translate3d(15vw, -15vh, 0) scale(0.12); }
+  100% { transform: translate3d(0, 0, 0) scale(0.12); }
+}
+@keyframes businessCloudFloat10 {
+  0% { transform: translate3d(0, 0, 0) scale(0.16); }
+  33% { transform: translate3d(40vw, 10vh, 0) scale(0.16); }
+  66% { transform: translate3d(70vw, -10vh, 0) scale(0.16); }
+  100% { transform: translate3d(0, 0, 0) scale(0.16); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .businessCloud {
+    animation: none !important;
+  }
+}
+
 .businessContainer {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: calc(var(--gs-n-80) * var(--gs-px));
@@ -684,18 +787,34 @@
   letter-spacing: 0.1em;
 }
 
-.resultHeadline {
+/* "The result?" — H2 treatment, matches the page's section-headline
+   scale (.businessTitle / .featuresHeadline). */
+.resultHeadlineH2 {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(24px, 3vw, 36px);
+  font-size: clamp(36px, 5vw, 60px);
   line-height: 1.1;
   color: var(--gs-tw-gray-950);
   text-transform: uppercase;
   letter-spacing: -0.02em;
 }
 
-.resultHeadline em {
+/* "Advertising that works better / because it is better." — H3
+   treatment, one rung below the H2. */
+.resultHeadlineH3 {
+  margin: 0;
+  margin-top: calc(var(--gs-n-12, 12) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(22px, 2.6vw, 32px);
+  line-height: 1.2;
+  color: var(--gs-tw-gray-950);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.resultHeadlineH3 em {
   font-style: normal;
 }
 
@@ -718,7 +837,16 @@
   object-fit: cover;
   position: relative;
   left: 50%;
-  transform: translateX(-50%);
+  /* Combine the centering offset (-50%) with mouse-driven parallax:
+     --mx / --my (-1..1 each) are written onto the business section
+     by the rAF lerp in page.tsx; negative multipliers make the
+     statue drift opposite the cursor. */
+  transform: translate3d(
+    calc(-50% + var(--mx, 0) * -14px),
+    calc(var(--my, 0) * -10px),
+    0
+  );
+  will-change: transform;
 }
 
 .visualOverlay {

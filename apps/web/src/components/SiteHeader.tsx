@@ -141,13 +141,34 @@ export function SiteHeader({
         .restart();
     };
 
+    // Direction-based visibility: past THRESHOLD_Y the header follows
+    // scroll direction — scrolling down hides it, scrolling up brings
+    // it back. Near the top (<= THRESHOLD_Y) the header is always
+    // visible regardless of direction. DIR_THRESHOLD filters momentum
+    // noise and trackpad micro-jitter so the bar doesn't flicker.
+    const DIR_THRESHOLD = 10;
+    let lastY = window.scrollY || 0;
+
     const onScroll = () => {
       if (mq.matches) return;
       const y = window.scrollY || 0;
-      if (y > THRESHOLD_Y && !activeRef.current) {
+      const delta = y - lastY;
+      lastY = y;
+
+      if (y <= THRESHOLD_Y) {
+        if (activeRef.current) {
+          activeRef.current = false;
+          runIn();
+        }
+        return;
+      }
+
+      if (Math.abs(delta) < DIR_THRESHOLD) return;
+
+      if (delta > 0 && !activeRef.current) {
         activeRef.current = true;
         runOut();
-      } else if (y <= THRESHOLD_Y && activeRef.current) {
+      } else if (delta < 0 && activeRef.current) {
         activeRef.current = false;
         runIn();
       }

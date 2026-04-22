@@ -128,7 +128,7 @@ export default function HeroBlossoms() {
     // coords via getBoundingClientRect. Gated on fine pointer (no touch
     // hover) and skipped under reduced motion.
     const REPEL_RADIUS = 130;     // px — influence zone around the cursor
-    const REPEL_STRENGTH = 2.2;   // max impulse per frame at the cursor
+    const REPEL_STRENGTH = 1.4;   // max impulse per frame at the cursor
     const DAMP_TO_BASELINE = 0.03; // how fast pushed petals rejoin drift
     let mouseX = -9999;
     let mouseY = -9999;

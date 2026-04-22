@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -63,6 +63,68 @@ export default function ForCreatorsPage() {
   const heroSectionRef = useRef<HTMLElement>(null);
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const journeyRef = useRef<HTMLElement>(null);
+
+  // Mouse-driven parallax for the membership-journey statue PNG.
+  // Same lerp + rAF pattern as /for-advertisers and the homepage:
+  // write smoothed --mx / --my (-1..1) onto the journey section;
+  // CSS reads them with negative multipliers so the image drifts
+  // opposite the cursor. Skipped on coarse pointers.
+  useEffect(() => {
+    const el = journeyRef.current;
+    if (!el) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let rafId: number | null = null;
+
+    const loop = () => {
+      currentX += (targetX - currentX) * 0.09;
+      currentY += (targetY - currentY) * 0.09;
+      el.style.setProperty("--mx", currentX.toFixed(4));
+      el.style.setProperty("--my", currentY.toFixed(4));
+      const dx = targetX - currentX;
+      const dy = targetY - currentY;
+      if (Math.abs(dx) > 0.0005 || Math.abs(dy) > 0.0005) {
+        rafId = requestAnimationFrame(loop);
+      } else {
+        currentX = targetX;
+        currentY = targetY;
+        el.style.setProperty("--mx", currentX.toFixed(4));
+        el.style.setProperty("--my", currentY.toFixed(4));
+        rafId = null;
+      }
+    };
+
+    const ensureLoop = () => {
+      if (rafId === null) rafId = requestAnimationFrame(loop);
+    };
+
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      targetX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      targetY = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      ensureLoop();
+    };
+
+    const handleLeave = () => {
+      targetX = 0;
+      targetY = 0;
+      ensureLoop();
+    };
+
+    el.addEventListener("mousemove", handleMove);
+    el.addEventListener("mouseleave", handleLeave);
+
+    return () => {
+      el.removeEventListener("mousemove", handleMove);
+      el.removeEventListener("mouseleave", handleLeave);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   // Scroll-driven fade + looping safety-net for the hero field video.
   // Same pattern used on /what-is-this for the sunset: opacity-only
@@ -305,7 +367,7 @@ export default function ForCreatorsPage() {
       </section>
 
       {/* Membership Journey Section */}
-      <section className={styles.journeySection}>
+      <section ref={journeyRef} className={styles.journeySection}>
         <div className={styles.journeyBackground} aria-hidden="true" />
         <div className={styles.journeyHeader}>
           <ScrollFadeUp index={0} duration={1.6}>
