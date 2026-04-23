@@ -495,3 +495,17 @@ Two small `/get-in-touch` polishes after the main session push.
   0.35s), each wrapped in its own `SplitLinesReveal` + a
   `.headlineLine` span (`display: block`). Parent still applies
   `text-transform: uppercase`, so casing on the page is unchanged.
+
+### RQ quiz — persistent "Home" pill
+
+- `apps/web/src/app/rq-quiz/layout.tsx` now wraps `children` with a
+  `<Link href="/" className="rq-back-home">` so every quiz view
+  (intro, all questions, results) has a fixed top-left exit to the
+  homepage. Server component; only `next/link` added, no
+  client-side JS weight.
+- `.rq-back-home` styles added to `rq-quiz.css`: semi-transparent
+  dark pill with `backdrop-filter: blur(8px)` so it reads cleanly
+  over both the dark quiz backdrop and the Desert / Snow
+  animations on the results screen. Hover/focus lifts the pill and
+  slides the arrow 3px left via `.rq-back-home-arrow`. Uses the
+  same Inter font + uppercase tracking the quiz uses elsewhere.

@@ -1482,3 +1482,53 @@ html:has(.rq-results-page) {
     order: 1;
   }
 }
+
+/* ---------------------------------------------------------------
+   Back to Home pill — fixed top-left, visible on every quiz step
+   (intro, questions, results). Uses a semi-transparent dark
+   background with backdrop blur so it reads cleanly over either
+   the dark quiz backdrop or the Desert / Snow animations on the
+   results screen.
+   --------------------------------------------------------------- */
+.rq-back-home {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: color 180ms ease, background 180ms ease,
+    border-color 180ms ease, transform 180ms ease;
+}
+
+.rq-back-home:hover,
+.rq-back-home:focus-visible {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.rq-back-home-arrow {
+  display: inline-block;
+  transition: transform 180ms ease;
+}
+
+.rq-back-home:hover .rq-back-home-arrow {
+  transform: translateX(-3px);
+}
