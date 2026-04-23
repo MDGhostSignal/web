@@ -151,6 +151,12 @@
   text-transform: uppercase;
 }
 
+/* Each hero line sits in its own block-level span so it can be
+   wrapped in its own SplitLinesReveal and reveal independently. */
+.headlineLine {
+  display: block;
+}
+
 .contactBody {
   margin: 0;
   font-family: var(--font-body);
@@ -213,9 +219,13 @@
 
 .contactPhoto {
   position: absolute;
-  top: calc(var(--gs-n-24) * var(--gs-px));
+  /* Was `top: 24`. Lifted so Jeremy's image + its drop-shadow clear
+     the bottom-fixed SiteHeader (140px tall) on shorter desktop
+     viewports where the previous offset had the photo overlapping
+     the navbar. */
+  top: calc(var(--gs-n-0, 0) * var(--gs-px));
   left: 50%;
-  transform: translateX(-40%);
+  transform: translate(-40%, calc(var(--gs-n-48) * var(--gs-px) * -1));
   width: clamp(200px, 60%, 350px);
   height: auto;
   border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));

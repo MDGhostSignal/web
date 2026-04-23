@@ -474,3 +474,24 @@ Large iteration on the 3D globe rings in `src/components/ScrollScenes.tsx`:
   after a successful delete (the row is already gone from
   Supabase). If undo becomes a requirement, add a soft-delete
   column rather than wiring client-side undo.
+
+---
+
+## Late-evening addendum
+
+Two small `/get-in-touch` polishes after the main session push.
+
+- **Jeremy photo lifted above the navbar.** `.contactPhoto` was
+  positioned `top: 24px` inside its cell; on shorter desktop
+  viewports the bottom of the photo + its 60px drop-shadow were
+  overlapping the bottom-fixed `SiteHeader`. Changed to `top: 0`
+  and added `translateY(-48px)` onto the existing `translateX(-40%)`
+  transform -- nets ~72px of lift, clears the 140px-tall navbar
+  with room to spare.
+- **Hero headline split into two reveals.** The single
+  `SplitLinesReveal` that wrapped the whole "EVERY PARTNERSHIP
+  STARTS WITH A CHAT" `<h1>` is now two siblings inside the h1:
+  `Every partnership` (delay 0) and `starts with a chat` (delay
+  0.35s), each wrapped in its own `SplitLinesReveal` + a
+  `.headlineLine` span (`display: block`). Parent still applies
+  `text-transform: uppercase`, so casing on the page is unchanged.

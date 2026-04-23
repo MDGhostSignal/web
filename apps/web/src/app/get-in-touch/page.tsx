@@ -70,11 +70,14 @@ export default function GetInTouchPage() {
             <ScrollFadeUp index={0} duration={1.6}>
               <p className={styles.contactEyebrow}>GET IN TOUCH</p>
             </ScrollFadeUp>
-            <SplitLinesReveal duration={1.8} stagger={0.28}>
-              <h1 className={styles.contactHeadline}>
-                EVERY PARTNERSHIP STARTS WITH A CHAT
-              </h1>
-            </SplitLinesReveal>
+            <h1 className={styles.contactHeadline}>
+              <SplitLinesReveal duration={1.8} stagger={0.28}>
+                <span className={styles.headlineLine}>Every partnership</span>
+              </SplitLinesReveal>
+              <SplitLinesReveal duration={1.8} stagger={0.28} delay={0.35}>
+                <span className={styles.headlineLine}>starts with a chat</span>
+              </SplitLinesReveal>
+            </h1>
             <ScrollFadeUp index={1} duration={1.6}>
               <p className={styles.contactBody}>
                 Podcaster or Advertiser, ready to find your frequency? Schedule a call.
