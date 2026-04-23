@@ -4,6 +4,7 @@ import { Button } from "@/components/ui";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
+import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import SplineEmbed from "./SplineEmbed";
@@ -165,11 +166,39 @@ export default function WhoAreWePage() {
 
       {/* Partner-Making Force Section */}
       <section className={styles.missionSection}>
+        {/* Drifting clouds — same asset + keyframes as the hero and
+           promises sections, tuned to this section's scale. */}
+        <div className={styles.missionCloudWrapper}>
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.missionCloud1}`}
+            aria-hidden="true"
+          />
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.missionCloud2}`}
+            aria-hidden="true"
+          />
+          <Image
+            src="/images/who-are-we/cloud.png"
+            alt=""
+            width={600}
+            height={400}
+            className={`${styles.floatingCloud} ${styles.missionCloud3}`}
+            aria-hidden="true"
+          />
+        </div>
         <div className={styles.missionContent}>
           <div className={styles.missionLeft}>
             <SplitLinesReveal duration={1.8} stagger={0.28}>
               <h2 className={styles.missionHeadline}>
-                GHOSTSIGNAL IS A
+                <BrandedGhostSignal /> IS
               </h2>
             </SplitLinesReveal>
             <div className={styles.handshakeContainer}>
@@ -196,11 +225,6 @@ export default function WhoAreWePage() {
                 <span className={styles.makingText}>MAKING</span>
               </span>
             </div>
-            <SplitLinesReveal duration={1.8} stagger={0.28}>
-              <h2 className={styles.missionHeadline}>
-                FORCE
-              </h2>
-            </SplitLinesReveal>
           </div>
           <div className={styles.missionRight}>
             <ScrollFadeUp index={0} duration={1.6}>

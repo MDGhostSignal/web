@@ -30,16 +30,16 @@ const features = [
     description: "We locate you in front of considered communities where alignment runs deep.",
   },
   {
+    title: "Targeted Spending",
+    description: "Every dollar is focused on maximizing impact, not impressions.",
+  },
+  {
     title: "Administrative Simplicity",
     description: "We handle invoicing, payments, ensuring efficiency and transparency — without individual podcaster contracts, simplifying your process.",
   },
   {
     title: "Real Conversion",
     description: "Audiences who are aligned and feel seen are far more likely to become customers.",
-  },
-  {
-    title: "Targeted Spending",
-    description: "Every dollar is focused on maximizing impact, not impressions.",
   },
 ] as const;
 
@@ -57,7 +57,7 @@ const journeySteps = [
   {
     number: "03",
     title: "RELATIONSHIP",
-    description: "We connect you with creators whose audiences are ready to embrace your brand. We have a system called the 'Resonance Index' that helps us learn about you and steward your story. We handle the contracts, ad creation, and transparent reporting — ensuring the partnership feels natural and delivers a resonant return.",
+    description: "We connect you with creators whose audiences are ready to embrace your brand. We have a system called the 'Resonance Quotient' that helps us learn about you and steward your story. We handle the contracts, ad creation, and transparent reporting — ensuring the partnership feels natural and delivers a resonant return.",
   },
 ] as const;
 

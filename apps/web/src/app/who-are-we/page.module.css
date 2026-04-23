@@ -274,11 +274,51 @@
    ============================================================================= */
 
 .missionSection {
+  position: relative;
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   background: transparent;
+  overflow: hidden;
+}
+
+.missionCloudWrapper {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Clouds reuse the shared .floatingCloud base (absolute positioning) and
+   the cloudFloat1/2/3 keyframes already driving the hero and promises
+   sections. Positions + opacities tuned for this shorter section so the
+   drift stays subtle behind the headline + copy. */
+.missionCloud1 {
+  top: -10%;
+  left: -15%;
+  opacity: 0.22;
+  filter: blur(1px);
+  animation: cloudFloat1 150s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.missionCloud2 {
+  top: 40%;
+  left: 80%;
+  opacity: 0.18;
+  filter: blur(2px);
+  animation: cloudFloat2 180s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.missionCloud3 {
+  top: 70%;
+  left: -10%;
+  opacity: 0.15;
+  filter: blur(2px);
+  animation: cloudFloat3 200s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
 .missionContent {
+  position: relative;
+  z-index: 1;
   max-width: var(--content-max);
   margin-inline: auto;
   display: grid;

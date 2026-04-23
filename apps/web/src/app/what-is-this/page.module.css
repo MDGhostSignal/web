@@ -50,7 +50,11 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 50%;
+  /* Was 50% (matching the original white-panel footprint). Widened
+     to 82% so the full "PODCAST ADVERTISING NETWORK" line clears the
+     final letter. The rightmost portion now overlaps the video area
+     — acceptable since copy is white on a dim sunset loop. */
+  width: 82%;
   height: 100%;
   display: flex;
   align-items: center;
@@ -62,7 +66,12 @@
 }
 
 .heroTextContainer {
-  max-width: calc(var(--gs-n-700, 700) * var(--gs-px));
+  /* Dropped the prior ~700px max-width so "PODCAST ADVERTISING NETWORK"
+     can claim the full overlay width without SplitType's `.line`
+     wrappers (overflow: hidden) clipping the final letter. Individual
+     lines still set `white-space: nowrap` (see .headlineLine) so they
+     never wrap inside this container. */
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-24) * var(--gs-px));
@@ -109,7 +118,7 @@
 
 @media (max-width: 1024px) {
   .heroTextOverlay {
-    width: 55%;
+    width: 90%;
     padding: calc(var(--gs-n-64) * var(--gs-px));
   }
   .heroTextContainer {
@@ -130,6 +139,12 @@
   }
   .heroSubtitle {
     font-size: clamp(16px, 4vw, 22px);
+  }
+  /* Allow the long "podcast advertising network" line to wrap at
+     mobile widths rather than overflow — a wrapped sub-line still
+     animates as part of its SplitLinesReveal block. */
+  .headlineLine {
+    white-space: normal;
   }
 }
 
@@ -522,6 +537,10 @@
 /* Each headline line wrapper for staggered animation */
 .headlineLine {
   display: block;
+  /* Keep each hero line on a single row so "podcast advertising
+     network" doesn't wrap. Overridden at ≤768px where wrapping is
+     acceptable. */
+  white-space: nowrap;
 }
 
 /* Subtitle line wrapper for staggered animation */

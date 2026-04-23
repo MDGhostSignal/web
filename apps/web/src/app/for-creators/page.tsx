@@ -33,7 +33,7 @@ const features = [
   },
   {
     title: "Administrative Freedom",
-    description: "We handle the paperwork, contracts, reporting, and payment tracking (including transparent revenue splits) so you are freed up to create.",
+    description: "We handle the paperwork, contracts, reporting, and payment tracking so you are freed up to create.",
   },
   {
     title: "World-Making Community",
@@ -55,7 +55,7 @@ const journeySteps = [
   {
     number: "03",
     title: "RELATIONSHIP",
-    description: "We find advertisers who resonate with the world that you're building. Every partnership is curated to feel natural. We have a system called the 'Resonance Index' that helps us learn about you and steward your story. We handle the contracts, ad logistics, reporting, and analysis — ensuring the partnership feels natural and delivers a resonant return.",
+    description: "We find advertisers who resonate with the world that you're building. Every partnership is curated to feel natural. We have a system called the 'Resonance Quotient' that helps us learn about you and steward your story. We handle the contracts, ad logistics, reporting, and analysis — ensuring our partnership feels natural and delivers a resonant return.",
   },
 ] as const;
 

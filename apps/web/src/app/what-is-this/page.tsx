@@ -176,16 +176,15 @@ export default function WhatIsThisPage() {
 
             <h1 className={styles.heroHeadline}>
               <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
-                <span>Values-based</span>
+                <span>
+                  <BrandedGhostSignal />
+                </span>
               </SplitLinesReveal>
               <SplitLinesReveal duration={1.8} delay={0.6} className={styles.headlineLine}>
-                <span>podcast</span>
+                <span>is the values-based</span>
               </SplitLinesReveal>
               <SplitLinesReveal duration={1.8} delay={1.2} className={styles.headlineLine}>
-                <span>advertising</span>
-              </SplitLinesReveal>
-              <SplitLinesReveal duration={1.8} delay={1.8} className={styles.headlineLine}>
-                <span>network</span>
+                <span>podcast advertising network</span>
               </SplitLinesReveal>
             </h1>
 
@@ -293,12 +292,22 @@ export default function WhatIsThisPage() {
             <div className={styles.centeredBodyContainer}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  Using this shared values matrix, we connect podcasters and brands who believe in the same things about people, purpose, moral imagination, and meaning. Our values determine the kind of world we are making and when we share values we are all building in the same direction to the world we want.
+                  We connect podcasters and brands who love the same things.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  We go beyond algorithmic targeting to find deep human connection. This is genuine alignment: creators keep their voice, brands keep their conviction, and audiences feel harmony instead of interruption.
+                  Every story told, ad placed, and partnership formed is an intentional act of world making. When good brands partner with good creators and their communities, the future is shaped in the right direction.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={2} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  We go beyond algorithmic targeting in search of deep resonance. So, we&rsquo;ve developed the Resonance Quotient (RQ) to help us match you with partners you&rsquo;d be proud to work with.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={3} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  This is genuine alignment: creators keep their voice, brands keep their conviction, and audiences sense harmony instead of interruption.
                 </p>
               </ScrollFadeUp>
             </div>
@@ -320,7 +329,12 @@ export default function WhatIsThisPage() {
               </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  When a partnership shares soul, trust flows naturally. Trust becomes resonance. Resonance drives results. 75% of listeners happily pay more for brands that feel right (Edelman 2025) and shared loves create deep lasting trust that low-trust systems can never match.
+                  And when a partnership shares soul? Trust flows naturally.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  Trust is the ultimate low-friction economic climate (Acoglu, 2023), and resonance loves this climate. 75% of listeners are happy to spend more towards brands that feel right (Edelman, 2025).
                 </p>
               </ScrollFadeUp>
             </div>
@@ -339,7 +353,7 @@ export default function WhatIsThisPage() {
               </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  We are a network that connects podcasters and brands who share soul—those who know their work shapes the future and take that responsibility seriously. As a creator or advertiser, whether you are value-sensitive, faith-based, or simply aware of the ethical impact of what you make, you belong in GhostSignal if you sense that your work is making the world.
+                  We are a podcast network that connects creators and brands who share soul. Those who know their work shapes the future and take that responsibility seriously. As a creator or advertiser, whether you are value-sensitive, faith-based, or simply aware of the ethical impact of what you make, you belong in <BrandedGhostSignal /> if you sense that your work is making the world.
                 </p>
               </ScrollFadeUp>
             </div>
