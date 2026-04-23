@@ -4,6 +4,7 @@ import { useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 
+import BarsRipple from "./BarsRipple";
 import { SiteHeader } from "@/components/SiteHeader";
 // ScrollScenes pulls in a custom WebGL globe + ring system (~700 LOC of
 // shader and JS). Defer it off the initial route chunk — the globe only
@@ -250,17 +251,14 @@ export default function WhatIsThisPage() {
 
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>
-        {/* Centered decorative bars */}
-        <div className={styles.decorativeBars}>
-          <Image
-            src="/images/what-is-this/color-bars.png"
-            alt=""
-            width={652}
-            height={7548}
-            className={styles.barsImage}
-            aria-hidden="true"
-          />
-        </div>
+        {/* Centered decorative bars — now rendered via <BarsRipple>,
+           a canvas component running a shallow-water height-field
+           simulation. Cursor crossings seed splashes and the result
+           refracts the vertical color bars like light through water. */}
+        <BarsRipple
+          src="/images/what-is-this/color-bars.png"
+          className={styles.decorativeBars}
+        />
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>

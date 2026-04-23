@@ -118,7 +118,10 @@
 }
 
 .rq-dash-table th {
-  padding: 16px 14px;
+  /* Tightened from 16px 14px → 10px 10px so 8 columns + badges have
+     enough horizontal room inside the container without horizontal
+     scroll. Text is still readable at this padding. */
+  padding: 10px 10px;
   text-align: left;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
@@ -144,7 +147,8 @@
 }
 
 .rq-dash-table td {
-  padding: 14px;
+  /* Matches the tightened th padding above. */
+  padding: 10px;
   vertical-align: middle;
 }
 
@@ -157,6 +161,18 @@
 
 .rq-dash-name {
   font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Email column truncates with ellipsis (same pattern as .rq-dash-org)
+   so a long address can't stretch the column and push the RQ-code +
+   expand columns off the right edge of the wrapper. Cap lives on the
+   cell; the anchor inside inherits the ellipsis because it's the only
+   child and max-width is respected on block-context. */
+.rq-dash-email {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -251,7 +267,26 @@
   background: rgba(0, 0, 0, 0.3) !important;
 }
 
+/* The expanded-row cell spans all 8 columns, so its intrinsic width is
+   the table's full width. When `nowrap` headers push the table wider
+   than `.rq-dash-table-wrapper`'s viewport, the cell's contents get
+   cut off on the right. Zero the cell padding so we control inset on
+   the inner div instead. */
+.rq-dash-details-row > td {
+  padding: 0;
+}
+
+/* The details panel is clamped to the wrapper's visible width
+   (container max 1400px minus page padding, or the viewport when
+   narrower) and sticky-pinned to the left edge of the scroll
+   ancestor. Together that keeps Profile Analysis and the Delete
+   button in view regardless of the outer table's horizontal scroll. */
 .rq-dash-details {
+  position: sticky;
+  left: 0;
+  width: 100%;
+  max-width: min(calc(100vw - 48px), 1400px);
+  box-sizing: border-box;
   padding: 24px;
 }
 
@@ -355,4 +390,166 @@
   .rq-dash-profile-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* =====================================================================
+   Delete action + confirmation modal
+   =====================================================================*/
+
+.rq-dash-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rq-dash-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 80, 80, 0.55);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.rq-dash-delete-btn:hover {
+  background: rgba(255, 80, 80, 0.12);
+  border-color: rgba(255, 80, 80, 0.9);
+  transform: translateY(-1px);
+}
+
+.rq-dash-delete-btn:focus-visible {
+  outline: 2px solid rgba(255, 120, 120, 0.9);
+  outline-offset: 2px;
+}
+
+.rq-dash-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  animation: rq-dash-modal-fade 180ms ease-out;
+}
+
+@keyframes rq-dash-modal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.rq-dash-modal {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 28px 24px;
+  background: #1a1a1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  animation: rq-dash-modal-rise 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes rq-dash-modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.rq-dash-modal-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.rq-dash-modal-body {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.rq-dash-modal-body strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.rq-dash-modal-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #ffb4b4;
+  background: rgba(255, 80, 80, 0.1);
+  border: 1px solid rgba(255, 80, 80, 0.35);
+  border-radius: 6px;
+}
+
+.rq-dash-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rq-dash-modal-cancel,
+.rq-dash-modal-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.rq-dash-modal-cancel {
+  color: rgba(255, 255, 255, 0.82);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.rq-dash-modal-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.rq-dash-modal-confirm {
+  color: #fff;
+  background: #d64545;
+  border: 1px solid #d64545;
+}
+
+.rq-dash-modal-confirm:hover:not(:disabled) {
+  background: #c43a3a;
+  border-color: #c43a3a;
+  transform: translateY(-1px);
+}
+
+.rq-dash-modal-cancel:disabled,
+.rq-dash-modal-confirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }

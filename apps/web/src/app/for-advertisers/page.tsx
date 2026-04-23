@@ -9,6 +9,7 @@ import { LazyLottie } from "@/components/LazyLottie";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
+import { ResultTyping } from "./ResultTyping";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
@@ -370,12 +371,14 @@ export default function ForAdvertisersPage() {
                   <SplitLinesReveal duration={2}>The result?</SplitLinesReveal>
                 </h2>
                 <h3 className={styles.resultHeadlineH3}>
-                  <SplitLinesReveal duration={2} delay={0.3}>
-                    Advertising that works better
-                  </SplitLinesReveal>
-                  <SplitLinesReveal duration={2} delay={0.6}>
-                    because it <em>is</em> better.
-                  </SplitLinesReveal>
+                  <ResultTyping
+                    loopLastLine
+                    lines={[
+                      "Advertising that",
+                      "works better",
+                      "because it is better.",
+                    ]}
+                  />
                 </h3>
               </div>
             </ScrollFadeUp>

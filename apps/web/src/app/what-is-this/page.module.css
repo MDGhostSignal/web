@@ -325,6 +325,13 @@
   left: 50%;
   transform: translateX(-50%);
   height: calc(83% - 200vh);
+  /* The original <Image> (652×7548) sized this wrapper via its
+     intrinsic aspect ratio when it used `width: auto; height: 100%`.
+     The WebGL canvas inside BarsRipple has no intrinsic ratio, so
+     without this declaration the wrapper inflates to fill the
+     available horizontal space. Locking the ratio here restores the
+     narrow vertical-strip geometry. */
+  aspect-ratio: 652 / 7548;
   z-index: 0;
   pointer-events: none;
   opacity: 0.6;

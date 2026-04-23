@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import "./rq-dashboard.css";
 
 type Submission = {
@@ -33,6 +33,14 @@ export default function RQDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<ExpandedRow>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  // Delete-flow state. `confirmDelete` holds the submission the user
+  // tapped "Delete" on (null when the modal is closed). `deleting` is
+  // true only while the DELETE request is in flight so we can disable
+  // the confirm button and show a pending label. `deleteError` surfaces
+  // API failures inside the modal rather than a disruptive alert().
+  const [confirmDelete, setConfirmDelete] = useState<Submission | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSubmissions() {
@@ -81,6 +89,32 @@ export default function RQDashboardPage() {
 
   const toggleRow = (id: string) => {
     setExpandedRow(expandedRow === id ? null : id);
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/rq-submissions/${confirmDelete.id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        setDeleteError(data.error || "Failed to delete submission.");
+        return;
+      }
+      // Success: drop the row from local state, close the expanded
+      // panel if it pointed at the deleted row, and dismiss the modal.
+      const deletedId = confirmDelete.id;
+      setSubmissions((rows) => rows.filter((r) => r.id !== deletedId));
+      if (expandedRow === deletedId) setExpandedRow(null);
+      setConfirmDelete(null);
+    } catch {
+      setDeleteError("Failed to connect to the server.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -149,9 +183,12 @@ export default function RQDashboardPage() {
               </thead>
               <tbody>
                 {filteredSubmissions.map((sub) => (
-                  <>
+                  // Fragment carries the key for the map; the child
+                  // `<tr>` elements inside don't need their own keys.
+                  // Prior shorthand `<>` can't accept a key, which is
+                  // why React was warning about missing keys here.
+                  <Fragment key={sub.id}>
                     <tr
-                      key={sub.id}
                       className={`rq-dash-row ${expandedRow === sub.id ? "expanded" : ""}`}
                       onClick={() => toggleRow(sub.id)}
                     >
@@ -183,7 +220,7 @@ export default function RQDashboardPage() {
                       </td>
                     </tr>
                     {expandedRow === sub.id && (
-                      <tr key={`${sub.id}-details`} className="rq-dash-details-row">
+                      <tr className="rq-dash-details-row">
                         <td colSpan={8}>
                           <div className="rq-dash-details">
                             <div className="rq-dash-details-grid">
@@ -233,17 +270,81 @@ export default function RQDashboardPage() {
                                 </div>
                               </div>
                             )}
+                            <div className="rq-dash-actions">
+                              <button
+                                type="button"
+                                className="rq-dash-delete-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteError(null);
+                                  setConfirmDelete(sub);
+                                }}
+                              >
+                                Delete entry
+                              </button>
+                            </div>
                           </div>
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
+
+      {confirmDelete && (
+        <div
+          className="rq-dash-modal-overlay"
+          onClick={() => {
+            if (!deleting) setConfirmDelete(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="rq-dash-confirm-title"
+        >
+          <div
+            className="rq-dash-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="rq-dash-confirm-title" className="rq-dash-modal-title">
+              Delete this submission?
+            </h2>
+            <p className="rq-dash-modal-body">
+              This will permanently remove{" "}
+              <strong>
+                {confirmDelete.first_name} {confirmDelete.last_name}
+              </strong>
+              &rsquo;s submission
+              {confirmDelete.rq_code ? ` (${confirmDelete.rq_code})` : ""} from
+              the database. This action cannot be undone.
+            </p>
+            {deleteError && (
+              <p className="rq-dash-modal-error">{deleteError}</p>
+            )}
+            <div className="rq-dash-modal-actions">
+              <button
+                type="button"
+                className="rq-dash-modal-cancel"
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rq-dash-modal-confirm"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

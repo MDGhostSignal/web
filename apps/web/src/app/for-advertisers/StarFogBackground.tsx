@@ -119,8 +119,10 @@ void main() {
     stars += star(scaledUv, starPos, brightness * 1.2, speed, seed);
   }
 
-  // Add stars to color with slight blue/white tint
-  color += stars * vec3(0.9, 0.95, 1.0);
+  // Add stars to color with slight blue/white tint. Overall
+  // dimming factor pulls back the glowing-orb layer so it reads as
+  // ambient starfield rather than a spotlight.
+  color += stars * vec3(0.9, 0.95, 1.0) * 0.35;
 
   // Fog layers
   float slowTime = uTime * 0.015;

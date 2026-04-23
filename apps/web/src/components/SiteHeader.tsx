@@ -10,16 +10,7 @@ import { useGsapContext } from "@/motion/useGsapContext";
 
 import styles from "./SiteHeader.module.css";
 
-type NavLink = { href: string; label: string };
-
-const linkFrameWidths: Record<string, number> = {
-  "/what-is-this": 169,
-  "/for-creators": 174,
-  "/for-advertisers": 200,
-  "/who-are-we": 173,
-  "/get-in-touch": 175,
-  "/snowdrift": 174,
-};
+type NavLink = { href: string; label: string; cta?: boolean };
 
 /**
  * Mirrors `wearemotto.com`'s site header collapse behavior:
@@ -247,21 +238,31 @@ export function SiteHeader({
             ref={linksWrapRef}
             className={`${styles.nav} js-sh-main-links`}
           >
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`${styles.navLink} js-sh-main-link`}
-                data-sh-link
-                data-sh-key={l.href}
-                data-sh-role={l.href === "/get-in-touch" ? "keep" : "hide"}
-                style={{
-                  width: `calc(var(--gs-n-${linkFrameWidths[l.href] ?? 174}, ${linkFrameWidths[l.href] ?? 174}) * var(--gs-px))`,
-                }}
-              >
-                {l.label}
-              </Link>
-            ))}
+            {links.map((l) => {
+              // CTA entries render as a solid pill so the primary
+              // action (Get In Touch) reads distinct from the plain
+              // nav links. The prior per-link fixed-width track was
+              // dropped so seven links + a CTA fit inside the header
+              // at common desktop widths — links now size to their
+              // own content + padding rather than a pixel-perfect
+              // Motto-style cell.
+              const isCta = l.cta === true;
+              const className = isCta
+                ? `${styles.navCta} js-sh-main-link`
+                : `${styles.navLink} js-sh-main-link`;
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={className}
+                  data-sh-link
+                  data-sh-key={l.href}
+                  data-sh-role={l.href === "/get-in-touch" ? "keep" : "hide"}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {cta ? (

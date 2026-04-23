@@ -150,13 +150,23 @@
 }
 
 /* ========================================
-   Temporary Design Feedback Button
+   Temporary Admin Buttons (top-right)
    ======================================== */
-.designFeedbackBtn {
+
+/* Flex row so both admin buttons share the same fixed slot instead of
+   overlapping. Grows left from the top-right corner. */
+.adminButtonRow {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.designFeedbackBtn,
+.rqResponsesBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -168,16 +178,33 @@
   letter-spacing: 0.5px;
   text-decoration: none;
   color: #fff;
-  background: #D66157;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(214, 97, 87, 0.4);
   transition: all 200ms ease;
+}
+
+.designFeedbackBtn {
+  background: #D66157;
+  box-shadow: 0 2px 8px rgba(214, 97, 87, 0.4);
 }
 
 .designFeedbackBtn:hover {
   background: #c54d43;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(214, 97, 87, 0.5);
+}
+
+/* Second admin pill — uses a different hue (teal) so the two buttons
+   read as distinct at a glance. Matches the RQ Index brand teal used
+   elsewhere in the quiz/dashboard. */
+.rqResponsesBtn {
+  background: #00B29C;
+  box-shadow: 0 2px 8px rgba(0, 178, 156, 0.4);
+}
+
+.rqResponsesBtn:hover {
+  background: #009682;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 178, 156, 0.5);
 }
 
 /* ========================================

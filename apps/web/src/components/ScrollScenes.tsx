@@ -47,17 +47,19 @@ const vec3 RING_COLOR_4 = vec3(1.0, 0.482, 0.678);   // #FF7BAD Pink
 const vec3 RING_COLOR_5 = vec3(0.984, 0.678, 0.145); // #FBAD25 Orange
 
 // Ring parameters - inner and outer radii for each ring
-// Rings are further from globe and very thin (~1-2px)
+// Width doubled (0.006 -> 0.012) so the colored orbit lines read more
+// clearly at distance while the per-ring waveform modulation is added
+// to the boundary (see ringIntersect).
 const float RING_INNER_1 = 1.50;
-const float RING_OUTER_1 = 1.506;
+const float RING_OUTER_1 = 1.512;
 const float RING_INNER_2 = 1.62;
-const float RING_OUTER_2 = 1.626;
+const float RING_OUTER_2 = 1.632;
 const float RING_INNER_3 = 1.74;
-const float RING_OUTER_3 = 1.746;
+const float RING_OUTER_3 = 1.752;
 const float RING_INNER_4 = 1.86;
-const float RING_OUTER_4 = 1.866;
+const float RING_OUTER_4 = 1.872;
 const float RING_INNER_5 = 1.98;
-const float RING_OUTER_5 = 1.986;
+const float RING_OUTER_5 = 1.992;
 
 // Ring tilt angles (diagonal from bottom-left to top-right)
 const float RING_TILT_X = 0.26;    // 15 degrees on X-axis (forward tilt)
@@ -97,74 +99,207 @@ vec3 rotateZ(vec3 p, float angle) {
 }
 
 // Check if ray intersects a tilted ring disk and return distance
-// Returns -1.0 if no intersection, otherwise returns distance
-float ringIntersect(vec3 ro, vec3 rd, float innerR, float outerR, float tiltX, float tiltZ, float rotation) {
+// Returns -1.0 if no intersection, otherwise returns distance.
+//
+// ringId (0..4) seeds each ring's unique waveform so the five lines
+// ripple at different rhythms -- distinct angular frequency, different
+// temporal rate, and a constant phase offset. Amplitudes are kept
+// intentionally shallow so the motion reads as a smooth swell rather
+// than a sharp wobble.
+float ringIntersect(vec3 ro, vec3 rd, float innerR, float outerR, float tiltX, float tiltZ, float rotation, float ringId, out float outWakeD) {
   // Transform ray into ring space (rotate by tilts and rotation)
   // Z rotation for diagonal, X for forward tilt, Y for spin animation
   vec3 roRing = rotateY(rotateX(rotateZ(ro, -tiltZ), -tiltX), -rotation);
   vec3 rdRing = rotateY(rotateX(rotateZ(rd, -tiltZ), -tiltX), -rotation);
 
-  // Ring is in XZ plane (y = 0)
-  // Find intersection with y = 0 plane
+  // Ring is nominally in XZ plane (y = 0). The wave below now
+  // displaces the ring vertically (Y) as a function of angle, so
+  // we do a two-step intersection:
+  //   1. Estimate the angle at the unperturbed y=0 intersection.
+  //   2. Compute wave(angle) for that angle.
+  //   3. Re-intersect with the y = wave plane; that's the actual
+  //      height of the ring band at that angular position.
+  // Works well because the wave amplitude is tiny relative to the
+  // ring radius.
   if (abs(rdRing.y) < 0.0001) return -1.0; // Ray parallel to plane
 
-  float t = -roRing.y / rdRing.y;
-  if (t < 0.0) return -1.0; // Behind camera
+  float tFlat = -roRing.y / rdRing.y;
+  if (tFlat < 0.0) return -1.0; // Behind camera
+  vec3 hitFlat = roRing + rdRing * tFlat;
 
-  vec3 hitPoint = roRing + rdRing * t;
-  float dist = length(hitPoint.xz);
+  // Ball angular position in ring-local space. Still computed so the
+  // caller can run the white -> ring-colour gradient and the
+  // last-quarter alpha fade behind each ball, even though the ring
+  // geometry itself is now flat (no Y displacement).
+  float angle = atan(hitFlat.z, hitFlat.x);
+  // Base 0.18 avoids the inner ring's local speed coincidentally
+  // cancelling the ring's own rotation rate (~0.1 rad/s), which
+  // would make ring 1's ball appear stationary in world.
+  float ballSpeed = 0.18 + ringId * 0.04;
+  float ballPhase = ringId * 1.9;
+  float ballAngle = uTime * ballSpeed + ballPhase;
 
-  // Add wavy pattern to ring boundaries (very subtle for ultra-thin rings)
-  float angle = atan(hitPoint.z, hitPoint.x);
-  float wave = sin(angle * 12.0 + uTime * 0.3) * 0.002 +
-               sin(angle * 7.0 - uTime * 0.2) * 0.0015;
+  // Signed angular distance from ball to the current hit point,
+  // wrapped to [-PI, PI].
+  float rel = angle - ballAngle;
+  rel = mod(rel + PI, 2.0 * PI) - PI;
 
-  float wavyInner = innerR + wave;
-  float wavyOuter = outerR + wave;
+  // Backward arc distance (0..2PI) — used by the caller for both
+  // the white-tip gradient and the tail alpha fade.
+  outWakeD = (rel < 0.0) ? -rel : (2.0 * PI - rel);
 
-  if (dist >= wavyInner && dist <= wavyOuter) {
-    return t;
+  // Flat ring: no waveform displacement. The ring band is a thin
+  // annulus in the y=0 plane (ring-local).
+  float dist = length(hitFlat.xz);
+  if (dist >= innerR && dist <= outerR) {
+    return tFlat;
   }
 
   return -1.0;
 }
 
+// Returns ray-sphere intersection distance (or -1.0) for a 3D ball
+// travelling along the given ring. ballSpeed/ballPhase match the
+// identically-named locals inside ringIntersect so the ball and the
+// waveform peak stay locked together. outCenter gives the ball's
+// world-space centre so the caller can shade it as a lit sphere.
+float ballIntersect(
+  vec3 ro, vec3 rd, float ringR, float tiltX, float tiltZ, float rotation,
+  float ringId, float ballRadius, out vec3 outCenter
+) {
+  // Base 0.18 (was 0.10) avoids the inner ring's local speed
+  // coincidentally cancelling the ring's own rotation rate (~0.1
+  // rad/s), which made ring 1's ball appear stationary in world.
+  float ballSpeed = 0.18 + ringId * 0.04;
+  float ballPhase = ringId * 1.9;
+  // Ring-local ball angle must match the one used inside
+  // ringIntersect for the wake to line up with the ball. The
+  // ringIntersect ray enters ring-local via rotateY(.., -rotation),
+  // which (in this shader's convention) maps world angle θ to local
+  // angle (θ + rotation). Inverting: world = local - rotation.
+  // Previous code used +rotation, which placed the ball 180deg from
+  // its wake.
+  float worldAngle = uTime * ballSpeed + ballPhase - rotation;
+
+  vec3 localPos = vec3(cos(worldAngle) * ringR, 0.0, sin(worldAngle) * ringR);
+  vec3 worldPos = rotateZ(rotateX(localPos, tiltX), tiltZ);
+  outCenter = worldPos;
+
+  vec3 oc = ro - worldPos;
+  float b = dot(oc, rd);
+  float c = dot(oc, oc) - ballRadius * ballRadius;
+  float h = b * b - c;
+  if (h < 0.0) return -1.0;
+  float tHit = -b - sqrt(h);
+  if (tHit < 0.0) return -1.0;
+  return tHit;
+}
+
+// Shade a ball hit as a small lit sphere: Lambert term + a tight
+// specular highlight, tinted toward the ring's colour so each ball
+// reads as belonging to its own line.
+vec3 shadeBall(vec3 hit, vec3 center, vec3 rd, vec3 ringColor, vec3 lightDir) {
+  // Shading removed -- the ball renders as a flat, evenly-lit disc
+  // (still a sphere geometrically, so the silhouette stays circular).
+  // The ringColor passed in is already the finished surface colour.
+  return ringColor;
+}
+
 // Get ring color and alpha at a given point
-vec4 getRingColor(vec3 ro, vec3 rd, float earthT) {
+vec4 getRingColor(vec3 ro, vec3 rd, float earthT, vec3 lightDir) {
   vec4 result = vec4(0.0);
 
   // Check all 5 rings, front to back ordering
   float ringDists[5];
   int ringIndices[5];
 
-  // Calculate distances for all rings
-  float d1 = ringIntersect(ro, rd, RING_INNER_1, RING_OUTER_1, RING_TILT_X, RING_TILT_Z, uRingRotation);
-  float d2 = ringIntersect(ro, rd, RING_INNER_2, RING_OUTER_2, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.2);
-  float d3 = ringIntersect(ro, rd, RING_INNER_3, RING_OUTER_3, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.4);
-  float d4 = ringIntersect(ro, rd, RING_INNER_4, RING_OUTER_4, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.6);
-  float d5 = ringIntersect(ro, rd, RING_INNER_5, RING_OUTER_5, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.8);
+  // Per-ring hit distances + wake distances. Trailing 0.0..4.0 is
+  // the waveform seed; wD_n is the angular distance behind the ball
+  // at the hit point, used below to tint the ring from white at the
+  // ball's position out to its own colour over ~PI/2 rad.
+  float wD1, wD2, wD3, wD4, wD5;
+  float d1 = ringIntersect(ro, rd, RING_INNER_1, RING_OUTER_1, RING_TILT_X, RING_TILT_Z, uRingRotation,        0.0, wD1);
+  float d2 = ringIntersect(ro, rd, RING_INNER_2, RING_OUTER_2, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.2,  1.0, wD2);
+  float d3 = ringIntersect(ro, rd, RING_INNER_3, RING_OUTER_3, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.4,  2.0, wD3);
+  float d4 = ringIntersect(ro, rd, RING_INNER_4, RING_OUTER_4, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.6,  3.0, wD4);
+  float d5 = ringIntersect(ro, rd, RING_INNER_5, RING_OUTER_5, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.8,  4.0, wD5);
 
-  // Simple blending - render rings that are in front of earth
-  // Check each ring and blend if it's closer than the earth
+  // Each quarter of the 2PI-circumference orbit has a distinct role:
+  //   [0, PI/2)        white -> ring-colour gradient (the wake tip)
+  //   [PI/2, 3PI/2)    full ring colour
+  //   [3PI/2, 2PI]     alpha fades from 0.7 -> 0 (the tail end, so
+  //                    the line doesn't visibly wrap back to meet
+  //                    the bright tip)
+  float GRADIENT_LEN = 1.5707963;  // PI/2
+  float FADE_START   = 4.7123889;  // 3*PI/2
+  float FADE_END     = 6.2831853;  // 2*PI
 
   if (d5 > 0.0 && (earthT < 0.0 || d5 < earthT)) {
-    result = vec4(RING_COLOR_5, 0.7);
+    vec3 c = mix(vec3(1.0), RING_COLOR_5, smoothstep(0.0, GRADIENT_LEN, wD5));
+    float a = 0.7 * (1.0 - smoothstep(FADE_START, FADE_END, wD5));
+    result = vec4(c, a);
   }
   if (d4 > 0.0 && (earthT < 0.0 || d4 < earthT)) {
-    vec4 ringCol = vec4(RING_COLOR_4, 0.7);
+    vec3 c = mix(vec3(1.0), RING_COLOR_4, smoothstep(0.0, GRADIENT_LEN, wD4));
+    float a = 0.7 * (1.0 - smoothstep(FADE_START, FADE_END, wD4));
+    vec4 ringCol = vec4(c, a);
     result = mix(result, ringCol, ringCol.a);
   }
   if (d3 > 0.0 && (earthT < 0.0 || d3 < earthT)) {
-    vec4 ringCol = vec4(RING_COLOR_3, 0.7);
+    vec3 c = mix(vec3(1.0), RING_COLOR_3, smoothstep(0.0, GRADIENT_LEN, wD3));
+    float a = 0.7 * (1.0 - smoothstep(FADE_START, FADE_END, wD3));
+    vec4 ringCol = vec4(c, a);
     result = mix(result, ringCol, ringCol.a);
   }
   if (d2 > 0.0 && (earthT < 0.0 || d2 < earthT)) {
-    vec4 ringCol = vec4(RING_COLOR_2, 0.7);
+    vec3 c = mix(vec3(1.0), RING_COLOR_2, smoothstep(0.0, GRADIENT_LEN, wD2));
+    float a = 0.7 * (1.0 - smoothstep(FADE_START, FADE_END, wD2));
+    vec4 ringCol = vec4(c, a);
     result = mix(result, ringCol, ringCol.a);
   }
   if (d1 > 0.0 && (earthT < 0.0 || d1 < earthT)) {
-    vec4 ringCol = vec4(RING_COLOR_1, 0.7);
+    vec3 c = mix(vec3(1.0), RING_COLOR_1, smoothstep(0.0, GRADIENT_LEN, wD1));
+    float a = 0.7 * (1.0 - smoothstep(FADE_START, FADE_END, wD1));
+    vec4 ringCol = vec4(c, a);
     result = mix(result, ringCol, ringCol.a);
+  }
+
+  // Balls — one per ring, rendered on top of the rings (opaque) but
+  // still occluded by the earth. Radius is uniform across all five so
+  // no ball dominates visually; colour matches its ring.
+  const float BALL_R = 0.00729;
+  float ringR1 = (RING_INNER_1 + RING_OUTER_1) * 0.5;
+  float ringR2 = (RING_INNER_2 + RING_OUTER_2) * 0.5;
+  float ringR3 = (RING_INNER_3 + RING_OUTER_3) * 0.5;
+  float ringR4 = (RING_INNER_4 + RING_OUTER_4) * 0.5;
+  float ringR5 = (RING_INNER_5 + RING_OUTER_5) * 0.5;
+
+  vec3 bc;
+  float bt;
+  bt = ballIntersect(ro, rd, ringR1, RING_TILT_X, RING_TILT_Z, uRingRotation,       0.0, BALL_R, bc);
+  if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
+    vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
+    result = vec4(col, 1.0);
+  }
+  bt = ballIntersect(ro, rd, ringR2, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.2, 1.0, BALL_R, bc);
+  if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
+    vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
+    result = vec4(col, 1.0);
+  }
+  bt = ballIntersect(ro, rd, ringR3, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.4, 2.0, BALL_R, bc);
+  if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
+    vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
+    result = vec4(col, 1.0);
+  }
+  bt = ballIntersect(ro, rd, ringR4, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.6, 3.0, BALL_R, bc);
+  if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
+    vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
+    result = vec4(col, 1.0);
+  }
+  bt = ballIntersect(ro, rd, ringR5, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.8, 4.0, BALL_R, bc);
+  if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
+    vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
+    result = vec4(col, 1.0);
   }
 
   return result;
@@ -316,7 +451,7 @@ void main() {
 
   // Render orbital rings
   float earthT = sphereIntersect(ro, rd, earthRadius);
-  vec4 ringColor = getRingColor(ro, rd, earthT);
+  vec4 ringColor = getRingColor(ro, rd, earthT, lightDir);
 
   // Blend rings with existing color
   if (ringColor.a > 0.0) {

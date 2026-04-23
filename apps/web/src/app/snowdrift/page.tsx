@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
+import SnowParticles from "./SnowParticles";
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
 
@@ -17,6 +18,10 @@ export const metadata = {
 export default function SnowdriftPage() {
   return (
     <main className={styles.page}>
+      {/* Full-viewport 1px snowfall background, sits under all content
+         (z-index: 0) and above the page's star-field ::before layer. */}
+      <SnowParticles className={styles.snowCanvas} />
+
       <SiteHeader links={navLinks} />
 
       {/* Hero Section */}
@@ -32,11 +37,24 @@ export default function SnowdriftPage() {
               className={styles.heroLogo}
             />
           </ScrollFadeUp>
-          <SplitLinesReveal duration={2.2} stagger={0.3}>
-            <h1 className={styles.heroHeadline}>
-              Voices from the cultural future
-            </h1>
-          </SplitLinesReveal>
+          {/* Each hero line revealed by its own SplitLinesReveal — the
+             SR-only <span> preserves the full phrase for assistive tech
+             while the visible lines animate independently. */}
+          <h1 className={styles.heroHeadline}>
+            <span className={styles.visuallyHidden}>
+              Voices from cultural future
+            </span>
+            <SplitLinesReveal duration={2.2} stagger={0.3}>
+              <span className={styles.headlineLine} aria-hidden="true">
+                Voices from
+              </span>
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={2.2} stagger={0.3} delay={0.45}>
+              <span className={styles.headlineLine} aria-hidden="true">
+                cultural future
+              </span>
+            </SplitLinesReveal>
+          </h1>
           <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroTagline}>
               A <strong>GHOST</strong>Signal transmission.

@@ -1,0 +1,75 @@
+/* Mirrors the homepage typing hero's entrance pattern so the two
+   surfaces feel like the same device. Kept local to /for-advertisers
+   since the page-level typography wraps it. */
+
+.block {
+  display: block;
+}
+
+.line {
+  display: block;
+  /* Reserve one line of height before any characters are typed so
+     the block doesn't collapse/jump as the typing starts. */
+  min-height: 1em;
+  /* Keep each typed line on a single row regardless of container
+     width -- at hero-size the longest line would otherwise wrap
+     mid-word. Overflow is allowed to lean into the surrounding grid
+     gap since that space is unused. */
+  white-space: nowrap;
+}
+
+/* Per-character blur-in entrance. Duration (360ms) > TYPE_MS (130ms)
+   so adjacent characters overlap mid-blur and the typing reads as
+   one continuous motion rather than discrete pops. inline-block so
+   transform/filter don't break the text baseline. */
+.ch {
+  display: inline-block;
+  animation: resultTypingChar 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  will-change: opacity, filter, transform;
+}
+
+@keyframes resultTypingChar {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* Classic text-editor caret: em-sized so it scales with the
+   surrounding heading, hard on/off blink (no soft fade). */
+.cursor {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.85em;
+  margin-left: 0.04em;
+  vertical-align: -0.12em;
+  background: currentColor;
+  animation: resultTypingBlink 1s steps(1, end) infinite;
+}
+
+@keyframes resultTypingBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch {
+    animation: none;
+  }
+  .cursor {
+    animation: none;
+    opacity: 0;
+  }
+}

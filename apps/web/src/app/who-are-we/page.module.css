@@ -240,6 +240,21 @@
   margin-top: calc(var(--gs-n-32) * var(--gs-px));
 }
 
+/* Touch devices (iPads, phones, anything without a hover-capable
+   fine pointer): disable interactions on the Spline viewer so the
+   3D object can't be dragged/rotated by fingers. Touches pass
+   straight through to the page underneath, which means the hero
+   can be scrolled as expected instead of the user accidentally
+   grabbing the logo. Mouse-capable devices still get full
+   interactivity. */
+@media (hover: none) and (pointer: coarse) {
+  .splineWrapper,
+  .splineWrapper * {
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+}
+
 .splineLoading {
   width: 100%;
   height: calc(var(--gs-n-400, 400) * var(--gs-px));

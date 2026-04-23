@@ -13,12 +13,109 @@
    ============================================================================= */
 
 .contactSection {
-  padding: calc(var(--gs-n-240) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-220) * var(--gs-px));
-  background: var(--gs-tw-gray-950);
-  overflow: visible;
+  /* Near-fullscreen cosmic panel with the V-shaped clip on .formSection
+     just peeking in at the bottom. Flex-column + justify-content: flex-end
+     anchors the content toward the lower half of the viewport so the
+     text block (and the aligned Jeremy/bars visual) sit well below the
+     viewport's top edge rather than hugging it.
+
+     Bottom padding widened (160 -> 256) so Jeremy's drop-shadow has
+     clearance inside the clipped section bounds. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: calc(100dvh - calc(var(--gs-n-80) * var(--gs-px)));
+  padding: calc(var(--gs-n-240) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-256) * var(--gs-px));
+  /* Base colour only -- nebula layer now lives on ::after with its
+     own slow drift animation (see `nebulaDrift` below). Stars still
+     on ::before. */
+  background: linear-gradient(180deg, #06060e 0%, #0a0a14 100%);
+  overflow: hidden;
+}
+
+/* Nebula layer. Inset -12% gives the pseudo 12% bleed on every side
+   so the drift transform never reveals bare section edges; parent
+   `overflow: hidden` clips that bleed to the section bounds.
+   Animation runs a slow 120s cycle -- ~0.17% of the cycle per second
+   -- so the motion is barely perceptible but continuous. */
+.contactSection::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 55% at 22% 28%, rgba(90, 60, 180, 0.45), transparent 60%),
+    radial-gradient(ellipse 55% 40% at 82% 68%, rgba(50, 100, 210, 0.38), transparent 55%),
+    radial-gradient(ellipse 50% 38% at 58% 42%, rgba(220, 90, 150, 0.22), transparent 60%),
+    radial-gradient(ellipse 85% 60% at 50% 88%, rgba(30, 50, 110, 0.55), transparent 65%);
+  z-index: 0;
+  will-change: transform;
+  animation: nebulaDrift 120s ease-in-out infinite;
+}
+
+@keyframes nebulaDrift {
+  0% {
+    transform: translate3d(0%, 0%, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(-1.5%, -0.8%, 0) scale(1.015);
+  }
+  50% {
+    transform: translate3d(1.2%, -1.5%, 0) scale(1.025);
+  }
+  75% {
+    transform: translate3d(-0.8%, 1.2%, 0) scale(1.012);
+  }
+  100% {
+    transform: translate3d(0%, 0%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contactSection::after {
+    animation: none;
+  }
+}
+
+/* Star field overlaid on the nebula. Many small radial-gradient dots
+   at varied positions, opacities, and sizes so it reads as a starry
+   sky rather than a regular grid. */
+.contactSection::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(255,255,255,0.7) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 25% 28%, rgba(255,255,255,0.6) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 42% 12%, rgba(255,255,255,0.65) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 60% 22%, rgba(255,255,255,0.55) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 75% 18%, rgba(255,255,255,0.6) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 88% 25%, rgba(255,255,255,0.5) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 15% 42%, rgba(255,255,255,0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 38%, rgba(255,255,255,0.5) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 92% 10%, rgba(255,255,255,0.4) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 35% 55%, rgba(255,255,255,0.35) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 82% 48%, rgba(255,255,255,0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 5% 72%, rgba(255,255,255,0.55) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 30% 78%, rgba(255,255,255,0.35) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 55% 88%, rgba(255,255,255,0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 78% 82%, rgba(255,255,255,0.5) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 48% 65%, rgba(255,255,255,0.3) 0 0.8px, transparent 1.2px);
+  /* Above the nebula (::after z-index 0) so stars twinkle in front.
+     Pseudo-element stacking: later-declared pseudos paint later; we
+     give explicit z-index so the order is predictable. */
+  z-index: 1;
 }
 
 .contactContent {
+  /* Raised above both the nebula (::after, z-index: 0) and the
+     starfield (::before, z-index: 1) pseudo layers. */
+  position: relative;
+  z-index: 2;
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: calc(var(--gs-n-80) * var(--gs-px));

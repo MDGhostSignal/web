@@ -4,10 +4,12 @@ import { useState, type FormEvent } from "react";
 import Image from "next/image";
 
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
 import styles from "./page.module.css";
+import { navLinks } from "@/lib/nav";
 
 export default function GetInTouchPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +61,7 @@ export default function GetInTouchPage() {
 
   return (
     <main className={styles.page}>
+      <SiteHeader links={navLinks} />
 
       {/* Contact Section */}
       <section className={styles.contactSection}>

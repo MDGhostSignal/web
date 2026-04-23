@@ -47,10 +47,18 @@
 .nav {
   display: flex;
   align-items: center;
-  width: calc(var(--gs-n-1385, 1385) * var(--gs-px));
+  /* Width dropped from the prior 1385px fixed track — it was sized
+     around 64px column-gaps, but with the CTA pill now occupying a
+     slot the row was extending past the right edge. Let the nav
+     size to its contents via `width: auto` and govern horizontal
+     rhythm via column-gap alone. */
+  width: auto;
   height: calc(var(--gs-n-60) * var(--gs-px));
   justify-content: flex-start;
-  column-gap: calc(var(--gs-n-64) * var(--gs-px));
+  /* 64 → 32. Paired with the `auto` width above this lets seven
+     links + CTA live inside the header without overflowing, while
+     still reading airy. */
+  column-gap: calc(var(--gs-n-32) * var(--gs-px));
 }
 
 .navLink {
@@ -61,7 +69,10 @@
   height: calc(var(--gs-n-60) * var(--gs-px));
   gap: calc(var(--gs-n-8) * var(--gs-px));
   padding-block: calc(var(--gs-n-16) * var(--gs-px));
-  padding-inline: calc(var(--gs-n-32) * var(--gs-px));
+  /* 32 → 12. Per-link horizontal padding tightened after the explicit
+     per-link width track was removed — keeps the row compact enough
+     for seven links + the CTA pill without overflowing the header. */
+  padding-inline: calc(var(--gs-n-12) * var(--gs-px));
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold);
   font-size: calc(var(--gs-font-size-lg) * var(--gs-px));
@@ -81,7 +92,9 @@
 .navLink::after {
   content: "";
   position: absolute;
-  inset-inline: calc(var(--gs-n-32) * var(--gs-px));
+  /* Match .navLink's padding-inline so the underline sits directly
+     under the text (not the full padded cell). */
+  inset-inline: calc(var(--gs-n-12) * var(--gs-px));
   bottom: calc(var(--gs-n-14, 14) * var(--gs-px));
   height: calc(1 * var(--gs-px));
   background: currentColor;
@@ -126,4 +139,56 @@
   font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
   line-height: 1.43;
   white-space: nowrap;
+}
+
+/* In-nav CTA — rendered instead of .navLink when a link has `cta: true`
+   in the nav config. Solid dark pill so the primary action reads as a
+   button against the white header and lighter nav links. Sits flush at
+   the right edge of the nav row; inherits the scroll-collapse "keep"
+   behaviour from its data-sh-role attribute so it stays visible while
+   other links fade out. The shared .nav:hover sibling-dim rule below
+   this block re-targets it too, so the CTA brightens back on hover. */
+.navCta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--gs-n-48) * var(--gs-px));
+  /* No extra margin-left — the nav's column-gap already provides the
+     separation. Adding margin on top of the gap was pushing the
+     button off the right edge of the viewport. */
+  padding-block: calc(var(--gs-n-12) * var(--gs-px));
+  padding-inline: calc(var(--gs-n-24) * var(--gs-px));
+  border-radius: calc(var(--gs-radius-full) * var(--gs-px));
+  background: var(--gs-tw-black);
+  color: var(--gs-tw-white);
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: calc(var(--gs-font-size-base) * var(--gs-px));
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform 240ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    box-shadow 240ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    opacity 320ms ease;
+}
+
+.navCta:hover,
+.navCta:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+}
+
+/* Match the sibling-dim treatment applied to .navLink so the CTA
+   participates in the "dim everything else" hover behaviour without
+   losing its identity when it's the focused item. */
+.nav:hover .navCta {
+  opacity: 0.4;
+}
+
+.nav:hover .navCta:hover,
+.nav .navCta:focus-visible {
+  opacity: 1;
 }

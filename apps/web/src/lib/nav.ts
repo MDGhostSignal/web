@@ -11,7 +11,10 @@ export const navLinks = [
   { href: "/who-are-we", label: "Who Are We" },
   { href: "/snowdrift", label: "SNOWDRIFT" },
   { href: "/rq-quiz", label: "RQ Quiz" },
-  { href: "/get-in-touch", label: "Get In Touch" },
+  // `cta: true` → rendered as the primary call-to-action button (solid
+  // pill) rather than a plain nav link. Keep this as the last entry so
+  // it sits at the right edge of the nav row.
+  { href: "/get-in-touch", label: "Get In Touch", cta: true },
 ] as const;
 
 export type NavLink = (typeof navLinks)[number];

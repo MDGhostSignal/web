@@ -482,6 +482,13 @@
   position: relative;
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   background: #f2f2f2;
+  /* Clip ONLY the section's bottom edge so the ParallaxY-translated
+     Mariah statue in the sticky right column can't spill into the
+     Jeremy image of the ContactSection below. Top/sides stay open
+     (insets far past the viewport) and clip-path does not affect
+     scroll context, so the sticky `.businessVisual` keeps working
+     as before -- unlike `overflow: hidden` which would break sticky. */
+  clip-path: inset(-200vh -200vw 0 -200vw);
 }
 
 /* Cloud backdrop — same animated pattern as the /who-are-we hero,
@@ -691,7 +698,10 @@
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(36px, 5vw, 60px);
+  /* Bumped to the Monster Headline M1 scale used on the homepage
+     hero, so "GhostSignal is about resonance" reads as a hero
+     beat rather than a section title. */
+  font-size: clamp(35px, 6.6vw, 88px);
   line-height: 1.1;
   color: var(--gs-tw-gray-950);
   text-transform: uppercase;
@@ -772,7 +782,11 @@
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-12) * var(--gs-px));
-  padding-top: calc(var(--gs-n-24) * var(--gs-px));
+  /* Extra vertical breathing room (top 96 -> was 24) so the mega
+     "The result?" moment sits clearly below the business-step tiles
+     and doesn't look like a continuation of that list. */
+  margin-top: calc(var(--gs-n-96) * var(--gs-px));
+  padding-top: calc(var(--gs-n-48) * var(--gs-px));
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
@@ -787,28 +801,31 @@
   letter-spacing: 0.1em;
 }
 
-/* "The result?" — H2 treatment, matches the page's section-headline
-   scale (.businessTitle / .featuresHeadline). */
+/* "The result?" — mega headline. One rung bigger than the page's
+   hero-scale headlines (e.g. .businessTitle at 35/6.6vw/88), so this
+   line reads as the tentpole of the section. */
 .resultHeadlineH2 {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(36px, 5vw, 60px);
-  line-height: 1.1;
+  font-size: clamp(52px, 10vw, 140px);
+  line-height: 1;
   color: var(--gs-tw-gray-950);
   text-transform: uppercase;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
-/* "Advertising that works better / because it is better." — H3
-   treatment, one rung below the H2. */
+/* "Advertising that works better / because it is better." — Monster
+   Headline M1 scale, matching the rest of the site's hero-level
+   headlines. The ResultTyping component inside handles char-by-char
+   animation, so the type-through lands at hero size. */
 .resultHeadlineH3 {
   margin: 0;
-  margin-top: calc(var(--gs-n-12, 12) * var(--gs-px));
+  margin-top: calc(var(--gs-n-24, 24) * var(--gs-px));
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(22px, 2.6vw, 32px);
-  line-height: 1.2;
+  font-size: clamp(35px, 6.6vw, 88px);
+  line-height: 1.1;
   color: var(--gs-tw-gray-950);
   text-transform: uppercase;
   letter-spacing: -0.02em;

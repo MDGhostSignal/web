@@ -9,6 +9,7 @@ import { LazyLottie } from "@/components/LazyLottie";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
+import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
@@ -395,19 +396,50 @@ export default function ForCreatorsPage() {
               />
             </div>
           </ScrollFadeUp>
-          <ol className={styles.journeySteps}>
-            {journeySteps.map((step, index) => (
-              <ScrollFadeUp key={step.number} index={index} duration={1.8}>
-                <li className={styles.journeyStep}>
-                  <span className={styles.stepNumber} aria-hidden="true">{step.number}</span>
-                  <div className={styles.stepContent}>
-                    <h3 className={styles.stepTitle}>{step.title}</h3>
-                    <p className={styles.stepDescription}>{step.description}</p>
-                  </div>
-                </li>
-              </ScrollFadeUp>
-            ))}
-          </ol>
+          <div className={styles.journeyRight}>
+            <ol className={styles.journeySteps}>
+              {journeySteps.map((step, index) => (
+                <ScrollFadeUp key={step.number} index={index} duration={1.8}>
+                  <li className={styles.journeyStep}>
+                    <span className={styles.stepNumber} aria-hidden="true">{step.number}</span>
+                    <div className={styles.stepContent}>
+                      <h3 className={styles.stepTitle}>{step.title}</h3>
+                      <p className={styles.stepDescription}>{step.description}</p>
+                    </div>
+                  </li>
+                </ScrollFadeUp>
+              ))}
+            </ol>
+            <ScrollFadeUp index={journeySteps.length} duration={1.8}>
+              <Link href="/get-in-touch" className={styles.journeyCta}>
+                Get in Touch
+                <Image
+                  src="/images/home/icon-arrow-right.svg"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className={styles.ctaArrow}
+                />
+              </Link>
+            </ScrollFadeUp>
+            <ScrollFadeUp index={journeySteps.length + 1} duration={1.8}>
+              <aside className={styles.art19Card} aria-label="ART19 Partnership">
+                <h3 className={styles.art19Eyebrow}>ART19 Partnership</h3>
+                <p className={styles.art19Body}>
+                  Shows in the <BrandedGhostSignal /> network are hosted on
+                  ART19, so you inherit their best-in-class delivery,
+                  reporting, and dynamic ad insertion from day one.
+                </p>
+                <Image
+                  src="/images/for-creators/AAC_ART19_black.svg"
+                  alt="ART19 logo"
+                  width={240}
+                  height={64}
+                  className={styles.art19Logo}
+                />
+              </aside>
+            </ScrollFadeUp>
+          </div>
         </div>
       </section>
 

@@ -42,10 +42,17 @@ export default function LegacyHomePage() {
     <main className={styles.legacyHome}>
       <SiteHeader links={navLinks} animateIn />
 
-      {/* Temporary Design Feedback Button */}
-      <Link href="/design-tasks" className={styles.designFeedbackBtn}>
-        DESIGN Feedback
-      </Link>
+      {/* Temporary top-right admin buttons — design feedback + RQ
+         responses. Stacked in a flex row so both sit inside the same
+         fixed slot rather than overlapping. */}
+      <div className={styles.adminButtonRow}>
+        <Link href="/design-tasks" className={styles.designFeedbackBtn}>
+          DESIGN Feedback
+        </Link>
+        <Link href="/rq-dashboard" className={styles.rqResponsesBtn}>
+          RQ Responses
+        </Link>
+      </div>
 
       {/* Single centered hero video — natural size, padded frame. */}
       <div className={styles.cloudBackground} aria-hidden="true">

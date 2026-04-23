@@ -308,7 +308,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
-  align-items: end;
+  /* Was `end` -- both columns anchored to the bottom of the grid
+     row, so the tiles bottomed out with the statue. Flipped to
+     `start` so the tiles begin at the same height the statue image
+     starts (top of the grid row). */
+  align-items: start;
 }
 
 .journeyImageWrapper {
@@ -370,15 +374,103 @@
   max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
 }
 
+/* Right-column wrapper: stacks the <ol> of steps and the "Get In
+   Touch" CTA below it. Previously the <ol> was the direct grid
+   child; now this div is, and the <ol>'s own vertical rhythm stays
+   intact (padding + gap between steps). */
+.journeyRight {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+}
+
 .journeySteps {
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-48) * var(--gs-px));
   list-style: none;
   margin: 0;
-  padding: 0 var(--edge-pad) calc(var(--gs-n-64) * var(--gs-px)) calc(var(--gs-n-48) * var(--gs-px));
+  /* Bottom padding trimmed -- the CTA below carries its own margin
+     now, so 64 -> 32 keeps the button close to the last tile. */
+  padding: 0 var(--edge-pad) calc(var(--gs-n-32) * var(--gs-px)) calc(var(--gs-n-48) * var(--gs-px));
   counter-reset: step;
-  align-self: end;
+}
+
+/* Matches the closingCta in shape (dark pill with white text + arrow
+   icon). Aligns to the left edge of the steps via the same
+   --gs-n-48 indent, and carries the bottom spacing the <ol> used to
+   hold so the section still breathes. */
+.journeyCta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  margin-left: calc(var(--gs-n-48) * var(--gs-px));
+  margin-bottom: calc(var(--gs-n-64) * var(--gs-px));
+  padding: calc(var(--gs-n-18) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-lg-size);
+  line-height: var(--gs-text-lg-leading);
+  color: var(--gs-tw-white);
+  background: var(--gs-tw-gray-950);
+  border-radius: calc(var(--gs-radius-sm, 4) * var(--gs-px));
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background 200ms ease, transform 200ms ease;
+}
+
+.journeyCta:hover {
+  background: var(--gs-tw-gray-800);
+  transform: translateY(-2px);
+}
+
+/* ART19 partnership card sits under the CTA in the same right column.
+   Off-white panel so it reads as a subtle callout rather than a second
+   glass tile. Same left indent as the journey steps so the logo lines
+   up with the list's left edge. */
+.art19Card {
+  align-self: flex-start;
+  max-width: calc(var(--gs-n-560, 560) * var(--gs-px));
+  margin-left: calc(var(--gs-n-48) * var(--gs-px));
+  margin-right: var(--edge-pad);
+  margin-bottom: calc(var(--gs-n-64) * var(--gs-px));
+  padding: calc(var(--gs-n-32) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+.art19Eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-sm-size);
+  line-height: var(--gs-text-sm-leading);
+  color: rgba(0, 0, 0, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.art19Body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-base-size);
+  line-height: var(--gs-text-base-leading);
+  color: rgba(0, 0, 0, 0.82);
+}
+
+.art19Logo {
+  width: calc(var(--gs-n-200, 200) * var(--gs-px));
+  height: auto;
+  margin-top: calc(var(--gs-n-8) * var(--gs-px));
 }
 
 .journeyStep {
@@ -791,6 +883,15 @@
 
   .journeySteps {
     padding: 0 var(--edge-pad);
+  }
+
+  /* At mobile, the CTA no longer shares a row with the statue, so
+     align it with the rest of the column's edge-padding instead of
+     the desktop --gs-n-48 indent. Same for the ART19 card. */
+  .journeyCta,
+  .art19Card {
+    margin-left: var(--edge-pad);
+    margin-right: var(--edge-pad);
   }
 
   .featureCard,
