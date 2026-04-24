@@ -1,0 +1,151 @@
+/* =============================================================================
+   GhostSignal Admin Design System — Tokens
+   =============================================================================
+
+   Scoped to internal admin surfaces (/admin, /rq-dashboard, /design-tasks).
+   Intentionally separate from the Figma-generated --gs-* tokens used on the
+   public site so the admin UI can evolve independently. All admin components
+   reference these tokens rather than raw hex/px values, so a palette tweak
+   ripples through every surface.
+
+   Variables are defined on the admin shell root (.admin-root) and on :root
+   as a fallback so any component that's hoisted outside the shell (e.g. a
+   portal-mounted modal) still resolves them.
+   ============================================================================= */
+
+:root,
+.admin-root {
+  /* ---- Color: surface ------------------------------------------------- */
+  --admin-bg: #0a0a0b;
+  --admin-bg-elevated: #141418;
+  --admin-surface-1: rgba(255, 255, 255, 0.04);
+  --admin-surface-2: rgba(255, 255, 255, 0.06);
+  --admin-surface-3: rgba(255, 255, 255, 0.1);
+  --admin-surface-hover: rgba(255, 255, 255, 0.08);
+
+  /* ---- Color: text ---------------------------------------------------- */
+  --admin-text-primary: rgba(255, 255, 255, 0.95);
+  --admin-text-secondary: rgba(255, 255, 255, 0.72);
+  --admin-text-muted: rgba(255, 255, 255, 0.48);
+  --admin-text-disabled: rgba(255, 255, 255, 0.32);
+
+  /* ---- Color: border -------------------------------------------------- */
+  --admin-border: rgba(255, 255, 255, 0.1);
+  --admin-border-strong: rgba(255, 255, 255, 0.18);
+  --admin-border-focus: rgba(251, 173, 37, 0.55);
+
+  /* ---- Color: accent -------------------------------------------------- */
+  /* Primary accent ports the RQ brand amber into internal tooling so the
+     full stack feels like one brand. Use for links, counts, active tabs,
+     focus rings, primary CTA fills. */
+  --admin-accent: #fbad25;
+  --admin-accent-strong: #ffc043;
+  --admin-accent-soft: rgba(251, 173, 37, 0.12);
+  --admin-accent-softer: rgba(251, 173, 37, 0.06);
+
+  /* Secondary accent (info / neutral callouts). Kept for the occasions
+     where amber would collide semantically (e.g., external links inside a
+     row that already uses amber for the code). */
+  --admin-info: #64c8ff;
+  --admin-info-soft: rgba(100, 200, 255, 0.15);
+
+  /* ---- Color: semantic ------------------------------------------------ */
+  --admin-success: #50ff96;
+  --admin-success-soft: rgba(50, 255, 150, 0.15);
+  --admin-warn: #ffc864;
+  --admin-warn-soft: rgba(255, 200, 100, 0.15);
+  --admin-destructive: #d64545;
+  --admin-destructive-strong: #c43a3a;
+  --admin-destructive-soft: rgba(255, 80, 80, 0.12);
+  --admin-destructive-border: rgba(255, 80, 80, 0.55);
+  --admin-error-text: #ffb4b4;
+
+  /* Type + clarity badges: carry the existing RQ palette so the surfaces
+     don't lose their semantic meaning after the refactor. */
+  --admin-type-creator: #64c8ff;
+  --admin-type-creator-bg: rgba(100, 200, 255, 0.15);
+  --admin-type-brand: #ff9664;
+  --admin-type-brand-bg: rgba(255, 150, 100, 0.15);
+
+  /* ---- Radii ---------------------------------------------------------- */
+  --admin-radius-xs: 4px;
+  --admin-radius-sm: 6px;
+  --admin-radius-md: 8px;
+  --admin-radius-lg: 12px;
+  --admin-radius-xl: 16px;
+  --admin-radius-pill: 999px;
+
+  /* ---- Spacing -------------------------------------------------------- */
+  /* 4px-baseline steps. Admin layouts tend to want tighter gutters than
+     marketing pages, so the small end is denser. */
+  --admin-space-1: 4px;
+  --admin-space-2: 8px;
+  --admin-space-3: 12px;
+  --admin-space-4: 16px;
+  --admin-space-5: 20px;
+  --admin-space-6: 24px;
+  --admin-space-8: 32px;
+  --admin-space-10: 40px;
+  --admin-space-12: 48px;
+  --admin-space-16: 64px;
+
+  /* ---- Typography ----------------------------------------------------- */
+  --admin-font:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --admin-font-mono:
+    "SF Mono", "Fira Code", "JetBrains Mono", ui-monospace, monospace;
+
+  /* Sizes */
+  --admin-text-xs: 11px;
+  --admin-text-sm: 12px;
+  --admin-text-base: 13px;
+  --admin-text-md: 14px;
+  --admin-text-lg: 16px;
+  --admin-text-xl: 18px;
+  --admin-text-2xl: 20px;
+  --admin-text-3xl: 24px;
+  --admin-text-4xl: 28px;
+
+  /* Weights */
+  --admin-weight-regular: 400;
+  --admin-weight-medium: 500;
+  --admin-weight-semibold: 600;
+  --admin-weight-bold: 700;
+
+  /* ---- Motion --------------------------------------------------------- */
+  --admin-transition-fast: 150ms ease;
+  --admin-transition-base: 200ms ease;
+  --admin-transition-slow: 320ms ease;
+
+  /* ---- Shadows -------------------------------------------------------- */
+  --admin-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --admin-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --admin-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  /* ---- Z-index -------------------------------------------------------- */
+  --admin-z-dropdown: 50;
+  --admin-z-header: 100;
+  --admin-z-overlay: 900;
+  --admin-z-modal: 1000;
+}
+
+/* Shell helper: every admin page wraps itself in .admin-root so the tokens
+   resolve + the base font/color land in one place. */
+.admin-root {
+  min-height: 100vh;
+  background: var(--admin-bg);
+  color: var(--admin-text-primary);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Sensible default focus-visible ring on admin interactive elements.
+   Individual components can override with :focus-visible rules that match
+   their shape, but this ensures nothing goes unfocused. */
+.admin-root :focus-visible {
+  outline: 2px solid var(--admin-border-focus);
+  outline-offset: 2px;
+}

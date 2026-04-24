@@ -17,6 +17,33 @@ const nextConfig: NextConfig = {
     // (e.g. SST write failures / corrupted task DB under `.next/`).
     turbopackFileSystemCacheForDev: false,
   },
+  // Legacy admin URLs were consolidated under /admin/* (Phase 3 of the
+  // admin-hub rebuild). Keep the old paths working for anyone with a
+  // bookmark so they land on the canonical URL after auth.
+  async redirects() {
+    return [
+      {
+        source: "/rq-dashboard",
+        destination: "/admin/rq-responses",
+        permanent: true,
+      },
+      {
+        source: "/rq-dashboard/:path*",
+        destination: "/admin/rq-responses/:path*",
+        permanent: true,
+      },
+      {
+        source: "/design-tasks",
+        destination: "/admin/design-tasks",
+        permanent: true,
+      },
+      {
+        source: "/design-tasks/:path*",
+        destination: "/admin/design-tasks/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,0 +1,200 @@
+/* =============================================================================
+   /admin/members — page-specific styles
+   =============================================================================
+
+   Table + modal + badges + state views come from the admin primitives;
+   only the pieces unique to this CRM view live here (toolbar filter
+   cluster, expanded-member details grid, form rows).
+   ============================================================================= */
+
+.errorSlot {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  margin-bottom: var(--admin-space-5);
+}
+
+.errorSlot > :first-child {
+  flex: 1;
+}
+
+/* Column cells (mirrors rq-responses.module.css). */
+.date {
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-base);
+  white-space: nowrap;
+}
+
+.email {
+  color: var(--admin-accent);
+  text-decoration: none;
+}
+
+.email:hover {
+  text-decoration: underline;
+}
+
+.expandGlyph {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  font-size: var(--admin-text-xl);
+  color: var(--admin-text-muted);
+  line-height: 1;
+}
+
+/* Filter row — stage / type / owner chips above the search bar. */
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+.filterLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.filterSelect {
+  padding: 6px 10px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+}
+
+/* Expanded-row layout tweaks */
+.detailsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.notesPanel {
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.notesPanel h4 {
+  margin: 0 0 var(--admin-space-2);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.notesPanel p {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.6;
+  color: var(--admin-text-secondary);
+  white-space: pre-wrap;
+}
+
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-2);
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+}
+
+/* Form used by Create + Edit modals. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-4);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.formGroupFull {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: var(--admin-text-base);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-secondary);
+}
+
+.input,
+.textarea,
+.select {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  transition:
+    border-color var(--admin-transition-base),
+    background var(--admin-transition-base);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-2);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+@media (max-width: 640px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}

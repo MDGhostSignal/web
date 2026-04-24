@@ -1,0 +1,65 @@
+/* Compact pill badge used for statuses, clarity levels, types, counts.
+   All variants share the same shape (padding, radius, tracking); only
+   colour differs so the visual rhythm across tables stays steady. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-1);
+  padding: 4px 10px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--admin-radius-xs);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* Default: muted neutral. Used when no semantic variant applies. */
+.variantNeutral {
+  background: var(--admin-surface-3);
+  color: var(--admin-text-secondary);
+}
+
+/* Accent (amber): counts, brand-level emphasis. Pill shape to distinguish
+   it from square status pills. */
+.variantAccent {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  border-radius: var(--admin-radius-pill);
+  padding: 4px 12px;
+}
+
+/* Semantic colours */
+.variantSuccess {
+  background: var(--admin-success-soft);
+  color: var(--admin-success);
+}
+
+.variantWarn {
+  background: var(--admin-warn-soft);
+  color: var(--admin-warn);
+}
+
+.variantDanger {
+  background: var(--admin-destructive-soft);
+  color: var(--admin-error-text);
+}
+
+.variantInfo {
+  background: var(--admin-info-soft);
+  color: var(--admin-info);
+}
+
+/* Participant-type variants (carry the existing RQ palette). */
+.variantCreator {
+  background: var(--admin-type-creator-bg);
+  color: var(--admin-type-creator);
+}
+
+.variantBrand {
+  background: var(--admin-type-brand-bg);
+  color: var(--admin-type-brand);
+}

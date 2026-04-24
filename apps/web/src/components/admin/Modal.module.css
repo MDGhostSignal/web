@@ -1,0 +1,140 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--admin-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--admin-space-6);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: adminModalFade var(--admin-transition-base);
+}
+
+@keyframes adminModalFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-lg);
+  animation: adminModalRise 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  max-height: calc(100vh - var(--admin-space-12));
+  overflow: auto;
+}
+
+@keyframes adminModalRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Size overrides */
+.sizeSm {
+  max-width: 400px;
+}
+.sizeLg {
+  max-width: 640px;
+}
+.sizeXl {
+  max-width: 880px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-6) var(--admin-space-6) var(--admin-space-3);
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-1);
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-2xl);
+  font-weight: var(--admin-weight-bold);
+  letter-spacing: -0.01em;
+  color: var(--admin-text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-base);
+  color: var(--admin-text-muted);
+  line-height: 1.5;
+}
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--admin-surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    color var(--admin-transition-base);
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  background: var(--admin-surface-3);
+  color: var(--admin-text-primary);
+}
+
+.body {
+  padding: 0 var(--admin-space-6) var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-secondary);
+}
+
+.body > * + * {
+  margin-top: var(--admin-space-3);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4) var(--admin-space-6) var(--admin-space-6);
+  border-top: 1px solid var(--admin-border);
+  margin-top: var(--admin-space-4);
+}
+
+/* Without a footer, the body's bottom padding needs to stay generous
+   so the modal doesn't feel cropped. */
+.bodyNoFooter {
+  padding-bottom: var(--admin-space-6);
+}

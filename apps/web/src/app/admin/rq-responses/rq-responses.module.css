@@ -1,0 +1,85 @@
+/* =============================================================================
+   /admin/rq-responses — page-specific styles
+   =============================================================================
+
+   Most UI (table, badges, modal, search, states) comes from the admin
+   primitives (@/components/admin). The page chrome (background, main
+   padding) is supplied by AdminShell. Only the small bits unique to
+   this view live here: email/date cell styling and the Profile
+   Analysis block rendered inside each expanded row.
+   ============================================================================= */
+
+.date {
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-base);
+  white-space: nowrap;
+}
+
+.email {
+  color: var(--admin-accent);
+  text-decoration: none;
+}
+
+.email:hover {
+  text-decoration: underline;
+}
+
+.expandGlyph {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  font-size: var(--admin-text-xl);
+  color: var(--admin-text-muted);
+  line-height: 1;
+}
+
+/* ---- Profile Analysis block (inside expanded row) ----------------- */
+
+.profileBlock {
+  border-top: 1px solid var(--admin-border);
+  padding-top: var(--admin-space-5);
+}
+
+.profileHeading {
+  margin: 0 0 var(--admin-space-4);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--admin-space-5);
+}
+
+.profileItem {
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border-left: 3px solid var(--admin-accent);
+  border-radius: 0 var(--admin-radius-md) var(--admin-radius-md) 0;
+}
+
+.profileItem h5 {
+  margin: 0 0 var(--admin-space-2);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profileItem p {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+}

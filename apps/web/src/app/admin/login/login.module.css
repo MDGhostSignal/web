@@ -1,0 +1,108 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--admin-space-6);
+  background:
+    radial-gradient(
+      ellipse 60% 55% at 30% 20%,
+      rgba(251, 173, 37, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 75% 75%,
+      rgba(100, 150, 255, 0.06),
+      transparent 60%
+    ),
+    var(--admin-bg);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--admin-space-8);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-xl);
+  box-shadow: var(--admin-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  font-family: var(--admin-font);
+}
+
+.brandName {
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.brandTag {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-3xl);
+  font-weight: var(--admin-weight-bold);
+  letter-spacing: -0.01em;
+  color: var(--admin-text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-muted);
+  line-height: 1.5;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  margin-top: var(--admin-space-2);
+}
+
+.label {
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.input {
+  height: 48px;
+  padding: 0 var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  transition:
+    border-color var(--admin-transition-base),
+    background var(--admin-transition-base);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-2);
+  box-shadow: 0 0 0 3px var(--admin-accent-softer);
+}

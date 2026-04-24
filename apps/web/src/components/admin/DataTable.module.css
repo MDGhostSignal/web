@@ -1,0 +1,167 @@
+/* Admin data table. Dark rows, amber-tinted hover/expanded states,
+   sticky-left expanded details panel for horizontal-scroll resilience.
+   Paired with DataTable.tsx — which renders the table shell + accepts
+   per-column config — but the class names are also usable directly for
+   bespoke layouts that want the same look. */
+
+.wrap {
+  overflow-x: auto;
+  border-radius: var(--admin-radius-lg);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+}
+
+.thead {
+  background: var(--admin-surface-2);
+}
+
+.th {
+  padding: 10px;
+  text-align: left;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+}
+
+.tbodyTr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background var(--admin-transition-fast);
+}
+
+.tbodyTr:hover {
+  background: var(--admin-accent-softer);
+}
+
+.tbodyTr.expanded {
+  background: var(--admin-accent-soft);
+}
+
+/* Non-clickable table (no expand interaction). */
+.tableStatic .tbodyTr {
+  cursor: default;
+}
+
+.td {
+  padding: 10px;
+  vertical-align: middle;
+  color: var(--admin-text-primary);
+}
+
+/* Column variants. Consumers pass `variant` on a Column to apply. */
+.colMono {
+  font-family: var(--admin-font-mono);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+}
+
+.colMuted {
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-base);
+}
+
+.colTruncate {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.colNowrap {
+  white-space: nowrap;
+}
+
+.colNumeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.expandCell {
+  width: 30px;
+  text-align: center;
+  font-size: var(--admin-text-xl);
+  color: var(--admin-text-muted);
+}
+
+/* Expanded details row */
+.detailsRow {
+  background: rgba(0, 0, 0, 0.3) !important;
+  cursor: default !important;
+}
+
+.detailsRow:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.detailsRow > td {
+  padding: 0;
+}
+
+.detailsPanel {
+  position: sticky;
+  left: 0;
+  width: 100%;
+  max-width: min(calc(100vw - 48px), 1400px);
+  box-sizing: border-box;
+  padding: var(--admin-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-6);
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--admin-space-8);
+}
+
+.detailsSection h4 {
+  margin: 0 0 var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detailsSection p {
+  margin: 0 0 var(--admin-space-2);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+}
+
+.detailsSection a {
+  color: var(--admin-accent);
+  text-decoration: none;
+}
+
+.detailsSection a:hover {
+  text-decoration: underline;
+}
+
+.detailsActions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--admin-space-5);
+  border-top: 1px solid var(--admin-border);
+}
+
+@media (max-width: 768px) {
+  .detailsPanel {
+    padding: var(--admin-space-4);
+  }
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+}

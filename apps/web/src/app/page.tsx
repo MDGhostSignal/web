@@ -46,10 +46,10 @@ export default function LegacyHomePage() {
          responses. Stacked in a flex row so both sit inside the same
          fixed slot rather than overlapping. */}
       <div className={styles.adminButtonRow}>
-        <Link href="/design-tasks" className={styles.designFeedbackBtn}>
+        <Link href="/admin/design-tasks" className={styles.designFeedbackBtn}>
           DESIGN Feedback
         </Link>
-        <Link href="/rq-dashboard" className={styles.rqResponsesBtn}>
+        <Link href="/admin/rq-responses" className={styles.rqResponsesBtn}>
           RQ Responses
         </Link>
       </div>

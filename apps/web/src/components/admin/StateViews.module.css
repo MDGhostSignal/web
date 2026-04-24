@@ -1,0 +1,83 @@
+/* Shared loading / empty / error UI. Grouped in one file since they're
+   all page-level state displays that share the same centred-column
+   layout. */
+
+/* ---- Spinner -------------------------------------------------------- */
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--admin-accent-soft);
+  border-top-color: var(--admin-accent);
+  border-radius: 50%;
+  animation: adminSpin 1s linear infinite;
+}
+
+.spinnerSm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+.spinnerLg {
+  width: 56px;
+  height: 56px;
+  border-width: 4px;
+}
+
+@keyframes adminSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Centred column (shared by Loading + Empty + Error) ------------ */
+
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-16) var(--admin-space-6);
+  text-align: center;
+}
+
+.centeredTitle {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xl);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+}
+
+.centeredBody {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  line-height: 1.5;
+  color: var(--admin-text-muted);
+  max-width: 420px;
+}
+
+/* ---- Error card (inline, not a full page) -------------------------- */
+
+.errorCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4);
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-destructive-soft);
+  border: 1px solid rgba(255, 80, 80, 0.35);
+  color: var(--admin-error-text);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-base);
+  line-height: 1.5;
+}
+
+.errorCardTitle {
+  font-weight: var(--admin-weight-semibold);
+  color: #ffffff;
+}

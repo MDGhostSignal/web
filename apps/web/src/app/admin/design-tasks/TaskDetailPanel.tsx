@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+
+import { Badge, Button, ErrorCard, type BadgeVariant } from "@/components/admin";
+
 import styles from "./TaskDetailPanel.module.css";
 
 type TaskStatus = "pending" | "in_progress" | "completed";
@@ -44,6 +47,14 @@ const FOUNDERS: { name: Founder; initials: string; color: string }[] = [
 ];
 
 const EMOJI_OPTIONS = ["👍", "❤️", "🎉", "🤔", "👀", "🚀", "✅", "💯"];
+
+// Priority → Badge variant, same mapping as the parent page so the
+// pill styling is consistent across the list and the detail panel.
+const priorityBadge: Record<TaskPriority, BadgeVariant> = {
+  low: "success",
+  medium: "warn",
+  high: "danger",
+};
 
 function getFounderInfo(name: string) {
   return FOUNDERS.find((f) => f.name === name) || { name, initials: "??", color: "#6b7280" };
@@ -311,8 +322,8 @@ export function TaskDetailPanel({
 
   return (
     <>
-      <div className={styles.overlay} />
-      <div ref={panelRef} className={styles.panel}>
+      <div className={`${styles.overlay} admin-root`} />
+      <div ref={panelRef} className={`${styles.panel} admin-root`}>
         {/* Header */}
         <div className={styles.header}>
           <button onClick={onClose} className={styles.closeButton}>
@@ -338,9 +349,7 @@ export function TaskDetailPanel({
           <h2 className={styles.taskTitle}>{task.title}</h2>
 
           <div className={styles.taskMeta}>
-            <span className={`${styles.priorityBadge} ${styles[`priority_${task.priority}`]}`}>
-              {task.priority}
-            </span>
+            <Badge variant={priorityBadge[task.priority]}>{task.priority}</Badge>
             {task.created_by && (
               <span className={styles.createdBy}>
                 Created by {task.created_by}
@@ -368,9 +377,16 @@ export function TaskDetailPanel({
 
         {/* Error Message */}
         {error && (
-          <div className={styles.errorBanner}>
-            {error}
-            <button onClick={() => setError(null)} className={styles.errorClose}>×</button>
+          <div className={styles.errorSlot}>
+            <ErrorCard>{error}</ErrorCard>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setError(null)}
+              aria-label="Dismiss error"
+            >
+              Dismiss
+            </Button>
           </div>
         )}
 
@@ -406,21 +422,23 @@ export function TaskDetailPanel({
                         </span>
                         {isOwnComment && !isEditing && (
                           <div className={styles.commentActions}>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => {
                                 setEditingCommentId(comment.id);
                                 setEditContent(comment.content);
                               }}
-                              className={styles.commentActionBtn}
                             >
                               Edit
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleDeleteComment(comment.id)}
-                              className={styles.commentActionBtn}
                             >
                               Delete
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -434,21 +452,23 @@ export function TaskDetailPanel({
                             autoFocus
                           />
                           <div className={styles.editActions}>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => {
                                 setEditingCommentId(null);
                                 setEditContent("");
                               }}
-                              className={styles.cancelEditBtn}
                             >
                               Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
                               onClick={() => handleEditComment(comment.id)}
-                              className={styles.saveEditBtn}
                             >
                               Save
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       ) : (
@@ -555,13 +575,14 @@ export function TaskDetailPanel({
             className={styles.commentInput}
             disabled={isSubmitting}
           />
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             type="submit"
             disabled={!newComment.trim() || isSubmitting}
-            className={styles.submitCommentBtn}
           >
-            {isSubmitting ? "..." : "Send"}
-          </button>
+            {isSubmitting ? "…" : "Send"}
+          </Button>
         </form>
       </div>
     </>

@@ -1,0 +1,114 @@
+/* Shared button primitive for admin surfaces. Four variants, two sizes,
+   plus a leading/trailing icon slot. All transitions and colours pull
+   from tokens.css so a palette change takes effect everywhere. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-space-2);
+  font-family: var(--admin-font);
+  font-weight: var(--admin-weight-semibold);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: var(--admin-radius-md);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base),
+    color var(--admin-transition-base),
+    transform var(--admin-transition-base),
+    box-shadow var(--admin-transition-base);
+  border: 1px solid transparent;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ---- Sizes ---------------------------------------------------------- */
+.sizeSm {
+  height: 32px;
+  padding: 0 var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+}
+
+.sizeMd {
+  height: 40px;
+  padding: 0 var(--admin-space-5);
+  font-size: var(--admin-text-base);
+}
+
+.sizeLg {
+  height: 48px;
+  padding: 0 var(--admin-space-6);
+  font-size: var(--admin-text-md);
+}
+
+/* ---- Variants ------------------------------------------------------- */
+
+/* Primary: solid amber. Used sparingly — one per view, the main CTA. */
+.variantPrimary {
+  background: var(--admin-accent);
+  color: #1a1200;
+  border-color: var(--admin-accent);
+}
+.variantPrimary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--admin-accent-strong);
+  border-color: var(--admin-accent-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(251, 173, 37, 0.25);
+}
+
+/* Secondary: neutral outline. Default for most buttons. */
+.variantSecondary {
+  background: var(--admin-surface-1);
+  color: var(--admin-text-primary);
+  border-color: var(--admin-border-strong);
+}
+.variantSecondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--admin-surface-hover);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Destructive: outlined red, fills on confirm-state via .variantDestructiveSolid. */
+.variantDestructive {
+  background: transparent;
+  color: var(--admin-error-text);
+  border-color: var(--admin-destructive-border);
+}
+.variantDestructive:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--admin-destructive-soft);
+  border-color: rgba(255, 80, 80, 0.9);
+  transform: translateY(-1px);
+}
+
+/* Destructive solid: used inside delete-confirmation modals where the
+   user has already acknowledged the danger — needs to read as the
+   primary action in that context. */
+.variantDestructiveSolid {
+  background: var(--admin-destructive);
+  color: #ffffff;
+  border-color: var(--admin-destructive);
+}
+.variantDestructiveSolid:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--admin-destructive-strong);
+  border-color: var(--admin-destructive-strong);
+  transform: translateY(-1px);
+}
+
+/* Ghost: no border at rest. For dense toolbars / tab-like triggers. */
+.variantGhost {
+  background: transparent;
+  color: var(--admin-text-secondary);
+  border-color: transparent;
+}
+.variantGhost:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--admin-surface-1);
+  color: var(--admin-text-primary);
+}

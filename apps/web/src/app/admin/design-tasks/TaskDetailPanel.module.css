@@ -1,0 +1,529 @@
+/* =============================================================================
+   TaskDetailPanel — slide-in comments/chat UI
+   =============================================================================
+
+   The comment thread + founder-avatar + emoji-reaction UI is unique to
+   this surface (no reuse elsewhere yet) so it stays co-located here. All
+   colour, spacing, radius, typography values route through the admin
+   design tokens (see @/components/admin/tokens.css) so the panel feels
+   part of the same system as the list behind it.
+   ============================================================================= */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: var(--admin-z-overlay);
+  animation: adminOverlayFade var(--admin-transition-base);
+}
+
+@keyframes adminOverlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  background: var(--admin-bg-elevated);
+  border-left: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-lg);
+  z-index: calc(var(--admin-z-overlay) + 1);
+  animation: adminPanelSlide 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-family: var(--admin-font);
+  color: var(--admin-text-primary);
+}
+
+@keyframes adminPanelSlide {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ---- Header ------------------------------------------------------ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-5) var(--admin-space-6);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--admin-surface-2);
+  color: var(--admin-text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    color var(--admin-transition-base);
+}
+
+.closeButton:hover {
+  background: var(--admin-surface-3);
+  color: var(--admin-text-primary);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+}
+
+.statusSelect {
+  padding: 6px 10px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  background: var(--admin-surface-2);
+  color: var(--admin-text-primary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+}
+
+.statusSelect.status_pending {
+  background: var(--admin-warn-soft);
+  color: var(--admin-warn);
+  border-color: rgba(255, 200, 100, 0.35);
+}
+.statusSelect.status_in_progress {
+  background: var(--admin-info-soft);
+  color: var(--admin-info);
+  border-color: rgba(100, 200, 255, 0.35);
+}
+.statusSelect.status_completed {
+  background: var(--admin-success-soft);
+  color: var(--admin-success);
+  border-color: rgba(50, 255, 150, 0.35);
+}
+
+/* ---- Task details block ------------------------------------------ */
+.taskDetails {
+  padding: var(--admin-space-5) var(--admin-space-6) var(--admin-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: var(--admin-text-2xl);
+  font-weight: var(--admin-weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.taskMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+.createdBy,
+.taskDate {
+  color: var(--admin-text-muted);
+}
+
+.dueDate {
+  color: var(--admin-warn);
+}
+
+.taskDescription {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.6;
+  color: var(--admin-text-secondary);
+}
+
+/* ---- Divider with count ------------------------------------------ */
+.divider {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--admin-space-6);
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--admin-border);
+}
+
+.dividerLabel {
+  padding: 0 var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---- Error slot -------------------------------------------------- */
+.errorSlot {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-3) var(--admin-space-6);
+}
+
+.errorSlot > :first-child {
+  flex: 1;
+}
+
+/* ---- Comments list ---------------------------------------------- */
+.commentsContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--admin-space-4) var(--admin-space-6);
+}
+
+.loadingComments,
+.noComments {
+  text-align: center;
+  padding: var(--admin-space-10) 0;
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-md);
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.comment {
+  display: flex;
+  gap: var(--admin-space-3);
+}
+
+.commentAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: #ffffff;
+  border-radius: 50%;
+}
+
+.commentContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--admin-space-2);
+  margin-bottom: var(--admin-space-1);
+}
+
+.commentAuthor {
+  font-weight: var(--admin-weight-semibold);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+}
+
+.commentTime {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+.commentActions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--admin-space-1);
+  opacity: 0;
+  transition: opacity var(--admin-transition-base);
+}
+
+.comment:hover .commentActions {
+  opacity: 1;
+}
+
+.commentText {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-secondary);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Edit form */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.editTextarea {
+  width: 100%;
+  min-height: 60px;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  resize: vertical;
+}
+
+.editTextarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-2);
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--admin-space-2);
+}
+
+/* Reactions */
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-1);
+  margin-top: var(--admin-space-2);
+}
+
+.reactionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-1);
+  padding: 3px 8px;
+  font-size: var(--admin-text-sm);
+  background: var(--admin-surface-2);
+  color: var(--admin-text-secondary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.reactionBadge:hover {
+  background: var(--admin-surface-3);
+}
+
+.reactionActive {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  border-color: rgba(251, 173, 37, 0.35);
+}
+
+.addReactionWrapper {
+  position: relative;
+}
+
+.addReactionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    color var(--admin-transition-base);
+}
+
+.addReactionBtn:hover {
+  background: var(--admin-surface-2);
+  color: var(--admin-text-primary);
+}
+
+.emojiPicker {
+  position: absolute;
+  bottom: calc(100% + var(--admin-space-1));
+  left: 0;
+  display: flex;
+  gap: 2px;
+  padding: var(--admin-space-1);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  box-shadow: var(--admin-shadow-md);
+  z-index: var(--admin-z-dropdown);
+}
+
+.emojiOption {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: var(--admin-text-lg);
+  background: transparent;
+  border: none;
+  border-radius: var(--admin-radius-xs);
+  cursor: pointer;
+  transition: background var(--admin-transition-base);
+}
+
+.emojiOption:hover {
+  background: var(--admin-surface-3);
+}
+
+/* ---- Comment form ------------------------------------------------ */
+.commentForm {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-4) var(--admin-space-6);
+  border-top: 1px solid var(--admin-border);
+  background: var(--admin-bg);
+}
+
+.commenterPickerWrapper {
+  position: relative;
+}
+
+.commenterPickerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-1);
+  padding: 0 var(--admin-space-2);
+  height: 36px;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--admin-radius-pill);
+  cursor: pointer;
+  transition: transform var(--admin-transition-base);
+}
+
+.commenterPickerButton:hover {
+  transform: translateY(-1px);
+}
+
+.commenterDropdownIcon {
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+.commenterDropdown {
+  position: absolute;
+  bottom: calc(100% + var(--admin-space-1));
+  left: 0;
+  min-width: 220px;
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  box-shadow: var(--admin-shadow-md);
+  overflow: hidden;
+  z-index: var(--admin-z-dropdown);
+}
+
+.commenterDropdownHeader {
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.commenterOption {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  width: 100%;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--admin-transition-base);
+  text-align: left;
+}
+
+.commenterOption:hover {
+  background: var(--admin-surface-1);
+}
+
+.commenterOptionActive {
+  background: var(--admin-accent-soft);
+}
+
+.commenterOptionAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: #ffffff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.commenterOptionName {
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+}
+
+.commentInput {
+  flex: 1;
+  height: 36px;
+  padding: 0 var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  transition:
+    border-color var(--admin-transition-base),
+    background var(--admin-transition-base);
+}
+
+.commentInput::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-2);
+}

@@ -1,0 +1,167 @@
+/* Overall chrome for admin routes. Top bar with brand + tabs + user
+   badge, centred content column below. All children render inside the
+   .admin-root token scope. */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--admin-bg);
+  color: var(--admin-text-primary);
+  font-family: var(--admin-font);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--admin-z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-6);
+  padding: var(--admin-space-4) var(--admin-space-6);
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.brandTag {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* --- Tab navigation ---------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-1);
+  flex: 1;
+  justify-content: center;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-2) var(--admin-space-4);
+  font-size: var(--admin-text-base);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-md);
+  text-decoration: none;
+  transition:
+    background var(--admin-transition-base),
+    color var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.tab:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+}
+
+.tabActive {
+  color: var(--admin-text-primary);
+  background: var(--admin-accent-soft);
+  border-color: rgba(251, 173, 37, 0.3);
+}
+
+.tabActive:hover {
+  background: var(--admin-accent-soft);
+}
+
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 var(--admin-space-2);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-3);
+  border-radius: var(--admin-radius-pill);
+}
+
+.tabActive .tabCount {
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+
+/* --- Trailing user / meta slot ---------------------------------------- */
+
+.trail {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+}
+
+.logoutBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  cursor: pointer;
+  transition:
+    color var(--admin-transition-base),
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.logoutBtn:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border-color: var(--admin-border-strong);
+}
+
+/* --- Content column --------------------------------------------------- */
+
+.content {
+  flex: 1;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--admin-space-8) var(--admin-space-6) var(--admin-space-16);
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: var(--admin-space-3);
+  }
+  .tabs {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+  .content {
+    padding: var(--admin-space-6) var(--admin-space-4);
+  }
+}
