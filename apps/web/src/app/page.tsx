@@ -42,16 +42,10 @@ export default function LegacyHomePage() {
     <main className={styles.legacyHome}>
       <SiteHeader links={navLinks} animateIn />
 
-      {/* Temporary top-right admin buttons — design feedback + RQ
-         responses. Stacked in a flex row so both sit inside the same
-         fixed slot rather than overlapping. */}
+      {/* Top-right admin entry — a single pill that drops straight
+         into the CRM. Internal tooling (RQ responses, design tasks)
+         lives in the admin tabs inside /admin/*. */}
       <div className={styles.adminButtonRow}>
-        <Link href="/admin/design-tasks" className={styles.designFeedbackBtn}>
-          DESIGN Feedback
-        </Link>
-        <Link href="/admin/rq-responses" className={styles.rqResponsesBtn}>
-          RQ Responses
-        </Link>
         <Link href="/admin/members" className={styles.crmBtn}>
           CRM
         </Link>

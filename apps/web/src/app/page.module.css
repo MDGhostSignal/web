@@ -165,8 +165,7 @@
   gap: 8px;
 }
 
-.designFeedbackBtn,
-.rqResponsesBtn,
+/* Top-right admin pill — single entry into /admin/members. */
 .crmBtn {
   display: inline-flex;
   align-items: center;
@@ -180,39 +179,9 @@
   text-decoration: none;
   color: #fff;
   border-radius: 6px;
-  transition: all 200ms ease;
-}
-
-.designFeedbackBtn {
-  background: #D66157;
-  box-shadow: 0 2px 8px rgba(214, 97, 87, 0.4);
-}
-
-.designFeedbackBtn:hover {
-  background: #c54d43;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(214, 97, 87, 0.5);
-}
-
-/* Second admin pill — uses a different hue (teal) so the two buttons
-   read as distinct at a glance. Matches the RQ Index brand teal used
-   elsewhere in the quiz/dashboard. */
-.rqResponsesBtn {
-  background: #00B29C;
-  box-shadow: 0 2px 8px rgba(0, 178, 156, 0.4);
-}
-
-.rqResponsesBtn:hover {
-  background: #009682;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 178, 156, 0.5);
-}
-
-/* Third admin pill — violet, for the Members CRM at /admin/members.
-   Uses a hue that reads clearly apart from the coral + teal pair. */
-.crmBtn {
   background: #7C3AED;
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+  transition: all 200ms ease;
 }
 
 .crmBtn:hover {
