@@ -837,7 +837,7 @@ function MemberFormModal({
       }
     >
       <form id="member-form" className={styles.form} onSubmit={onSubmit}>
-        <div className={styles.formRow}>
+        <div className={styles.formGrid}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="first_name">
               First name
@@ -862,9 +862,6 @@ function MemberFormModal({
               disabled={isSaving}
             />
           </div>
-        </div>
-
-        <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="email">
               Email
@@ -890,9 +887,6 @@ function MemberFormModal({
               disabled={isSaving}
             />
           </div>
-        </div>
-
-        <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="member_type">
               Type
@@ -929,9 +923,6 @@ function MemberFormModal({
               ))}
             </select>
           </div>
-        </div>
-
-        <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="organization">
               Organization
@@ -956,9 +947,6 @@ function MemberFormModal({
               disabled={isSaving}
             />
           </div>
-        </div>
-
-        <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="website">
               Website
@@ -991,9 +979,6 @@ function MemberFormModal({
               ))}
             </select>
           </div>
-        </div>
-
-        <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="next_step">
               Next step
@@ -1023,35 +1008,31 @@ function MemberFormModal({
         </div>
 
         <div className={styles.formGroupFull}>
-          <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="tags">
-              Tags
-            </label>
-            <input
-              id="tags"
-              className={styles.input}
-              placeholder="Comma-separated: podcast, climate, intro-call"
-              value={form.tagsCsv}
-              onChange={(e) => up("tagsCsv", e.target.value)}
-              disabled={isSaving}
-            />
-          </div>
+          <label className={styles.label} htmlFor="tags">
+            Tags
+          </label>
+          <input
+            id="tags"
+            className={styles.input}
+            placeholder="Comma-separated: podcast, climate, intro-call"
+            value={form.tagsCsv}
+            onChange={(e) => up("tagsCsv", e.target.value)}
+            disabled={isSaving}
+          />
         </div>
 
         <div className={styles.formGroupFull}>
-          <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="notes">
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              className={styles.textarea}
-              rows={4}
-              value={form.notes}
-              onChange={(e) => up("notes", e.target.value)}
-              disabled={isSaving}
-            />
-          </div>
+          <label className={styles.label} htmlFor="notes">
+            Notes
+          </label>
+          <textarea
+            id="notes"
+            className={styles.textarea}
+            rows={3}
+            value={form.notes}
+            onChange={(e) => up("notes", e.target.value)}
+            disabled={isSaving}
+          />
         </div>
       </form>
     </Modal>

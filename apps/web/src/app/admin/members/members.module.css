@@ -424,23 +424,32 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-space-5);
+  gap: var(--admin-space-4);
 }
 
-.formRow {
+/* Dense auto-flow grid for the short text/select fields. At the xl
+   modal width (~780px content) this packs 3–4 fields per row without
+   leaving empty columns — unlike stacking multiple .formRow grids,
+   which each flow independently and waste the right-hand cells when
+   they hold only two fields. */
+.formGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--admin-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--admin-space-3) var(--admin-space-4);
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-space-2);
+  gap: 6px;
 }
 
+/* Tags + notes break out of the grid to take the full modal width —
+   applied directly to the .formGroup so there's no extra wrapping div. */
 .formGroupFull {
-  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .label {
@@ -489,11 +498,11 @@
 
 .textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 64px;
 }
 
 @media (max-width: 640px) {
-  .formRow {
+  .formGrid {
     grid-template-columns: 1fr;
   }
 }
