@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button, ErrorCard } from "@/components/admin";
@@ -15,8 +15,21 @@ import styles from "./login.module.css";
  * This page is reachable by anyone (the middleware whitelists it),
  * so it's designed to leak nothing back: the same 600ms delay fires
  * on every failure, and the error is generic.
+ *
+ * The inner component reads `?next` via `useSearchParams()`, which
+ * in Next.js 16 requires a Suspense boundary or the page can't be
+ * statically prerendered (CSR bailout error at build time). The
+ * default export wraps the form in <Suspense> for exactly that.
  */
 export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<LoginShell />}>
+      <AdminLoginForm />
+    </Suspense>
+  );
+}
+
+function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawNext = searchParams?.get("next") ?? "/admin";
@@ -93,6 +106,28 @@ export default function AdminLoginPage() {
             {submitting ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+      </div>
+    </main>
+  );
+}
+
+/**
+ * Fallback rendered while the search-params-dependent form is
+ * suspended. Matches the chrome of the real form so there's no
+ * layout shift when hydration completes.
+ */
+function LoginShell() {
+  return (
+    <main className={`${styles.page} admin-root`}>
+      <div className={styles.card}>
+        <div className={styles.brand}>
+          <span className={styles.brandName}>GhostSignal</span>
+          <span className={styles.brandTag}>Admin</span>
+        </div>
+        <h1 className={styles.title}>Sign in</h1>
+        <p className={styles.subtitle}>
+          Enter the shared team password to access internal tools.
+        </p>
       </div>
     </main>
   );
