@@ -15,14 +15,21 @@ import {
  *
  * /admin/login itself is NOT gated — it's the way in.
  *
- * The matcher config at the bottom limits where this middleware runs
- * so the rest of the site (public marketing pages, API routes not
- * under /api/admin/*) is unaffected.
+ * The matcher config at the bottom limits where this proxy runs so
+ * the rest of the site (public marketing pages, API routes not under
+ * the admin umbrella) is unaffected.
+ *
+ * File convention note: Next.js 16 renamed `middleware.ts` → `proxy.ts`
+ * and the exported function from `middleware` → `proxy`. Same runtime
+ * behaviour; the rename clarifies what the feature actually does (a
+ * network-boundary proxy in front of the app) and avoids the overloaded
+ * "middleware" terminology. See:
+ * https://nextjs.org/docs/messages/middleware-to-proxy
  */
 
 const PUBLIC_SUBPATHS = ["/admin/login"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // Let the login page through unconditionally.

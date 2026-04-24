@@ -8,7 +8,7 @@
  *
  * Every request uses the service-role key so RLS is bypassed — which
  * is safe because these routes only run server-side and are gated by
- * the shared-password middleware (src/middleware.ts).
+ * the shared-password proxy (src/proxy.ts).
  */
 
 const SUPABASE_URL = process.env.SUPABASE_URL;

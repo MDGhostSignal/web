@@ -20,7 +20,7 @@ const TABLE = process.env.MEMBERS_TABLE ?? "members";
  * GET /api/members
  *
  * Returns the full Members list. No auth check — the shared-password
- * middleware in src/middleware.ts already gates /api/members/* via the
+ * proxy in src/proxy.ts already gates /api/members/* via the
  * matcher rule added for Phase 3.
  */
 export async function GET() {
