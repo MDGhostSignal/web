@@ -43,6 +43,295 @@
   line-height: 1;
 }
 
+/* Phase cell — badge + progress pill + optional rot dot, in one row. */
+.phaseCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.progressPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+}
+
+.progressPillFull {
+  color: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+.rotDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e11d48;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.18);
+  flex: none;
+}
+
+/* Lifecycle checklist (expanded row). */
+.lifecycleBlock {
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.lifecycleBlock h4 {
+  margin: 0 0 var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.phaseGroup {
+  margin-top: var(--admin-space-4);
+}
+
+.phaseGroup:first-of-type {
+  margin-top: 0;
+}
+
+.phaseGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  margin-bottom: var(--admin-space-2);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: 6px 8px;
+  border-radius: var(--admin-radius-sm);
+  transition: background 120ms ease;
+}
+
+.stepRow:hover {
+  background: var(--admin-surface-2);
+}
+
+.stepRowNa {
+  opacity: 0.45;
+}
+
+.stepCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--admin-accent);
+  cursor: pointer;
+}
+
+.stepCheckbox:disabled {
+  cursor: not-allowed;
+}
+
+.stepLabel {
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+}
+
+.stepLabelDone {
+  text-decoration: line-through;
+  color: var(--admin-text-muted);
+}
+
+.stepRoleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stepDate {
+  padding: 4px 6px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  min-width: 110px;
+}
+
+.stepDate:hover,
+.stepDate:focus {
+  border-color: var(--admin-border);
+  background: var(--admin-surface-2);
+  outline: none;
+}
+
+/* =============================================================================
+   Comments panel
+   =============================================================================
+   Threaded notes log rendered inside the expanded row, below the lifecycle
+   checklist and above the Edit/Delete action buttons. Each comment is
+   stamped with one of the four founder names + a timestamp. Newest first.
+   ============================================================================= */
+
+.commentsBlock {
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.commentsBlock h4 {
+  margin: 0 0 var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  margin-bottom: var(--admin-space-4);
+}
+
+.commentEmpty {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+  font-style: italic;
+}
+
+.commentItem {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--admin-space-2);
+  align-items: start;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--admin-space-3);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.commentAuthor {
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.commentDate {
+  font-variant-numeric: tabular-nums;
+}
+
+.commentBody {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-primary);
+  white-space: pre-wrap;
+}
+
+.commentDeleteBtn {
+  align-self: start;
+  padding: 2px 6px;
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+}
+
+.commentDeleteBtn:hover {
+  color: #e11d48;
+  border-color: var(--admin-border);
+}
+
+/* Compose form */
+.commentForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding-top: var(--admin-space-4);
+  border-top: 1px solid var(--admin-border);
+}
+
+.commentFormTopRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  flex-wrap: wrap;
+}
+
+.commentFormTopRow .filterLabel {
+  white-space: nowrap;
+}
+
+.commentTextarea {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  min-height: 72px;
+  resize: vertical;
+}
+
+.commentTextarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.commentTextarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+}
+
+.commentFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--admin-space-2);
+}
+
 /* Filter row — stage / type / owner chips above the search bar. */
 .filterRow {
   display: flex;
@@ -140,7 +429,7 @@
 
 .formRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--admin-space-4);
 }
 
@@ -186,6 +475,16 @@
   outline: none;
   border-color: var(--admin-accent);
   background: var(--admin-surface-2);
+}
+
+/* Native <option> items render via the OS and do NOT inherit the dark
+   admin surface colors — on Windows/Chrome the OS panel is white, so
+   near-white option text becomes invisible. Force dark-on-light for
+   readability inside the browser-rendered dropdown panel. */
+.select option,
+.filterSelect option {
+  color: #111;
+  background: #fff;
 }
 
 .textarea {

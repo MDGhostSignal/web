@@ -52,6 +52,9 @@ export default function LegacyHomePage() {
         <Link href="/admin/rq-responses" className={styles.rqResponsesBtn}>
           RQ Responses
         </Link>
+        <Link href="/admin/members" className={styles.crmBtn}>
+          CRM
+        </Link>
       </div>
 
       {/* Single centered hero video — natural size, padded frame. */}

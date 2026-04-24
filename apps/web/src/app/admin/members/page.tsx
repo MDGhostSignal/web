@@ -21,15 +21,22 @@ import {
   typeVariant,
 } from "@/components/admin";
 import {
+  countCompleted,
+  daysSince,
+  LIFECYCLE_STEPS,
   MEMBER_OWNERS,
-  MEMBER_STAGE_LABELS,
-  MEMBER_STAGES,
+  MEMBER_PHASE_LABELS,
+  MEMBER_PHASES,
   MEMBER_TYPE_LABELS,
   MEMBER_TYPES,
+  ROT_THRESHOLD_DAYS,
+  type LifecycleStepDef,
+  type LifecycleSteps,
   type Member,
-  type MemberStage,
+  type MemberPhase,
   type MemberType,
   type MemberWritable,
+  type StepStatus,
 } from "@/lib/members";
 
 import styles from "./members.module.css";
@@ -38,15 +45,17 @@ import styles from "./members.module.css";
  * Helpers
  * ===================================================================== */
 
-function stageVariant(stage: MemberStage): BadgeVariant {
-  switch (stage) {
-    case "lead":
-      return "info";
+function phaseVariant(phase: MemberPhase): BadgeVariant {
+  switch (phase) {
     case "discern":
+      return "info";
+    case "court":
       return "accent";
-    case "onboarding":
+    case "sign":
       return "warn";
-    case "active":
+    case "onboard":
+      return "warn";
+    case "run":
       return "success";
     case "paused":
       return "neutral";
@@ -81,7 +90,7 @@ type FormState = {
   organization: string;
   role: string;
   website: string;
-  stage: MemberStage;
+  phase: MemberPhase;
   owner: string;
   next_step: string;
   last_contact_at: string;
@@ -98,7 +107,7 @@ const EMPTY_FORM: FormState = {
   organization: "",
   role: "",
   website: "",
-  stage: "lead",
+  phase: "discern",
   owner: "",
   next_step: "",
   last_contact_at: "",
@@ -116,7 +125,7 @@ function memberToForm(m: Member): FormState {
     organization: m.organization ?? "",
     role: m.role ?? "",
     website: m.website ?? "",
-    stage: m.stage,
+    phase: m.phase,
     owner: m.owner ?? "",
     next_step: m.next_step ?? "",
     last_contact_at: m.last_contact_at ? m.last_contact_at.slice(0, 10) : "",
@@ -135,7 +144,7 @@ function formToPayload(f: FormState): MemberWritable {
     organization: f.organization.trim() || null,
     role: f.role.trim() || null,
     website: f.website.trim() || null,
-    stage: f.stage,
+    phase: f.phase,
     owner: f.owner.trim() || null,
     next_step: f.next_step.trim() || null,
     last_contact_at: f.last_contact_at ? f.last_contact_at : null,
@@ -157,7 +166,7 @@ export default function MembersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStage, setFilterStage] = useState<MemberStage | "all">("all");
+  const [filterPhase, setFilterPhase] = useState<MemberPhase | "all">("all");
   const [filterType, setFilterType] = useState<MemberType | "all">("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
 
@@ -263,6 +272,61 @@ export default function MembersPage() {
     [form, editingId, isSaving],
   );
 
+  const handleStepToggle = useCallback(
+    async (
+      memberId: string,
+      stepKey: string,
+      nextStatus: StepStatus,
+    ) => {
+      const current = members.find((m) => m.id === memberId);
+      if (!current) return;
+
+      const today = new Date().toISOString().slice(0, 10);
+      const nextState = {
+        status: nextStatus,
+        completed_at:
+          nextStatus === "done"
+            ? (current.lifecycle_steps?.[stepKey]?.completed_at ?? today)
+            : null,
+      };
+      const merged: LifecycleSteps = {
+        ...(current.lifecycle_steps ?? {}),
+        [stepKey]: nextState,
+      };
+
+      // Optimistic update — roll back on failure.
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.id === memberId ? { ...m, lifecycle_steps: merged } : m,
+        ),
+      );
+
+      try {
+        const res = await fetch(`/api/members/${memberId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lifecycle_steps: merged }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          setError(data.error || "Failed to save step.");
+          setMembers((prev) =>
+            prev.map((m) => (m.id === memberId ? current : m)),
+          );
+          return;
+        }
+        const saved = data.member as Member;
+        setMembers((prev) => prev.map((m) => (m.id === memberId ? saved : m)));
+      } catch {
+        setError("Failed to connect to the server.");
+        setMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? current : m)),
+        );
+      }
+    },
+    [members],
+  );
+
   const handleDelete = useCallback(async () => {
     if (!confirmDelete) return;
     setDeleting(true);
@@ -288,7 +352,7 @@ export default function MembersPage() {
   }, [confirmDelete, expandedRow]);
 
   const filtered = members.filter((m) => {
-    if (filterStage !== "all" && m.stage !== filterStage) return false;
+    if (filterPhase !== "all" && m.phase !== filterPhase) return false;
     if (filterType !== "all" && m.member_type !== filterType) return false;
     if (filterOwner !== "all" && (m.owner ?? "") !== filterOwner) return false;
     const q = searchTerm.trim().toLowerCase();
@@ -317,8 +381,8 @@ export default function MembersPage() {
         count={filtered.length}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        filterStage={filterStage}
-        setFilterStage={setFilterStage}
+        filterPhase={filterPhase}
+        setFilterPhase={setFilterPhase}
         filterType={filterType}
         setFilterType={setFilterType}
         filterOwner={filterOwner}
@@ -359,6 +423,7 @@ export default function MembersPage() {
             setDeleteError(null);
             setConfirmDelete(m);
           }}
+          onStepToggle={handleStepToggle}
         />
       )}
 
@@ -391,8 +456,8 @@ type HeaderProps = {
   count: number;
   searchTerm: string;
   setSearchTerm: (v: string) => void;
-  filterStage: MemberStage | "all";
-  setFilterStage: (v: MemberStage | "all") => void;
+  filterPhase: MemberPhase | "all";
+  setFilterPhase: (v: MemberPhase | "all") => void;
   filterType: MemberType | "all";
   setFilterType: (v: MemberType | "all") => void;
   filterOwner: string;
@@ -404,8 +469,8 @@ function PageHeaderBlock({
   count,
   searchTerm,
   setSearchTerm,
-  filterStage,
-  setFilterStage,
+  filterPhase,
+  setFilterPhase,
   filterType,
   setFilterType,
   filterOwner,
@@ -434,18 +499,18 @@ function PageHeaderBlock({
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Stage</span>
+            <span className={styles.filterLabel}>Phase</span>
             <select
               className={styles.filterSelect}
-              value={filterStage}
+              value={filterPhase}
               onChange={(e) =>
-                setFilterStage(e.target.value as MemberStage | "all")
+                setFilterPhase(e.target.value as MemberPhase | "all")
               }
             >
               <option value="all">All</option>
-              {MEMBER_STAGES.map((s) => (
+              {MEMBER_PHASES.map((s) => (
                 <option key={s} value={s}>
-                  {MEMBER_STAGE_LABELS[s]}
+                  {MEMBER_PHASE_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -494,6 +559,11 @@ type TableProps = {
   setExpandedRow: (id: string | null) => void;
   onEdit: (m: Member) => void;
   onDelete: (m: Member) => void;
+  onStepToggle: (
+    memberId: string,
+    stepKey: string,
+    nextStatus: StepStatus,
+  ) => void;
 };
 
 function MembersTable({
@@ -502,6 +572,7 @@ function MembersTable({
   setExpandedRow,
   onEdit,
   onDelete,
+  onStepToggle,
 }: TableProps) {
   const columns: Column<Member>[] = [
     {
@@ -543,13 +614,51 @@ function MembersTable({
       ),
     },
     {
-      key: "stage",
-      header: "Stage",
-      cell: (m) => (
-        <Badge variant={stageVariant(m.stage)}>
-          {MEMBER_STAGE_LABELS[m.stage]}
-        </Badge>
-      ),
+      key: "phase",
+      header: "Phase",
+      cell: (m) => {
+        const { done, total } = countCompleted(
+          m.lifecycle_steps,
+          m.member_type,
+        );
+        const isFull = total > 0 && done === total;
+        const days = daysSince(m.phase_entered_at);
+        const isRot =
+          days !== null &&
+          days > ROT_THRESHOLD_DAYS &&
+          m.phase !== "run" &&
+          m.phase !== "paused" &&
+          m.phase !== "churned";
+        return (
+          <span className={styles.phaseCell}>
+            <Badge variant={phaseVariant(m.phase)}>
+              {MEMBER_PHASE_LABELS[m.phase]}
+            </Badge>
+            <span
+              className={[
+                styles.progressPill,
+                isFull ? styles.progressPillFull : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              title={
+                total === 0
+                  ? "No applicable steps"
+                  : `${done} of ${total} lifecycle steps complete`
+              }
+            >
+              {done}/{total}
+            </span>
+            {isRot && (
+              <span
+                className={styles.rotDot}
+                title={`${days} days in ${MEMBER_PHASE_LABELS[m.phase]} — may be stuck`}
+                aria-label="Stalled in current phase"
+              />
+            )}
+          </span>
+        );
+      },
     },
     {
       key: "owner",
@@ -610,7 +719,7 @@ function MembersTable({
             </DetailsSection>
             <DetailsSection title="Pipeline">
               <p>
-                <strong>Stage:</strong> {MEMBER_STAGE_LABELS[m.stage]}
+                <strong>Phase:</strong> {MEMBER_PHASE_LABELS[m.phase]}
               </p>
               <p>
                 <strong>Owner:</strong> {m.owner || "—"}
@@ -643,6 +752,15 @@ function MembersTable({
               <p>{m.notes}</p>
             </div>
           )}
+
+          <LifecycleChecklist
+            member={m}
+            onStepToggle={(stepKey, nextStatus) =>
+              onStepToggle(m.id, stepKey, nextStatus)
+            }
+          />
+
+          <MemberComments memberId={m.id} />
 
           <DetailsActions>
             <Button
@@ -699,7 +817,7 @@ function MemberFormModal({
       open={open}
       onClose={onClose}
       dismissible={!isSaving}
-      size="lg"
+      size="xl"
       title={editing ? "Edit member" : "New member"}
       subtitle="At minimum, provide a first name, last name, or organization."
       footer={
@@ -794,19 +912,19 @@ function MemberFormModal({
             </select>
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.label} htmlFor="stage">
-              Stage
+            <label className={styles.label} htmlFor="phase">
+              Phase
             </label>
             <select
-              id="stage"
+              id="phase"
               className={styles.select}
-              value={form.stage}
-              onChange={(e) => up("stage", e.target.value as MemberStage)}
+              value={form.phase}
+              onChange={(e) => up("phase", e.target.value as MemberPhase)}
               disabled={isSaving}
             >
-              {MEMBER_STAGES.map((s) => (
+              {MEMBER_PHASES.map((s) => (
                 <option key={s} value={s}>
-                  {MEMBER_STAGE_LABELS[s]}
+                  {MEMBER_PHASE_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -986,5 +1104,300 @@ function DeleteConfirmModal({
       </p>
       {deleteError && <ErrorCard>{deleteError}</ErrorCard>}
     </Modal>
+  );
+}
+
+/* =====================================================================
+ * Lifecycle checklist — Jack's 12 checkpoints grouped by phase.
+ * ===================================================================== */
+
+type ChecklistProps = {
+  member: Member;
+  onStepToggle: (stepKey: string, nextStatus: StepStatus) => void;
+};
+
+function LifecycleChecklist({ member, onStepToggle }: ChecklistProps) {
+  // Group steps by phase, preserving the canonical order from the lib.
+  const byPhase = new Map<string, LifecycleStepDef[]>();
+  for (const step of LIFECYCLE_STEPS) {
+    const list = byPhase.get(step.phase) ?? [];
+    list.push(step);
+    byPhase.set(step.phase, list);
+  }
+
+  const { done, total } = countCompleted(
+    member.lifecycle_steps,
+    member.member_type,
+  );
+
+  return (
+    <div className={styles.lifecycleBlock}>
+      <h4>
+        Lifecycle
+        <span
+          className={styles.progressPill}
+          style={{ marginLeft: 12, verticalAlign: "middle" }}
+        >
+          {done}/{total}
+        </span>
+      </h4>
+
+      {Array.from(byPhase.entries()).map(([phaseKey, steps]) => (
+        <div key={phaseKey} className={styles.phaseGroup}>
+          <div className={styles.phaseGroupHeader}>
+            <Badge variant={phaseVariant(phaseKey as MemberPhase)}>
+              {MEMBER_PHASE_LABELS[phaseKey as MemberPhase]}
+            </Badge>
+          </div>
+          <div className={styles.stepList}>
+            {steps.map((step) => (
+              <StepRow
+                key={step.key}
+                step={step}
+                member={member}
+                onToggle={onStepToggle}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type StepRowProps = {
+  step: LifecycleStepDef;
+  member: Member;
+  onToggle: (stepKey: string, nextStatus: StepStatus) => void;
+};
+
+function StepRow({ step, member, onToggle }: StepRowProps) {
+  const stored = member.lifecycle_steps?.[step.key];
+  const isNa =
+    stored?.status === "na" ||
+    (step.creatorOnly && member.member_type !== "creator" && !stored);
+  const status: StepStatus = stored?.status ?? (isNa ? "na" : "todo");
+  const isDone = status === "done";
+
+  const rowCls = [styles.stepRow, isNa ? styles.stepRowNa : ""]
+    .filter(Boolean)
+    .join(" ");
+  const labelCls = [styles.stepLabel, isDone ? styles.stepLabelDone : ""]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <label
+      className={rowCls}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <input
+        type="checkbox"
+        className={styles.stepCheckbox}
+        checked={isDone}
+        disabled={isNa}
+        onChange={(e) =>
+          onToggle(step.key, e.target.checked ? "done" : "todo")
+        }
+      />
+      <span className={labelCls}>
+        {step.label}
+        {isNa && " (N/A)"}
+      </span>
+      <span className={styles.stepRoleTag}>{step.ownerRole}</span>
+      <span className={styles.stepDate}>
+        {isDone && stored?.completed_at
+          ? new Date(stored.completed_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })
+          : ""}
+      </span>
+    </label>
+  );
+}
+
+/* =====================================================================
+ * Comments — one thread per member, authored by one of the four
+ * founders, rendered newest-first.
+ * ===================================================================== */
+
+type MemberComment = {
+  id: string;
+  member_id: string;
+  author: string;
+  content: string;
+  created_at: string;
+};
+
+function formatCommentTimestamp(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function MemberComments({ memberId }: { memberId: string }) {
+  const [comments, setComments] = useState<MemberComment[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [author, setAuthor] = useState<string>(MEMBER_OWNERS[0]);
+  const [body, setBody] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
+
+  // Fetch once when the expanded row mounts.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/members/comments?member_id=${memberId}`,
+        );
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok || !data.ok) {
+          setLoadError(data.error || "Failed to load comments.");
+          return;
+        }
+        setComments(data.comments as MemberComment[]);
+      } catch {
+        if (!cancelled) setLoadError("Failed to connect to the server.");
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [memberId]);
+
+  const handlePost = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const trimmed = body.trim();
+      if (!trimmed || posting) return;
+      setPosting(true);
+      setPostError(null);
+      try {
+        const res = await fetch("/api/members/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            member_id: memberId,
+            author,
+            content: trimmed,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          setPostError(data.error || "Failed to post comment.");
+          return;
+        }
+        setComments((prev) => [data.comment as MemberComment, ...prev]);
+        setBody("");
+      } catch {
+        setPostError("Failed to connect to the server.");
+      } finally {
+        setPosting(false);
+      }
+    },
+    [memberId, author, body, posting],
+  );
+
+  const handleDelete = useCallback(async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/members/comments?id=${commentId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) return;
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch {
+      /* swallow — next load refetches */
+    }
+  }, []);
+
+  return (
+    <div className={styles.commentsBlock} onClick={(e) => e.stopPropagation()}>
+      <h4>Comments</h4>
+
+      <div className={styles.commentsList}>
+        {!loaded ? (
+          <p className={styles.commentEmpty}>Loading…</p>
+        ) : loadError ? (
+          <ErrorCard>{loadError}</ErrorCard>
+        ) : comments.length === 0 ? (
+          <p className={styles.commentEmpty}>
+            No comments yet. Leave the first one below.
+          </p>
+        ) : (
+          comments.map((c) => (
+            <div key={c.id} className={styles.commentItem}>
+              <div className={styles.commentHeader}>
+                <span className={styles.commentAuthor}>{c.author}</span>
+                <span className={styles.commentDate}>
+                  {formatCommentTimestamp(c.created_at)}
+                </span>
+              </div>
+              <button
+                type="button"
+                className={styles.commentDeleteBtn}
+                onClick={() => handleDelete(c.id)}
+                aria-label="Delete comment"
+              >
+                ×
+              </button>
+              <p className={styles.commentBody}>{c.content}</p>
+            </div>
+          ))
+        )}
+      </div>
+
+      <form className={styles.commentForm} onSubmit={handlePost}>
+        <div className={styles.commentFormTopRow}>
+          <span className={styles.filterLabel}>Author</span>
+          <select
+            className={styles.filterSelect}
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            disabled={posting}
+          >
+            {MEMBER_OWNERS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </div>
+        <textarea
+          className={styles.commentTextarea}
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Leave a comment…"
+          disabled={posting}
+          rows={3}
+        />
+        {postError && <ErrorCard>{postError}</ErrorCard>}
+        <div className={styles.commentFormActions}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={posting || body.trim().length === 0}
+          >
+            {posting ? "Posting…" : "Post comment"}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

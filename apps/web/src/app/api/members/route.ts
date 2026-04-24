@@ -1,10 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
-  MEMBER_STAGES,
+  initLifecycleSteps,
+  LIFECYCLE_STEPS,
+  MEMBER_PHASES,
   MEMBER_TYPES,
+  STEP_STATUSES,
+  type LifecycleSteps,
   type Member,
+  type MemberType,
   type MemberWritable,
+  type StepStatus,
 } from "@/lib/members";
 import { supabaseRest } from "@/lib/supabase-admin";
 
@@ -39,9 +45,9 @@ export async function GET() {
 /**
  * POST /api/members
  *
- * Body: Partial<Member> (id / created_at / updated_at ignored).
- * Required: at minimum `first_name` or `last_name` or `organization` so
- * the row has *something* to render in a list.
+ * Body: Partial<Member> (id / created_at / updated_at / phase_entered_at
+ * ignored). Required: at minimum `first_name` or `last_name` or
+ * `organization` so the row has *something* to render in a list.
  *
  * On success: 200 with the created row.
  */
@@ -72,6 +78,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Seed the lifecycle checklist server-side when the caller didn't
+  // provide one — keeps the default in sync with LIFECYCLE_STEPS
+  // regardless of which client creates the row.
+  if (!payload.lifecycle_steps) {
+    const memberType: MemberType = payload.member_type ?? "creator";
+    payload.lifecycle_steps = initLifecycleSteps(memberType);
+  }
+
   const res = await supabaseRest<Member[]>(TABLE, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -90,17 +104,10 @@ export async function POST(req: NextRequest) {
 }
 
 /* =====================================================================
- * Helpers
+ * Helpers (duplicated in [id]/route.ts — keep in sync)
  * ===================================================================== */
 
-/**
- * Strip unknown keys, trim strings, coerce empty strings to null,
- * and validate enum values. Anything invalid is dropped rather than
- * rejected — the client UI is the source of truth for valid enums, so
- * we optimise for forgiving API calls from our own UI over strict
- * validation.
- */
-function sanitizePayload(input: MemberWritable): MemberWritable {
+export function sanitizePayload(input: MemberWritable): MemberWritable {
   const out: MemberWritable = {};
 
   const stringKeys = [
@@ -131,9 +138,9 @@ function sanitizePayload(input: MemberWritable): MemberWritable {
     if (MEMBER_TYPES.includes(v)) out.member_type = v;
   }
 
-  if (typeof input.stage === "string") {
-    const v = input.stage as (typeof MEMBER_STAGES)[number];
-    if (MEMBER_STAGES.includes(v)) out.stage = v;
+  if (typeof input.phase === "string") {
+    const v = input.phase as (typeof MEMBER_PHASES)[number];
+    if (MEMBER_PHASES.includes(v)) out.phase = v;
   }
 
   if (Array.isArray(input.tags)) {
@@ -153,6 +160,46 @@ function sanitizePayload(input: MemberWritable): MemberWritable {
     out.rq_submission_id = input.rq_submission_id;
   } else if (input.rq_submission_id === null) {
     out.rq_submission_id = null;
+  }
+
+  if (input.lifecycle_steps && typeof input.lifecycle_steps === "object") {
+    out.lifecycle_steps = sanitizeLifecycleSteps(input.lifecycle_steps);
+  }
+
+  return out;
+}
+
+const KNOWN_STEP_KEYS = new Set(LIFECYCLE_STEPS.map((s) => s.key));
+
+/**
+ * Drops unknown step keys, validates status enum, and ensures
+ * completed_at is either an ISO-ish date string or null. Anything
+ * malformed is coerced to a safe default rather than rejected.
+ */
+function sanitizeLifecycleSteps(
+  input: unknown,
+): LifecycleSteps {
+  const out: LifecycleSteps = {};
+  if (!input || typeof input !== "object" || Array.isArray(input)) return out;
+
+  const obj = input as Record<string, unknown>;
+  for (const [key, raw] of Object.entries(obj)) {
+    if (!KNOWN_STEP_KEYS.has(key)) continue;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+
+    const rec = raw as { status?: unknown; completed_at?: unknown };
+    const status =
+      typeof rec.status === "string" &&
+      (STEP_STATUSES as readonly string[]).includes(rec.status)
+        ? (rec.status as StepStatus)
+        : "todo";
+
+    const completed_at =
+      typeof rec.completed_at === "string" && rec.completed_at.length > 0
+        ? rec.completed_at
+        : null;
+
+    out[key] = { status, completed_at };
   }
 
   return out;

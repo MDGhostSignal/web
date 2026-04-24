@@ -166,7 +166,8 @@
 }
 
 .designFeedbackBtn,
-.rqResponsesBtn {
+.rqResponsesBtn,
+.crmBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -205,6 +206,19 @@
   background: #009682;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 178, 156, 0.5);
+}
+
+/* Third admin pill — violet, for the Members CRM at /admin/members.
+   Uses a hue that reads clearly apart from the coral + teal pair. */
+.crmBtn {
+  background: #7C3AED;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+}
+
+.crmBtn:hover {
+  background: #6D28D9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
 }
 
 /* ========================================
