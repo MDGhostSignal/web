@@ -96,12 +96,12 @@
 
 /* Expanded details row */
 .detailsRow {
-  background: rgba(0, 0, 0, 0.3) !important;
+  background: var(--admin-row-detail-bg) !important;
   cursor: default !important;
 }
 
 .detailsRow:hover {
-  background: rgba(0, 0, 0, 0.3) !important;
+  background: var(--admin-row-detail-bg) !important;
 }
 
 .detailsRow > td {

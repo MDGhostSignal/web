@@ -11,6 +11,9 @@
 export { AdminShell } from "./AdminShell";
 export type { AdminTab } from "./AdminShell";
 
+export { ThemeToggle } from "./ThemeToggle";
+export type { AdminTheme } from "./ThemeToggle";
+
 export { Button } from "./Button";
 export type { Props as ButtonProps } from "./Button";
 

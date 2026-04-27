@@ -1,0 +1,28 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  cursor: pointer;
+  transition:
+    color var(--admin-transition-base),
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.toggle:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border-color: var(--admin-border-strong);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--admin-border-focus);
+  outline-offset: 2px;
+}

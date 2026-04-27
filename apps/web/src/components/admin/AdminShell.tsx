@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AdminShell.module.css";
 
 export type AdminTab = {
@@ -48,16 +49,21 @@ export function AdminShell({ tabs, children, trail, onLogout }: Props) {
     return pathname.startsWith(`${href}/`);
   };
 
-  const defaultTrail = onLogout ? (
-    <button
-      type="button"
-      className={styles.logoutBtn}
-      onClick={onLogout}
-      aria-label="Sign out"
-    >
-      Sign out
-    </button>
-  ) : null;
+  const defaultTrail = (
+    <>
+      <ThemeToggle />
+      {onLogout ? (
+        <button
+          type="button"
+          className={styles.logoutBtn}
+          onClick={onLogout}
+          aria-label="Sign out"
+        >
+          Sign out
+        </button>
+      ) : null}
+    </>
+  );
 
   return (
     <div className={`${styles.shell} admin-root`}>

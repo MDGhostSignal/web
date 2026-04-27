@@ -20,7 +20,7 @@
   justify-content: space-between;
   gap: var(--admin-space-6);
   padding: var(--admin-space-4) var(--admin-space-6);
-  background: rgba(10, 10, 11, 0.85);
+  background: var(--admin-topbar-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--admin-border);

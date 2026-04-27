@@ -22,6 +22,13 @@
   --admin-surface-2: rgba(255, 255, 255, 0.06);
   --admin-surface-3: rgba(255, 255, 255, 0.1);
   --admin-surface-hover: rgba(255, 255, 255, 0.08);
+  /* Sticky top bar background — translucent over the page bg with
+     backdrop-filter blur. Tokenised so the light theme can flip it. */
+  --admin-topbar-bg: rgba(10, 10, 11, 0.85);
+  /* Expanded-row background in DataTable. Slightly darker than the
+     normal row bg in dark mode; flips to bright in light mode so the
+     expanded panel reads as a clean inset card, not a grey hole. */
+  --admin-row-detail-bg: rgba(0, 0, 0, 0.3);
 
   /* ---- Color: text ---------------------------------------------------- */
   --admin-text-primary: rgba(255, 255, 255, 0.95);
@@ -127,6 +134,58 @@
   --admin-z-header: 100;
   --admin-z-overlay: 900;
   --admin-z-modal: 1000;
+}
+
+/* =============================================================================
+   Light theme — overrides for surfaces, text, borders, shadows, and
+   error-text. Brand accents (amber, cyan, success/warn/destructive,
+   type-creator, type-brand) are intentionally preserved so the visual
+   identity is constant across themes. Toggled via [data-theme="light"]
+   on either the documentElement (set by the anti-flash script in
+   admin/layout.tsx before React hydrates) or any `.admin-root` ancestor.
+   ============================================================================= */
+
+:root[data-theme="light"],
+.admin-root[data-theme="light"] {
+  /* ---- Color: surface ------------------------------------------------- */
+  --admin-bg: #f6f6f8;
+  --admin-bg-elevated: #ffffff;
+  /* Mirror the dark theme's surface alpha pattern but on black instead
+     of white, so cards / hovers read as subtly darker shades against
+     the off-white bg. */
+  --admin-surface-1: rgba(0, 0, 0, 0.035);
+  --admin-surface-2: rgba(0, 0, 0, 0.06);
+  --admin-surface-3: rgba(0, 0, 0, 0.1);
+  --admin-surface-hover: rgba(0, 0, 0, 0.07);
+  --admin-topbar-bg: rgba(255, 255, 255, 0.85);
+  /* Pure white expanded-row panel — pops cleanly against the off-
+     white page bg without using grey. */
+  --admin-row-detail-bg: #ffffff;
+
+  /* ---- Color: text ---------------------------------------------------- */
+  /* Slightly off-pure-black so primary text doesn't feel heavy against
+     the off-white bg. */
+  --admin-text-primary: rgba(0, 0, 0, 0.92);
+  --admin-text-secondary: rgba(0, 0, 0, 0.68);
+  --admin-text-muted: rgba(0, 0, 0, 0.5);
+  --admin-text-disabled: rgba(0, 0, 0, 0.32);
+
+  /* ---- Color: border -------------------------------------------------- */
+  --admin-border: rgba(0, 0, 0, 0.1);
+  --admin-border-strong: rgba(0, 0, 0, 0.2);
+  /* Focus ring stays the brand amber. */
+
+  /* ---- Color: semantic ------------------------------------------------ */
+  /* Error text needs a dark-enough red to read on a white bg; the dark
+     theme's #ffb4b4 would wash out. Brand red shifted darker. */
+  --admin-error-text: #a01818;
+
+  /* ---- Shadows -------------------------------------------------------- */
+  /* Softer + lower-alpha than the dark theme — drop shadows on a light
+     bg need to be subtle to avoid looking dirty. */
+  --admin-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --admin-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --admin-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.16);
 }
 
 /* Shell helper: every admin page wraps itself in .admin-root so the tokens
