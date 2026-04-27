@@ -26,6 +26,12 @@
   z-index: 10;
   overflow: visible;
   background: transparent;
+  /* Self-contained compositor stack — same treatment applied to
+     /for-advertisers and /for-creators .hero. Prevents any sibling
+     fixed/blend overlays (or future ones) from forcing the playing
+     video into a shared backdrop buffer that gets rebuilt every frame. */
+  isolation: isolate;
+  contain: paint;
 }
 
 .heroVideo {

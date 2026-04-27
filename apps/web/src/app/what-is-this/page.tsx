@@ -139,8 +139,7 @@ export default function WhatIsThisPage() {
           disablePictureInPicture
           aria-hidden="true"
         >
-          <source src="/images/what-is-this/sunset.webm" type="video/webm" />
-          <source src="/images/what-is-this/sunset.mp4" type="video/mp4" />
+          <source src="/images/what-is-this/japanese.mp4" type="video/mp4" />
         </video>
         {/* Cherry blossom overlay — sits on top of the video AND the
             text, extending the video's falling-blossom motif onto the
