@@ -68,9 +68,23 @@ export function AdminShell({ tabs, children, trail, onLogout }: Props) {
   return (
     <div className={`${styles.shell} admin-root`}>
       <header className={styles.topbar}>
-        <Link href="/admin" className={styles.brand}>
-          <span>GhostSignal</span>
-          <span className={styles.brandTag}>Admin</span>
+        <Link
+          href="/admin"
+          className={styles.brand}
+          aria-label="GhostSignal Admin"
+        >
+          {/* Plain <img> rather than next/image — SVG doesn't benefit
+              from the image pipeline, and next/image's enforced
+              `width`/`height` attributes were clipping the bottom of
+              the glyph artwork against my CSS overrides. eslint-disable
+              for the no-img-element rule below is intentional and
+              local. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/brand/ghostsiggnal-admin-hor-4c.svg"
+            alt="GhostSignal Admin"
+            className={styles.brandLogo}
+          />
         </Link>
 
         <nav className={styles.tabs} aria-label="Admin sections">

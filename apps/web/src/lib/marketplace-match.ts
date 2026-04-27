@@ -21,13 +21,38 @@ export const TRAIT_WEIGHTS: Record<TraitKey, number> = {
   horizon: 1,
 };
 
+/** Each shared descriptive tag adds this many points to resonance. */
+export const TAG_BONUS_PER_SHARED = 2;
+/** Max total tag bonus, capped so tags can't dominate trait alignment. */
+export const TAG_BONUS_MAX = 6;
+
+/**
+ * Count tags that appear on both entities (case-insensitive). Tags
+ * are flat strings — no namespacing yet, no synonym matching.
+ */
+export function countSharedTags(
+  a: MarketplaceEntity,
+  b: MarketplaceEntity,
+): number {
+  const aSet = new Set(a.tags.map((t) => t.toLowerCase()));
+  let n = 0;
+  for (const t of b.tags) if (aSet.has(t.toLowerCase())) n++;
+  return n;
+}
+
 /**
  * Pairwise resonance between two entities. Symmetric — pass them in
- * either order.
+ * either order. Range 0..100.
  *
- * Range 0..100. The denominator is the maximum possible weighted
- * distance across the configured axes (each axis is 0..100), so the
- * score scales with however many axes are in play.
+ * Composition:
+ *   1. Trait-distance base — RMS distance across the configured axes,
+ *      normalised against the max possible distance, folded into
+ *      a 0..100 score (100 = perfect alignment, 0 = full disagreement).
+ *   2. Tag-overlap bonus — each shared descriptive tag adds
+ *      `TAG_BONUS_PER_SHARED`, capped at `TAG_BONUS_MAX`. Tags refine
+ *      the score when two entities share genre / medium / topic
+ *      vocabulary; they can't override poor trait alignment but they
+ *      can lift a fair match into strong territory.
  */
 export function resonance(a: MarketplaceEntity, b: MarketplaceEntity): number {
   let weightedSqDist = 0;
@@ -38,11 +63,14 @@ export function resonance(a: MarketplaceEntity, b: MarketplaceEntity): number {
     weightedSqDist += w * d * d;
     weightSum += w;
   }
-  // RMS distance per unit weight, normalised to 0..1, then folded into
-  // a 0..100 resonance score.
   const rms = Math.sqrt(weightedSqDist / weightSum);
   const normalised = rms / 100;
-  return Math.max(0, Math.min(100, Math.round(100 * (1 - normalised))));
+  const base = 100 * (1 - normalised);
+  const tagBonus = Math.min(
+    TAG_BONUS_MAX,
+    countSharedTags(a, b) * TAG_BONUS_PER_SHARED,
+  );
+  return Math.max(0, Math.min(100, Math.round(base + tagBonus)));
 }
 
 export type ResonanceTier = "strong" | "fair" | "weak";

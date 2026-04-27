@@ -25,6 +25,10 @@ type Props = {
   /** Pass a heading ID for aria-labelledby if you're providing a custom
       title layout. Defaults to an internally-generated id. */
   titleId?: string;
+  /** Optional className appended to the card so a caller can widen
+      the modal beyond the predefined sizes (e.g. "+ max-width: 1200px"
+      for content-heavy explainer modals). */
+  className?: string;
 };
 
 const sizeClass: Record<Size, string> = {
@@ -54,6 +58,7 @@ export function Modal({
   children,
   closeLabel = "Close dialog",
   titleId = "admin-modal-title",
+  className,
 }: Props) {
   // Escape key handler — effects only attach while open.
   useEffect(() => {
@@ -78,7 +83,9 @@ export function Modal({
 
   if (!open) return null;
 
-  const cardCls = [styles.card, sizeClass[size]].filter(Boolean).join(" ");
+  const cardCls = [styles.card, sizeClass[size], className]
+    .filter(Boolean)
+    .join(" ");
   const bodyCls = [styles.body, footer ? "" : styles.bodyNoFooter]
     .filter(Boolean)
     .join(" ");

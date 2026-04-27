@@ -67,10 +67,19 @@ export function MatchBoard({ matches }: Props) {
     );
   }, [matches]);
 
-  function jumpToTopPair() {
-    if (!topPair) return;
-    setAnchorKind("brand");
-    setAnchorId(topPair.brand.id);
+  // Resolve "is this suggested entity the partner of the global top
+  // unconfirmed pair, given the current anchor?" — used to mark one
+  // card with a Match-of-the-day ribbon rather than rendering a
+  // separate pinned button at the top of the board.
+  function isMatchOfTheDay(entityId: string): boolean {
+    if (!topPair || !anchor) return false;
+    if (anchor.kind === "brand" && anchor.id === topPair.brand.id) {
+      return entityId === topPair.creator.id;
+    }
+    if (anchor.kind === "creator" && anchor.id === topPair.creator.id) {
+      return entityId === topPair.brand.id;
+    }
+    return false;
   }
 
   // The set of opposite-kind ids the anchor is already confirmed with —
@@ -175,24 +184,6 @@ export function MatchBoard({ matches }: Props) {
 
   return (
     <div className={styles.matchBoardWrap}>
-      {/* Match of the day — highest unconfirmed-resonance pair. */}
-      {topPair ? (
-        <button
-          type="button"
-          className={styles.todayPin}
-          onClick={jumpToTopPair}
-          data-tier={tierFor(topPair.score)}
-        >
-          <span className={styles.todayPinLabel}>Match of the day</span>
-          <span className={styles.todayPinPair}>
-            <strong>{topPair.brand.name}</strong>
-            <span className={styles.todayPinX}>×</span>
-            <strong>{topPair.creator.name}</strong>
-          </span>
-          <span className={styles.todayPinScore}>{topPair.score}%</span>
-          <span className={styles.todayPinHint}>Open →</span>
-        </button>
-      ) : null}
       <div className={styles.matchBoard}>
       {/* ============================================================
        *  Anchor selector — pick the side of the marketplace you're
@@ -271,20 +262,11 @@ export function MatchBoard({ matches }: Props) {
         ) : (
           <>
             <header className={styles.anchorHeader}>
-              <div className={styles.anchorHeaderText}>
-                <div className={styles.anchorHeaderTitleRow}>
-                  <h2 className={styles.anchorHeaderName}>{anchor.name}</h2>
-                  <span className={styles.mockPill}>MOCK</span>
-                  <Badge variant={anchor.kind === "creator" ? "info" : "warn"}>
-                    {anchor.kind === "creator" ? "Creator" : "Brand"}
-                  </Badge>
-                </div>
-                <p className={styles.anchorHeaderBlurb}>{anchor.blurb}</p>
-                <div className={styles.anchorHeaderRq}>
-                  <span className={styles.rqCode}>{anchor.rq_code}</span>
-                  <span className={styles.rqName}>{anchor.rq_name}</span>
-                </div>
-              </div>
+              <h2 className={styles.anchorHeaderName}>{anchor.name}</h2>
+              <Badge variant={anchor.kind === "creator" ? "info" : "warn"}>
+                {anchor.kind === "creator" ? "Creator" : "Brand"}
+              </Badge>
+              <span className={styles.rqCode}>{anchor.rq_code}</span>
             </header>
 
             {/* Active partnerships, if any */}
@@ -355,6 +337,7 @@ export function MatchBoard({ matches }: Props) {
                       score={score}
                       mode="suggested"
                       rank={i + 1}
+                      isMatchOfTheDay={isMatchOfTheDay(entity.id)}
                       onConfirm={() => handleConfirm(entity)}
                       onReject={() => handleReject(entity)}
                     />
@@ -382,6 +365,7 @@ type PartnerCardProps = {
   score: number;
   mode: "suggested" | "confirmed";
   rank?: number;
+  isMatchOfTheDay?: boolean;
   onConfirm?: () => void;
   onReject?: () => void;
   onUnmatch?: () => void;
@@ -392,6 +376,7 @@ function PartnerCard({
   score,
   mode,
   rank,
+  isMatchOfTheDay,
   onConfirm,
   onReject,
   onUnmatch,
@@ -406,9 +391,12 @@ function PartnerCard({
 
   return (
     <article
-      className={`${styles.partnerCard} ${styles[`partnerCard_${tier}`]}`}
+      className={`${styles.partnerCard} ${styles[`partnerCard_${tier}`]} ${isMatchOfTheDay ? styles.partnerCard_motd : ""}`}
       data-mode={mode}
     >
+      {isMatchOfTheDay ? (
+        <span className={styles.motdRibbon}>★ Match of the day</span>
+      ) : null}
       {rank ? <span className={styles.rankPill}>#{rank}</span> : null}
 
       <div className={styles.partnerHead}>

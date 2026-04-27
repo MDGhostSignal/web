@@ -9,6 +9,9 @@
   background: var(--admin-bg);
   color: var(--admin-text-primary);
   font-family: var(--admin-font);
+  /* Prevent horizontal scrollbars when a page (e.g. /admin/marketplace)
+     breaks out of the centred .content box via 100vw + negative margin. */
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -27,22 +30,22 @@
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--admin-space-3);
-  font-size: var(--admin-text-md);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-primary);
   text-decoration: none;
-  letter-spacing: 0.02em;
 }
 
-.brandTag {
-  font-size: var(--admin-text-xs);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+.brandLogo {
+  display: block;
+  /* Wide-aspect SVG (190×16); height controls the on-screen size and
+     width auto-scales to preserve the logo's proportions. Bumped
+     from 20 → 22 px to clear any glyph-descender clipping at the
+     bottom edge of the SVG box. */
+  height: 22px;
+  width: auto;
+  /* Belt-and-braces: explicitly let the SVG paint outside its box
+     in case the artwork extends past the declared viewBox. */
+  overflow: visible;
 }
 
 /* --- Tab navigation ---------------------------------------------------- */

@@ -9,11 +9,18 @@ import {
   Modal,
   type BadgeVariant,
 } from "@/components/admin";
+import { LinkifiedText } from "@/lib/linkify";
 
+import { DueDateBadge } from "./DueDateBadge";
 import styles from "./page.module.css";
 import { TaskDetailPanel } from "./TaskDetailPanel";
 
-type TaskStatus = "pending" | "in_progress" | "completed";
+type TaskStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "in_review"
+  | "archived";
 type TaskPriority = "low" | "medium" | "high";
 type Founder = "Mike Sense" | "Jack W Harding" | "Martin Drexler" | "Jeremy Reeves";
 
@@ -48,6 +55,32 @@ const priorityBadge: Record<TaskPriority, BadgeVariant> = {
 // Local storage key for tracking viewed comments
 const VIEWED_COMMENTS_KEY = "ghostsignal_viewed_comments";
 
+// Local storage key for the user-defined task order. Stored as an
+// ordered array of task ids; tasks not in the array sort to the end
+// (so newly created tasks land at the bottom by default).
+const TASK_ORDER_KEY = "ghostsignal_design_task_order";
+
+function getTaskOrder(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(TASK_ORDER_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveTaskOrder(order: string[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(TASK_ORDER_KEY, JSON.stringify(order));
+  } catch {
+    /* ignore */
+  }
+}
+
 function getViewedComments(): Record<string, string> {
   if (typeof window === "undefined") return {};
   try {
@@ -69,6 +102,20 @@ function markCommentsViewed(taskId: string, timestamp: string) {
   }
 }
 
+/**
+ * Build a YYYY-MM-DD string for `today + offsetDays` in local time.
+ * Used by the form's quick-set chips. ISO-8601 date-only format, which
+ * is what `<input type="date">` expects as its value.
+ */
+function isoDateOffset(offsetDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function hasNewComments(task: Task, viewedComments: Record<string, string>): boolean {
   if (!task.latest_comment_at || task.comment_count === 0) return false;
   const lastViewed = viewedComments[task.id];
@@ -87,6 +134,11 @@ export default function DesignTasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [viewedComments, setViewedComments] = useState<Record<string, string>>({});
+  const [taskOrder, setTaskOrder] = useState<string[]>([]);
+  // Drag-and-drop state — both refs in id form so we don't have to
+  // hold onto DOM nodes between events.
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -115,7 +167,43 @@ export default function DesignTasksPage() {
 
   useEffect(() => {
     setViewedComments(getViewedComments());
+    setTaskOrder(getTaskOrder());
   }, []);
+
+  // Reorder helper. Insertion point is direction-aware:
+  //  - dragging back-to-front (source after target) → land BEFORE target
+  //  - dragging front-to-back (source before target) → land AFTER target
+  // Without this, a front-to-back drag visually inserted at the slot
+  // immediately before the target — looking like the drag failed.
+  const reorderTasks = useCallback(
+    (sourceId: string, targetId: string | null) => {
+      setTaskOrder((prev) => {
+        // Build a complete order based on current task list so any
+        // task not yet in `prev` (e.g. newly created) gets placed.
+        const fullOrder = [
+          ...prev.filter((id) => tasks.some((t) => t.id === id)),
+          ...tasks.map((t) => t.id).filter((id) => !prev.includes(id)),
+        ];
+        const sourceIdx = fullOrder.indexOf(sourceId);
+        const targetIdx = targetId === null ? -1 : fullOrder.indexOf(targetId);
+        const next = fullOrder.filter((id) => id !== sourceId);
+        let insertAt: number;
+        if (targetId === null || targetIdx === -1) {
+          insertAt = next.length;
+        } else if (sourceIdx < targetIdx) {
+          // Source was originally before target → land AFTER target.
+          insertAt = next.indexOf(targetId) + 1;
+        } else {
+          // Source was originally after target → land BEFORE target.
+          insertAt = next.indexOf(targetId);
+        }
+        next.splice(insertAt, 0, sourceId);
+        saveTaskOrder(next);
+        return next;
+      });
+    },
+    [tasks],
+  );
 
   const resetForm = useCallback(() => {
     setTitle("");
@@ -241,7 +329,22 @@ export default function DesignTasksPage() {
     }
   }, []);
 
-  const filteredTasks = tasks.filter(
+  // Apply the user's saved order to the task list. Tasks not yet in
+  // the order array (e.g. just-created) sort to the end. Filter is
+  // applied AFTER sorting so the user's order is preserved within
+  // each filter view.
+  const orderedTasks = (() => {
+    if (taskOrder.length === 0) return tasks;
+    const indexById = new Map<string, number>();
+    taskOrder.forEach((id, i) => indexById.set(id, i));
+    return [...tasks].sort((a, b) => {
+      const ia = indexById.has(a.id) ? indexById.get(a.id)! : Number.MAX_SAFE_INTEGER;
+      const ib = indexById.has(b.id) ? indexById.get(b.id)! : Number.MAX_SAFE_INTEGER;
+      return ia - ib;
+    });
+  })();
+
+  const filteredTasks = orderedTasks.filter(
     (task) => filter === "all" || task.status === filter,
   );
 
@@ -250,6 +353,8 @@ export default function DesignTasksPage() {
     pending: tasks.filter((t) => t.status === "pending").length,
     in_progress: tasks.filter((t) => t.status === "in_progress").length,
     completed: tasks.filter((t) => t.status === "completed").length,
+    in_review: tasks.filter((t) => t.status === "in_review").length,
+    archived: tasks.filter((t) => t.status === "archived").length,
   };
 
   if (!isLoaded) {
@@ -276,45 +381,92 @@ export default function DesignTasksPage() {
         {/* Filter Tabs + Create Button */}
         <div className={styles.toolbar}>
           <div className={styles.filterTabs}>
-            {(["all", "pending", "in_progress", "completed"] as const).map(
-              (status) => (
-                <button
-                  key={status}
-                  onClick={() => setFilter(status)}
-                  className={`${styles.filterTab} ${filter === status ? styles.filterTabActive : ""}`}
-                >
-                  {status === "all"
-                    ? "All"
-                    : status === "in_progress"
-                      ? "In Progress"
+            {(
+              [
+                "all",
+                "pending",
+                "in_progress",
+                "completed",
+                "in_review",
+                "archived",
+              ] as const
+            ).map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilter(status)}
+                className={`${styles.filterTab} ${filter === status ? styles.filterTabActive : ""}`}
+              >
+                {status === "all"
+                  ? "All"
+                  : status === "in_progress"
+                    ? "In Progress"
+                    : status === "in_review"
+                      ? "In Review"
                       : status.charAt(0).toUpperCase() + status.slice(1)}
-                  <span className={styles.filterCount}>{taskCounts[status]}</span>
-                </button>
-              ),
-            )}
+                <span className={styles.filterCount}>{taskCounts[status]}</span>
+              </button>
+            ))}
           </div>
           <Button variant="primary" onClick={openCreateModal}>
             + New Task
           </Button>
         </div>
 
-        {/* Task List */}
+        {/* Task List — render real tiles first, then numbered empty
+            placeholders to round out the grid up to MIN_VISIBLE_TILES.
+            The placeholders make empty grid slots visible and let the
+            user see at a glance the "shape" of the list. */}
         <section className={styles.taskList}>
-          {filteredTasks.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p>
-                {filter === "all"
-                  ? "No tasks yet. Create your first task!"
-                  : `No ${filter === "in_progress" ? "in progress" : filter} tasks.`}
-              </p>
-            </div>
-          ) : (
-            filteredTasks.map((task, index) => {
+          {filteredTasks.map((task, index) => {
               const isNewComment = hasNewComments(task, viewedComments);
+              const dragging = draggingId === task.id;
+              const dragOver = dragOverId === task.id && draggingId !== null && draggingId !== task.id;
               return (
                 <div
                   key={task.id}
-                  className={`${styles.taskCard} ${styles[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]} ${isNewComment ? styles.hasNewComments : ""}`}
+                  className={[
+                    styles.taskCard,
+                    // Left-border color comes from status (not priority).
+                    // Helper key matches the CSS class names below:
+                    //   pending → borderPending, in_progress →
+                    //   borderIn_progress, etc.
+                    styles[
+                      `border${task.status.charAt(0).toUpperCase() + task.status.slice(1)}`
+                    ],
+                    dragging ? styles.taskCardDragging : "",
+                    dragOver ? styles.taskCardDragOver : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggingId(task.id);
+                    e.dataTransfer.effectAllowed = "move";
+                    // Some browsers need any data to be set for drag
+                    // to actually fire across other elements.
+                    e.dataTransfer.setData("text/plain", task.id);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingId(null);
+                    setDragOverId(null);
+                  }}
+                  onDragOver={(e) => {
+                    if (!draggingId || draggingId === task.id) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverId !== task.id) setDragOverId(task.id);
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverId === task.id) setDragOverId(null);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggingId && draggingId !== task.id) {
+                      reorderTasks(draggingId, task.id);
+                    }
+                    setDraggingId(null);
+                    setDragOverId(null);
+                  }}
                   onClick={() => handleSelectTask(task)}
                   role="button"
                   tabIndex={0}
@@ -348,7 +500,9 @@ export default function DesignTasksPage() {
                   </div>
 
                   {task.description && (
-                    <p className={styles.taskDescription}>{task.description}</p>
+                    <p className={styles.taskDescription}>
+                      <LinkifiedText text={task.description} />
+                    </p>
                   )}
 
                   <div className={styles.taskMeta}>
@@ -357,14 +511,13 @@ export default function DesignTasksPage() {
                         By: {task.created_by}
                       </span>
                     )}
-                    <span className={styles.taskDate}>
-                      Created: {new Date(task.created_at).toLocaleDateString()}
-                    </span>
-                    {task.due_date && (
-                      <span className={styles.taskDue}>
-                        Due: {new Date(task.due_date).toLocaleDateString()}
-                      </span>
-                    )}
+                    <DueDateBadge
+                      isoDate={task.due_date}
+                      isInactive={
+                        task.status === "completed" ||
+                        task.status === "archived"
+                      }
+                    />
                   </div>
 
                   <div
@@ -381,6 +534,8 @@ export default function DesignTasksPage() {
                       <option value="pending">Pending</option>
                       <option value="in_progress">In Progress</option>
                       <option value="completed">Completed</option>
+                      <option value="in_review">In Review</option>
+                      <option value="archived">Archived</option>
                     </select>
 
                     <Button
@@ -400,8 +555,27 @@ export default function DesignTasksPage() {
                   </div>
                 </div>
               );
-            })
-          )}
+            })}
+          {/* Numbered empty placeholders — round out to at least 12
+              visible tiles so the grid reads as "this is the slot
+              shape" even with few real tasks. Each shows its 1-indexed
+              position in the same numbering as real tiles. */}
+          {(() => {
+            const MIN_VISIBLE_TILES = 12;
+            const empties = Math.max(
+              0,
+              MIN_VISIBLE_TILES - filteredTasks.length,
+            );
+            return Array.from({ length: empties }).map((_, i) => (
+              <div
+                key={`empty-${i}`}
+                className={styles.taskCardEmpty}
+                aria-hidden="true"
+              >
+                {filteredTasks.length + i + 1}
+              </div>
+            ));
+          })()}
         </section>
       </div>
 
@@ -508,6 +682,43 @@ export default function DesignTasksPage() {
               <label htmlFor="dueDate" className={styles.label}>
                 Due Date
               </label>
+              {/* Quick-set chips for the common cases (one tap covers
+                  ~80% of due-date entries in modern task tools). The
+                  native date picker below stays for arbitrary dates. */}
+              <div className={styles.dueQuickPicks}>
+                <button
+                  type="button"
+                  className={styles.dueQuickPickBtn}
+                  onClick={() => setDueDate(isoDateOffset(0))}
+                  disabled={isSaving}
+                >
+                  Today
+                </button>
+                <button
+                  type="button"
+                  className={styles.dueQuickPickBtn}
+                  onClick={() => setDueDate(isoDateOffset(1))}
+                  disabled={isSaving}
+                >
+                  Tomorrow
+                </button>
+                <button
+                  type="button"
+                  className={styles.dueQuickPickBtn}
+                  onClick={() => setDueDate(isoDateOffset(7))}
+                  disabled={isSaving}
+                >
+                  Next week
+                </button>
+                <button
+                  type="button"
+                  className={styles.dueQuickPickBtn}
+                  onClick={() => setDueDate("")}
+                  disabled={isSaving}
+                >
+                  Clear
+                </button>
+              </div>
               <input
                 type="date"
                 id="dueDate"

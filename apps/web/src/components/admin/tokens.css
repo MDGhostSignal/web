@@ -29,6 +29,10 @@
      normal row bg in dark mode; flips to bright in light mode so the
      expanded panel reads as a clean inset card, not a grey hole. */
   --admin-row-detail-bg: rgba(0, 0, 0, 0.3);
+  /* Modal overlay backdrop dim. Heavy on dark theme, much lighter on
+     light theme so the surrounding page doesn't feel like night
+     behind a daytime modal. */
+  --admin-modal-overlay-bg: rgba(0, 0, 0, 0.5);
 
   /* ---- Color: text ---------------------------------------------------- */
   --admin-text-primary: rgba(255, 255, 255, 0.95);
@@ -161,6 +165,10 @@
   /* Pure white expanded-row panel — pops cleanly against the off-
      white page bg without using grey. */
   --admin-row-detail-bg: #ffffff;
+  /* Light-theme overlay dim — much softer than the dark theme's 50%
+     black so the page behind doesn't feel sepulchral when a modal
+     is open. ~18% slate gives a subtle "modal mode" cue. */
+  --admin-modal-overlay-bg: rgba(15, 23, 42, 0.22);
 
   /* ---- Color: text ---------------------------------------------------- */
   /* Slightly off-pure-black so primary text doesn't feel heavy against
@@ -176,6 +184,27 @@
   /* Focus ring stays the brand amber. */
 
   /* ---- Color: semantic ------------------------------------------------ */
+  /* Accent text colours overridden so badges and status pills (which
+     use `bg = X-soft, color = X`) remain readable on the light bg.
+     The bright dark-mode values (#50ff96, #ffc864, #64c8ff) wash out
+     on white; the soft alpha tints behind them stay the same hue
+     since they're alpha over the bg. Each darkened value is in the
+     same hue family as its dark-mode counterpart so badges read as
+     recognisably "the same colour" on either theme. */
+  --admin-success: #0a7a3c;
+  --admin-warn: #a16207;
+  --admin-info: #0369a1;
+  --admin-type-creator: #0369a1;
+  --admin-type-brand: #c2410c;
+
+  /* Brand amber nudged slightly darker for light bg — the dark-mode
+     #fbad25 was barely readable on white, but amber-700 territory
+     (the prior #b45309) was too far. These values keep the same
+     amber hue + saturation as the dark-theme tokens; only lightness
+     drops by ~10 points so the amber identity is preserved. */
+  --admin-accent: #d4900f;
+  --admin-accent-strong: #b87500;
+
   /* Error text needs a dark-enough red to read on a white bg; the dark
      theme's #ffb4b4 would wash out. Brand red shifted darker. */
   --admin-error-text: #a01818;

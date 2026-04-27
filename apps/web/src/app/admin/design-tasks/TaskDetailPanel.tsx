@@ -3,10 +3,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { Badge, Button, ErrorCard, type BadgeVariant } from "@/components/admin";
+import { LinkifiedText } from "@/lib/linkify";
 
+import { DueDateBadge } from "./DueDateBadge";
 import styles from "./TaskDetailPanel.module.css";
 
-type TaskStatus = "pending" | "in_progress" | "completed";
+type TaskStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "in_review"
+  | "archived";
 type TaskPriority = "low" | "medium" | "high";
 type Founder = "Mike Sense" | "Jack W Harding" | "Martin Drexler" | "Jeremy Reeves";
 
@@ -340,6 +347,8 @@ export function TaskDetailPanel({
               <option value="pending">Pending</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
+              <option value="in_review">In Review</option>
+              <option value="archived">Archived</option>
             </select>
           </div>
         </div>
@@ -358,15 +367,18 @@ export function TaskDetailPanel({
             <span className={styles.taskDate}>
               {new Date(task.created_at).toLocaleDateString()}
             </span>
-            {task.due_date && (
-              <span className={styles.dueDate}>
-                Due: {new Date(task.due_date).toLocaleDateString()}
-              </span>
-            )}
+            <DueDateBadge
+              isoDate={task.due_date}
+              isInactive={
+                task.status === "completed" || task.status === "archived"
+              }
+            />
           </div>
 
           {task.description && (
-            <p className={styles.taskDescription}>{task.description}</p>
+            <p className={styles.taskDescription}>
+              <LinkifiedText text={task.description} />
+            </p>
           )}
         </div>
 

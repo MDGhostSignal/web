@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--admin-space-6);
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--admin-modal-overlay-bg);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: adminModalFade var(--admin-transition-base);

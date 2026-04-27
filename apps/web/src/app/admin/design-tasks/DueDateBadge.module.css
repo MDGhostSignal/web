@@ -1,0 +1,58 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* ---- Tiers ----------------------------------------------------------
+   Each tier paints bg + text via the existing semantic tokens, so the
+   badge stays in sync with the admin theme. Borders use a slightly
+   stronger soft-tint so the badge reads as a pill, not a flat text run.
+   --------------------------------------------------------------------- */
+
+.tier_overdue {
+  background: var(--admin-destructive-soft);
+  color: var(--admin-destructive);
+  border-color: var(--admin-destructive-border);
+}
+
+.tier_today {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-strong);
+  border-color: rgba(251, 173, 37, 0.4);
+}
+
+.tier_soon {
+  background: var(--admin-warn-soft);
+  color: var(--admin-warn);
+  border-color: rgba(255, 200, 100, 0.35);
+}
+
+.tier_later {
+  background: var(--admin-surface-2);
+  color: var(--admin-text-secondary);
+  border-color: var(--admin-border);
+}
+
+/* Completed / archived task — show the label but strike it through
+   in a muted tone so the task's history is preserved without the
+   urgency cue. */
+.tier_done {
+  background: var(--admin-surface-1);
+  color: var(--admin-text-muted);
+  border-color: var(--admin-border);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
