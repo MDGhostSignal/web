@@ -15,10 +15,12 @@ import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
-// Cursor-driven dandelion-seed drift — client-only (uses window + rAF).
-const HeroDandelion = dynamic(() => import("./HeroDandelion"), { ssr: false });
+// Ambient firefly drift — client-only (uses window + rAF).
+const HeroFirefliesDrift = dynamic(() => import("./HeroFirefliesDrift"), {
+  ssr: false,
+});
 // Swarm of bees chasing the cursor — client-only.
-const HeroBees = dynamic(() => import("./HeroBees"), { ssr: false });
+const HeroFireflies = dynamic(() => import("./HeroFireflies"), { ssr: false });
 
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
@@ -186,13 +188,13 @@ export default function ForCreatorsPage() {
 
       {/* Hero Section */}
       <section ref={heroSectionRef} className={styles.hero}>
-        {/* Dandelion-seed drift — same cursor-repulsion pattern as
+        {/* Ambient firefly drift — same cursor-repulsion pattern as
             the pollen on /for-advertisers and the blossoms on
-            /what-is-this. Canvas fills the hero, seeds float upward
+            /what-is-this. Canvas fills the hero, fireflies float upward
             and respawn from below. */}
-        <HeroDandelion />
+        <HeroFirefliesDrift />
         {/* Swarm of bees that chase the cursor inside the hero. */}
-        <HeroBees sectionRef={heroSectionRef} />
+        <HeroFireflies sectionRef={heroSectionRef} />
         <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
           <video
             ref={heroVideoRef}
@@ -205,8 +207,7 @@ export default function ForCreatorsPage() {
             disablePictureInPicture
             aria-hidden="true"
           >
-            <source src="/images/for-creators/field3.webm" type="video/webm" />
-            <source src="/images/for-creators/field3.mp4" type="video/mp4" />
+            <source src="/images/for-creators/seattle.mp4" type="video/mp4" />
           </video>
         </div>
         <div className={styles.heroContent}>

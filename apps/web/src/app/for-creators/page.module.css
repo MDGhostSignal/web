@@ -12,15 +12,19 @@
    STATIC OVERLAY - TV static/noise effect
    ============================================================================= */
 
+/* No mix-blend-mode: a fixed full-viewport blend layer forces the
+   browser to re-composite the entire viewport (including the playing
+   hero video) every frame. Plain alpha-blended noise at low opacity
+   reads nearly identically and removes the per-frame compositor cost
+   — same fix applied on /for-advertisers that killed the ~1s stutter. */
 .staticOverlay {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
-  mix-blend-mode: overlay;
 }
 
 /* =============================================================================
@@ -39,6 +43,12 @@
   z-index: 2;
   padding: var(--edge-pad);
   padding-bottom: calc(var(--gs-n-256) * var(--gs-px));
+  /* Self-contained compositor stack — prevents any sibling fixed
+     overlays from forcing the playing hero video into a shared backdrop
+     buffer. Pairs with the staticOverlay change above. Same treatment
+     as /for-advertisers .hero. */
+  isolation: isolate;
+  contain: paint;
 }
 
 .heroContent {
