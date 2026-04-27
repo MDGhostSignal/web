@@ -38,14 +38,27 @@
 .brandLogo {
   display: block;
   /* Wide-aspect SVG (190×16); height controls the on-screen size and
-     width auto-scales to preserve the logo's proportions. Bumped
-     from 20 → 22 px to clear any glyph-descender clipping at the
-     bottom edge of the SVG box. */
+     width auto-scales to preserve the logo's proportions. */
   height: 22px;
   width: auto;
-  /* Belt-and-braces: explicitly let the SVG paint outside its box
-     in case the artwork extends past the declared viewBox. */
   overflow: visible;
+}
+
+/* Theme-aware swap. The dark-theme (default) variant is white-on-dark;
+   the light-theme variant is the original 4-colour artwork. Both
+   <img>s are mounted in the DOM — the inactive one is hidden via
+   the `data-theme` attribute ThemeToggle stamps onto every
+   `.admin-root`. The `.admin-root` portion is wrapped in `:global()`
+   so the CSS module doesn't hash it (this file is a *.module.css,
+   the class on the DOM is the unhashed global one). */
+.brandLogoLight {
+  display: none;
+}
+:global(.admin-root[data-theme="light"]) .brandLogoDark {
+  display: none;
+}
+:global(.admin-root[data-theme="light"]) .brandLogoLight {
+  display: block;
 }
 
 /* --- Tab navigation ---------------------------------------------------- */

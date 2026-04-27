@@ -73,17 +73,24 @@ export function AdminShell({ tabs, children, trail, onLogout }: Props) {
           className={styles.brand}
           aria-label="GhostSignal Admin"
         >
-          {/* Plain <img> rather than next/image — SVG doesn't benefit
-              from the image pipeline, and next/image's enforced
-              `width`/`height` attributes were clipping the bottom of
-              the glyph artwork against my CSS overrides. eslint-disable
-              for the no-img-element rule below is intentional and
-              local. */}
+          {/* Two-logo swap — the dark-theme variant is white-on-dark,
+              the light-theme variant is the original 4-colour artwork.
+              Both <img> tags render; CSS hides the inactive one based
+              on the `data-theme` attribute the ThemeToggle stamps onto
+              every .admin-root. Plain <img> instead of next/image
+              because SVG doesn't benefit from the image pipeline. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/brand/ghostsiggnal-admin-white-4c.svg"
+            alt="GhostSignal Admin"
+            className={`${styles.brandLogo} ${styles.brandLogoDark}`}
+          />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/brand/ghostsiggnal-admin-hor-4c.svg"
-            alt="GhostSignal Admin"
-            className={styles.brandLogo}
+            alt=""
+            aria-hidden="true"
+            className={`${styles.brandLogo} ${styles.brandLogoLight}`}
           />
         </Link>
 
