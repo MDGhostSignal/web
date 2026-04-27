@@ -45,6 +45,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <AdminShell
       tabs={[
         { href: "/admin/members", label: "Members" },
+        { href: "/admin/marketplace", label: "Marketplace" },
         { href: "/admin/rq-responses", label: "RQ Responses" },
         { href: "/admin/design-tasks", label: "Design Tasks" },
       ]}

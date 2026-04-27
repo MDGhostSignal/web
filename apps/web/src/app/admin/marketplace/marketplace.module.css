@@ -1,0 +1,842 @@
+/* =====================================================================
+ * Marketplace — admin surface that matches creators ↔ brands by RQ
+ * resonance. Three view modes (Pool / Match / Map) share a page shell;
+ * the Map mode lazy-loads the R3F scene.
+ *
+ * Token discipline: every colour, radius, spacing, and font value pulls
+ * from --admin-* tokens defined in /components/admin/tokens.css. Any
+ * appearance in this file should be tweakable from one tokens edit.
+ * ===================================================================== */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-6);
+}
+
+/* ---- Header stat cluster -------------------------------------------- */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+}
+
+.headerStats {
+  display: flex;
+  align-items: stretch;
+  gap: var(--admin-space-3);
+}
+
+.resetBody {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: var(--admin-space-2) var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  min-width: 96px;
+}
+
+.statValue {
+  font-size: var(--admin-text-2xl);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---- View tabs ------------------------------------------------------- */
+
+.viewTabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-1);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.viewTab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: transparent;
+  border: 0;
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--admin-transition-fast),
+    color var(--admin-transition-fast);
+}
+
+.viewTab:hover {
+  background: var(--admin-surface-hover);
+  color: var(--admin-text-primary);
+}
+
+.viewTabActive,
+.viewTabActive:hover {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-strong);
+}
+
+.viewTabLabel {
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.viewTabHint {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.viewTabActive .viewTabHint {
+  color: var(--admin-accent);
+}
+
+/* ---- Mock pill — used everywhere a mock entity surfaces ------------- */
+
+.mockPill {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  background: var(--admin-warn-soft);
+  color: var(--admin-warn);
+  border: 1px solid var(--admin-warn);
+  border-radius: var(--admin-radius-pill);
+  font-size: 9px;
+  font-weight: var(--admin-weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* ---- RQ code/name display ------------------------------------------- */
+
+.rqCell,
+.partnerRq,
+.anchorHeaderRq {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  flex-wrap: wrap;
+}
+
+.rqCode {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-strong);
+  border-radius: var(--admin-radius-sm);
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  letter-spacing: 0.04em;
+}
+
+.rqName {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  font-style: italic;
+}
+
+/* ---- Tag chips ------------------------------------------------------- */
+
+.tagRow,
+.partnerTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  background: var(--admin-surface-2);
+  color: var(--admin-text-secondary);
+  border-radius: var(--admin-radius-pill);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+}
+
+/* ---- Map loading ---------------------------------------------------- */
+
+.mapLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+/* =====================================================================
+ * POOL VIEW
+ * ===================================================================== */
+
+.poolView {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.poolToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+}
+
+.poolMeta {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+/* Filter chips — segmented control used across views */
+
+.filterChips {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-4);
+  flex-wrap: wrap;
+}
+
+.filterChipGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+.filterChipGroupLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.filterChipRow {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+}
+
+.filterChip {
+  padding: 4px var(--admin-space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-fast),
+    color var(--admin-transition-fast);
+}
+
+.filterChip:hover {
+  color: var(--admin-text-primary);
+}
+
+.filterChipActive,
+.filterChipActive:hover {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-strong);
+}
+
+.poolNameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+.poolName {
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-primary);
+}
+
+.poolMatchEmpty {
+  color: var(--admin-text-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Trait bar — horizontal fill showing 0-100 score */
+.traitBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  background: var(--admin-surface-2);
+  border-radius: var(--admin-radius-sm);
+  overflow: hidden;
+  min-width: 88px;
+}
+
+.traitFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(
+    90deg,
+    var(--admin-accent-soft),
+    var(--admin-accent)
+  );
+  opacity: 0.7;
+  transition: width var(--admin-transition-base);
+}
+
+.traitValue {
+  position: relative;
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* =====================================================================
+ * MATCH BOARD
+ * ===================================================================== */
+
+.matchBoardWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.matchBoard {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--admin-space-6);
+  align-items: start;
+}
+
+/* Match of the day — pinned ribbon at the top of the Match view. Reads
+   like a notification card; click jumps to the pair as the anchor. */
+.todayPin {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-3) var(--admin-space-5);
+  background: linear-gradient(
+    90deg,
+    var(--admin-accent-soft),
+    var(--admin-accent-softer)
+  );
+  border: 1px solid var(--admin-accent);
+  border-radius: var(--admin-radius-lg);
+  cursor: pointer;
+  text-align: left;
+  color: var(--admin-text-primary);
+  font-family: var(--admin-font);
+  transition:
+    background var(--admin-transition-fast),
+    transform var(--admin-transition-fast);
+}
+
+.todayPin:hover {
+  background: linear-gradient(
+    90deg,
+    var(--admin-accent-soft),
+    var(--admin-accent-soft)
+  );
+  transform: translateY(-1px);
+}
+
+.todayPin[data-tier="weak"] {
+  border-color: var(--admin-warn);
+  background: linear-gradient(
+    90deg,
+    var(--admin-warn-soft),
+    var(--admin-surface-1)
+  );
+}
+
+.todayPinLabel {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  background: var(--admin-bg-elevated);
+  color: var(--admin-accent-strong);
+  border-radius: var(--admin-radius-pill);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.todayPinPair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-medium);
+  flex: 1;
+  min-width: 0;
+}
+
+.todayPinPair strong {
+  font-weight: var(--admin-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.todayPinX {
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-bold);
+}
+
+.todayPinScore {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xl);
+  font-weight: var(--admin-weight-bold);
+  color: var(--admin-accent-strong);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.todayPin[data-tier="weak"] .todayPinScore {
+  color: var(--admin-warn);
+}
+
+.todayPinHint {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-medium);
+  flex-shrink: 0;
+}
+
+.anchorRail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-3);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  position: sticky;
+  top: var(--admin-space-4);
+  max-height: calc(100vh - 200px);
+}
+
+.anchorKindToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  background: var(--admin-surface-2);
+  border-radius: var(--admin-radius-md);
+}
+
+.anchorKindBtn {
+  padding: var(--admin-space-2) var(--admin-space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  cursor: pointer;
+  transition: all var(--admin-transition-fast);
+}
+
+.anchorKindBtn:hover {
+  color: var(--admin-text-primary);
+}
+
+.anchorKindBtnActive,
+.anchorKindBtnActive:hover {
+  background: var(--admin-bg-elevated);
+  color: var(--admin-accent-strong);
+}
+
+.anchorList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.anchorItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-2);
+  width: 100%;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--admin-radius-sm) var(--admin-radius-sm) 0;
+  color: var(--admin-text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--admin-transition-fast);
+}
+
+.anchorItem:hover {
+  background: var(--admin-surface-hover);
+  color: var(--admin-text-primary);
+}
+
+.anchorItemActive,
+.anchorItemActive:hover {
+  background: var(--admin-accent-soft);
+  border-left-color: var(--admin-accent);
+  color: var(--admin-accent-strong);
+}
+
+.anchorItemName {
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.anchorItemRq {
+  font-family: var(--admin-font-mono);
+  font-size: 10px;
+  color: var(--admin-text-muted);
+  flex-shrink: 0;
+}
+
+/* Match panel */
+
+.matchPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-6);
+  min-width: 0;
+}
+
+.anchorHeader {
+  padding: var(--admin-space-5) var(--admin-space-6);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.anchorHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.anchorHeaderTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  flex-wrap: wrap;
+}
+
+.anchorHeaderName {
+  margin: 0;
+  font-size: var(--admin-text-3xl);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.anchorHeaderBlurb {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+.matchSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.matchSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+  flex-wrap: wrap;
+}
+
+.matchSectionFilters {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  flex-wrap: wrap;
+}
+
+.matchSectionTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.toggleLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+}
+
+.toggleLabel input {
+  accent-color: var(--admin-accent);
+  cursor: pointer;
+}
+
+.anchorSearch {
+  width: 100%;
+}
+
+.matchSectionCount {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  background: var(--admin-surface-2);
+  color: var(--admin-text-muted);
+  border-radius: var(--admin-radius-pill);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.matchGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--admin-space-4);
+}
+
+/* Partner card */
+
+.partnerCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-5);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  transition: all var(--admin-transition-base);
+}
+
+.partnerCard:hover {
+  border-color: var(--admin-border-strong);
+  background: var(--admin-surface-2);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.partnerCard_strong {
+  border-color: var(--admin-success);
+  box-shadow: 0 0 0 1px var(--admin-success-soft) inset;
+}
+
+.partnerCard_fair {
+  border-color: var(--admin-border);
+}
+
+.partnerCard_weak {
+  opacity: 0.85;
+}
+
+.partnerCard[data-mode="confirmed"] {
+  background: var(--admin-success-soft);
+  border-color: var(--admin-success);
+}
+
+.rankPill {
+  position: absolute;
+  top: var(--admin-space-3);
+  right: var(--admin-space-4);
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  background: var(--admin-bg-elevated);
+  color: var(--admin-text-secondary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.partnerHead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--admin-space-4);
+}
+
+.partnerInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  min-width: 0;
+}
+
+.partnerNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  flex-wrap: wrap;
+}
+
+.partnerName {
+  margin: 0;
+  font-size: var(--admin-text-lg);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+}
+
+.partnerBlurb {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  line-height: 1.5;
+}
+
+.partnerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  padding-top: var(--admin-space-3);
+  border-top: 1px solid var(--admin-border);
+}
+
+.tierLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.partnerActionButtons {
+  display: flex;
+  gap: var(--admin-space-2);
+}
+
+/* Resonance ring */
+
+.resonanceRing {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.resonanceRing svg {
+  width: 100%;
+  height: 100%;
+}
+
+.resonanceTrack {
+  stroke: var(--admin-surface-3);
+}
+
+.resonanceFill {
+  transition: stroke-dashoffset var(--admin-transition-slow);
+}
+
+.resonanceRing[data-tier="strong"] .resonanceFill {
+  stroke: var(--admin-success);
+}
+
+.resonanceRing[data-tier="fair"] .resonanceFill {
+  stroke: var(--admin-accent);
+}
+
+.resonanceRing[data-tier="weak"] .resonanceFill {
+  stroke: var(--admin-warn);
+}
+
+.resonanceValue {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-lg);
+  font-weight: var(--admin-weight-bold);
+  color: var(--admin-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* =====================================================================
+ * RESPONSIVE
+ * ===================================================================== */
+
+@media (max-width: 1100px) {
+  .matchBoard {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .matchBoard {
+    grid-template-columns: 1fr;
+  }
+  .anchorRail {
+    position: static;
+    max-height: 320px;
+  }
+  .headerStats {
+    flex-wrap: wrap;
+  }
+}
