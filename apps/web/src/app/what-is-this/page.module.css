@@ -411,36 +411,56 @@
 
 .valuesBinaryWrapper {
   position: absolute;
-  /* Anchored to the left half of the section, ending 24px before the
-     central bars-graph's left edge (which sits at center − ~8.65vh).
-     This keeps the orbital scene clearly in the left area, leaving
-     the bars + the right-anchored body copy untouched. */
+  /* Anchored to the LEFT side of the section, but extended further
+     right so the bloom haze of Sphere A (when it swings rightward in
+     the orbit) doesn't get hard-cut at the wrapper edge. Right edge
+     now sits at the bars-graph's right edge (center + ~8.65vh),
+     meaning the bars run THROUGH the wrapper but the canvas itself
+     fades on its right side via the mask below — bars stay visible
+     because they're a sibling at the same z and have non-zero
+     opacity through their own GSAP tween. */
   left: 0;
-  right: calc(50% + 9vh + 24px);
+  right: calc(50% - 9vh - 24px);
   top: 50%;
   height: clamp(360px, 55vh, 640px);
   transform: translateY(-50%);
   z-index: 0;
-  /* Vertical mask gradient — fades the top and bottom 18% of the
-     canvas to fully transparent so the bloom haze doesn't draw a
-     visible rectangular footprint against the page background.
-     `mask-image` (and the -webkit prefix for Safari) crops the
-     element at compositor time, so this costs nothing extra
-     vs. drawing the full canvas. */
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 18%,
-    #000 82%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 18%,
-    #000 82%,
-    transparent 100%
-  );
+  /* 4-edge mask gradient (composited via mask-composite: intersect)
+     so the bloom haze fades to transparent on top, bottom, AND right
+     edges — left edge stays opaque since the canvas is anchored to
+     the screen edge there. Two stacked linear gradients combine via
+     the intersect operator: the top/bottom gradient fades vertical
+     edges, the right gradient fades only the right side. */
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 18%,
+      #000 82%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      #000 0%,
+      #000 70%,
+      transparent 100%
+    );
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 18%,
+      #000 82%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      #000 0%,
+      #000 70%,
+      transparent 100%
+    );
+  -webkit-mask-composite: source-in;
 }
 
 /* Inner wrapper that the React component renders. We give it
