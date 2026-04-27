@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 
@@ -13,6 +13,14 @@ const ScrollScenes = dynamic(
   () => import("@/components/ScrollScenes").then((m) => m.ScrollScenes),
   { ssr: false },
 );
+
+// Binary-star R3F scene for the Values section. Pulls in three.js +
+// R3F + drei + postprocessing — same chunk size that's already paid
+// on /admin/marketplace, but here we dynamic-import + ssr:false so
+// the marketing page's initial chunk stays light.
+const ValuesBinary = dynamic(() => import("./ValuesBinary"), {
+  ssr: false,
+});
 
 // Canvas cherry-blossom overlay — ssr:false since it needs the DOM.
 const HeroBlossoms = dynamic(() => import("./HeroBlossoms"), { ssr: false });
@@ -32,6 +40,9 @@ export default function WhatIsThisPage() {
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
+  const barsRef = useRef<HTMLDivElement>(null);
+  const harmonyOrbitRef = useRef<HTMLDivElement>(null);
+  const harmonyOrbitSphereRef = useRef<HTMLDivElement>(null);
 
   useIsomorphicLayoutEffect(() => {
     const wrapper = heroVideoWrapperRef.current;
@@ -42,9 +53,12 @@ export default function WhatIsThisPage() {
     const trigger = {
       trigger: wrapper,
       start: "top top",
-      // Extend the fade well past a single viewport — gives a longer,
-      // more gradual dissolve from sunset loop into the night sky.
-      end: "+=140%",
+      // Fade completes inside the first viewport of scroll so the video
+      // is fully gone by the time the next section reaches the
+      // viewport top — no visible seam between hero and the section
+      // below it. Was "+=140%" (longer, more gradual) but the seam
+      // read as a transition glitch.
+      end: "+=80%",
       scrub: 1,
     } as const;
 
@@ -84,6 +98,23 @@ export default function WhatIsThisPage() {
         )
       : null;
 
+    // Bars-graph fade-in — runs in lockstep with the video fade-out
+    // (same trigger / start / end / scrub) so the bars emerge at exactly
+    // the same scroll-rate that the video disappears. Target opacity
+    // 0.6 matches the prior static value; CSS starts the wrapper at 0.
+    const bars = barsRef.current;
+    const barsTween = bars
+      ? gsap.fromTo(
+          bars,
+          { opacity: 0 },
+          {
+            opacity: 0.6,
+            ease: "power1.inOut",
+            scrollTrigger: trigger,
+          },
+        )
+      : null;
+
     // Belt-and-suspenders looping. The `loop` attribute is the primary
     // guarantee; these event listeners are safety-nets for cases where a
     // browser pauses an autoplaying video (tab backgrounded, heavy
@@ -114,6 +145,95 @@ export default function WhatIsThisPage() {
       videoTween.kill();
       textTween?.scrollTrigger?.kill();
       textTween?.kill();
+      barsTween?.scrollTrigger?.kill();
+      barsTween?.kill();
+    };
+  }, []);
+
+  // Harmony orbit drive — JS-driven rAF loop replaces the prior CSS
+  // animations on .harmonyOrbit + .harmonyOrbitSphere so the same code
+  // path can do auto-spin AND respond to pointer-drag on the sphere.
+  // Auto-spin: 36°/s (matches the prior 10s CSS cycle). Drag: cursor X
+  // delta maps to angular velocity (1°/px); release resumes auto-spin
+  // from the dragged position. Reduced-motion users skip the spin
+  // entirely; drag still works.
+  useEffect(() => {
+    const orbit = harmonyOrbitRef.current;
+    const sphere = harmonyOrbitSphereRef.current;
+    if (!orbit || !sphere) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const SPIN_DPS = 36; // degrees per second
+    const DRAG_DEG_PER_PX = 1;
+
+    // Phase-shifted start so the moon begins behind the sun (matches
+    // the prior CSS animation-delay: -5s behaviour).
+    let angle = 180;
+    let isDragging = false;
+    let dragStartAngle = 0;
+    let dragStartX = 0;
+    let lastTime = performance.now();
+    let rafId = 0;
+
+    const apply = () => {
+      orbit.style.transform = `rotateZ(28deg) rotateY(${angle.toFixed(2)}deg)`;
+      // Sphere counter-rotates so its shading "faces" the camera as
+      // the orbit swings around.
+      sphere.style.transform = `translateZ(var(--orbit-radius)) rotateY(${(-angle).toFixed(2)}deg)`;
+    };
+
+    const tick = (now: number) => {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+      if (!isDragging && !reduced) {
+        angle = (angle + SPIN_DPS * dt) % 360;
+      }
+      apply();
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      isDragging = true;
+      dragStartAngle = angle;
+      dragStartX = e.clientX;
+      sphere.classList.add(styles.harmonyOrbitSphereDragging);
+      sphere.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      angle = (((dragStartAngle + dx * DRAG_DEG_PER_PX) % 360) + 360) % 360;
+    };
+
+    const endDrag = (e: PointerEvent) => {
+      if (!isDragging) return;
+      isDragging = false;
+      sphere.classList.remove(styles.harmonyOrbitSphereDragging);
+      try {
+        sphere.releasePointerCapture(e.pointerId);
+      } catch {
+        // Pointer capture may already be released — ignore.
+      }
+      // Reset the time origin so the auto-spin doesn't catch up on
+      // the seconds the user spent dragging (would cause a jump).
+      lastTime = performance.now();
+    };
+
+    apply();
+    rafId = requestAnimationFrame(tick);
+    sphere.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      sphere.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", endDrag);
+      window.removeEventListener("pointercancel", endDrag);
     };
   }, []);
 
@@ -253,23 +373,44 @@ export default function WhatIsThisPage() {
         {/* Centered decorative bars — now rendered via <BarsRipple>,
            a canvas component running a shallow-water height-field
            simulation. Cursor crossings seed splashes and the result
-           refracts the vertical color bars like light through water. */}
-        <BarsRipple
-          src="/images/what-is-this/color-bars.png"
-          className={styles.decorativeBars}
-        />
+           refracts the vertical color bars like light through water.
+           The wrapping div is what GSAP fades in (in lockstep with the
+           video's fade-out); BarsRipple just fills it. */}
+        <div ref={barsRef} className={styles.decorativeBars} aria-hidden="true">
+          <BarsRipple
+            src="/images/what-is-this/color-bars.png"
+            className={styles.decorativeBarsCanvas}
+          />
+        </div>
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
           {/* Section 2: Advertising Harmony */}
           <section className={styles.harmonySection}>
+            {/* Distant nocturnal black-sun — endless 10-second cycle.
+                Pure-black disk with a faint amber corona that breathes
+                in / out, evoking a total eclipse seen from far away.
+                CSS-only (no canvas / WebGL) so the cost is just two
+                divs and one keyframe pair. */}
+            <div className={styles.harmonySun} aria-hidden="true">
+              <div className={styles.harmonySunCorona2} />
+              <div className={styles.harmonySunCorona} />
+              <div className={styles.harmonySunDisk} />
+              {/* Orbiting dark sphere — CSS 3D. The wrapper rotates
+                  around Y; the sphere is translated out on +Z so it
+                  traces a circle through the scene. preserve-3d on
+                  ancestors lets the depth sort itself, so the sphere
+                  swings in front of the sun (eclipse) and behind it
+                  (hidden) once per cycle. */}
+              <div ref={harmonyOrbitRef} className={styles.harmonyOrbit}>
+                <div
+                  ref={harmonyOrbitSphereRef}
+                  className={styles.harmonyOrbitSphere}
+                />
+              </div>
+            </div>
             {/* Headline centered */}
             <div className={styles.centeredHeadlineContainer}>
-              {/* Animated overlapping circles behind headline */}
-              <div className={styles.harmonyCircles} aria-hidden="true">
-                <div className={styles.harmonyCircle1} />
-                <div className={styles.harmonyCircle2} />
-              </div>
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
                   <span>What if</span>
@@ -310,8 +451,17 @@ export default function WhatIsThisPage() {
             </div>
           </section>
 
-          {/* Section 3: Values Create Value - LEFT */}
-          <section className={`${styles.textSection} ${styles.alignLeft}`}>
+          {/* Section 3: Values Create Value - RIGHT */}
+          <section className={`${styles.textSection} ${styles.alignRight}`}>
+            {/* Binary-star R3F scene — two PBR spheres lit by their
+                own coloured point lights, drag-spin with inertia,
+                selective Bloom on emissive cores. Mounts only when
+                visible (IntersectionObserver inside the component)
+                so it costs nothing while the user is at the top of
+                the page. Replaces an earlier CSS-3D placeholder. */}
+            <div className={styles.valuesBinaryWrapper}>
+              <ValuesBinary />
+            </div>
             <div className={styles.textContainer}>
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
@@ -332,25 +482,6 @@ export default function WhatIsThisPage() {
               <ScrollFadeUp index={1} duration={1.6}>
                 <p className={styles.sectionBody}>
                   Trust is the ultimate low-friction economic climate (Acoglu, 2023), and resonance loves this climate. 75% of listeners are happy to spend more towards brands that feel right (Edelman, 2025).
-                </p>
-              </ScrollFadeUp>
-            </div>
-          </section>
-
-          {/* Section 4: Who is GhostSignal - RIGHT */}
-          <section className={`${styles.textSection} ${styles.alignRight}`}>
-            <div className={styles.textContainer}>
-              <h2 className={styles.sectionHeadline}>
-                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
-                  <span>Who is</span>
-                </SplitLinesReveal>
-                <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
-                  <span><BrandedGhostSignal />?</span>
-                </SplitLinesReveal>
-              </h2>
-              <ScrollFadeUp index={0} duration={1.6}>
-                <p className={styles.sectionBody}>
-                  We are a podcast network that connects creators and brands who share soul. Those who know their work shapes the future and take that responsibility seriously. As a creator or advertiser, whether you are value-sensitive, faith-based, or simply aware of the ethical impact of what you make, you belong in <BrandedGhostSignal /> if you sense that your work is making the world.
                 </p>
               </ScrollFadeUp>
             </div>

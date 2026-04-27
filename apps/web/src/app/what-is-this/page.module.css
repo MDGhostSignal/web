@@ -327,10 +327,18 @@
 
 .decorativeBars {
   position: absolute;
-  top: 100vh;
+  /* `.globeWrapper` (the parent) already starts at the bottom of the
+     hero in document flow. Pulled 10vh above that boundary so the bars
+     start visibly inside the hero's lower edge instead of right at
+     the section seam — the bars are now visible while the hero video
+     is still partially faded, which makes the hand-off read smoother. */
+  top: -10vh;
   left: 50%;
   transform: translateX(-50%);
-  height: calc(83% - 200vh);
+  /* 200vh covers harmony + values; the extra 100px matches the new
+     margin-top on .finalSection so the bars still reach the top of
+     the final/globe section after that gap was inserted. */
+  height: calc(200vh + 100px);
   /* The original <Image> (652×7548) sized this wrapper via its
      intrinsic aspect ratio when it used `width: auto; height: 100%`.
      The WebGL canvas inside BarsRipple has no intrinsic ratio, so
@@ -340,7 +348,19 @@
   aspect-ratio: 652 / 7548;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.6;
+  /* Initial opacity 0 — GSAP fades the wrapper from 0 to 0.6 in
+     lockstep with the hero video's fade-out (same trigger / start /
+     end / scrub) so the bars emerge at exactly the speed the video
+     disappears. Final 0.6 matches the prior static value. */
+  opacity: 0;
+}
+
+/* Canvas / static-image inside the bars wrapper — fills its parent.
+   The wrapper carries the position + size + opacity-tween; the inner
+   element just paints into that box. */
+.decorativeBarsCanvas {
+  width: 100%;
+  height: 100%;
 }
 
 .barsImage {
@@ -370,12 +390,68 @@
    ============================================================================= */
 
 .textSection {
+  position: relative; /* containing block for the binary-orbit overlay */
   min-height: 100vh;
   display: flex;
   align-items: center;
   padding: calc(var(--gs-n-120) * var(--gs-px)) calc(var(--gs-n-80) * var(--gs-px));
   width: 100%;
   box-sizing: border-box;
+}
+
+/* =============================================================================
+   BINARY-STAR SCENE — Values Create Value backdrop
+   =============================================================================
+   The R3F <ValuesBinary> component renders into the canvas inside
+   .valuesBinaryWrapper. The wrapper is what positions the scene on
+   the page; canvas sizing is driven by the wrapper. The component
+   itself owns its perspective, lighting, drag interactivity, and
+   IntersectionObserver mount-gating.
+   ============================================================================= */
+
+.valuesBinaryWrapper {
+  position: absolute;
+  /* Anchored to the left half of the section, ending 24px before the
+     central bars-graph's left edge (which sits at center − ~8.65vh).
+     This keeps the orbital scene clearly in the left area, leaving
+     the bars + the right-anchored body copy untouched. */
+  left: 0;
+  right: calc(50% + 9vh + 24px);
+  top: 50%;
+  height: clamp(360px, 55vh, 640px);
+  transform: translateY(-50%);
+  z-index: 0;
+  /* Vertical mask gradient — fades the top and bottom 18% of the
+     canvas to fully transparent so the bloom haze doesn't draw a
+     visible rectangular footprint against the page background.
+     `mask-image` (and the -webkit prefix for Safari) crops the
+     element at compositor time, so this costs nothing extra
+     vs. drawing the full canvas. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 18%,
+    #000 82%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 18%,
+    #000 82%,
+    transparent 100%
+  );
+}
+
+/* Inner wrapper that the React component renders. We give it
+   width/height: 100% so R3F's <Canvas> resizes correctly when the
+   outer wrapper's clamp recalculates. */
+:global(.valuesBinaryRoot) {
+  width: 100%;
+  height: 100%;
+  /* The canvas itself takes pointer events for the drag handler;
+     this outer div needs to allow them through. */
+  pointer-events: auto;
 }
 
 @media (min-width: 1200px) {
@@ -397,8 +473,27 @@
   justify-content: flex-end;
 }
 
+/* Text container is anchored to the section's right side (flex-end on
+   the section above), but text reads left-bound inside the container.
+   Width: 100% + max-width pin lets the container fill its slot so
+   left-aligned text starts at a consistent left edge. Max-width
+   reduced from 720 → 540 so the container's left edge clears the
+   central bars-graph (whose right edge sits at center + ~8.6vh) at
+   common desktop viewports — the headline + body no longer collide
+   with the bars. */
 .alignRight .textContainer {
-  text-align: right;
+  width: 100%;
+  max-width: calc(var(--gs-n-540, 540) * var(--gs-px));
+  text-align: left;
+}
+
+.alignCenter {
+  justify-content: center;
+}
+
+.alignCenter .textContainer {
+  text-align: center;
+  align-items: center;
 }
 
 .alignRightText {
@@ -408,6 +503,7 @@
 
 /* Harmony section - special layout with centered body text */
 .harmonySection {
+  position: relative; /* containing block for the nocturnal sun */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -418,6 +514,209 @@
   gap: calc(var(--gs-n-48) * var(--gs-px));
 }
 
+/* =============================================================================
+   NOCTURNAL BLACK SUN — distant eclipse, 10s endless loop
+   =============================================================================
+   Three layered circular elements positioned dead-centre of the harmony
+   section. The disk is pure black; the two coronas + a rim glow on the
+   disk itself bloom together once per 10-second cycle so the eclipse
+   reads as a clear "event" rather than a faint constant glow. The
+   harmony backdrop is near-black, so without the rim glow the disk
+   would be invisible — that's why the disk carries an animated
+   box-shadow alongside the gradient coronas.
+   ============================================================================= */
+
+.harmonySun {
+  position: absolute;
+  /* Anchored to the right edge of the central bars-graph plus a small
+     gap. Bars are 200vh tall × (652/7548) aspect = ~17.3vh wide, so
+     their right edge sits at center + ~8.65vh. Pin the sun's LEFT
+     edge to that point (no x-translate) so the sun lives just right
+     of the bars and never overlaps them. Vertically lifted into the
+     upper third of the section to clear the body copy below. */
+  left: calc(50% + 9vh + 160px);
+  top: 35%;
+  /* 260–420 → 130–210 (50%) → 104–168 (×0.8) → 125–202 (×1.2)
+     → 163–263 (×1.3). */
+  width: clamp(163px, 20vw, 263px);
+  height: clamp(163px, 20vw, 263px);
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+  /* CSS 3D scene — needed so the orbiting sphere can sort its depth
+     against the sun (front-of vs. behind). Perspective deep enough
+     that the orbit reads dimensional but not fish-eyed. */
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+
+/* The white sun disk — bright cream-white, with a layered white halo
+   that breathes on the same 10s cycle as the orbiting sphere. */
+.harmonySunDisk {
+  position: absolute;
+  inset: 30%;
+  background:
+    radial-gradient(circle at 50% 45%, #ffffff 0%, #f6f1de 60%, #e8dfb8 100%);
+  border-radius: 50%;
+  animation: noctSunRim 10s ease-in-out infinite;
+}
+
+/* Inner corona — tight white halo wrapping the disk. */
+.harmonySunCorona {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 44%,
+    rgba(255, 255, 255, 0.28) 58%,
+    rgba(255, 255, 255, 0.08) 75%,
+    transparent 90%
+  );
+  filter: blur(8px);
+  animation: noctSunCorona 10s ease-in-out infinite;
+}
+
+/* Outer corona — wider, dimmer white bloom on offset phase. */
+.harmonySunCorona2 {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 28%,
+    rgba(255, 255, 255, 0.22) 38%,
+    rgba(255, 255, 255, 0.10) 55%,
+    transparent 78%
+  );
+  filter: blur(22px);
+  animation: noctSunCorona 10s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+/* ---- Orbiting dark sphere -------------------------------------------
+   CSS 3D: the wrapper rotates around the Y axis at the sun's centre;
+   the sphere lives at the wrapper's centre but is pushed out along
+   +Z so it traces a circular orbit through the scene. preserve-3d
+   on ancestors lets the renderer depth-sort the sphere against the
+   disk + corona, so the eclipse moment is real (front-of-sun) and
+   the back-of-orbit half is genuinely hidden by the white sun.
+   --------------------------------------------------------------------- */
+.harmonyOrbit {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* Initial transform — JS will overwrite this every frame via the
+     rAF loop in page.tsx, but rendering before JS mounts uses this
+     fallback so the orbit is at a sensible angle on first paint. */
+  transform: rotateZ(28deg) rotateY(180deg);
+}
+
+
+.harmonyOrbitSphere {
+  position: absolute;
+  /* Slightly larger than the white disk so at the eclipse moment the
+     sphere fully covers the disk and the corona reads as a halo
+     ring around its silhouette. */
+  inset: 27%;
+  border-radius: 50%;
+  /* Eclipse-silhouette shading — even the lit side is dark, so the
+     moon reads as genuinely blotting out the sun rather than a stone
+     in space. Total span runs from #2c2c30 down to near-black, with
+     enough delta between the three stops to keep the sphere reading
+     as 3D rather than a flat black disk. */
+  background:
+    radial-gradient(
+      circle at 32% 30%,
+      #2c2c30 0%,
+      #16161a 55%,
+      #06060a 95%
+    );
+  box-shadow:
+    inset -6px -8px 18px rgba(0, 0, 0, 0.55),
+    inset 3px 3px 8px rgba(120, 120, 130, 0.06);
+  /* Push the sphere out along +Z so the wrapper's Y-rotation traces
+     a circular orbit. Radius scales 1:1 with the sun — bumped to
+     87–138 after the 1.3× sun upsize. Exposed as a CSS variable so
+     the JS rAF loop in page.tsx can compose translateZ(var(...)) ×
+     rotateY(angle) without re-deriving the clamp. */
+  --orbit-radius: clamp(87px, 10vw, 138px);
+  transform: translateZ(var(--orbit-radius));
+  cursor: grab;
+  /* Pointer-events ON specifically for this element — the sun
+     wrapper above it has pointer-events: none, so the sphere is
+     the only draggable surface. */
+  pointer-events: auto;
+}
+
+/* Active-drag affordance — set on the sphere while pointer is held. */
+.harmonyOrbitSphereDragging {
+  cursor: grabbing;
+}
+
+/* Orbit + sphere rotation are now driven by JS in page.tsx (rAF loop
+   so the same code path handles auto-spin + pointer-drag). Keyframes
+   removed accordingly. The corona / rim glow keyframes below remain
+   CSS-driven — those breathe independently of the orbit. */
+
+/* The sphere counter-rotates by the negative of the parent's spin so
+   its shading stays oriented toward the viewer. Net world-space
+   rotation of the sphere itself is 0; only its position orbits. */
+
+
+@keyframes noctSunCorona {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* The white disk's rim glow — peaks at 50% of the cycle, in sync
+   with the orbiting sphere being directly behind the sun (so the
+   sun is at its brightest just as the sphere is hidden). Returns
+   to a baseline visible-but-quiet rim at the cycle ends. */
+@keyframes noctSunRim {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.4),
+      0 0 18px 4px rgba(255, 255, 255, 0.22),
+      0 0 38px 8px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.9),
+      0 0 36px 10px rgba(255, 255, 255, 0.6),
+      0 0 80px 24px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harmonySunCorona,
+  .harmonySunCorona2,
+  .harmonySunDisk {
+    animation: none;
+  }
+  .harmonySunCorona {
+    opacity: 0.7;
+  }
+  .harmonySunCorona2 {
+    opacity: 0.6;
+  }
+  /* JS-driven orbit detects this preference and skips the auto-spin
+     loop (drag still works). Static fallback transform parks the
+     sphere off to one side so it's visible but motionless. */
+  .harmonyOrbit {
+    transform: rotateZ(28deg) rotateY(60deg);
+  }
+}
+
 @media (min-width: 1200px) {
   .harmonySection {
     padding-left: calc(var(--gs-n-160) * var(--gs-px));
@@ -425,115 +724,38 @@
   }
 }
 
-/* Centered headline container */
+/* Headline container — left-aligned to match the body block below.
+   Class name kept for stability; the layout is no longer centred. */
 .centeredHeadlineContainer {
   position: relative;
   width: 100%;
-  margin: 0 auto;
-  text-align: center;
+  margin: 0;
+  text-align: left;
 }
 
 .centeredHeadlineContainer .sectionHeadline {
   position: relative;
   z-index: 1;
-  text-align: center;
+  text-align: left;
 }
 
 .centeredHeadlineContainer .headlineLine {
   display: block;
-  text-align: center;
-}
-
-/* Animated harmony circles - positioned behind headline */
-.harmonyCircles {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: clamp(250px, 35vw, 450px);
-  height: clamp(150px, 20vw, 250px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.harmonyCircle1,
-.harmonyCircle2 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: clamp(140px, 18vw, 220px);
-  height: clamp(140px, 18vw, 220px);
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.harmonyCircle1 {
-  animation: magneticPulse1 16s ease-in-out infinite;
-}
-
-.harmonyCircle2 {
-  animation: magneticPulse2 16s ease-in-out infinite;
-}
-
-@keyframes magneticPulse1 {
-  0%, 100% {
-    transform: translate(-50%, -50%) translateX(-30%);
-  }
-  12% {
-    transform: translate(-50%, -50%) translateX(-10%);
-  }
-  25% {
-    transform: translate(-50%, -50%) translateX(-22%);
-  }
-  38% {
-    transform: translate(-50%, -50%) translateX(8%);
-  }
-  50% {
-    transform: translate(-50%, -50%) translateX(-5%);
-  }
-  62% {
-    transform: translate(-50%, -50%) translateX(-35%);
-  }
-  75% {
-    transform: translate(-50%, -50%) translateX(-15%);
-  }
-  88% {
-    transform: translate(-50%, -50%) translateX(-25%);
-  }
-}
-
-@keyframes magneticPulse2 {
-  0%, 100% {
-    transform: translate(-50%, -50%) translateX(30%);
-  }
-  12% {
-    transform: translate(-50%, -50%) translateX(10%);
-  }
-  25% {
-    transform: translate(-50%, -50%) translateX(22%);
-  }
-  38% {
-    transform: translate(-50%, -50%) translateX(-8%);
-  }
-  50% {
-    transform: translate(-50%, -50%) translateX(5%);
-  }
-  62% {
-    transform: translate(-50%, -50%) translateX(35%);
-  }
-  75% {
-    transform: translate(-50%, -50%) translateX(15%);
-  }
-  88% {
-    transform: translate(-50%, -50%) translateX(25%);
-  }
+  text-align: left;
 }
 
 /* Centered body text container */
 .centeredBodyContainer {
-  max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
-  margin: 0 auto;
+  /* Width pinned to match the Values section's subheadline container
+     (.alignRight .textContainer also at 540) so the harmony body
+     line lengths and the values body line lengths read at the same
+     measure across the page. */
+  max-width: calc(var(--gs-n-540, 540) * var(--gs-px));
+  /* Body block anchored to the left of the section so the bars-graph
+     in the centre and the Values section on the right form a clear
+     three-column rhythm down the page. The headline above stays
+     centred via `.centeredHeadlineContainer`. */
+  margin: 0 auto 0 0;
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-24) * var(--gs-px));
@@ -607,6 +829,10 @@
   justify-content: flex-start;
   padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
   padding-bottom: calc(var(--gs-n-80) * var(--gs-px));
+  /* 100 px breathing room between the bottom of "Values create value"
+     and the top of this section. The bars-graph height grows by the
+     same amount so it still reaches the seam below this gap. */
+  margin-top: 100px;
 }
 
 .finalGlobeWrapper {
@@ -632,6 +858,13 @@
   text-align: center;
   gap: calc(var(--gs-n-20) * var(--gs-px));
   max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
+  /* Pass pointer events through to the globe wrapper underneath so
+     the user can click + drag the 3D globe even when the cursor is
+     over the headline / subheadline / tagline. None of the elements
+     inside .finalContent are interactive (no links, no buttons),
+     so disabling pointer events on the whole block is safe and
+     gives the globe a much larger drag surface. */
+  pointer-events: none;
 }
 
 .finalLogo {
@@ -641,7 +874,12 @@
 }
 
 .finalSubheadline {
-  margin: 0;
+  /* Pushed down so this + the headline + the tagline below it
+     all land vertically over the 3D globe rather than at the top
+     of the section under the logo. The .finalSection uses flex-
+     start, so a single margin-top here moves all three lower
+     elements as a block (logo stays in place above). */
+  margin: calc(var(--gs-n-200) * var(--gs-px) - 75px) 0 0 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
   font-size: var(--gs-text-xl-size);
@@ -891,6 +1129,16 @@
     padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
   }
 
+  /* Match the textSection's lateral padding so the right-edge inset
+     of the Values section equals the left-edge inset of the Harmony
+     headline at every breakpoint. (Without this, harmony stayed at
+     the default 80px LR while textSection shrank to 28px LR, making
+     the two sections visibly misaligned on the same axis.) */
+  .harmonySection {
+    min-height: auto;
+    padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+  }
+
   .sectionHeadline {
     font-size: clamp(28px, 7vw, 42px);
   }
@@ -923,6 +1171,10 @@
     padding: calc(var(--gs-n-60) * var(--gs-px)) var(--edge-pad);
   }
 
+  .harmonySection {
+    padding: calc(var(--gs-n-60) * var(--gs-px)) var(--edge-pad);
+  }
+
   .sectionHeadline {
     font-size: clamp(24px, 8vw, 36px);
   }
@@ -942,6 +1194,10 @@
   }
 
   .textSection {
+    padding: calc(var(--gs-n-48) * var(--gs-px)) var(--edge-pad);
+  }
+
+  .harmonySection {
     padding: calc(var(--gs-n-48) * var(--gs-px)) var(--edge-pad);
   }
 }

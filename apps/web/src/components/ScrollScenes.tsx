@@ -36,6 +36,18 @@ uniform float uRotationY;
 uniform float uVerticalOffset;
 uniform float uScale;
 uniform float uRingRotation;
+// Z-axis ring tilt OFFSET around the static base (-0.7 rad). Driven
+// from JS by horizontal mouse motion during drag — at rest stays 0
+// so all rings sit at the base diagonal. Each ring inside the shader
+// applies a different multiplier on top of this offset, so the
+// rings fan apart slightly while the user drags rather than swinging
+// in unison.
+uniform float uRingTiltZOffset;
+// X-axis ring tilt OFFSET around the static base (0.26 rad). Driven
+// by the cursor's VERTICAL displacement during drag — orthogonal axis
+// to uRingTiltZOffset, so X-drag and Y-drag give the user two
+// independent controls over the rings' orientation.
+uniform float uRingTiltXOffset;
 
 #define PI 3.14159265359
 
@@ -61,9 +73,24 @@ const float RING_OUTER_4 = 1.872;
 const float RING_INNER_5 = 1.98;
 const float RING_OUTER_5 = 1.992;
 
-// Ring tilt angles (diagonal from bottom-left to top-right)
-const float RING_TILT_X = 0.26;    // 15 degrees on X-axis (forward tilt)
-const float RING_TILT_Z = -0.70;   // -40 degrees on Z-axis (diagonal tilt)
+// Ring tilt bases. Both axes now resolve through per-ring helpers so
+// the rings fan apart along whichever axis the user is dragging.
+const float BASE_RING_TILT_X = 0.26;   // 15 degrees on X-axis (forward tilt)
+const float BASE_RING_TILT_Z = -0.7;   // -40 degrees on Z-axis (diagonal tilt)
+
+// Per-ring multiplier on the Z drag offset. Ring 0 responds least,
+// ring 4 most — rings fan apart while user drags horizontally.
+float ringTiltZFor(float ringId) {
+  return BASE_RING_TILT_Z + uRingTiltZOffset * (0.6 + ringId * 0.2);
+}
+
+// Per-ring multiplier on the X drag offset. Reversed slope (ring 0
+// most, ring 4 least) so X-drag fans the rings in the OPPOSITE
+// direction relative to Z-drag — the two axes give visibly distinct
+// motions instead of just a stronger version of the same effect.
+float ringTiltXFor(float ringId) {
+  return BASE_RING_TILT_X + uRingTiltXOffset * (1.4 - ringId * 0.2);
+}
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -218,11 +245,11 @@ vec4 getRingColor(vec3 ro, vec3 rd, float earthT, vec3 lightDir) {
   // at the hit point, used below to tint the ring from white at the
   // ball's position out to its own colour over ~PI/2 rad.
   float wD1, wD2, wD3, wD4, wD5;
-  float d1 = ringIntersect(ro, rd, RING_INNER_1, RING_OUTER_1, RING_TILT_X, RING_TILT_Z, uRingRotation,        0.0, wD1);
-  float d2 = ringIntersect(ro, rd, RING_INNER_2, RING_OUTER_2, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.2,  1.0, wD2);
-  float d3 = ringIntersect(ro, rd, RING_INNER_3, RING_OUTER_3, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.4,  2.0, wD3);
-  float d4 = ringIntersect(ro, rd, RING_INNER_4, RING_OUTER_4, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.6,  3.0, wD4);
-  float d5 = ringIntersect(ro, rd, RING_INNER_5, RING_OUTER_5, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.8,  4.0, wD5);
+  float d1 = ringIntersect(ro, rd, RING_INNER_1, RING_OUTER_1, ringTiltXFor(0.0), ringTiltZFor(0.0), uRingRotation,        0.0, wD1);
+  float d2 = ringIntersect(ro, rd, RING_INNER_2, RING_OUTER_2, ringTiltXFor(1.0), ringTiltZFor(1.0), uRingRotation + 0.2,  1.0, wD2);
+  float d3 = ringIntersect(ro, rd, RING_INNER_3, RING_OUTER_3, ringTiltXFor(2.0), ringTiltZFor(2.0), uRingRotation + 0.4,  2.0, wD3);
+  float d4 = ringIntersect(ro, rd, RING_INNER_4, RING_OUTER_4, ringTiltXFor(3.0), ringTiltZFor(3.0), uRingRotation + 0.6,  3.0, wD4);
+  float d5 = ringIntersect(ro, rd, RING_INNER_5, RING_OUTER_5, ringTiltXFor(4.0), ringTiltZFor(4.0), uRingRotation + 0.8,  4.0, wD5);
 
   // Each quarter of the 2PI-circumference orbit has a distinct role:
   //   [0, PI/2)        white -> ring-colour gradient (the wake tip)
@@ -276,27 +303,27 @@ vec4 getRingColor(vec3 ro, vec3 rd, float earthT, vec3 lightDir) {
 
   vec3 bc;
   float bt;
-  bt = ballIntersect(ro, rd, ringR1, RING_TILT_X, RING_TILT_Z, uRingRotation,       0.0, BALL_R, bc);
+  bt = ballIntersect(ro, rd, ringR1, ringTiltXFor(0.0), ringTiltZFor(0.0), uRingRotation,       0.0, BALL_R, bc);
   if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
     vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
     result = vec4(col, 1.0);
   }
-  bt = ballIntersect(ro, rd, ringR2, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.2, 1.0, BALL_R, bc);
+  bt = ballIntersect(ro, rd, ringR2, ringTiltXFor(1.0), ringTiltZFor(1.0), uRingRotation + 0.2, 1.0, BALL_R, bc);
   if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
     vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
     result = vec4(col, 1.0);
   }
-  bt = ballIntersect(ro, rd, ringR3, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.4, 2.0, BALL_R, bc);
+  bt = ballIntersect(ro, rd, ringR3, ringTiltXFor(2.0), ringTiltZFor(2.0), uRingRotation + 0.4, 2.0, BALL_R, bc);
   if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
     vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
     result = vec4(col, 1.0);
   }
-  bt = ballIntersect(ro, rd, ringR4, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.6, 3.0, BALL_R, bc);
+  bt = ballIntersect(ro, rd, ringR4, ringTiltXFor(3.0), ringTiltZFor(3.0), uRingRotation + 0.6, 3.0, BALL_R, bc);
   if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
     vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
     result = vec4(col, 1.0);
   }
-  bt = ballIntersect(ro, rd, ringR5, RING_TILT_X, RING_TILT_Z, uRingRotation + 0.8, 4.0, BALL_R, bc);
+  bt = ballIntersect(ro, rd, ringR5, ringTiltXFor(4.0), ringTiltZFor(4.0), uRingRotation + 0.8, 4.0, BALL_R, bc);
   if (bt > 0.0 && (earthT < 0.0 || bt < earthT)) {
     vec3 col = shadeBall(ro + rd * bt, bc, rd, vec3(1.0), lightDir);
     result = vec4(col, 1.0);
@@ -588,6 +615,21 @@ export function ScrollScenes({ className = "", verticalOffset = 0, scale = 1.0 }
     const vertOffsetLoc = gl.getUniformLocation(program, "uVerticalOffset");
     const scaleLoc = gl.getUniformLocation(program, "uScale");
     const ringRotLoc = gl.getUniformLocation(program, "uRingRotation");
+    const ringTiltZOffsetLoc = gl.getUniformLocation(program, "uRingTiltZOffset");
+    const ringTiltXOffsetLoc = gl.getUniformLocation(program, "uRingTiltXOffset");
+
+    // Ring-tilt drive. Two independent offsets — Z follows horizontal
+    // drag, X follows vertical drag — so cursor X and cursor Y give
+    // the user distinguishable, orthogonal control over the rings.
+    // At rest, both targets are 0 and all rings sit at base.
+    let ringTiltZOffset = 0;
+    let ringTiltZOffsetTarget = 0;
+    let ringTiltXOffset = 0;
+    let ringTiltXOffsetTarget = 0;
+    // Cursor coords at the start of the current drag; used to compute
+    // cumulative displacement → tilt offset mapping.
+    let dragStartX = 0;
+    let dragStartY = 0;
 
     // Mouse interaction state
     // Initial rotation centered on Europe (lon ~15°E, tilt to show northern hemisphere)
@@ -667,6 +709,9 @@ export function ScrollScenes({ className = "", verticalOffset = 0, scale = 1.0 }
       mouse.down = true;
       mouse.lastX = e.clientX;
       mouse.lastY = e.clientY;
+      // Anchor the tilt offsets' "zero" to where the drag started.
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
       canvas.style.cursor = "grabbing";
     };
 
@@ -683,17 +728,30 @@ export function ScrollScenes({ className = "", verticalOffset = 0, scale = 1.0 }
       rotation.y += velocity.y;
       rotation.y = Math.max(-1.2, Math.min(1.2, rotation.y));
 
+      // X drag → Z-axis tilt offset (diagonal swing). Y drag → X-axis
+      // tilt offset (forward/back perspective shift). Sensitivities
+      // tuned slightly differently so the two axes feel distinct
+      // rather than mirrored.
+      ringTiltZOffsetTarget = (e.clientX - dragStartX) * 0.004;
+      ringTiltXOffsetTarget = (e.clientY - dragStartY) * 0.003;
+
       mouse.lastX = e.clientX;
       mouse.lastY = e.clientY;
     };
 
     const onPointerUp = () => {
       mouse.down = false;
+      // Drop both tilt targets back to neutral; the render-loop lerp
+      // eases the rings home over the next few frames.
+      ringTiltZOffsetTarget = 0;
+      ringTiltXOffsetTarget = 0;
       canvas.style.cursor = "grab";
     };
 
     const onPointerLeave = () => {
       mouse.down = false;
+      ringTiltZOffsetTarget = 0;
+      ringTiltXOffsetTarget = 0;
     };
 
     canvas.addEventListener("pointerdown", onPointerDown);
@@ -778,6 +836,17 @@ export function ScrollScenes({ className = "", verticalOffset = 0, scale = 1.0 }
       // Slow ring rotation - completes one full rotation every ~60 seconds
       const ringRotation = prefersReducedMotion ? 0 : time * 0.1;
       gl.uniform1f(ringRotLoc, ringRotation);
+
+      // Ring-tilt drive: each axis lerps independently. Z follows X
+      // mouse, X follows Y mouse, both snap back to 0 on release.
+      if (prefersReducedMotion) {
+        ringTiltZOffsetTarget = 0;
+        ringTiltXOffsetTarget = 0;
+      }
+      ringTiltZOffset += (ringTiltZOffsetTarget - ringTiltZOffset) * 0.12;
+      ringTiltXOffset += (ringTiltXOffsetTarget - ringTiltXOffset) * 0.12;
+      gl.uniform1f(ringTiltZOffsetLoc, ringTiltZOffset);
+      gl.uniform1f(ringTiltXOffsetLoc, ringTiltXOffset);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
