@@ -23,7 +23,12 @@ export default function HeroPollen() {
     ).matches;
     const isCoarse = window.matchMedia("(pointer: coarse)").matches;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // DPR capped at 1: pollen is intentionally soft, so the higher
+    // sampling density of 2x DPR isn't visually meaningful — but it
+    // doubled the per-frame fill cost over a viewport-sized canvas
+    // that runs every animation frame, which contributed to the hero
+    // video stutter on slower machines.
+    const dpr = 1;
     let width = 0;
     let height = 0;
 
@@ -55,7 +60,10 @@ export default function HeroPollen() {
       alpha: number;
     };
 
-    const COUNT = 95;
+    // Trimmed from 95 → 64 alongside the DPR cap above. Visually the
+    // dusting still reads as continuous; per-frame draw work drops by
+    // about a third, freeing budget for the hero video decode.
+    const COUNT = 64;
     const particles: Particle[] = [];
 
     const spawn = (p: Partial<Particle> = {}): Particle => {
