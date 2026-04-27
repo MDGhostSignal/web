@@ -26,14 +26,15 @@ import styles from "./marketplace.module.css";
 const EMPTY_MATCHES: Match[] = [];
 const getServerSnapshot = (): Match[] => EMPTY_MATCHES;
 
-// Map view pulls in three.js + R3F + drei + postprocessing — code-split
-// behind dynamic + ssr:false so the bundle only lands when an admin
-// actually opens the Map tab.
-const MatchMap = dynamic(() => import("./MatchMap"), {
+// Map view is now a Phaser-powered Zelda-style world. Code-split via
+// dynamic + ssr:false because Phaser references `window` at module
+// load. The R3F isometric scene (./MatchMap) is preserved on disk for
+// reference but no longer mounted.
+const MatchMap = dynamic(() => import("./PhaserMap"), {
   ssr: false,
   loading: () => (
     <div className={styles.mapLoading}>
-      <Loading message="Building the town…" />
+      <Loading message="Loading the world…" />
     </div>
   ),
 });
