@@ -33,14 +33,19 @@
   line-height: 1;
 }
 
-/* ---- Profile Analysis block (inside expanded row) ----------------- */
-
-.profileBlock {
-  border-top: 1px solid var(--admin-border);
-  padding-top: var(--admin-space-5);
+.rqCode {
+  font-family: var(--admin-font-mono, ui-monospace, monospace);
+  color: var(--admin-accent-strong);
+  letter-spacing: 0.04em;
 }
 
-.profileHeading {
+.clarityNote {
+  color: var(--admin-text-muted);
+}
+
+/* ---- Section heading shared across the new expanded blocks ------- */
+
+.sectionHeading {
   margin: 0 0 var(--admin-space-4);
   font-size: var(--admin-text-sm);
   font-weight: var(--admin-weight-semibold);
@@ -49,21 +54,132 @@
   letter-spacing: 0.06em;
 }
 
-.profileGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--admin-space-5);
+/* ---- Signal Profile graph (RQResultsGraph host) ------------------ */
+
+.graphBlock {
+  border-top: 1px solid var(--admin-border);
+  padding-top: var(--admin-space-5);
+  margin-top: var(--admin-space-5);
 }
 
-.profileItem {
-  padding: var(--admin-space-4);
-  background: var(--admin-surface-1);
-  border-left: 3px solid var(--admin-accent);
-  border-radius: 0 var(--admin-radius-md) var(--admin-radius-md) 0;
+/* The RQResultsGraph + RQRadarChart components were authored against
+   the rq-quiz token system (--rq-* variables) and tuned for a dark
+   surface. To render them faithfully inside admin (which has its own
+   light/dark themes and its own --admin-* tokens) we provide an
+   isolated card that re-declares the --rq-* variables the graph
+   reads. Two variants — a dark default (also used as the dark-theme
+   admin variant) and a light variant gated on the .admin-root's
+   data-theme attribute. The light variant ALSO has to override the
+   inner graph chrome (rings, axis lines, axis-card backgrounds,
+   etc.) because the public component CSS hardcodes those as
+   rgba(255,255,255,...) values that are invisible on a light card.
+   The :global() wrappers reach those unhashed class names from the
+   CSS module. */
+.graphScope {
+  --rq-accent: #fbad25;
+  --rq-bg: #0b0f12;
+  --rq-text: #ffffff;
+  --rq-muted: #bcbcbc;
+  --rq-line: rgba(251, 173, 37, 0.18);
+  --rq-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --rq-font: var(--admin-font-sans, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  --rq-mono: var(--admin-font-mono, "Inter", ui-monospace, monospace);
+
+  background: #0b0f12;
+  border: 1px solid rgba(251, 173, 37, 0.18);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-5);
+  color: #ffffff;
 }
 
-.profileItem h5 {
-  margin: 0 0 var(--admin-space-2);
+/* ---- Light-theme variant ----------------------------------------- */
+
+:global(.admin-root[data-theme="light"]) .graphScope {
+  --rq-accent: #d4900f;
+  --rq-bg: #f7f3ec;
+  --rq-text: #1f1f24;
+  --rq-muted: #5a5a5e;
+  --rq-line: rgba(184, 117, 0, 0.22);
+
+  background: #f7f3ec;
+  border-color: rgba(184, 117, 0, 0.22);
+  color: #1f1f24;
+}
+
+/* Axis cards + bar/strength panels: invert the white-on-dark surfaces
+   to subtle dark-on-light tints. */
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-card) {
+  background: rgba(0, 0, 0, 0.025);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-card):hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-bar) {
+  background: rgba(0, 0, 0, 0.025);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-bar-center) {
+  background: rgba(0, 0, 0, 0.18);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-strength) {
+  background: rgba(0, 0, 0, 0.025);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-expand) {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-axis-interpretation) {
+  border-left-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Radar chart strokes/fills authored as rgba(255,255,255,...) for dark. */
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-ring) {
+  stroke: rgba(0, 0, 0, 0.07);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-ring):nth-child(odd) {
+  stroke: rgba(0, 0, 0, 0.1);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-ring):nth-child(5) {
+  stroke: rgba(0, 0, 0, 0.22);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-ring):last-child {
+  stroke: rgba(0, 0, 0, 0.22);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-axis-line) {
+  stroke: rgba(0, 0, 0, 0.22);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-scale-text) {
+  fill: rgba(0, 0, 0, 0.5);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-letter-pair) :global(.inactive) {
+  fill: rgba(0, 0, 0, 0.4);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-letter-pair) :global(.separator) {
+  fill: rgba(0, 0, 0, 0.3);
+}
+:global(.admin-root[data-theme="light"]) .graphScope :global(.rq-radar-center) {
+  fill: rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Their Answers (raw quiz responses) -------------------------- */
+
+.answersBlock {
+  border-top: 1px solid var(--admin-border);
+  padding-top: var(--admin-space-5);
+  margin-top: var(--admin-space-5);
+}
+
+.answerGroup {
+  margin-bottom: var(--admin-space-5);
+}
+
+.answerGroup:last-child {
+  margin-bottom: 0;
+}
+
+.answerGroupTitle {
+  margin: 0 0 var(--admin-space-3);
   font-size: var(--admin-text-sm);
   font-weight: var(--admin-weight-semibold);
   color: var(--admin-text-muted);
@@ -71,15 +187,55 @@
   letter-spacing: 0.06em;
 }
 
-.profileItem p {
+.answerList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--admin-space-3);
+}
+
+.answerRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-1);
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border-left: 3px solid var(--admin-accent);
+  border-radius: 0 var(--admin-radius-md) var(--admin-radius-md) 0;
+}
+
+.answerLabel {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+  line-height: 1.45;
+}
+
+.answerKey {
+  display: inline-block;
+  margin-right: var(--admin-space-2);
+  padding: 1px 6px;
+  font-family: var(--admin-font-mono, ui-monospace, monospace);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+  border-radius: var(--admin-radius-sm);
+  letter-spacing: 0.04em;
+}
+
+.answerValue {
   margin: 0;
   font-size: var(--admin-text-md);
-  line-height: 1.55;
-  color: var(--admin-text-secondary);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {
-  .profileGrid {
+  .answerList {
     grid-template-columns: 1fr;
   }
 }

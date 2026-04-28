@@ -430,6 +430,34 @@
   color: var(--admin-text-secondary);
 }
 
+/* ---- Town board (statue interaction) ---- */
+
+.boardTextarea {
+  width: 100%;
+  min-height: 160px;
+  padding: var(--admin-space-3);
+  background: var(--admin-surface-1);
+  color: var(--admin-text-primary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  font-family: inherit;
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.boardTextarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 2px var(--admin-accent-soft);
+}
+
+.boardHint {
+  margin: var(--admin-space-3) 0 0;
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
 .npcDialogTags {
   display: flex;
   flex-wrap: wrap;

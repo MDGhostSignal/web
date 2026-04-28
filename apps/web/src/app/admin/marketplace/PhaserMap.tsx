@@ -12,13 +12,22 @@ import type { Match } from "@/lib/marketplace-store";
 import { resonance, tierFor } from "@/lib/marketplace-match";
 
 import { useGameStore } from "./game/store";
-import { buildFlavorNpcPlacements } from "./game/worldLayout";
+import {
+  buildFlavorNpcPlacements,
+  buildHousePlacements,
+  buildSignPlacements,
+} from "./game/worldLayout";
 import styles from "./phaser-map.module.css";
 
 // Flavor NPC roster — the same fixed list scenes.ts spawns. Built once
 // at module load so the overlay can resolve approached/opened ids back
 // to their name + line without reaching into the game.
 const FLAVOR_NPCS = buildFlavorNpcPlacements();
+
+// Sign roster — same set the scene builds. Built once at module load
+// so the overlay can resolve approached/opened sign ids to title +
+// body without reaching into the game.
+const SIGNS = buildSignPlacements(buildHousePlacements());
 
 /**
  * Phaser-powered top-down RPG view for /admin/marketplace's Map tab.
@@ -57,6 +66,17 @@ export default function PhaserMap({ matches }: Props) {
   const approachedFlavorId = useGameStore((s) => s.approachedFlavorId);
   const openedFlavorId = useGameStore((s) => s.openedFlavorId);
   const setOpenedFlavor = useGameStore((s) => s.setOpenedFlavor);
+  const approachedChurch = useGameStore((s) => s.approachedChurch);
+  const openedChurch = useGameStore((s) => s.openedChurch);
+  const setOpenedChurch = useGameStore((s) => s.setOpenedChurch);
+  const approachedSignId = useGameStore((s) => s.approachedSignId);
+  const openedSignId = useGameStore((s) => s.openedSignId);
+  const setOpenedSign = useGameStore((s) => s.setOpenedSign);
+  const approachedBoard = useGameStore((s) => s.approachedBoard);
+  const openedBoard = useGameStore((s) => s.openedBoard);
+  const setOpenedBoard = useGameStore((s) => s.setOpenedBoard);
+  const boardText = useGameStore((s) => s.boardText);
+  const setBoardText = useGameStore((s) => s.setBoardText);
 
   const approachedEntity = useMemo(
     () => MOCK_ENTITIES.find((e) => e.id === approachedId) ?? null,
@@ -83,11 +103,24 @@ export default function PhaserMap({ matches }: Props) {
     () => FLAVOR_NPCS.find((f) => f.flavorId === openedFlavorId) ?? null,
     [openedFlavorId],
   );
+  const approachedSign = useMemo(
+    () => SIGNS.find((s) => s.signId === approachedSignId) ?? null,
+    [approachedSignId],
+  );
+  const openedSign = useMemo(
+    () => SIGNS.find((s) => s.signId === openedSignId) ?? null,
+    [openedSignId],
+  );
 
   // Whether ANY dialog is open — used to drive scene pause/resume +
   // global Esc-to-close.
   const anyDialogOpen =
-    openedId !== null || openedNpcId !== null || openedFlavorId !== null;
+    openedId !== null ||
+    openedNpcId !== null ||
+    openedFlavorId !== null ||
+    openedChurch ||
+    openedSignId !== null ||
+    openedBoard;
 
   // Confirmed-partner list for the opened entity — surfaced in the
   // visit card so the user can see who's already paired.
@@ -151,6 +184,58 @@ export default function PhaserMap({ matches }: Props) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [openedFlavorId, setOpenedFlavor]);
+
+  // Esc/E close handler for the church-interior dialog.
+  useEffect(() => {
+    if (!openedChurch) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "e" || e.key === "E") {
+        setOpenedChurch(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openedChurch, setOpenedChurch]);
+
+  // Esc/E close handler for the wayfinding-sign dialog.
+  useEffect(() => {
+    if (!openedSignId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "e" || e.key === "E") {
+        setOpenedSign(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openedSignId, setOpenedSign]);
+
+  // Hydrate town-board text from localStorage on mount, then persist
+  // every change. Esc closes the board (E is reserved for typing
+  // since the modal contains a textarea).
+  const BOARD_STORAGE_KEY = "gs.marketplace.boardText";
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(BOARD_STORAGE_KEY);
+    if (stored !== null) setBoardText(stored);
+    else
+      setBoardText(
+        "Welcome to the village. Press E to open the board and edit this notice.",
+      );
+  }, [setBoardText]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(BOARD_STORAGE_KEY, boardText);
+  }, [boardText]);
+  useEffect(() => {
+    if (!openedBoard) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpenedBoard(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openedBoard, setOpenedBoard]);
 
   useEffect(() => {
     const containerEl = containerRef.current;
@@ -277,6 +362,25 @@ export default function PhaserMap({ matches }: Props) {
             </strong>
           </span>
         </div>
+      ) : approachedChurch ? (
+        <div className={styles.approachPrompt} role="status">
+          <span className={styles.approachKey}>E</span>
+          <span className={styles.approachLabel}>
+            Enter <strong className={styles.approachName}>the Church</strong>
+          </span>
+        </div>
+      ) : approachedSign ? (
+        <div className={styles.approachPrompt} role="status">
+          <span className={styles.approachKey}>E</span>
+          <span className={styles.approachLabel}>Read the sign</span>
+        </div>
+      ) : approachedBoard ? (
+        <div className={styles.approachPrompt} role="status">
+          <span className={styles.approachKey}>E</span>
+          <span className={styles.approachLabel}>
+            Read the <strong className={styles.approachName}>town board</strong>
+          </span>
+        </div>
       ) : null}
 
       {/* NPC dialog bubble — bottom-of-screen JRPG style speech box.
@@ -348,6 +452,86 @@ export default function PhaserMap({ matches }: Props) {
           <p className={styles.npcDialogBody}>{openedFlavor.line}</p>
           <p className={styles.npcDialogHint}>Press E or Esc to close</p>
         </div>
+      ) : null}
+
+      {/* Church interior — same JRPG dialog box style as the flavor
+          dialog, with a single line of "you step inside" prose. Future
+          turns can extend this with a dedicated interior scene if the
+          user wants a fully walkable interior. */}
+      {openedChurch ? (
+        <div className={styles.npcDialog} role="dialog">
+          <header className={styles.npcDialogHeader}>
+            <span className={styles.npcDialogAvatar} data-variant="elder">
+              ✚
+            </span>
+            <span className={styles.npcDialogName}>The Church</span>
+            <button
+              type="button"
+              className={styles.npcDialogClose}
+              onClick={() => setOpenedChurch(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </header>
+          <p className={styles.npcDialogBody}>
+            You step inside. Sun pours through stained glass and lays
+            jewel-tone shapes across the cool stone floor. The bell
+            tower is silent. A candle on the altar trembles, then steadies.
+          </p>
+          <p className={styles.npcDialogHint}>Press E or Esc to close</p>
+        </div>
+      ) : null}
+
+      {/* Wayfinding-sign dialog — same JRPG box style. Title is the
+          sign's heading (e.g. "↓ The Mountain" or an occupant name);
+          body is one sentence of context. Read-only — no choice
+          actions. */}
+      {openedSign ? (
+        <div className={styles.npcDialog} role="dialog">
+          <header className={styles.npcDialogHeader}>
+            <span className={styles.npcDialogAvatar} data-variant="elder">
+              ✱
+            </span>
+            <span className={styles.npcDialogName}>{openedSign.title}</span>
+            <button
+              type="button"
+              className={styles.npcDialogClose}
+              onClick={() => setOpenedSign(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </header>
+          <p className={styles.npcDialogBody}>{openedSign.body}</p>
+          <p className={styles.npcDialogHint}>Press E or Esc to close</p>
+        </div>
+      ) : null}
+
+      {/* Town-board edit dialog — uses the shared admin Modal for a
+          centred frame, textarea for free editing, persistence via
+          localStorage in the effect above. Esc closes; E goes to
+          the textarea (intentionally — that's the edit key). */}
+      {openedBoard ? (
+        <Modal
+          open
+          onClose={() => setOpenedBoard(false)}
+          size="md"
+          title="Town Board"
+          subtitle="Notices for the village"
+        >
+          <textarea
+            className={styles.boardTextarea}
+            value={boardText}
+            onChange={(e) => setBoardText(e.target.value)}
+            rows={8}
+            autoFocus
+            placeholder="Write the latest news for the village..."
+          />
+          <p className={styles.boardHint}>
+            Type to edit — changes save automatically. Press Esc to close.
+          </p>
+        </Modal>
       ) : null}
 
       {openedEntity ? (

@@ -20,7 +20,15 @@ import {
   SearchInput,
   typeVariant,
 } from "@/components/admin";
+import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
+import type { RQResult } from "@/lib/rq/scoring";
 import styles from "./rq-responses.module.css";
+
+type AxisDetail = {
+  letter?: string | null;
+  score?: number | null;
+  band?: string | null;
+};
 
 type Submission = {
   id: string;
@@ -42,7 +50,121 @@ type Submission = {
     authenticity?: string;
     horizon?: string;
   } | null;
+  details_json: {
+    values?: AxisDetail;
+    authenticity?: AxisDetail;
+    horizon?: AxisDetail;
+  } | null;
+  answers_json: Record<string, unknown> | null;
 };
+
+/** Human-readable label for each quiz answer key. Mirrors the question
+ *  labels in apps/web/src/app/rq-quiz/page.tsx. Kept inline rather than
+ *  extracted to a shared module — the list is short, stable, and only
+ *  needed in two places. */
+const QUESTION_LABELS: Record<string, string> = {
+  VO1: "How explicitly do you communicate your core values in public-facing messaging?",
+  VO2: "How important is it that your audience clearly understands your worldview or moral framework?",
+  VO3: "Have you ever declined revenue or an opportunity because it conflicted with your values?",
+  VO4: "When you describe your mission, it is usually…",
+  VO5: "I'm comfortable being clearly identified with a set of convictions, even if it narrows the audience.",
+  AE1: "When explaining what you stand for, what feels most natural?",
+  AE2: "Our voice is primarily… (1=personal/conversational, 10=structured/intentional)",
+  AE3: "A partnership message feels most authentic when it is…",
+  AE4: "How important is tonal consistency across your content or brand?",
+  AE5: "If an endorsement disrupted your usual tone, how uncomfortable would that feel?",
+  FH1: "Partnerships should develop…",
+  FH2: "How important is long-term continuity vs short-term impact? (1=short-term, 10=long-term)",
+  FH3: "I prefer…",
+  FH4: "Success in collaboration looks like…",
+  FH5: "How patient are you with slower growth if alignment is strong?",
+  U1: "Anything else they wanted to share",
+};
+
+const ANSWER_GROUPS: Array<{ title: string; keys: string[] }> = [
+  { title: "Values Orientation", keys: ["VO1", "VO2", "VO3", "VO4", "VO5"] },
+  { title: "Authenticity Expression", keys: ["AE1", "AE2", "AE3", "AE4", "AE5"] },
+  { title: "Flourishing Horizon", keys: ["FH1", "FH2", "FH3", "FH4", "FH5"] },
+  { title: "Undertone", keys: ["U1"] },
+];
+
+function bandLabel(score: number): string {
+  return score <= 3 ? "1\u20133" : score <= 6 ? "4\u20136" : "7\u201310";
+}
+
+/** Reconstruct the per-axis details from rq_code when details_json is
+ *  missing. Format: "F(8)-S(6)-L(9)". Older rows pre-dated the
+ *  details_json column being populated, so this fallback keeps the
+ *  graph rendering for them too. */
+function parseRqCode(code: string | null): RQResult["details"] | null {
+  if (!code) return null;
+  const m = code.match(/^([FI])\((\d+)\)-([RS])\((\d+)\)-([LC])\((\d+)\)$/);
+  if (!m) return null;
+  const v = Number(m[2]);
+  const a = Number(m[4]);
+  const h = Number(m[6]);
+  return {
+    values: { letter: m[1], score: v, band: bandLabel(v) },
+    authenticity: { letter: m[3], score: a, band: bandLabel(a) },
+    horizon: { letter: m[5], score: h, band: bandLabel(h) },
+  };
+}
+
+function buildRQResult(sub: Submission): RQResult | null {
+  const stored = sub.details_json;
+  const hasStored =
+    stored &&
+    stored.values?.letter &&
+    typeof stored.values?.score === "number" &&
+    stored.authenticity?.letter &&
+    typeof stored.authenticity?.score === "number" &&
+    stored.horizon?.letter &&
+    typeof stored.horizon?.score === "number";
+
+  const details: RQResult["details"] | null = hasStored
+    ? {
+        values: {
+          letter: stored!.values!.letter as string,
+          score: stored!.values!.score as number,
+          band: stored!.values!.band ?? bandLabel(stored!.values!.score as number),
+        },
+        authenticity: {
+          letter: stored!.authenticity!.letter as string,
+          score: stored!.authenticity!.score as number,
+          band:
+            stored!.authenticity!.band ??
+            bandLabel(stored!.authenticity!.score as number),
+        },
+        horizon: {
+          letter: stored!.horizon!.letter as string,
+          score: stored!.horizon!.score as number,
+          band: stored!.horizon!.band ?? bandLabel(stored!.horizon!.score as number),
+        },
+      }
+    : parseRqCode(sub.rq_code);
+
+  if (!details) return null;
+
+  const profile = {
+    values: sub.profile_json?.values ?? "",
+    authenticity: sub.profile_json?.authenticity ?? "",
+    horizon: sub.profile_json?.horizon ?? "",
+  };
+
+  return {
+    rq: sub.rq_code ?? "",
+    rqName: sub.rq_name ?? "",
+    details,
+    profile,
+  };
+}
+
+function formatAnswer(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return String(value);
+}
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -244,7 +366,10 @@ export default function RQDashboardPage() {
             onToggleRow={(id) =>
               setExpandedRow(expandedRow === id ? null : id)
             }
-            renderExpanded={(sub) => (
+            renderExpanded={(sub) => {
+              const rqResult = buildRQResult(sub);
+              const answers = sub.answers_json ?? {};
+              return (
               <>
                 <DetailsGrid>
                   <DetailsSection title="Contact Information">
@@ -271,38 +396,76 @@ export default function RQDashboardPage() {
                   </DetailsSection>
                   <DetailsSection title="RQ Results">
                     <p>
+                      <strong>RQ Code:</strong>{" "}
+                      <span className={styles.rqCode}>{sub.rq_code || "—"}</span>
+                    </p>
+                    <p>
                       <strong>RQ Name:</strong> {sub.rq_name || "—"}
                     </p>
                     <p>
-                      <strong>Clarity Note:</strong>{" "}
-                      {sub.signal_clarity_note || "—"}
+                      <strong>Clarity:</strong>{" "}
+                      {sub.signal_clarity_label || "—"}
+                      {sub.signal_clarity_note ? (
+                        <span className={styles.clarityNote}>
+                          {" "}— {sub.signal_clarity_note}
+                        </span>
+                      ) : null}
                     </p>
                   </DetailsSection>
                 </DetailsGrid>
 
-                {sub.profile_json && (
-                  <div className={styles.profileBlock}>
-                    <h4 className={styles.profileHeading}>Profile Analysis</h4>
-                    <div className={styles.profileGrid}>
-                      {sub.profile_json.values && (
-                        <div className={styles.profileItem}>
-                          <h5>Values</h5>
-                          <p>{sub.profile_json.values}</p>
-                        </div>
-                      )}
-                      {sub.profile_json.authenticity && (
-                        <div className={styles.profileItem}>
-                          <h5>Authenticity</h5>
-                          <p>{sub.profile_json.authenticity}</p>
-                        </div>
-                      )}
-                      {sub.profile_json.horizon && (
-                        <div className={styles.profileItem}>
-                          <h5>Horizon</h5>
-                          <p>{sub.profile_json.horizon}</p>
-                        </div>
-                      )}
+                {rqResult && (
+                  <div className={styles.graphBlock}>
+                    <h4 className={styles.sectionHeading}>Signal Profile</h4>
+                    <div className={styles.graphScope}>
+                      <RQResultsGraph result={rqResult} />
                     </div>
+                  </div>
+                )}
+
+                {Object.keys(answers).length > 0 && (
+                  <div className={styles.answersBlock}>
+                    <h4 className={styles.sectionHeading}>Their Answers</h4>
+                    {ANSWER_GROUPS.map((group) => {
+                      const rows = group.keys
+                        .map((key) => ({
+                          key,
+                          label: QUESTION_LABELS[key] ?? key,
+                          value: answers[key],
+                        }))
+                        .filter(
+                          (r) =>
+                            r.value !== undefined &&
+                            r.value !== null &&
+                            r.value !== "",
+                        );
+                      if (rows.length === 0) return null;
+                      return (
+                        <section
+                          key={group.title}
+                          className={styles.answerGroup}
+                        >
+                          <h5 className={styles.answerGroupTitle}>
+                            {group.title}
+                          </h5>
+                          <dl className={styles.answerList}>
+                            {rows.map((row) => (
+                              <div key={row.key} className={styles.answerRow}>
+                                <dt className={styles.answerLabel}>
+                                  <span className={styles.answerKey}>
+                                    {row.key}
+                                  </span>
+                                  {row.label}
+                                </dt>
+                                <dd className={styles.answerValue}>
+                                  {formatAnswer(row.value)}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </section>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -320,7 +483,8 @@ export default function RQDashboardPage() {
                   </Button>
                 </DetailsActions>
               </>
-            )}
+              );
+            }}
           />
         )}
       </div>

@@ -25,12 +25,35 @@ type GameStore = {
   approachedFlavorId: string | null;
   /** Flavor NPC dialog currently open. */
   openedFlavorId: string | null;
+  /** Player is standing on the church door tile. */
+  approachedChurch: boolean;
+  /** Church-interior modal is open. */
+  openedChurch: boolean;
+  /** Sign the player is cardinal-adjacent to. */
+  approachedSignId: string | null;
+  /** Sign whose dialog is currently open. */
+  openedSignId: string | null;
+  /** Player is standing on the town-board statue's interaction tile. */
+  approachedBoard: boolean;
+  /** Town-board edit modal is open. */
+  openedBoard: boolean;
+  /** The board's current message — persisted to localStorage in the
+   *  React layer; the store just holds the in-memory copy so the
+   *  dialog can read/write reactively. */
+  boardText: string;
   setApproachedEntity: (id: string | null) => void;
   setOpenedEntity: (id: string | null) => void;
   setApproachedNpc: (id: string | null) => void;
   setOpenedNpc: (id: string | null) => void;
   setApproachedFlavor: (id: string | null) => void;
   setOpenedFlavor: (id: string | null) => void;
+  setApproachedChurch: (v: boolean) => void;
+  setOpenedChurch: (v: boolean) => void;
+  setApproachedSign: (id: string | null) => void;
+  setOpenedSign: (id: string | null) => void;
+  setApproachedBoard: (v: boolean) => void;
+  setOpenedBoard: (v: boolean) => void;
+  setBoardText: (text: string) => void;
   reset: () => void;
 };
 
@@ -41,12 +64,26 @@ export const useGameStore = create<GameStore>((set) => ({
   openedNpcId: null,
   approachedFlavorId: null,
   openedFlavorId: null,
+  approachedChurch: false,
+  openedChurch: false,
+  approachedSignId: null,
+  openedSignId: null,
+  approachedBoard: false,
+  openedBoard: false,
+  boardText: "",
   setApproachedEntity: (id) => set({ approachedEntityId: id }),
   setOpenedEntity: (id) => set({ openedEntityId: id }),
   setApproachedNpc: (id) => set({ approachedNpcId: id }),
   setOpenedNpc: (id) => set({ openedNpcId: id }),
   setApproachedFlavor: (id) => set({ approachedFlavorId: id }),
   setOpenedFlavor: (id) => set({ openedFlavorId: id }),
+  setApproachedChurch: (v) => set({ approachedChurch: v }),
+  setOpenedChurch: (v) => set({ openedChurch: v }),
+  setApproachedSign: (id) => set({ approachedSignId: id }),
+  setOpenedSign: (id) => set({ openedSignId: id }),
+  setApproachedBoard: (v) => set({ approachedBoard: v }),
+  setOpenedBoard: (v) => set({ openedBoard: v }),
+  setBoardText: (text) => set({ boardText: text }),
   reset: () =>
     set({
       approachedEntityId: null,
@@ -55,5 +92,12 @@ export const useGameStore = create<GameStore>((set) => ({
       openedNpcId: null,
       approachedFlavorId: null,
       openedFlavorId: null,
+      approachedChurch: false,
+      openedChurch: false,
+      approachedSignId: null,
+      openedSignId: null,
+      approachedBoard: false,
+      openedBoard: false,
+      // Don't reset boardText on scene reset — it's persisted.
     }),
 }));
