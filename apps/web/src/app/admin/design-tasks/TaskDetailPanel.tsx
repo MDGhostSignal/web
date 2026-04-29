@@ -329,8 +329,13 @@ export function TaskDetailPanel({
 
   return (
     <>
-      <div className={`${styles.overlay} admin-root`} />
-      <div ref={panelRef} className={`${styles.panel} admin-root`}>
+      {/* No `admin-root` class on these — the panel renders inside the
+          AdminShell tree, so admin tokens (including the theme-gated
+          --admin-bg-elevated etc.) cascade naturally. Re-asserting
+          `admin-root` here would re-bind the dark defaults locally and
+          override the parent shell's data-theme="light" values. */}
+      <div className={styles.overlay} />
+      <div ref={panelRef} className={styles.panel}>
         {/* Header */}
         <div className={styles.header}>
           <button onClick={onClose} className={styles.closeButton}>

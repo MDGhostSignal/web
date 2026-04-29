@@ -6,7 +6,7 @@ interface TaskPayload {
   id?: string;
   title: string;
   description?: string;
-  status: "pending" | "in_progress" | "completed";
+  status: "pending" | "in_progress" | "in_review" | "completed" | "archived";
   priority: "low" | "medium" | "high";
   due_date?: string | null;
   created_by?: string;
@@ -272,8 +272,12 @@ export async function PATCH(request: NextRequest) {
 
     if (!response.ok) {
       const detail = await response.text();
+      // Fold the upstream Supabase message into `error` so the
+      // client (which only displays `data.error`) shows something
+      // actionable like "violates check constraint" instead of the
+      // generic boilerplate.
       return NextResponse.json(
-        { error: "Failed to update task.", detail },
+        { error: `Failed to update task. ${detail}`.trim(), detail },
         { status: 502 }
       );
     }
