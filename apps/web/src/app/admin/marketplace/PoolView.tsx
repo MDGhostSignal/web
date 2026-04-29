@@ -6,6 +6,8 @@ import {
   Badge,
   type Column,
   DataTable,
+  DetailsGrid,
+  DetailsSection,
   EmptyState,
   SearchInput,
   typeVariant,
@@ -17,8 +19,41 @@ import {
   type MarketplaceEntity,
 } from "@/lib/marketplace-mocks";
 import type { Match } from "@/lib/marketplace-store";
+import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
+import type { RQResult } from "@/lib/rq/scoring";
 
 import styles from "./marketplace.module.css";
+
+/** Map a marketplace entity (traits 0–100) onto the RQResult shape the
+ *  public RQResultsGraph component consumes (per-axis 1–10 score +
+ *  letter + band). The letter convention mirrors the canonical RQ
+ *  axes — values: I/F, authenticity: S/R, horizon: L/C — with the
+ *  threshold at 6 (1–5 left letter, 6–10 right letter), matching
+ *  the bar visualisation's centre at 5. The blurb fills all three
+ *  axis-profile slots so the expanded axis cards still have copy. */
+function entityToRQResult(entity: MarketplaceEntity): RQResult {
+  const toScore = (t: number) =>
+    Math.max(1, Math.min(10, Math.round(t / 10)));
+  const toBand = (s: number): string =>
+    s <= 3 ? "1\u20133" : s <= 6 ? "4\u20136" : "7\u201310";
+  const v = toScore(entity.traits.values);
+  const a = toScore(entity.traits.authenticity);
+  const h = toScore(entity.traits.horizon);
+  return {
+    rq: entity.rq_code,
+    rqName: entity.rq_name,
+    details: {
+      values: { letter: v >= 6 ? "F" : "I", score: v, band: toBand(v) },
+      authenticity: { letter: a >= 6 ? "R" : "S", score: a, band: toBand(a) },
+      horizon: { letter: h >= 6 ? "C" : "L", score: h, band: toBand(h) },
+    },
+    profile: {
+      values: entity.blurb,
+      authenticity: entity.blurb,
+      horizon: entity.blurb,
+    },
+  };
+}
 
 type Props = {
   matches: Match[];
@@ -31,6 +66,7 @@ export function PoolView({ matches }: Props) {
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [matchedFilter, setMatchedFilter] = useState<MatchedFilter>("all");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   // Map entity-id → number of confirmed pairings, so we can show a
   // "matched N" pill in the table without re-walking the matches list
@@ -142,6 +178,17 @@ export function PoolView({ matches }: Props) {
         );
       },
     },
+    {
+      key: "expand",
+      header: "",
+      width: "32px",
+      variant: "numeric",
+      cell: (e) => (
+        <span className={styles.poolExpandGlyph}>
+          {expandedRow === e.id ? "−" : "+"}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -182,7 +229,61 @@ export function PoolView({ matches }: Props) {
           message="No entities match those filters."
         />
       ) : (
-        <DataTable rows={filtered} columns={columns} />
+        <DataTable
+          rows={filtered}
+          columns={columns}
+          expandedRowId={expandedRow}
+          onToggleRow={(id) =>
+            setExpandedRow((prev) => (prev === id ? null : id))
+          }
+          renderExpanded={(e) => {
+            const result = entityToRQResult(e);
+            return (
+              <>
+                <DetailsGrid>
+                  <DetailsSection title="Entity">
+                    <p>
+                      <strong>Name:</strong> {e.name}
+                    </p>
+                    <p>
+                      <strong>Type:</strong>{" "}
+                      {e.kind === "creator" ? "Creator" : "Brand"}
+                    </p>
+                    <p>
+                      <strong>Blurb:</strong> {e.blurb}
+                    </p>
+                  </DetailsSection>
+                  <DetailsSection title="RQ Profile">
+                    <p>
+                      <strong>RQ Code:</strong>{" "}
+                      <span className={styles.rqCode}>{e.rq_code}</span>
+                    </p>
+                    <p>
+                      <strong>RQ Name:</strong> {e.rq_name}
+                    </p>
+                    <p>
+                      <strong>Tags:</strong>{" "}
+                      <span className={styles.poolTagInline}>
+                        {e.tags.map((t) => (
+                          <span key={t} className={styles.tagChip}>
+                            {t}
+                          </span>
+                        ))}
+                      </span>
+                    </p>
+                  </DetailsSection>
+                </DetailsGrid>
+
+                <div className={styles.poolGraphBlock}>
+                  <h4 className={styles.poolSectionHeading}>Signal Profile</h4>
+                  <div className={styles.poolGraphScope}>
+                    <RQResultsGraph result={result} />
+                  </div>
+                </div>
+              </>
+            );
+          }}
+        />
       )}
     </div>
   );

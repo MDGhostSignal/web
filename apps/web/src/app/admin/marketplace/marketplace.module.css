@@ -756,6 +756,135 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Expand glyph in the trailing pool-row cell. */
+.poolExpandGlyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Inline tag list inside the expanded pool row's RQ Profile section. */
+.poolTagInline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-1);
+  margin-left: var(--admin-space-2);
+  vertical-align: middle;
+}
+
+/* Section heading shared with the pool's expanded summary blocks
+   (Signal Profile, etc). Mirrors the rq-responses `.sectionHeading`
+   look so both admin surfaces feel consistent. */
+.poolSectionHeading {
+  margin: 0 0 var(--admin-space-4);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Signal Profile block — top border separates from the grid above. */
+.poolGraphBlock {
+  border-top: 1px solid var(--admin-border);
+  padding-top: var(--admin-space-5);
+  margin-top: var(--admin-space-5);
+}
+
+/* RQResultsGraph host card. The public RQ graph component is authored
+   against the rq-quiz token system (--rq-* variables) tuned for a
+   dark surface; we provide an isolated wrapper that re-declares the
+   --rq-* variables with admin-friendly values, plus light-theme
+   overrides for the inner radar / axis chrome (which the public
+   component hardcodes as rgba(255,255,255,...)). Mirrors
+   rq-responses .graphScope so the same graph renders consistently
+   in both admin contexts. */
+.poolGraphScope {
+  --rq-accent: #fbad25;
+  --rq-bg: #0b0f12;
+  --rq-text: #ffffff;
+  --rq-muted: #bcbcbc;
+  --rq-line: rgba(251, 173, 37, 0.18);
+  --rq-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --rq-font: var(--admin-font-sans, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  --rq-mono: var(--admin-font-mono, "Inter", ui-monospace, monospace);
+
+  background: #0b0f12;
+  border: 1px solid rgba(251, 173, 37, 0.18);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-5);
+  color: #ffffff;
+}
+
+:global(.admin-root[data-theme="light"]) .poolGraphScope {
+  --rq-accent: #d4900f;
+  --rq-bg: #f7f3ec;
+  --rq-text: #1f1f24;
+  --rq-muted: #5a5a5e;
+  --rq-line: rgba(184, 117, 0, 0.22);
+
+  background: #f7f3ec;
+  border-color: rgba(184, 117, 0, 0.22);
+  color: #1f1f24;
+}
+
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-card) {
+  background: rgba(0, 0, 0, 0.025);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-card):hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-bar) {
+  background: rgba(0, 0, 0, 0.025);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-bar-center) {
+  background: rgba(0, 0, 0, 0.18);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-strength) {
+  background: rgba(0, 0, 0, 0.025);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-expand) {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-axis-interpretation) {
+  border-left-color: rgba(0, 0, 0, 0.15);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-ring) {
+  stroke: rgba(0, 0, 0, 0.07);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-ring):nth-child(odd) {
+  stroke: rgba(0, 0, 0, 0.1);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-ring):nth-child(5) {
+  stroke: rgba(0, 0, 0, 0.22);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-ring):last-child {
+  stroke: rgba(0, 0, 0, 0.22);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-axis-line) {
+  stroke: rgba(0, 0, 0, 0.22);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-scale-text) {
+  fill: rgba(0, 0, 0, 0.5);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-letter-pair) :global(.inactive) {
+  fill: rgba(0, 0, 0, 0.4);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-letter-pair) :global(.separator) {
+  fill: rgba(0, 0, 0, 0.3);
+}
+:global(.admin-root[data-theme="light"]) .poolGraphScope :global(.rq-radar-center) {
+  fill: rgba(0, 0, 0, 0.3);
+}
+
 /* Trait bar — horizontal fill showing 0-100 score */
 .traitBar {
   position: relative;
