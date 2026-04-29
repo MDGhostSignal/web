@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+
+import type { ValuesControl } from "./ValuesBinary";
+import type { HarmonyControl } from "./HarmonyOrbs";
+
+const HarmonyOrbs = dynamic(() => import("./HarmonyOrbs"), { ssr: false });
 
 import BarsRipple from "./BarsRipple";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -41,8 +46,73 @@ export default function WhatIsThisPage() {
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
   const barsRef = useRef<HTMLDivElement>(null);
-  const harmonyOrbitRef = useRef<HTMLDivElement>(null);
-  const harmonyOrbitSphereRef = useRef<HTMLDivElement>(null);
+  const harmonyInteractionRef = useRef<HTMLDivElement>(null);
+  const harmonyControlRef = useRef<HarmonyControl>({
+    frozen: false,
+    yaw: 0,
+    pitch: 0,
+  });
+  const harmonyDragRef = useRef<{
+    x: number;
+    y: number;
+    y0: number;
+    p0: number;
+  } | null>(null);
+
+  // ValuesBinary control: a single ref shared with the R3F scene's
+  // useFrame loop. The section-level pointer handlers below mutate
+  // this ref directly so updates don't trigger React re-renders that
+  // would tear the Canvas down. `frozen` slowly lerps the scene rate
+  // to zero; `yaw` / `pitch` are the user-driven rotation deltas
+  // applied on top of the auto-tilt/spin so the frozen scene can be
+  // turned and twisted in 3D.
+  const valuesControlRef = useRef<ValuesControl>({
+    frozen: false,
+    yaw: 0,
+    pitch: 0,
+  });
+  const valuesDragRef = useRef<{
+    x: number;
+    y: number;
+    y0: number;
+    p0: number;
+    dragged: boolean;
+  } | null>(null);
+  const [valuesGrabbing, setValuesGrabbing] = useState(false);
+
+  const onValuesPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    valuesDragRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      y0: valuesControlRef.current.yaw,
+      p0: valuesControlRef.current.pitch,
+      dragged: false,
+    };
+    // Hold-to-freeze: freezing happens for the duration of the press.
+    valuesControlRef.current.frozen = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setValuesGrabbing(true);
+  };
+  const onValuesPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = valuesDragRef.current;
+    if (!drag) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    valuesControlRef.current.yaw = drag.y0 + dx * 0.008;
+    valuesControlRef.current.pitch = drag.p0 + dy * 0.008;
+  };
+  const onValuesPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Release always resumes the animation — the in-scene speed lerp
+    // makes it ramp back up smoothly.
+    valuesControlRef.current.frozen = false;
+    valuesDragRef.current = null;
+    setValuesGrabbing(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // Pointer capture may already be released — ignore.
+    }
+  };
 
   useIsomorphicLayoutEffect(() => {
     const wrapper = heroVideoWrapperRef.current;
@@ -157,85 +227,43 @@ export default function WhatIsThisPage() {
   // delta maps to angular velocity (1°/px); release resumes auto-spin
   // from the dragged position. Reduced-motion users skip the spin
   // entirely; drag still works.
-  useEffect(() => {
-    const orbit = harmonyOrbitRef.current;
-    const sphere = harmonyOrbitSphereRef.current;
-    if (!orbit || !sphere) return;
-
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const SPIN_DPS = 36; // degrees per second
-    const DRAG_DEG_PER_PX = 1;
-
-    // Phase-shifted start so the moon begins behind the sun (matches
-    // the prior CSS animation-delay: -5s behaviour).
-    let angle = 180;
-    let isDragging = false;
-    let dragStartAngle = 0;
-    let dragStartX = 0;
-    let lastTime = performance.now();
-    let rafId = 0;
-
-    const apply = () => {
-      orbit.style.transform = `rotateZ(28deg) rotateY(${angle.toFixed(2)}deg)`;
-      // Sphere counter-rotates so its shading "faces" the camera as
-      // the orbit swings around.
-      sphere.style.transform = `translateZ(var(--orbit-radius)) rotateY(${(-angle).toFixed(2)}deg)`;
+  // Section-level pointer handlers for the Harmony scene. Same
+  // press-hold-to-freeze / drag-to-rotate / release-to-resume pattern
+  // used by ValuesBinary; HarmonyOrbs reads `harmonyControlRef` in
+  // its R3F useFrame.
+  const onHarmonyPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    harmonyDragRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      y0: harmonyControlRef.current.yaw,
+      p0: harmonyControlRef.current.pitch,
     };
-
-    const tick = (now: number) => {
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-      if (!isDragging && !reduced) {
-        angle = (angle + SPIN_DPS * dt) % 360;
-      }
-      apply();
-      rafId = requestAnimationFrame(tick);
-    };
-
-    const onPointerDown = (e: PointerEvent) => {
-      isDragging = true;
-      dragStartAngle = angle;
-      dragStartX = e.clientX;
-      sphere.classList.add(styles.harmonyOrbitSphereDragging);
-      sphere.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging) return;
-      const dx = e.clientX - dragStartX;
-      angle = (((dragStartAngle + dx * DRAG_DEG_PER_PX) % 360) + 360) % 360;
-    };
-
-    const endDrag = (e: PointerEvent) => {
-      if (!isDragging) return;
-      isDragging = false;
-      sphere.classList.remove(styles.harmonyOrbitSphereDragging);
-      try {
-        sphere.releasePointerCapture(e.pointerId);
-      } catch {
-        // Pointer capture may already be released — ignore.
-      }
-      // Reset the time origin so the auto-spin doesn't catch up on
-      // the seconds the user spent dragging (would cause a jump).
-      lastTime = performance.now();
-    };
-
-    apply();
-    rafId = requestAnimationFrame(tick);
-    sphere.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", endDrag);
-    window.addEventListener("pointercancel", endDrag);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      sphere.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", endDrag);
-      window.removeEventListener("pointercancel", endDrag);
-    };
-  }, []);
+    harmonyControlRef.current.frozen = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    e.currentTarget.classList.add(styles.harmonyInteractionGrabbing);
+  };
+  const onHarmonyPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = harmonyDragRef.current;
+    if (!drag) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    // Yaw: 1°/px, pitch: 0.5°/px (matches the prior CSS-3D feel).
+    // Pitch clamped to ±75° so the user can't flip the orbit fully.
+    const DEG = Math.PI / 180;
+    harmonyControlRef.current.yaw = drag.y0 + dx * 1 * DEG;
+    const pitchDeg = Math.max(-75, Math.min(75, drag.p0 / DEG + dy * 0.5));
+    harmonyControlRef.current.pitch = pitchDeg * DEG;
+  };
+  const onHarmonyPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    harmonyControlRef.current.frozen = false;
+    harmonyDragRef.current = null;
+    e.currentTarget.classList.remove(styles.harmonyInteractionGrabbing);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // Pointer capture may already be released — ignore.
+    }
+  };
 
   return (
     <main className={styles.page}>
@@ -259,7 +287,7 @@ export default function WhatIsThisPage() {
           disablePictureInPicture
           aria-hidden="true"
         >
-          <source src="/images/what-is-this/japanese.mp4" type="video/mp4" />
+          <source src="/images/what-is-this/garden3.mp4" type="video/mp4" />
         </video>
         {/* Cherry blossom overlay — sits on top of the video AND the
             text, extending the video's falling-blossom motif onto the
@@ -387,6 +415,19 @@ export default function WhatIsThisPage() {
         <div className={styles.scrollContent}>
           {/* Section 2: Advertising Harmony */}
           <section className={styles.harmonySection}>
+            {/* Section-spanning interaction layer — captures pointer
+                events anywhere over the Harmony animation. Press and
+                hold pauses the auto-spin; horizontal drag yaws,
+                vertical drag pitches the orbit; release resumes. */}
+            <div
+              ref={harmonyInteractionRef}
+              className={styles.harmonyInteraction}
+              onPointerDown={onHarmonyPointerDown}
+              onPointerMove={onHarmonyPointerMove}
+              onPointerUp={onHarmonyPointerUp}
+              onPointerCancel={onHarmonyPointerUp}
+              aria-hidden="true"
+            />
             {/* Distant nocturnal black-sun — endless 10-second cycle.
                 Pure-black disk with a faint amber corona that breathes
                 in / out, evoking a total eclipse seen from far away.
@@ -396,17 +437,12 @@ export default function WhatIsThisPage() {
               <div className={styles.harmonySunCorona2} />
               <div className={styles.harmonySunCorona} />
               <div className={styles.harmonySunDisk} />
-              {/* Orbiting dark sphere — CSS 3D. The wrapper rotates
-                  around Y; the sphere is translated out on +Z so it
-                  traces a circle through the scene. preserve-3d on
-                  ancestors lets the depth sort itself, so the sphere
-                  swings in front of the sun (eclipse) and behind it
-                  (hidden) once per cycle. */}
-              <div ref={harmonyOrbitRef} className={styles.harmonyOrbit}>
-                <div
-                  ref={harmonyOrbitSphereRef}
-                  className={styles.harmonyOrbitSphere}
-                />
+              {/* Three orbiting dark spheres — R3F scene with real
+                  PBR-shaded geometry, so dragging the orbit reveals
+                  genuine 3D forms. Different sizes, different speeds,
+                  three independent orbital planes. */}
+              <div className={styles.harmonyOrbsWrapper}>
+                <HarmonyOrbs controlRef={harmonyControlRef} />
               </div>
             </div>
             {/* Headline centered */}
@@ -460,8 +496,23 @@ export default function WhatIsThisPage() {
                 so it costs nothing while the user is at the top of
                 the page. Replaces an earlier CSS-3D placeholder. */}
             <div className={styles.valuesBinaryWrapper}>
-              <ValuesBinary />
+              <ValuesBinary controlRef={valuesControlRef} />
             </div>
+            {/* Section-spanning interaction layer — captures pointer
+                events anywhere over the Values section so the cursor
+                reads as a hand and the user can click to freeze the
+                scene, then drag to twist it in 3D. Sits above both
+                the canvas and the text container. */}
+            <div
+              className={`${styles.valuesInteraction}${
+                valuesGrabbing ? " " + styles.valuesInteractionGrabbing : ""
+              }`}
+              onPointerDown={onValuesPointerDown}
+              onPointerMove={onValuesPointerMove}
+              onPointerUp={onValuesPointerUp}
+              onPointerCancel={onValuesPointerUp}
+              aria-hidden="true"
+            />
             <div className={styles.textContainer}>
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>

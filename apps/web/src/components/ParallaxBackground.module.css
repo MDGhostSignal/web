@@ -62,6 +62,10 @@
     radial-gradient(1px 1px at 90% 40%, rgba(255, 255, 255, 0.5), transparent),
     radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.7), transparent);
   background-size: 250px 250px;
+  /* Faster of the two parallax layers — drifts ~4px per 100px of
+     scroll. The tile wraps cleanly since this is bg-position, not a
+     transform. */
+  background-position: 0 var(--star-y-1, 0);
   animation: twinkle1 4s ease-in-out infinite;
 }
 
@@ -76,6 +80,10 @@
     radial-gradient(1px 1px at 35% 5%, rgba(255, 255, 255, 0.6), transparent),
     radial-gradient(1px 1px at 65% 35%, rgba(255, 255, 255, 0.4), transparent);
   background-size: 300px 300px;
+  /* Slower of the two parallax layers — about half the speed of
+     ::before, so the closer/dimmer stars drift apart visibly under
+     scroll without either layer reading as obvious motion. */
+  background-position: 0 var(--star-y-2, 0);
   animation: twinkle2 6s ease-in-out infinite;
 }
 
