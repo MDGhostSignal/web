@@ -116,6 +116,8 @@ function Scene({
   const orbRefs = useRef<(THREE.Mesh | null)[]>(ORBS.map(() => null));
   const sunRef = useRef<THREE.Mesh>(null);
   const sunHaloRef = useRef<THREE.Mesh>(null);
+  const sunHaloOuterRef = useRef<THREE.Mesh>(null);
+  const sunLightRef = useRef<THREE.PointLight>(null);
 
   const reduced = useMemo(
     () =>
@@ -172,53 +174,75 @@ function Scene({
       );
     });
 
-    // Subtle 10-second breathing pulse on the sun + halo, matching the
-    // pace of the CSS corona keyframes underneath.
-    const breath = 1 + Math.sin(t * ((Math.PI * 2) / 10)) * 0.03;
+    // Subtle 10-second breathing pulse on the sun + halos + emitted
+    // light, matching the pace of the CSS corona keyframes underneath.
+    const phase = Math.sin(t * ((Math.PI * 2) / 10));
+    const breath = 1 + phase * 0.03;
     if (sunRef.current) sunRef.current.scale.setScalar(breath);
-    if (sunHaloRef.current) sunHaloRef.current.scale.setScalar(breath * 1.04);
+    if (sunHaloRef.current) sunHaloRef.current.scale.setScalar(breath * 1.05);
+    if (sunHaloOuterRef.current)
+      sunHaloOuterRef.current.scale.setScalar(breath * 1.1);
+    // The light's own intensity breathes in lockstep so the orbs
+    // visibly brighten and dim as the sun pulses.
+    if (sunLightRef.current) sunLightRef.current.intensity = 2.4 + phase * 0.25;
   });
 
   return (
     <>
-      {/* Eclipse-moon lighting. Warm key from the sun side + a dim
-          cool fill from behind so the dark spheres still read as 3D
-          when they swing around to the back. */}
-      <ambientLight intensity={0.28} color="#1b1b22" />
-      <directionalLight
-        position={[3.5, 2.5, 3]}
-        intensity={1.05}
-        color="#fff2d8"
-      />
-      <directionalLight
-        position={[-2, -1, -3]}
-        intensity={0.4}
-        color="#5060a0"
+      {/* Lighting. The sun is the only meaningful light source — a
+          point light at the origin means the side of each orb facing
+          the sun is bright and the far side falls into darkness, so
+          the orbs read as bodies orbiting a real luminous core. A
+          very dim ambient prevents the back hemisphere from going
+          fully black on the dark side of the scene. */}
+      <ambientLight intensity={0.08} color="#1f2030" />
+      <pointLight
+        ref={sunLightRef}
+        position={[0, 0, 0]}
+        intensity={2.4}
+        decay={2}
+        distance={0}
+        color="#ffffff"
       />
 
       {/* The sun. Self-illuminating (meshBasicMaterial ignores lights),
           so orbs orbiting it cast no shadow on it and it reads as a
-          luminous body even with the cool fill from behind. Sits at
-          world origin so the orbital math (which already centres on
-          the origin) still works unchanged — and crucially shares a
-          depth context with the orbs, so when an orb's z is negative
-          and its screen-projection overlaps the sun, the sun
-          occludes it. That is what was missing when the sun was a
-          CSS layer behind the canvas. */}
+          luminous body. Sits at world origin so the orbital math
+          (which already centres on the origin) still works unchanged
+          — and crucially shares a depth context with the orbs, so
+          when an orb's z is negative and its screen-projection
+          overlaps the sun, the sun occludes it. Pure white per
+          design direction. toneMapped:false keeps it at full
+          brightness even if the renderer applies tonemapping. */}
       <mesh ref={sunRef}>
-        <sphereGeometry args={[0.22, 48, 48]} />
-        <meshBasicMaterial color="#fff5dc" toneMapped={false} />
+        <sphereGeometry args={[0.22, 64, 64]} />
+        <meshBasicMaterial color="#ffffff" toneMapped={false} />
       </mesh>
-      {/* Faint additive halo shell — gives the sun a soft glowing rim
-          inside the canvas to complement the CSS coronas behind it. */}
+      {/* Two stacked additive halo shells — together they fake the
+          photospheric rim glow. The inner shell hugs the disk for a
+          tight white edge; the outer is wider and dimmer for the
+          atmospheric bloom. Both are additive on the dark backdrop
+          so they read as light, not as semi-transparent geometry. */}
       <mesh ref={sunHaloRef}>
-        <sphereGeometry args={[0.27, 48, 48]} />
+        <sphereGeometry args={[0.28, 48, 48]} />
         <meshBasicMaterial
-          color="#fff0c8"
+          color="#ffffff"
           transparent
-          opacity={0.28}
+          opacity={0.45}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh ref={sunHaloOuterRef}>
+        <sphereGeometry args={[0.42, 48, 48]} />
+        <meshBasicMaterial
+          color="#ffffff"
+          transparent
+          opacity={0.16}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
         />
       </mesh>
 
