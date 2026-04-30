@@ -701,12 +701,13 @@
   cursor: grabbing;
 }
 
-/* R3F canvas wrapper for the three orbiting moons. Extends beyond the
-   sun's bounding box so the orbs at radius 0.6 world units have room
-   to swing around without clipping the canvas viewport. */
+/* R3F canvas wrapper for the three orbiting moons. Inset -100% makes
+   the canvas 3× the sun's bounding box so the orbs at radii up to
+   0.95 world units (≈2.3× the sun's radius in world coords) have
+   room to swing fully around the sun without clipping. */
 .harmonyOrbsWrapper {
   position: absolute;
-  inset: -50%;
+  inset: -100%;
   pointer-events: none;
 }
 :global(.harmonyOrbsRoot) {

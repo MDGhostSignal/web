@@ -33,10 +33,14 @@ type OrbSpec = {
 // orbital planes. basisA × basisB is the orbit's normal axis, so each
 // orb sweeps a circle in a tilted plane visibly distinct from the
 // others.
+// Radii are tuned so each orbit clearly clears the sun's silhouette
+// (sun radius is ~0.42 world units once the wrapper inset is -100%).
+// Smallest orbit is still ~1.3× sun radius so all three read as
+// genuinely circling the sun, not parking on top of it.
 const ORBS: OrbSpec[] = [
   // Big — the dominant moon, slow.
   {
-    radius: 0.6,
+    radius: 0.95,
     size: 0.18,
     speed: 0.6,
     phase: Math.PI,
@@ -45,7 +49,7 @@ const ORBS: OrbSpec[] = [
   },
   // Medium — faster, on a different tilt.
   {
-    radius: 0.45,
+    radius: 0.75,
     size: 0.115,
     speed: 0.95,
     phase: Math.PI / 3,
@@ -54,7 +58,7 @@ const ORBS: OrbSpec[] = [
   },
   // Small — fastest, near-polar plane.
   {
-    radius: 0.32,
+    radius: 0.55,
     size: 0.075,
     speed: 1.45,
     phase: (5 * Math.PI) / 4,
