@@ -268,6 +268,13 @@ export default function RQDashboardPage() {
     }
   };
 
+  // Drop the result-only columns (RQ Code, Clarity) when filtering
+  // to incomplete rows — they're always empty for that state, and
+  // hiding them lets the table fit the viewport without horizontal
+  // scroll. They stay visible on All / Complete tabs where at least
+  // some rows have meaningful values.
+  const showResultColumns = statusFilter !== "incomplete";
+
   const columns: Column<Submission>[] = [
     {
       key: "date",
@@ -325,21 +332,25 @@ export default function RQDashboardPage() {
         );
       },
     },
-    {
-      key: "code",
-      header: "RQ Code",
-      variant: "mono",
-      cell: (row) => row.rq_code || "—",
-    },
-    {
-      key: "clarity",
-      header: "Clarity",
-      cell: (row) => (
-        <Badge variant={clarityVariant(row.signal_clarity_label)}>
-          {row.signal_clarity_label || "—"}
-        </Badge>
-      ),
-    },
+    ...(showResultColumns
+      ? ([
+          {
+            key: "code",
+            header: "RQ Code",
+            variant: "mono",
+            cell: (row) => row.rq_code || "—",
+          },
+          {
+            key: "clarity",
+            header: "Clarity",
+            cell: (row) => (
+              <Badge variant={clarityVariant(row.signal_clarity_label)}>
+                {row.signal_clarity_label || "—"}
+              </Badge>
+            ),
+          },
+        ] satisfies Column<Submission>[])
+      : []),
     {
       key: "expand",
       header: "",
