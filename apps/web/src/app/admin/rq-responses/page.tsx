@@ -30,9 +30,12 @@ type AxisDetail = {
   band?: string | null;
 };
 
+type SubmissionStatus = "incomplete" | "complete";
+
 type Submission = {
   id: string;
   submitted_at: string;
+  status: SubmissionStatus | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
@@ -57,6 +60,8 @@ type Submission = {
   } | null;
   answers_json: Record<string, unknown> | null;
 };
+
+type StatusFilter = "all" | SubmissionStatus;
 
 /** Human-readable label for each quiz answer key. Mirrors the question
  *  labels in apps/web/src/app/rq-quiz/page.tsx. Kept inline rather than
@@ -183,6 +188,7 @@ export default function RQDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   // Delete-flow state. `confirmDelete` holds the submission the user
   // tapped "Delete" on (null when the modal is closed). `deleting` is
@@ -213,6 +219,14 @@ export default function RQDashboardPage() {
   }, []);
 
   const filteredSubmissions = submissions.filter((sub) => {
+    // Older rows (pre-2026-04-30) have no status column populated;
+    // treat null as 'complete' so they keep showing up in the
+    // default view.
+    const effectiveStatus: SubmissionStatus = sub.status ?? "complete";
+    if (statusFilter !== "all" && effectiveStatus !== statusFilter) {
+      return false;
+    }
+
     const search = searchTerm.toLowerCase();
     if (!search) return true;
     return (
@@ -224,6 +238,11 @@ export default function RQDashboardPage() {
       sub.rq_name?.toLowerCase().includes(search)
     );
   });
+
+  const incompleteCount = submissions.filter(
+    (s) => (s.status ?? "complete") === "incomplete",
+  ).length;
+  const completeCount = submissions.length - incompleteCount;
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
@@ -295,6 +314,18 @@ export default function RQDashboardPage() {
       ),
     },
     {
+      key: "status",
+      header: "Status",
+      cell: (row) => {
+        const s: SubmissionStatus = row.status ?? "complete";
+        return (
+          <Badge variant={s === "complete" ? "success" : "warn"}>
+            {s === "complete" ? "Complete" : "Incomplete"}
+          </Badge>
+        );
+      },
+    },
+    {
       key: "code",
       header: "RQ Code",
       variant: "mono",
@@ -341,11 +372,42 @@ export default function RQDashboardPage() {
             </Badge>
           }
           toolbar={
-            <SearchInput
-              placeholder="Search by name, email, organization, or RQ code…"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <div className={styles.toolbarRow}>
+              <SearchInput
+                placeholder="Search by name, email, organization, or RQ code…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className={styles.statusFilter} role="tablist" aria-label="Filter by status">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={statusFilter === "all"}
+                  className={`${styles.statusTab} ${statusFilter === "all" ? styles.statusTabActive : ""}`}
+                  onClick={() => setStatusFilter("all")}
+                >
+                  All <span className={styles.statusTabCount}>{submissions.length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={statusFilter === "complete"}
+                  className={`${styles.statusTab} ${statusFilter === "complete" ? styles.statusTabActive : ""}`}
+                  onClick={() => setStatusFilter("complete")}
+                >
+                  Complete <span className={styles.statusTabCount}>{completeCount}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={statusFilter === "incomplete"}
+                  className={`${styles.statusTab} ${statusFilter === "incomplete" ? styles.statusTabActive : ""}`}
+                  onClick={() => setStatusFilter("incomplete")}
+                >
+                  Incomplete <span className={styles.statusTabCount}>{incompleteCount}</span>
+                </button>
+              </div>
+            </div>
           }
         />
 

@@ -586,6 +586,104 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
   return { attempted: true, sent: true, email: userEmail };
 }
 
+/**
+ * Lightweight admin notification fired when a user finishes the
+ * contact step of the RQ quiz but has not yet completed the full
+ * quiz. Captures the lead so we know about them immediately even
+ * if they bounce before submission. Strips the RQ result / clarity /
+ * undertone fields from the heavier `sendNotificationEmail` since
+ * those don't exist yet at this stage.
+ */
+export async function sendLeadNotificationEmail(payload: SubmissionPayload) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const resendFrom = process.env.RESEND_FROM;
+
+  if (!resendApiKey || !resendFrom) {
+    return { attempted: false, sent: false, reason: "Resend is not configured." };
+  }
+
+  const basics = payload.basics ?? {};
+  const fullName = `${basics.first ?? ""} ${basics.last ?? ""}`.trim();
+
+  const text = [
+    "New GHOSTSignal RQ lead captured (quiz incomplete)",
+    "",
+    `Name: ${fullName || "Unknown"}`,
+    `Type: ${basics.type ?? "Unknown"}`,
+    `Organization: ${basics.org ?? "Unknown"}`,
+    `Role: ${basics.role ?? "-"}`,
+    `Industry: ${basics.industry ?? "-"}`,
+    `Website: ${basics.website ?? "-"}`,
+    `Email: ${basics.email ?? "-"}`,
+    "",
+    "This user has provided their contact information but has not yet completed the full RQ quiz.",
+    "If they finish the quiz, this record will be upgraded to a complete submission automatically.",
+    "",
+    `Source: ${payload.source ?? "-"}`,
+    `Page URL: ${payload.meta?.pageUrl ?? "-"}`,
+    `Referrer: ${payload.meta?.referrer ?? "-"}`,
+  ].join("\n");
+
+  const html = `
+    <h2>New <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> RQ lead captured</h2>
+    <p style="color: #c4880d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px;">Quiz incomplete &mdash; lead only</p>
+    <p><strong>Name:</strong> ${escapeHtml(fullName || "Unknown")}</p>
+    <p><strong>Type:</strong> ${escapeHtml(basics.type ?? "Unknown")}</p>
+    <p><strong>Organization:</strong> ${escapeHtml(basics.org ?? "Unknown")}</p>
+    <p><strong>Role:</strong> ${escapeHtml(basics.role ?? "-")}</p>
+    <p><strong>Industry:</strong> ${escapeHtml(basics.industry ?? "-")}</p>
+    <p><strong>Website:</strong> ${escapeHtml(basics.website ?? "-")}</p>
+    <p><strong>Email:</strong> ${escapeHtml(basics.email ?? "-")}</p>
+    <hr />
+    <p style="color: #666; font-size: 13px; line-height: 1.5;">
+      This user has provided their contact information but has not yet completed the full RQ quiz.
+      If they finish the quiz, this record will be upgraded to a complete submission automatically.
+    </p>
+    <hr />
+    <p><strong>Source:</strong> ${escapeHtml(payload.source ?? "-")}</p>
+    <p><strong>Page URL:</strong> ${escapeHtml(payload.meta?.pageUrl ?? "-")}</p>
+    <p><strong>Referrer:</strong> ${escapeHtml(payload.meta?.referrer ?? "-")}</p>
+  `;
+
+  const replyTo = basics.email?.trim();
+  const emailPayload: {
+    from: string;
+    to: string[];
+    subject: string;
+    text: string;
+    html: string;
+    reply_to?: string;
+  } = {
+    from: resendFrom,
+    to: [EMAIL_TO],
+    subject: `New GHOSTSignal RQ lead: ${fullName || basics.org || "Unknown"} (incomplete)`,
+    text,
+    html,
+  };
+
+  if (replyTo && replyTo.includes("@")) {
+    emailPayload.reply_to = replyTo;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(emailPayload),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    console.error("RQ lead notification email failed:", detail);
+    return { attempted: true, sent: false, reason: detail };
+  }
+
+  return { attempted: true, sent: true };
+}
+
 export async function sendNotificationEmail(payload: SubmissionPayload) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const resendFrom = process.env.RESEND_FROM;

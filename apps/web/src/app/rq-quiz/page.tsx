@@ -370,6 +370,14 @@ export default function RQIndexPage() {
   const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [statusVisible, setStatusVisible] = useState(true);
 
+  // Id of the row inserted when the user finished the contact step
+  // (status='incomplete'). On final submit we PATCH this row to flip
+  // it to status='complete' instead of inserting a second one. Held
+  // in a ref so the fire-and-forget POST below doesn't trigger a
+  // re-render race with rapid Continue clicks.
+  const incompleteIdRef = useRef<string | null>(null);
+  const incompleteRequestedRef = useRef(false);
+
   // Fade out status notification after 10 seconds
   useEffect(() => {
     if (submitStatus && submitStatus.type === "success") {
@@ -402,8 +410,61 @@ export default function RQIndexPage() {
     return true;
   };
 
+  // Fire-and-forget capture of the lead's contact info as soon as
+  // they leave the contact step. Runs at most once per session — if
+  // the user goes back and edits, we reuse the same row id when
+  // PATCHing on completion. Failures are silent: we never want to
+  // block quiz progression on lead capture.
+  const captureIncompleteLead = () => {
+    if (incompleteRequestedRef.current) return;
+    incompleteRequestedRef.current = true;
+
+    void fetch("/api/rq-submissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: "native-rq-index-v2",
+        status: "incomplete",
+        submittedAt: new Date().toISOString(),
+        brand: { company: BRAND.company, acronym: BRAND.acronym, title: BRAND.title },
+        basics: {
+          type: form.TYPE,
+          first: form.FIRST,
+          last: form.LAST,
+          role: form.ROLE,
+          org: form.ORG,
+          industry: form.INDUSTRY,
+          website: form.WEBSITE,
+          email: form.EMAIL,
+        },
+        meta: {
+          pageUrl: window.location.href,
+          referrer: document.referrer || "",
+          userAgent: navigator.userAgent,
+        },
+      }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          incompleteRequestedRef.current = false; // allow retry on next step transition
+          return;
+        }
+        const data = (await r.json()) as { id?: string | null };
+        if (data?.id) incompleteIdRef.current = String(data.id);
+      })
+      .catch(() => {
+        incompleteRequestedRef.current = false;
+      });
+  };
+
   const handleNext = () => {
     if (!canProceed()) return;
+
+    // Trigger lead capture exactly once when the user clicks
+    // Continue out of the contact step.
+    if (currentStepData.id === "contact") {
+      captureIncompleteLead();
+    }
 
     if (isLastStep) {
       handleSubmit();
@@ -484,44 +545,58 @@ export default function RQIndexPage() {
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/rq-submissions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source: "native-rq-index-v2",
-          submittedAt: new Date().toISOString(),
-          brand: { company: BRAND.company, acronym: BRAND.acronym, title: BRAND.title },
-          basics: {
-            type: form.TYPE,
-            first: form.FIRST,
-            last: form.LAST,
-            role: form.ROLE,
-            org: form.ORG,
-            industry: form.INDUSTRY,
-            website: form.WEBSITE,
-            email: form.EMAIL,
-          },
-          answers: {
-            VO1: form.VO1, VO2: form.VO2, VO3: form.VO3, VO4: form.VO4, VO5: form.VO5,
-            AE1: form.AE1, AE2: form.AE2, AE3: form.AE3, AE4: form.AE4, AE5: form.AE5,
-            FH1: form.FH1, FH2: form.FH2, FH3: form.FH3, FH4: form.FH4, FH5: form.FH5,
-            npCount, totalCount,
-          },
-          result: {
-            rq: rqResult.rq,
-            rqName: rqResult.rqName,
-            profile: rqResult.profile,
-            details: rqResult.details,
-            clarity: signalClarity,
-            undertone: form.U1,
-          },
-          meta: {
-            pageUrl: window.location.href,
-            referrer: document.referrer || "",
-            userAgent: navigator.userAgent,
-          },
-        }),
+      const body = JSON.stringify({
+        source: "native-rq-index-v2",
+        status: "complete",
+        submittedAt: new Date().toISOString(),
+        brand: { company: BRAND.company, acronym: BRAND.acronym, title: BRAND.title },
+        basics: {
+          type: form.TYPE,
+          first: form.FIRST,
+          last: form.LAST,
+          role: form.ROLE,
+          org: form.ORG,
+          industry: form.INDUSTRY,
+          website: form.WEBSITE,
+          email: form.EMAIL,
+        },
+        answers: {
+          VO1: form.VO1, VO2: form.VO2, VO3: form.VO3, VO4: form.VO4, VO5: form.VO5,
+          AE1: form.AE1, AE2: form.AE2, AE3: form.AE3, AE4: form.AE4, AE5: form.AE5,
+          FH1: form.FH1, FH2: form.FH2, FH3: form.FH3, FH4: form.FH4, FH5: form.FH5,
+          npCount, totalCount,
+        },
+        result: {
+          rq: rqResult.rq,
+          rqName: rqResult.rqName,
+          profile: rqResult.profile,
+          details: rqResult.details,
+          clarity: signalClarity,
+          undertone: form.U1,
+        },
+        meta: {
+          pageUrl: window.location.href,
+          referrer: document.referrer || "",
+          userAgent: navigator.userAgent,
+        },
       });
+
+      // If we captured the lead at the contact step, PATCH that same
+      // row up to 'complete' so we don't end up with two rows for
+      // the same user. Falls back to POST if the lead capture
+      // didn't return an id (network failure, direct-jump edge case).
+      const incompleteId = incompleteIdRef.current;
+      const response = incompleteId
+        ? await fetch(`/api/rq-submissions/${incompleteId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body,
+          })
+        : await fetch("/api/rq-submissions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+          });
 
       if (response.ok) {
         await response.json();

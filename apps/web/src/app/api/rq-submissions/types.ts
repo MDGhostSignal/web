@@ -1,6 +1,9 @@
+export type SubmissionStatus = "incomplete" | "complete";
+
 export type SubmissionPayload = {
   source?: string;
   submittedAt?: string;
+  status?: SubmissionStatus;
   brand?: {
     company?: string;
     acronym?: string;

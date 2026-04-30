@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { postToGoogleSheetsWebhook } from "@/lib/googleSheetsWebhook";
-import type { SubmissionPayload } from "./types";
-import { sendNotificationEmail, sendUserSummaryEmail } from "./emails";
+import type { SubmissionPayload, SubmissionStatus } from "./types";
+import {
+  sendLeadNotificationEmail,
+  sendNotificationEmail,
+  sendUserSummaryEmail,
+} from "./emails";
 
 const TABLE_NAME = process.env.RQ_SUBMISSIONS_TABLE ?? "rq_submissions";
 const EMAIL_TO = process.env.RQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
@@ -46,17 +50,25 @@ function json(data: unknown, init?: ResponseInit, origin: string | null = null) 
   });
 }
 
-function isValidPayload(payload: SubmissionPayload) {
+function hasBasics(payload: SubmissionPayload) {
   return Boolean(
     payload?.basics?.first &&
       payload?.basics?.last &&
       payload?.basics?.email &&
       payload?.basics?.org &&
-      payload?.basics?.type &&
-      payload?.result?.rq &&
-      payload?.result?.rqName &&
-      payload?.answers,
+      payload?.basics?.type,
   );
+}
+
+function isValidCompletePayload(payload: SubmissionPayload) {
+  return (
+    hasBasics(payload) &&
+    Boolean(payload?.result?.rq && payload?.result?.rqName && payload?.answers)
+  );
+}
+
+function resolveStatus(payload: SubmissionPayload): SubmissionStatus {
+  return payload.status === "incomplete" ? "incomplete" : "complete";
 }
 export async function OPTIONS(request: Request) {
   return new NextResponse(null, {
@@ -142,7 +154,15 @@ export async function POST(request: Request) {
     return json({ error: "Invalid JSON body." }, { status: 400 }, origin);
   }
 
-  if (!isValidPayload(payload)) {
+  const status = resolveStatus(payload);
+
+  // 'incomplete' rows are captured after the contact step of the
+  // RQ quiz — basics-only, no answers/result yet. The full quiz
+  // submission later upgrades the row to 'complete' via PATCH.
+  const valid =
+    status === "incomplete" ? hasBasics(payload) : isValidCompletePayload(payload);
+
+  if (!valid) {
     return json({ error: "Missing required submission fields." }, { status: 400 }, origin);
   }
 
@@ -163,6 +183,7 @@ export async function POST(request: Request) {
   const record = {
     source: payload.source ?? "squarespace-rq-snippet",
     submitted_at: payload.submittedAt ?? new Date().toISOString(),
+    status,
     company: payload.brand?.company ?? null,
     acronym: payload.brand?.acronym ?? null,
     title: payload.brand?.title ?? null,
@@ -211,6 +232,26 @@ export async function POST(request: Request) {
   }
 
   const inserted = (await response.json()) as Array<{ id?: string | number }>;
+  const insertedId = inserted?.[0]?.id ?? null;
+
+  // For incomplete (lead-captured) rows, only fire a lightweight
+  // admin-side notification. The user has not finished the quiz, so
+  // there is nothing to summarize for them and nothing valuable to
+  // append to the completion-tracking Google Sheet yet.
+  if (status === "incomplete") {
+    const leadEmailResult = await sendLeadNotificationEmail(payload);
+    return json(
+      {
+        ok: true,
+        id: insertedId,
+        status,
+        leadEmailNotified: leadEmailResult.sent,
+        emailTo: leadEmailResult.attempted ? EMAIL_TO : null,
+      },
+      { status: 201 },
+      origin,
+    );
+  }
 
   // Send email notification to admin
   const emailResult = await sendNotificationEmail(payload);
@@ -224,7 +265,8 @@ export async function POST(request: Request) {
   return json(
     {
       ok: true,
-      id: inserted?.[0]?.id ?? null,
+      id: insertedId,
+      status,
       emailNotified: emailResult.sent,
       emailTo: emailResult.attempted ? EMAIL_TO : null,
       userSummarySent: userEmailResult.sent,
