@@ -114,6 +114,8 @@ function Scene({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const orbRefs = useRef<(THREE.Mesh | null)[]>(ORBS.map(() => null));
+  const sunRef = useRef<THREE.Mesh>(null);
+  const sunHaloRef = useRef<THREE.Mesh>(null);
 
   const reduced = useMemo(
     () =>
@@ -169,6 +171,12 @@ function Scene({
         (spec.basisA[2] * ca + spec.basisB[2] * sa) * spec.radius,
       );
     });
+
+    // Subtle 10-second breathing pulse on the sun + halo, matching the
+    // pace of the CSS corona keyframes underneath.
+    const breath = 1 + Math.sin(t * ((Math.PI * 2) / 10)) * 0.03;
+    if (sunRef.current) sunRef.current.scale.setScalar(breath);
+    if (sunHaloRef.current) sunHaloRef.current.scale.setScalar(breath * 1.04);
   });
 
   return (
@@ -187,6 +195,32 @@ function Scene({
         intensity={0.4}
         color="#5060a0"
       />
+
+      {/* The sun. Self-illuminating (meshBasicMaterial ignores lights),
+          so orbs orbiting it cast no shadow on it and it reads as a
+          luminous body even with the cool fill from behind. Sits at
+          world origin so the orbital math (which already centres on
+          the origin) still works unchanged — and crucially shares a
+          depth context with the orbs, so when an orb's z is negative
+          and its screen-projection overlaps the sun, the sun
+          occludes it. That is what was missing when the sun was a
+          CSS layer behind the canvas. */}
+      <mesh ref={sunRef}>
+        <sphereGeometry args={[0.22, 48, 48]} />
+        <meshBasicMaterial color="#fff5dc" toneMapped={false} />
+      </mesh>
+      {/* Faint additive halo shell — gives the sun a soft glowing rim
+          inside the canvas to complement the CSS coronas behind it. */}
+      <mesh ref={sunHaloRef}>
+        <sphereGeometry args={[0.27, 48, 48]} />
+        <meshBasicMaterial
+          color="#fff0c8"
+          transparent
+          opacity={0.28}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
 
       <group ref={groupRef}>
         {ORBS.map((spec, i) => (

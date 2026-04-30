@@ -588,15 +588,14 @@
   transform-style: preserve-3d;
 }
 
-/* The white sun disk — bright cream-white, with a layered white halo
-   that breathes on the same 10s cycle as the orbiting sphere. */
+/* The white sun disk — historically a CSS radial gradient, but now
+   the sun is rendered as a real 3D sphere inside the HarmonyOrbs
+   R3F scene so the orbiting moons can pass behind it. The CSS disk
+   is hidden but the element is left in the DOM for now in case we
+   need to revert; the coronas below stay because they sit behind
+   the canvas and bleed through its alpha as the outer halo. */
 .harmonySunDisk {
-  position: absolute;
-  inset: 30%;
-  background:
-    radial-gradient(circle at 50% 45%, #ffffff 0%, #f6f1de 60%, #e8dfb8 100%);
-  border-radius: 50%;
-  animation: noctSunRim 10s ease-in-out infinite;
+  display: none;
 }
 
 /* Inner corona — tight white halo wrapping the disk. */
