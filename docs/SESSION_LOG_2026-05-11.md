@@ -443,6 +443,123 @@ The flex-column gap then preserves the headline's exact original
 position. `.heroLogos` itself is kept — still used by the second
 (bottom) logos row at the foot of the hero.
 
+## 14. Admin tree audit (no-op outcome)
+
+Pointed an Explore agent at `apps/web/src/app/admin/**` +
+`apps/web/src/components/admin/**` with explicit guardrails
+against destructive recommendations (AGENTS.md orphan-detection
+trap section was required reading before flagging anything).
+
+**Findings:**
+- Admin is hermetically separated from public (zero cross-tree
+  imports except the intentional `RQResultsGraph` reuse).
+- Admin has its own complete token system (`--admin-*`) and
+  shared component library (`components/admin/`: AdminShell,
+  Button, Badge, Modal, DataTable, etc.).
+- ~95% token-compliant; only 2 hard-coded pixel values
+  (`DataTable.module.css:26`, `members.module.css:50`), both
+  intentional micro-spacing below the token scale.
+- No confidently callable orphans — design-tasks classes that
+  looked dead are accessed via `styles[\`status_${task.status}\`]`
+  (the bracket-access trap from AGENTS.md).
+
+**Real opportunity ranked highest:** extract a shared
+`<CommentThread>` from members + TaskDetailPanel.
+
+**On closer reading: opportunity withdrawn.** The two
+implementations share class-name patterns but are genuinely
+different features. Members is newest-first, simple, no edit,
+no reactions, dropdown author selection. TaskDetailPanel is
+oldest-first with scroll-to-bottom, avatars, edit (own only),
+delete (own only), emoji reactions, founder picker. A shared
+component would have to either strip features (destructive),
+become a 10-prop super-component, or save ~15 lines of LCD
+shell while both consumers still implement most logic
+themselves. None of those land in a good place.
+
+**Net: admin is in good shape; no action taken.**
+
+## 15a. AGENTS.md — load-bearing additions for future agents
+
+Two new sections added to `AGENTS.md` so future agents discover
+today's architecture from the canonical runbook instead of by
+reading source:
+
+- **"Token Namespaces (Four-Surface Map)"** as a subsection at
+  the top of "Design Token System". Documents the four parallel
+  namespaces (`--gs-*`, `--admin-*`, `--rq-*`, `--ds-*`), what
+  each is for, and that they're intentionally separate. Makes
+  explicit that the rest of the "Design Token System" section
+  applies to the `--gs-*` surface only.
+- **"Layout Primitives & Section Conventions (Mandatory, public
+  site)"** as a new top-level section between the token system
+  and the motion library. Documents `<Section>` and
+  `<Container>` (path, when to use each, the canonical
+  structure), the class-name suffix convention (`*Section` /
+  bare-name well / `*Content` / `*Layout` / `*Wrapper`), when
+  to keep the `Container` suffix despite the convention (name
+  conflicts), when `<Container>` is the wrong choice (custom
+  max-widths — snowdrift / get-in-touch form), the shared
+  `:root` page-shell vars (`--edge-pad` / `--content-max` /
+  `--footer-max`) with the instruction not to redeclare them
+  in page modules, and a note that admin uses `<AdminShell>`
+  instead.
+
+`Token Discipline (Stylelint)` + `Orphan CSS Detection
+(Cleanup Trap)` sections were already in place from earlier
+this session.
+
+## 15. Cleanup pass #8 — Stylelint token discipline rule
+
+Installed `stylelint` as a dev dep and added a focused rule:
+`declaration-property-unit-disallowed-list` with `px` forbidden
+on spacing-family properties (`padding*`, `margin*`, `gap`,
+`row-gap`, `column-gap`, `top`/`right`/`bottom`/`left`/`inset*`).
+Other properties (`width`, `height`, `font-size`, `border`,
+etc.) remain unrestricted — px is legitimate there.
+
+**Scope: public `--gs-*` surface only.** `.stylelintignore`
+excludes four self-contained design-system surfaces:
+
+- `src/app/admin/` + `src/components/admin/` (uses `--admin-space-*`)
+- `src/app/rq-quiz/` + `src/components/rq/` (uses `--rq-*`)
+- `src/app/design-system/` (uses `--ds-*` for the showcase page)
+- `src/styles/generated-tokens.css` (generated, not hand-edited)
+
+**Initial run: 302 violations across 11 files.** After the
+ignore-file expansion (RQ + design-system surfaces have their
+own token namespaces and shouldn't be forced through `--gs-*`),
+**30 real violations across 7 files remained.**
+
+Triaged + fixed:
+
+| Category | Count | Resolution |
+|---|---|---|
+| Homepage `var(--gs-px, 1px)` fallback pattern | 13 | Dropped the `, 1px` fallback (the var is unconditionally declared in `:root`, fallback is dead). |
+| Homepage admin button drift (top, right, gap, padding) | 6 | Tokenized — `top: 20px` → `top: calc(var(--gs-n-20) * var(--gs-px))`, etc. |
+| Clip-path-paired `margin-top: -60px` (creators, advertisers, get-in-touch features section) | 3 | Suppressed with explanatory comments — paired with the `60px` peak in the `clip-path: polygon(...)` value; the two must move together. |
+| `.matterText::after { inset: -10px -20px }` (creators) | 2 | Tokenized using the negative-multiplier pattern `calc(var(--gs-n-10) * var(--gs-px) * -1)`. |
+| what-is-this position math (`right`, `left`) mixing `%` + `vh` + raw px | 2 | Tokenized just the px terms inside the `calc(50% + 9vh + ...)` expressions. |
+| what-is-this `margin-top: 100px` + `margin: calc(var-200 - 75px)` | 2 | Tokenized to `--gs-n-100` and `(--gs-n-200 - --gs-n-75)`. |
+| ContactSection `var(--edge-pad, 28px)` fallback in 768px media query | 1 | Removed fallback (same reason as homepage's `1px` fallbacks — the var is unconditional now). |
+| Snowdrift sr-only `margin: -1px` | 1 | Suppressed with comment — canonical screen-reader-only pattern, the `-1px` is structural. |
+
+**Wiring:**
+
+- `apps/web/package.json`: new `lint:css` npm script
+- `apps/web/.stylelintrc.json`: the rule config
+- `apps/web/.stylelintignore`: scope-exclusion list with reasons
+- `apps/web/.gitignore`: ignore the `.stylelint-report.json` artifact
+- `AGENTS.md`: added `npm run lint:css` to the pre-ship checklist + a new "Token Discipline (Stylelint)" section documenting scope, excluded directories, and how to suppress legitimate exceptions
+
+Validation: `npm run lint`, `npm run typecheck`, `npm run lint:css`,
+`npm run assets:audit` all pass.
+
+**Effect:** the token discipline now compounds forever. Every
+future spacing value on the public site is forced through the
+calc pattern or has to be explicitly suppressed with a written
+reason.
+
 ## Open follow-ups / next-step notes
 
 1. **Manual browser re-walk after the full rollout.** Every
