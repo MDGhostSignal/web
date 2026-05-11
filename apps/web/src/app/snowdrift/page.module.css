@@ -111,6 +111,7 @@
   width: 1px;
   height: 1px;
   padding: 0;
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- canonical screen-reader-only pattern; the -1px is structural, not a spacing choice. */
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);

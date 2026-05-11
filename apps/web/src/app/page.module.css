@@ -49,9 +49,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--gs-n-32, 32) * var(--gs-px, 1px));
+  gap: calc(var(--gs-n-32, 32) * var(--gs-px));
   min-height: 100dvh;
-  padding: calc(var(--gs-n-120, 120) * var(--gs-px, 1px)) calc(var(--gs-n-40, 40) * var(--gs-px, 1px));
+  padding: calc(var(--gs-n-120, 120) * var(--gs-px)) calc(var(--gs-n-40, 40) * var(--gs-px));
   text-align: center;
 }
 
@@ -70,14 +70,14 @@
 /* Hero Subtitle */
 .heroSubtitle {
   margin: 0;
-  margin-top: calc(var(--gs-n-16, 16) * var(--gs-px, 1px));
+  margin-top: calc(var(--gs-n-16, 16) * var(--gs-px));
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-medium, 500);
   font-size: clamp(14px, 2vw, 22px);
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.02em;
-  max-width: calc(var(--gs-n-800, 800) * var(--gs-px, 1px));
+  max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
 }
 
 /* CTA Button */
@@ -85,16 +85,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: calc(var(--gs-n-40, 40) * var(--gs-px, 1px));
-  padding: calc(var(--gs-n-16, 16) * var(--gs-px, 1px)) calc(var(--gs-n-40, 40) * var(--gs-px, 1px));
+  margin-top: calc(var(--gs-n-40, 40) * var(--gs-px));
+  padding: calc(var(--gs-n-16, 16) * var(--gs-px)) calc(var(--gs-n-40, 40) * var(--gs-px));
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-medium, 500);
-  font-size: calc(var(--gs-font-size-lg, 18) * var(--gs-px, 1px));
+  font-size: calc(var(--gs-font-size-lg, 18) * var(--gs-px));
   line-height: 1.4;
   color: #0a0a0b;
   background: #ffffff;
   border: none;
-  border-radius: calc(var(--gs-radius-full, 9999) * var(--gs-px, 1px));
+  border-radius: calc(var(--gs-radius-full, 9999) * var(--gs-px));
   text-decoration: none;
   cursor: pointer;
   transition: transform 200ms ease, box-shadow 200ms ease;
@@ -117,20 +117,20 @@
    overlapping. Grows left from the top-right corner. */
 .adminButtonRow {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: calc(var(--gs-n-20) * var(--gs-px));
+  right: calc(var(--gs-n-20) * var(--gs-px));
   z-index: 1000;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(var(--gs-n-8) * var(--gs-px));
 }
 
 /* Top-right admin pill — single entry into /admin/members. */
 .crmBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: calc(var(--gs-n-6) * var(--gs-px));
+  padding: calc(var(--gs-n-8) * var(--gs-px)) calc(var(--gs-n-14) * var(--gs-px));
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 600;
@@ -156,17 +156,17 @@
 
 @media (max-width: 768px) {
   .heroSection {
-    padding: calc(var(--gs-n-80, 80) * var(--gs-px, 1px)) calc(var(--gs-n-24, 24) * var(--gs-px, 1px));
+    padding: calc(var(--gs-n-80, 80) * var(--gs-px)) calc(var(--gs-n-24, 24) * var(--gs-px));
   }
 }
 
 @media (max-width: 480px) {
   .heroSection {
-    padding: calc(var(--gs-n-60, 60) * var(--gs-px, 1px)) calc(var(--gs-n-16, 16) * var(--gs-px, 1px));
+    padding: calc(var(--gs-n-60, 60) * var(--gs-px)) calc(var(--gs-n-16, 16) * var(--gs-px));
   }
 
   .ctaButton {
-    padding: calc(var(--gs-n-14, 14) * var(--gs-px, 1px)) calc(var(--gs-n-32, 32) * var(--gs-px, 1px));
-    font-size: calc(var(--gs-font-size-base, 16) * var(--gs-px, 1px));
+    padding: calc(var(--gs-n-14, 14) * var(--gs-px)) calc(var(--gs-n-32, 32) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-base, 16) * var(--gs-px));
   }
 }

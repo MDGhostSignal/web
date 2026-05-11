@@ -131,7 +131,7 @@
 
 @media (max-width: 768px) {
   .contactSection {
-    padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad, 28px);
+    padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
   }
 
   .contactHeadline {

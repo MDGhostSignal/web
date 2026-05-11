@@ -167,6 +167,7 @@
 .featuresSection {
   position: relative;
   z-index: 2;
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- paired with the 60px peak in the clip-path polygon below; the two must move together. */
   margin-top: -60px;
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   padding-top: calc(var(--gs-n-256) * var(--gs-px));
@@ -574,7 +575,7 @@
 .matterText::after {
   content: '';
   position: absolute;
-  inset: -10px -20px;
+  inset: calc(var(--gs-n-10) * var(--gs-px) * -1) calc(var(--gs-n-20) * var(--gs-px) * -1);
   background: radial-gradient(
     ellipse at center,
     rgba(168, 85, 247, 0.4) 0%,

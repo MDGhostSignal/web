@@ -204,6 +204,7 @@
   padding-top: calc(var(--gs-n-160) * var(--gs-px));
   background: var(--gs-tw-white);
   clip-path: polygon(0 60px, 50% 0, 100% 60px, 100% 100%, 0 100%);
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- paired with the 60px peak in the clip-path polygon above; the two must move together. */
   margin-top: -60px;
 }
 

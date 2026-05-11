@@ -1,0 +1,38 @@
+{
+  "rules": {
+    "declaration-property-unit-disallowed-list": {
+      "padding": ["px"],
+      "padding-top": ["px"],
+      "padding-right": ["px"],
+      "padding-bottom": ["px"],
+      "padding-left": ["px"],
+      "padding-inline": ["px"],
+      "padding-inline-start": ["px"],
+      "padding-inline-end": ["px"],
+      "padding-block": ["px"],
+      "padding-block-start": ["px"],
+      "padding-block-end": ["px"],
+      "margin": ["px"],
+      "margin-top": ["px"],
+      "margin-right": ["px"],
+      "margin-bottom": ["px"],
+      "margin-left": ["px"],
+      "margin-inline": ["px"],
+      "margin-inline-start": ["px"],
+      "margin-inline-end": ["px"],
+      "margin-block": ["px"],
+      "margin-block-start": ["px"],
+      "margin-block-end": ["px"],
+      "gap": ["px"],
+      "row-gap": ["px"],
+      "column-gap": ["px"],
+      "top": ["px"],
+      "right": ["px"],
+      "bottom": ["px"],
+      "left": ["px"],
+      "inset": ["px"],
+      "inset-inline": ["px"],
+      "inset-block": ["px"]
+    }
+  }
+}
