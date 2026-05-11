@@ -107,7 +107,7 @@
   z-index: 1;
 }
 
-.contactContent {
+.contactContainer {
   /* Raised above both the nebula (::after, z-index: 0) and the
      starfield (::before, z-index: 1) pseudo layers. */
   position: relative;
@@ -427,7 +427,7 @@
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .contactContent {
+  .contactContainer {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }

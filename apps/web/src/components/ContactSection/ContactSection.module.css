@@ -3,7 +3,7 @@
   background: #000000;
 }
 
-.contactContent {
+.contactContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: calc(var(--gs-n-80) * var(--gs-px));
@@ -116,7 +116,7 @@
    ============================================================================= */
 
 @media (max-width: 1024px) {
-  .contactContent {
+  .contactContainer {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }

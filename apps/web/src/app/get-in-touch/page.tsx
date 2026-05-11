@@ -65,7 +65,7 @@ export default function GetInTouchPage() {
 
       {/* Contact Section */}
       <section className={styles.contactSection}>
-        <div className={styles.contactContent}>
+        <div className={styles.contactContainer}>
           <div className={styles.contactText}>
             <ScrollFadeUp index={0} duration={1.6}>
               <p className={styles.contactEyebrow}>GET IN TOUCH</p>

@@ -67,7 +67,7 @@
   transform: translateX(-50%);
 }
 
-.heroContent {
+.heroContainer {
   position: relative;
   z-index: 2;
   max-width: var(--content-max);
@@ -528,7 +528,7 @@
     padding-bottom: calc(var(--gs-n-80) * var(--gs-px));
   }
 
-  .heroContent {
+  .heroContainer {
     gap: calc(var(--gs-n-24) * var(--gs-px));
   }
 

@@ -542,7 +542,7 @@
   background: var(--gs-tw-white);
 }
 
-.closingContent {
+.closingContainer {
   max-width: var(--content-max);
   margin-inline: auto;
   display: flex;

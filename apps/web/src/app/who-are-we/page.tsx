@@ -194,7 +194,7 @@ export default function WhoAreWePage() {
             aria-hidden="true"
           />
         </div>
-        <div className={styles.missionContent}>
+        <div className={styles.missionContainer}>
           <div className={styles.missionLeft}>
             <SplitLinesReveal duration={1.8} stagger={0.28}>
               <h2 className={styles.missionHeadline}>

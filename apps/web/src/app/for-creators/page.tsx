@@ -446,7 +446,7 @@ export default function ForCreatorsPage() {
 
       {/* Closing Statement Section */}
       <section className={styles.closingSection}>
-        <div className={styles.closingContent}>
+        <div className={styles.closingContainer}>
           <h2 className={styles.closingHeadline}>
             <SplitLinesReveal duration={2.2}>You don&apos;t need</SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.35}>

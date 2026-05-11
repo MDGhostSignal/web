@@ -315,7 +315,7 @@
   animation: cloudFloat3 200s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
-.missionContent {
+.missionContainer {
   position: relative;
   z-index: 1;
   max-width: var(--content-max);
@@ -1202,7 +1202,7 @@
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .missionContent {
+  .missionContainer {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-32) * var(--gs-px));
   }

@@ -328,7 +328,7 @@ export default function SignalSheetPage() {
 
       {/* Hero */}
       <section className={styles.hero}>
-        <div className={styles.heroContent}>
+        <div className={styles.heroContainer}>
           <ScrollFadeUp duration={1.4} distance={16}>
             <p className={styles.eyebrow}>Resources</p>
           </ScrollFadeUp>
