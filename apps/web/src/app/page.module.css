@@ -1,4 +1,4 @@
-.legacyHome {
+.page {
   position: relative;
   min-height: 100dvh;
   width: 100%;
@@ -107,46 +107,6 @@
 
 .ctaButton:active {
   transform: translateY(0);
-}
-
-/* ========================================
-   Scroll Indicator
-   ======================================== */
-.scrollIndicator {
-  position: absolute;
-  bottom: calc(var(--gs-n-120, 120) * var(--gs-px, 1px));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--gs-n-8, 8) * var(--gs-px, 1px));
-  color: rgba(255, 255, 255, 0.4);
-  font-family: var(--font-body);
-  font-size: calc(var(--gs-font-size-xs, 12) * var(--gs-px, 1px));
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.scrollArrow {
-  width: calc(var(--gs-n-20, 20) * var(--gs-px, 1px));
-  height: calc(var(--gs-n-20, 20) * var(--gs-px, 1px));
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
-  margin-top: calc(var(--gs-n-4, 4) * var(--gs-px, 1px));
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.4;
-    transform: translateX(-50%) translateY(0);
-  }
-  50% {
-    opacity: 0.8;
-    transform: translateX(-50%) translateY(8px);
-  }
 }
 
 /* ========================================

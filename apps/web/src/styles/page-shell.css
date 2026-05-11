@@ -1,0 +1,18 @@
+/*
+ * Page-shell variables.
+ *
+ * Every public page consumed --edge-pad / --content-max / --footer-max
+ * via its own .page rule, redeclaring them in 8 separate page.module.css
+ * files (one per page + ContactSection). Promoted to :root so the values
+ * live in one place and any component (e.g. ContactSection used outside
+ * its host page's tree) can rely on them.
+ *
+ * Page-specific .page rules still own their background, overflow, and
+ * min-height — those legitimately vary per page.
+ */
+
+:root {
+  --edge-pad: calc(var(--gs-n-112) * var(--gs-px));
+  --content-max: calc(var(--gs-n-1696, 1696) * var(--gs-px));
+  --footer-max: calc(var(--gs-n-1664, 1664) * var(--gs-px));
+}

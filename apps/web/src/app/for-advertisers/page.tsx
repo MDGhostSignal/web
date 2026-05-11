@@ -253,7 +253,7 @@ export default function ForAdvertisersPage() {
             </ScrollFadeUp>
           </div>
           <div className={styles.featuresLayout}>
-            <div className={styles.featuresGrid}>
+            <div className={styles.featuresList}>
               {features.map((feature, index) => (
                 <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
                   <article className={styles.featureCard}>

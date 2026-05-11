@@ -1,5 +1,5 @@
 .contactSection {
-  padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad, 112px);
+  padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
   background: #000000;
 }
 

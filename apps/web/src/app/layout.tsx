@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../styles/generated-tokens.css";
 import "../styles/typography.css";
+import "../styles/page-shell.css";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 

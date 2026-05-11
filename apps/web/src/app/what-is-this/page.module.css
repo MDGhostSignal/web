@@ -1,7 +1,4 @@
 .page {
-  --edge-pad: calc(var(--gs-n-112) * var(--gs-px));
-  --content-max: calc(var(--gs-n-1696, 1696) * var(--gs-px));
-  --footer-max: calc(var(--gs-n-1664, 1664) * var(--gs-px));
   position: relative;
   min-height: 100dvh;
   overflow: visible;
@@ -154,168 +151,6 @@
   }
 }
 
-.splitHeroWrapper {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  z-index: 10;
-  overflow: hidden;
-}
-
-.splitHeroLeft {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  background: #ffffff;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--gs-n-80) * var(--gs-px));
-  will-change: transform;
-}
-
-.splitHeroRight {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: 100%;
-  z-index: 1;
-  will-change: transform;
-}
-
-.splitHeroImage {
-  object-fit: cover;
-  object-position: center;
-}
-
-/* TV Static noise overlay - uses tiny base64 noise image for performance */
-.staticFlicker {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  /* 8x8 pixel noise pattern encoded as base64 PNG - tiles seamlessly */
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAJElEQVQoU2NkYGD4z4AGGBkZQTQIMBKjAKtCdAXYFGFVgM4HAOHuAgXbSzgvAAAAAElFTkSuQmCC");
-  background-repeat: repeat;
-  opacity: 0.15;
-  mix-blend-mode: overlay;
-  animation: noiseFlicker 0.5s steps(4) infinite;
-}
-
-@keyframes noiseFlicker {
-  0%, 100% { opacity: 0.12; }
-  25% { opacity: 0.18; }
-  50% { opacity: 0.14; }
-  75% { opacity: 0.16; }
-}
-
-.splitHeroTextContainer {
-  max-width: calc(var(--gs-n-700, 700) * var(--gs-px));
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-}
-
-/* Split Hero Typography - Black text on white */
-.splitHeroHeadline {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(32px, 5vw, 72px);
-  line-height: 1.1;
-  color: #000000;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-}
-
-.splitHeroSubtitle {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-semibold);
-  font-size: clamp(18px, 2.5vw, 28px);
-  line-height: 1.3;
-  color: rgba(0, 0, 0, 0.85);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  margin-top: calc(var(--gs-n-16) * var(--gs-px));
-}
-
-.splitHeroBody {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: clamp(16px, 1.5vw, 20px);
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-/* Logo row for framing text */
-.logoRow {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-}
-
-.framingLogo {
-  width: calc(var(--gs-n-24) * var(--gs-px));
-  height: auto;
-  opacity: 0.6;
-}
-
-@media (max-width: 1024px) {
-  .splitHeroLeft {
-    width: 55%;
-    padding: calc(var(--gs-n-64) * var(--gs-px));
-  }
-
-  .splitHeroRight {
-    width: 45%;
-  }
-
-  .splitHeroTextContainer {
-    max-width: 100%;
-  }
-
-  .framingLogo {
-    width: calc(var(--gs-n-20) * var(--gs-px));
-  }
-}
-
-@media (max-width: 768px) {
-  .splitHeroWrapper {
-    height: auto;
-    min-height: 100vh;
-  }
-
-  .splitHeroLeft {
-    position: relative;
-    width: 100%;
-    height: auto;
-    min-height: 60vh;
-    padding: calc(var(--gs-n-48) * var(--gs-px));
-    padding-top: calc(var(--gs-n-100) * var(--gs-px));
-  }
-
-  .splitHeroRight {
-    position: relative;
-    width: 100%;
-    height: 40vh;
-  }
-
-  .splitHeroHeadline {
-    font-size: clamp(28px, 8vw, 48px);
-  }
-
-  .splitHeroSubtitle {
-    font-size: clamp(16px, 4vw, 22px);
-  }
-}
-
 /* =============================================================================
    GLOBE WRAPPER - Cloud background for entire section, globe behind final
    ============================================================================= */
@@ -362,14 +197,6 @@
   width: 100%;
   height: 100%;
 }
-
-.barsImage {
-  width: auto;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Globe moved to finalSection - old positioning removed */
 
 /* =============================================================================
    SCROLLING CONTENT - Text sections over dark background
@@ -499,14 +326,6 @@
   }
 }
 
-.alignLeft {
-  justify-content: flex-start;
-}
-
-.alignLeft .textContainer {
-  text-align: left;
-}
-
 .alignRight {
   justify-content: flex-end;
 }
@@ -523,20 +342,6 @@
   width: 100%;
   max-width: calc(var(--gs-n-540, 540) * var(--gs-px));
   text-align: left;
-}
-
-.alignCenter {
-  justify-content: center;
-}
-
-.alignCenter .textContainer {
-  text-align: center;
-  align-items: center;
-}
-
-.alignRightText {
-  text-align: right;
-  margin-left: auto;
 }
 
 /* Harmony section - special layout with centered body text */
@@ -632,59 +437,6 @@
   animation-delay: -5s;
 }
 
-/* ---- Orbiting dark sphere -------------------------------------------
-   CSS 3D: the wrapper rotates around the Y axis at the sun's centre;
-   the sphere lives at the wrapper's centre but is pushed out along
-   +Z so it traces a circular orbit through the scene. preserve-3d
-   on ancestors lets the renderer depth-sort the sphere against the
-   disk + corona, so the eclipse moment is real (front-of-sun) and
-   the back-of-orbit half is genuinely hidden by the white sun.
-   --------------------------------------------------------------------- */
-.harmonyOrbit {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  /* Initial transform — JS will overwrite this every frame via the
-     rAF loop in page.tsx, but rendering before JS mounts uses this
-     fallback so the orbit is at a sensible angle on first paint. */
-  transform: rotateZ(28deg) rotateY(180deg);
-}
-
-
-.harmonyOrbitSphere {
-  position: absolute;
-  /* Slightly larger than the white disk so at the eclipse moment the
-     sphere fully covers the disk and the corona reads as a halo
-     ring around its silhouette. */
-  inset: 27%;
-  border-radius: 50%;
-  /* Eclipse-silhouette shading — even the lit side is dark, so the
-     moon reads as genuinely blotting out the sun rather than a stone
-     in space. Total span runs from #2c2c30 down to near-black, with
-     enough delta between the three stops to keep the sphere reading
-     as 3D rather than a flat black disk. */
-  background:
-    radial-gradient(
-      circle at 32% 30%,
-      #2c2c30 0%,
-      #16161a 55%,
-      #06060a 95%
-    );
-  box-shadow:
-    inset -6px -8px 18px rgba(0, 0, 0, 0.55),
-    inset 3px 3px 8px rgba(120, 120, 130, 0.06);
-  /* Push the sphere out along +Z so the wrapper's Y-rotation traces
-     a circular orbit. Radius scales 1:1 with the sun — bumped to
-     87–138 after the 1.3× sun upsize. Exposed as a CSS variable so
-     the JS rAF loop in page.tsx can compose translateZ(var(...)) ×
-     rotateY(angle) without re-deriving the clamp. */
-  --orbit-radius: clamp(87px, 10vw, 138px);
-  transform: translateZ(var(--orbit-radius));
-  /* Pointer events handled by the section-spanning .harmonyInteraction
-     overlay — the sphere itself stays inert. */
-  pointer-events: none;
-}
-
 /* Section-spanning click/drag layer for the Harmony scene. Sits above
    the sun + orbit and below nothing visible; press-hold freezes the
    auto-spin, drag yaws + pitches the orbital plane, release resumes. */
@@ -713,16 +465,6 @@
   width: 100%;
   height: 100%;
 }
-
-/* Orbit + sphere rotation are now driven by JS in page.tsx (rAF loop
-   so the same code path handles auto-spin + pointer-drag). Keyframes
-   removed accordingly. The corona / rim glow keyframes below remain
-   CSS-driven — those breathe independently of the orbit. */
-
-/* The sphere counter-rotates by the negative of the parent's spin so
-   its shading stays oriented toward the viewer. Net world-space
-   rotation of the sphere itself is 0; only its position orbits. */
-
 
 @keyframes noctSunCorona {
   0%,
@@ -768,12 +510,6 @@
   .harmonySunCorona2 {
     opacity: 0.6;
   }
-  /* JS-driven orbit detects this preference and skips the auto-spin
-     loop (drag still works). Static fallback transform parks the
-     sphere off to one side so it's visible but motionless. */
-  .harmonyOrbit {
-    transform: rotateZ(28deg) rotateY(60deg);
-  }
 }
 
 @media (min-width: 1200px) {
@@ -783,37 +519,33 @@
   }
 }
 
-/* Headline container — left-aligned to match the body block below.
-   Class name kept for stability; the layout is no longer centred. */
-.centeredHeadlineContainer {
+/* Section headline + body blocks (left-aligned). */
+.headlineBlock {
   position: relative;
   width: 100%;
   margin: 0;
   text-align: left;
 }
 
-.centeredHeadlineContainer .sectionHeadline {
+.headlineBlock .sectionHeadline {
   position: relative;
   z-index: 1;
   text-align: left;
 }
 
-.centeredHeadlineContainer .headlineLine {
+.headlineBlock .headlineLine {
   display: block;
   text-align: left;
 }
 
-/* Centered body text container */
-.centeredBodyContainer {
+.bodyBlock {
   /* Width pinned to match the Values section's subheadline container
      (.alignRight .textContainer also at 540) so the harmony body
      line lengths and the values body line lengths read at the same
-     measure across the page. */
+     measure across the page. Anchored to the left of its grid cell
+     so the bars-graph in the centre and the Values section on the
+     right form a clear three-column rhythm down the page. */
   max-width: calc(var(--gs-n-540, 540) * var(--gs-px));
-  /* Body block anchored to the left of the section so the bars-graph
-     in the centre and the Values section on the right form a clear
-     three-column rhythm down the page. The headline above stays
-     centred via `.centeredHeadlineContainer`. */
   margin: 0 auto 0 0;
   display: flex;
   flex-direction: column;
@@ -854,17 +586,6 @@
   letter-spacing: -0.02em;
 }
 
-.sectionSubtitle {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-semibold);
-  font-size: clamp(20px, 3vw, 32px);
-  line-height: 1.3;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  margin-top: calc(var(--gs-n-16) * var(--gs-px));
-}
 
 .sectionBody {
   margin: 0;
@@ -1018,144 +739,6 @@
 .whitepaperButton:hover {
   background: #e09d1f;
   transform: translateY(-2px);
-}
-
-/* =============================================================================
-   FOOTER
-   ============================================================================= */
-
-.footer {
-  background: #1b1b1c;
-  color: var(--gs-tw-white);
-  padding: calc(var(--gs-n-128) * var(--gs-px));
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-80) * var(--gs-px));
-  border-bottom: 1px solid #60646c;
-  position: relative;
-  z-index: 10;
-}
-
-.footerTop,
-.footerNav,
-.footerMorse,
-.footerSocial {
-  width: min(var(--footer-max), calc(100vw - var(--gs-n-256) * var(--gs-px)));
-  margin-inline: auto;
-}
-
-.footerTop {
-  min-height: calc(var(--gs-n-145) * var(--gs-px));
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.footerMark {
-  width: calc(var(--gs-n-155) * var(--gs-px));
-  height: calc(var(--gs-n-145) * var(--gs-px));
-}
-
-.footerWordmark {
-  position: relative;
-  width: calc(var(--gs-n-563, 563) * var(--gs-px));
-  height: calc(var(--gs-n-135, 135) * var(--gs-px));
-  margin-top: calc(var(--gs-n-5, 5) * var(--gs-px));
-  overflow: hidden;
-}
-
-.footerWordmarkLeft {
-  position: absolute;
-  left: calc(var(--gs-n-24, 24) * var(--gs-px));
-  top: calc(var(--gs-n-45, 45) * var(--gs-px));
-  width: calc(var(--gs-n-290, 290) * var(--gs-px));
-  height: calc(var(--gs-n-58, 58) * var(--gs-px));
-}
-
-.footerWordmarkRight {
-  position: absolute;
-  left: calc(var(--gs-n-326, 326) * var(--gs-px));
-  top: calc(var(--gs-n-46, 46) * var(--gs-px));
-  width: calc(var(--gs-n-220, 220) * var(--gs-px));
-  height: calc(var(--gs-n-72, 72) * var(--gs-px));
-}
-
-.footerNav {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: 0;
-}
-
-.footerCol {
-  min-height: calc(var(--gs-n-224) * var(--gs-px));
-  padding: calc(var(--gs-n-12) * var(--gs-px));
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-64) * var(--gs-px));
-}
-
-.footerColTitle {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-5xl-size);
-  line-height: var(--gs-text-5xl-leading);
-  color: #80838d;
-}
-
-.footerColLinks {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.footerColLinks a {
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-2xl-size);
-  line-height: var(--gs-text-2xl-leading);
-  color: var(--gs-tw-white);
-  text-decoration: none;
-}
-
-.footerMorse {
-  text-align: center;
-}
-
-.morseCode {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-sm-size);
-  line-height: var(--gs-text-sm-leading);
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.3em;
-}
-
-.footerSocial {
-  display: flex;
-  justify-content: flex-end;
-  gap: calc(var(--gs-n-80) * var(--gs-px));
-}
-
-.socialLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.7;
-  transition: opacity 200ms ease;
-}
-
-.socialLink:hover {
-  opacity: 1;
-}
-
-.socialIcon {
-  width: calc(var(--gs-n-24) * var(--gs-px));
-  height: calc(var(--gs-n-24) * var(--gs-px));
 }
 
 /* =============================================================================

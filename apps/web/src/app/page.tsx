@@ -39,7 +39,7 @@ export default function LegacyHomePage() {
   }, []);
 
   return (
-    <main className={styles.legacyHome}>
+    <main className={styles.page}>
       <SiteHeader links={navLinks} animateIn />
 
       {/* Top-right admin entry — a single pill that drops straight

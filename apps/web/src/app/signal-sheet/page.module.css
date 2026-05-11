@@ -1,6 +1,4 @@
 .page {
-  --edge-pad: calc(var(--gs-n-112) * var(--gs-px));
-  --content-max: calc(var(--gs-n-1696, 1696) * var(--gs-px));
   --accent: var(--gs-tw-brand-red, #d63d38);
   position: relative;
   min-height: 100dvh;

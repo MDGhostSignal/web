@@ -446,7 +446,7 @@ export default function WhatIsThisPage() {
               </div>
             </div>
             {/* Headline centered */}
-            <div className={styles.centeredHeadlineContainer}>
+            <div className={styles.headlineBlock}>
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
                   <span>What if</span>
@@ -463,7 +463,7 @@ export default function WhatIsThisPage() {
               </h2>
             </div>
             {/* Body text centered on page, left-aligned inside */}
-            <div className={styles.centeredBodyContainer}>
+            <div className={styles.bodyBlock}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
                   We connect podcasters and brands who love the same things.
