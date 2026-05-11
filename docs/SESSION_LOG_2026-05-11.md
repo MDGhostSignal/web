@@ -315,18 +315,159 @@ satisfy: union references across all `*.tsx` in the module's
 directory, and match both `styles.X` and `styles[` access
 patterns.
 
+## 11. Cleanup pass #6 — JSX layout primitives (proof of concept)
+
+Created `apps/web/src/components/layout/` with two primitives:
+
+- **`<Section>`** — semantic `<section>` wrapper. Forwards refs so
+  parents can attach scroll triggers / IntersectionObservers.
+  No base CSS (page sections vary too much in
+  background/padding/clip-path for shared defaults to be safe).
+- **`<Container>`** — content-well wrapper. Its own
+  `Container.module.css` provides the universal base
+  (`max-width: var(--content-max); margin-inline: auto`). Page
+  CSS no longer has to redeclare those two lines on every
+  `*Container` rule.
+
+Naming convention now collapses: page CSS classes drop the
+`Container` suffix because the JSX type carries the role.
+Old: `<div className={styles.featuresContainer}>` where the
+rule has max-width + margin + layout. New:
+`<Container className={styles.features}>` where the rule has
+only the layout. The role-vs-styling split is finally clean.
+
+**Migrated as proof of concept** (the two surfaces with the
+clearest mapping):
+
+1. `apps/web/src/app/get-in-touch/page.tsx` — `.contactContainer`
+   → `.contact`, max-width + margin-inline dropped. `<section>` →
+   `<Section>` on both bands. Form section kept its custom
+   `.formContainer` (uses a narrower 640 max-width, not
+   `--content-max`) — `<Container>` is only for the standard
+   width well.
+2. `apps/web/src/components/ContactSection/ContactSection.tsx`
+   — `.contactContainer` → `.contact`, max-width + margin-inline
+   dropped. Bonus: the rule used a raw
+   `calc(var(--gs-n-1696, 1696) * var(--gs-px))` literal
+   instead of `var(--content-max)` — switching to `<Container>`
+   normalizes that.
+
+Validation: typecheck, lint, assets:audit all pass after each
+migration.
+
+## 12. Cleanup pass #7 — primitive rollout to all public pages
+
+After get-in-touch verified visually clean in the dev server,
+rolled out `<Section>` and `<Container>` to every other public
+surface:
+
+**All `<section>` → `<Section>`** (zero raw `<section>` elements
+remain anywhere under `apps/web/src/app/{page.tsx,
+for-creators, for-advertisers, who-are-we, get-in-touch,
+signal-sheet, snowdrift, what-is-this}` + `components/ContactSection`
++ `who-are-we/FoundersSection`). Every band on the public site
+now flows through the typed primitive.
+
+**Content-well migrations — `<div>` → `<Container>`**, with the
+CSS-rule rename (drop `Container` suffix where it doesn't
+conflict with the section class) and removal of the
+now-redundant `max-width: var(--content-max); margin-inline: auto`
+lines:
+
+| Page | Class rename | Notes |
+|---|---|---|
+| what-is-this | `.platformsContainer` → `.platforms` | |
+| for-creators | `.featuresContainer` → `.features` | |
+| for-creators | `.closingContainer` → `.closing` | |
+| for-creators | `.journeyHeader` (kept) | semantic-role name takes precedence |
+| for-advertisers | `.featuresContainer` → `.features` | |
+| for-advertisers | `.businessContainer` → `.business` | including 2 media-query references |
+| who-are-we | `.missionContainer` → `.mission` | including 1 media-query reference |
+| who-are-we | `.promisesContainer` → `.promises` | |
+| who-are-we (FoundersSection) | `.teamContainer` → `.team` | |
+| who-are-we (FoundersSection) | `.foundersGrid` (kept) | semantic-role name; the `max-width` line was redundant inside `.team` already |
+| signal-sheet | `.heroContainer` (kept) | would conflict with `.hero` section class |
+| signal-sheet | `.sectionContainer` (kept) | would conflict with `.section` band class |
+| signal-sheet | `.categoryList` (no Container migration) | `<ul>` semantic — kept the `max-width` line since no `<Container>` wraps it |
+| signal-sheet | `.section` (kept on the categories.map band) | |
+
+**Pages with no Container migrations:**
+
+- snowdrift — its `.signupContainer` and `.descriptionContainer`
+  use custom max-widths (640 / 900), not `var(--content-max)`.
+  Kept as plain `<div>`. Section migration still applied.
+- homepage — `.heroSection` had no inner content-well using
+  `var(--content-max)`. Section migration only.
+
+**Net code shape after pass #7:**
+
+- Page-specific `*Container` CSS rules dropped 2 lines each
+  (max-width + margin-inline) — those lines now live exclusively
+  in `Container.module.css`.
+- JSX gained `<Section>` and `<Container>` imports + slightly
+  longer tag names; net diff `+155 / -127` across 18 files.
+- The role-vs-styling split is now structurally enforced: any
+  new section without `<Section>` stands out, and any new
+  content well that doesn't go through `<Container>` either
+  has a custom max-width or is a divergence.
+
+Validation: typecheck, lint, assets:audit all pass after each
+page's migration.
+
+## 13. for-creators — top hero logos removed
+
+User requested the three small GhostSignal lettermarks above the
+"Your podcast is / Cultural architecture / You are building the
+future" headline be removed without letting the headline shift
+up.
+
+The logo row sat in a `.heroContent` flex-column with `gap:
+var(--gs-n-96)`, so a clean delete would have pulled the
+headline up by `logo-height (clamp 20–30px) + 96px`. Replaced
+the whole `<ScrollFadeUp><div .heroLogos>...</div></ScrollFadeUp>`
+block (lines 215–239) with a single invisible spacer:
+
+```tsx
+<div className={styles.heroLogosSpacer} aria-hidden="true" />
+```
+
+…and added the matching CSS rule next to `.heroLogos`:
+
+```css
+.heroLogosSpacer {
+  height: clamp(20px, 2.5vw, 30px);
+}
+```
+
+The flex-column gap then preserves the headline's exact original
+position. `.heroLogos` itself is kept — still used by the second
+(bottom) logos row at the foot of the hero.
+
 ## Open follow-ups / next-step notes
 
-1. **JSX `<Section>` / `<Block>` primitive** (L). The naming
-   convention is now in place; a JSX primitive enforced by
-   types would lock the shape so future drift requires explicit
-   CSS. Pair with a `<Container>` for the width-constrained
-   well. Worth its own focused session.
+1. **Manual browser re-walk after the full rollout.** Every
+   page now uses the primitives; even though each was validated
+   in lint+typecheck and the rule changes are mechanically
+   safe, a full click-through (especially the bands with
+   complex inner grids: for-creators features/journey,
+   who-are-we mission/promises, for-advertisers business) is
+   worth doing before pushing.
 
 2. **Stylelint rule: forbid hard-coded px/rem outside the calc
    pattern** — would catch future token-system drift
    automatically. Separate tooling concern.
 
-3. **Manual browser re-walk after these renames** is worth
-   doing once even though CSS module renames are mechanically
-   safe — same logic as pass #3.
+3. **Admin pages audit** — entire `apps/web/src/app/admin/**`
+   tree was excluded from this session. Likely has similar
+   orphan-CSS / container-sickness / naming-inconsistency
+   issues. Untouched territory.
+
+4. **Potential `<Container>` ergonomic tweak.** A few content
+   wells need a custom `max-width` that isn't `--content-max`
+   (snowdrift's `.signupContainer` / `.descriptionContainer`,
+   get-in-touch's `.formContainer`). Currently those stay as
+   plain `<div>`. If we want them under `<Container>` too,
+   either: (a) accept a `maxWidth` prop on the component, or
+   (b) extract a CSS custom property `--container-max` that
+   `<Container>` reads, defaulting to `--content-max`, so the
+   consumer can override it inline or via class. Not urgent.
