@@ -10,6 +10,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
@@ -187,7 +188,7 @@ export default function ForCreatorsPage() {
       <div className={styles.staticOverlay} aria-hidden="true" />
 
       {/* Hero Section */}
-      <section ref={heroSectionRef} className={styles.hero}>
+      <Section ref={heroSectionRef} className={styles.hero}>
         {/* Ambient firefly drift — same cursor-repulsion pattern as
             the pollen on /for-advertisers and the blossoms on
             /what-is-this. Canvas fills the hero, fireflies float upward
@@ -211,31 +212,11 @@ export default function ForCreatorsPage() {
           </video>
         </div>
         <div className={styles.heroContent}>
-          <ScrollFadeUp index={0} duration={1.4} distance={24}>
-            <div className={styles.heroLogos}>
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-            </div>
-          </ScrollFadeUp>
+          {/* Spacer reserves the vertical room the removed top
+              hero-logos row used to occupy so the headline stays
+              in the same position. Matches .heroLogo's clamped
+              height. */}
+          <div className={styles.heroLogosSpacer} aria-hidden="true" />
           <h1 className={styles.heroHeadline}>
             <SplitLinesReveal duration={2.2}>Your podcast is</SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.35}>
@@ -317,11 +298,11 @@ export default function ForCreatorsPage() {
             </ScrollFadeUp>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* Features Section */}
-      <section className={styles.featuresSection}>
-        <div className={styles.featuresContainer}>
+      <Section className={styles.featuresSection}>
+        <Container className={styles.features}>
           <div className={styles.featuresHeader}>
             <ScrollFadeUp index={0} duration={1.6}>
               <p className={styles.featuresSubhead}>Why this works</p>
@@ -365,13 +346,13 @@ export default function ForCreatorsPage() {
               <LazyLottie src="/images/for-creators/creators.json" />
             </div>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Membership Journey Section */}
-      <section ref={journeyRef} className={styles.journeySection}>
+      <Section ref={journeyRef} className={styles.journeySection}>
         <div className={styles.journeyBackground} aria-hidden="true" />
-        <div className={styles.journeyHeader}>
+        <Container className={styles.journeyHeader}>
           <ScrollFadeUp index={0} duration={1.6}>
             <p className={styles.journeySubtitle}>how it works</p>
           </ScrollFadeUp>
@@ -383,7 +364,7 @@ export default function ForCreatorsPage() {
               Our process is simple, unhurried, and sensitive to your voice and mission. Here&apos;s how it goes:
             </p>
           </ScrollFadeUp>
-        </div>
+        </Container>
 
         <div className={styles.journeyLayout}>
           <ScrollFadeUp duration={1.8} distance={40}>
@@ -442,11 +423,11 @@ export default function ForCreatorsPage() {
             </ScrollFadeUp>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* Closing Statement Section */}
-      <section className={styles.closingSection}>
-        <div className={styles.closingContainer}>
+      <Section className={styles.closingSection}>
+        <Container className={styles.closing}>
           <h2 className={styles.closingHeadline}>
             <SplitLinesReveal duration={2.2}>You don&apos;t need</SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.35}>
@@ -473,8 +454,8 @@ export default function ForCreatorsPage() {
               />
             </Link>
           </ScrollFadeUp>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Contact Section */}
       <ContactSection />

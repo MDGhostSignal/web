@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
+import { Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 
 import { HomeTypingHero } from "./HomeTypingLoop";
@@ -68,7 +69,7 @@ export default function LegacyHomePage() {
       </div>
 
       {/* Hero Section */}
-      <section className={styles.heroSection}>
+      <Section className={styles.heroSection}>
         <h1 className={styles.heroHeadline}>
           <HomeTypingHero />
         </h1>
@@ -84,7 +85,7 @@ export default function LegacyHomePage() {
             Learn more
           </Link>
         </ScrollFadeUp>
-      </section>
+      </Section>
     </main>
   );
 }

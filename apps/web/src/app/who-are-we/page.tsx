@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import SplineEmbed from "./SplineEmbed";
@@ -40,7 +41,7 @@ export default function WhoAreWePage() {
       <SiteHeader links={navLinks} />
 
       {/* Hero Section */}
-      <section className={styles.hero}>
+      <Section className={styles.hero}>
         <div className={styles.heroSky} aria-hidden="true" />
 
         {/* Hero clouds - background layer */}
@@ -162,10 +163,10 @@ export default function WhoAreWePage() {
             className={styles.heroLogoSide}
           />
         </div>
-      </section>
+      </Section>
 
       {/* Partner-Making Force Section */}
-      <section className={styles.missionSection}>
+      <Section className={styles.missionSection}>
         {/* Drifting clouds — same asset + keyframes as the hero and
            promises sections, tuned to this section's scale. */}
         <div className={styles.missionCloudWrapper}>
@@ -194,7 +195,7 @@ export default function WhoAreWePage() {
             aria-hidden="true"
           />
         </div>
-        <div className={styles.missionContainer}>
+        <Container className={styles.mission}>
           <div className={styles.missionLeft}>
             <SplitLinesReveal duration={1.8} stagger={0.28}>
               <h2 className={styles.missionHeadline}>
@@ -233,15 +234,15 @@ export default function WhoAreWePage() {
               </p>
             </ScrollFadeUp>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Team Section */}
       <FoundersSection />
 
       {/* Promises Section */}
-      <section className={styles.promisesSection}>
-        <div className={styles.promisesContainer}>
+      <Section className={styles.promisesSection}>
+        <Container className={styles.promises}>
           {/* Animated floating clouds - background layer */}
           <div className={styles.promisesCloudWrapper}>
             <Image
@@ -343,8 +344,8 @@ export default function WhoAreWePage() {
           <ScrollFadeUp index={8} duration={1.6}>
             <Button href="/get-in-touch">Find Your Frequency</Button>
           </ScrollFadeUp>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Contact Section */}
       <ContactSection />

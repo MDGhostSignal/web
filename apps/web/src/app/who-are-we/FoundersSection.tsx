@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import styles from "./page.module.css";
 
@@ -74,8 +75,8 @@ export function FoundersSection() {
   };
 
   return (
-    <section className={styles.teamSection}>
-      <div className={styles.teamContainer}>
+    <Section className={styles.teamSection}>
+      <Container className={styles.team}>
         {/* Animated floating clouds - background layer */}
         <div className={styles.cloudWrapper}>
           <Image
@@ -153,7 +154,7 @@ export function FoundersSection() {
             </ScrollFadeUp>
           ))}
         </div>
-      </div>
+      </Container>
 
       {selectedFounder && (
         <div className={styles.modalOverlay} onClick={closeModal}>
@@ -218,6 +219,6 @@ export function FoundersSection() {
           </div>
         </div>
       )}
-    </section>
+    </Section>
   );
 }

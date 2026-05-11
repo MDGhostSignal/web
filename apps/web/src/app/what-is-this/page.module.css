@@ -854,13 +854,11 @@
   padding: calc(var(--gs-n-128) * var(--gs-px)) var(--edge-pad);
 }
 
-.platformsContainer {
+.platforms {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: calc(var(--gs-n-16) * var(--gs-px));
-  max-width: var(--content-max);
-  margin-inline: auto;
   text-align: center;
 }
 

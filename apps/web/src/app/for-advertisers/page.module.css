@@ -168,9 +168,7 @@
   clip-path: polygon(0 60px, 50% 0, 100% 60px, 100% 100%, 0 100%);
 }
 
-.featuresContainer {
-  max-width: var(--content-max);
-  margin-inline: auto;
+.features {
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-48) * var(--gs-px));
@@ -650,14 +648,12 @@
   }
 }
 
-.businessContainer {
+.business {
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: calc(var(--gs-n-80) * var(--gs-px));
-  max-width: var(--content-max);
-  margin-inline: auto;
   align-items: start;
 }
 
@@ -847,7 +843,7 @@
     font-size: clamp(36px, 6vw, 64px);
   }
 
-  .businessContainer {
+  .business {
     grid-template-columns: 1fr 0.6fr;
   }
 }
@@ -870,7 +866,7 @@
     order: 2;
   }
 
-  .businessContainer {
+  .business {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }

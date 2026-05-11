@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -327,8 +328,8 @@ export default function SignalSheetPage() {
       <div className={styles.staticOverlay} aria-hidden="true" />
 
       {/* Hero */}
-      <section className={styles.hero}>
-        <div className={styles.heroContainer}>
+      <Section className={styles.hero}>
+        <Container className={styles.heroContainer}>
           <ScrollFadeUp duration={1.4} distance={16}>
             <p className={styles.eyebrow}>Resources</p>
           </ScrollFadeUp>
@@ -372,8 +373,8 @@ export default function SignalSheetPage() {
               ))}
             </ul>
           </ScrollFadeUp>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Bottom-fixed category navigation */}
       <nav
@@ -401,12 +402,12 @@ export default function SignalSheetPage() {
       {categories.map((cat, catIndex) => {
         const isGraph = cat.id === "adverts";
         return (
-          <section
+          <Section
             key={cat.id}
             id={cat.id}
             className={`${styles.section} ${isGraph ? styles.sectionGraph : ""}`}
           >
-            <div className={styles.sectionContainer}>
+            <Container className={styles.sectionContainer}>
               <header className={styles.sectionHeader}>
                 <ScrollFadeUp duration={1.4} distance={16}>
                   <p className={styles.sectionNumber}>
@@ -495,8 +496,8 @@ export default function SignalSheetPage() {
                   ))}
                 </ol>
               )}
-            </div>
-          </section>
+            </Container>
+          </Section>
         );
       })}
 

@@ -5,6 +5,7 @@ import Image from "next/image";
 
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -64,8 +65,8 @@ export default function GetInTouchPage() {
       <SiteHeader links={navLinks} />
 
       {/* Contact Section */}
-      <section className={styles.contactSection}>
-        <div className={styles.contactContainer}>
+      <Section className={styles.contactSection}>
+        <Container className={styles.contact}>
           <div className={styles.contactText}>
             <ScrollFadeUp index={0} duration={1.6}>
               <p className={styles.contactEyebrow}>GET IN TOUCH</p>
@@ -100,11 +101,11 @@ export default function GetInTouchPage() {
               className={styles.contactPhoto}
             />
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Contact Form Section */}
-      <section className={styles.formSection}>
+      <Section className={styles.formSection}>
         <div className={styles.formContainer}>
           <ScrollFadeUp index={0} duration={1.6}>
             {submitStatus === "success" ? (
@@ -253,7 +254,7 @@ export default function GetInTouchPage() {
             )}
           </ScrollFadeUp>
         </div>
-      </section>
+      </Section>
 
       <Footer />
     </main>

@@ -11,6 +11,7 @@ import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
 import { ResultTyping } from "./ResultTyping";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
+import { Container, Section } from "@/components/layout";
 import { ParallaxY } from "@/motion/ParallaxY";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
@@ -186,7 +187,7 @@ export default function ForAdvertisersPage() {
       <div className={styles.staticOverlay} aria-hidden="true" />
 
       {/* Hero Section */}
-      <section ref={heroRef} className={styles.hero}>
+      <Section ref={heroRef} className={styles.hero}>
         <div className={styles.heroVideoWrapper}>
           <div className={styles.heroVideoTilt}>
             <video
@@ -223,11 +224,11 @@ export default function ForAdvertisersPage() {
             </p>
           </ScrollFadeUp>
         </div>
-      </section>
+      </Section>
 
       {/* Why This Works Section */}
-      <section className={styles.featuresSection}>
-        <div className={styles.featuresContainer}>
+      <Section className={styles.featuresSection}>
+        <Container className={styles.features}>
           <div className={styles.featuresHeader}>
             <ScrollFadeUp index={0} duration={1.6}>
               <p className={styles.featuresSubhead}>Why this works</p>
@@ -270,11 +271,11 @@ export default function ForAdvertisersPage() {
               <LazyLottie src="/images/for-advertisers/advertisers.json" />
             </div>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* The Pitch Section */}
-      <section className={styles.pitchSection}>
+      <Section className={styles.pitchSection}>
         <StarFogBackground />
         <div className={styles.pitchContent}>
           <h2 className={styles.pitchHeadline}>
@@ -314,10 +315,10 @@ export default function ForAdvertisersPage() {
             </Button>
           </ScrollFadeUp>
         </div>
-      </section>
+      </Section>
 
       {/* The Business Case Section */}
-      <section ref={businessRef} className={styles.businessSection}>
+      <Section ref={businessRef} className={styles.businessSection}>
         {/* Floating clouds — same animated pattern as /who-are-we hero,
             ported here per request. Wrapper is absolute + overflow:hidden
             so the section can keep position:relative without breaking
@@ -334,7 +335,7 @@ export default function ForAdvertisersPage() {
           <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud9}`} />
           <Image src="/images/for-advertisers/cloud.png" alt="" width={600} height={400} className={`${styles.businessCloud} ${styles.businessCloud10}`} />
         </div>
-        <div className={styles.businessContainer}>
+        <Container className={styles.business}>
           <div className={styles.businessContent}>
             <h2 className={styles.businessTitle}>
               <SplitLinesReveal duration={2}>
@@ -401,8 +402,8 @@ export default function ForAdvertisersPage() {
               </ParallaxY>
             </ScrollFadeUp>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* Contact Section */}
       <ContactSection imageSrc="/images/for-advertisers/jeremycontact.jpg" />

@@ -3,12 +3,10 @@
   background: #000000;
 }
 
-.contactContainer {
+.contact {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: calc(var(--gs-n-80) * var(--gs-px));
-  max-width: calc(var(--gs-n-1696, 1696) * var(--gs-px));
-  margin-inline: auto;
   align-items: center;
 }
 

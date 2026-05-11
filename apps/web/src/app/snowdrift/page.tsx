@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
+import { Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -25,7 +26,7 @@ export default function SnowdriftPage() {
       <SiteHeader links={navLinks} />
 
       {/* Hero Section */}
-      <section className={styles.hero}>
+      <Section className={styles.hero}>
         <div className={styles.heroSky} aria-hidden="true" />
         <div className={styles.heroContent}>
           <ScrollFadeUp index={0} duration={1.6}>
@@ -61,10 +62,10 @@ export default function SnowdriftPage() {
             </p>
           </ScrollFadeUp>
         </div>
-      </section>
+      </Section>
 
       {/* Newsletter Signup Section */}
-      <section className={styles.signupSection}>
+      <Section className={styles.signupSection}>
         <div className={styles.signupContainer}>
           <ScrollFadeUp index={0} duration={1.6}>
             <h2 className={styles.signupHeadline}>Welcome to the Snowdrift</h2>
@@ -85,10 +86,10 @@ export default function SnowdriftPage() {
             </a>
           </ScrollFadeUp>
         </div>
-      </section>
+      </Section>
 
       {/* Description Section */}
-      <section className={styles.descriptionSection}>
+      <Section className={styles.descriptionSection}>
         <div className={styles.descriptionContainer}>
           <ScrollFadeUp index={0} duration={1.6}>
             <p className={styles.descriptionTagline}>
@@ -119,7 +120,7 @@ export default function SnowdriftPage() {
             </ScrollFadeUp>
           </div>
         </div>
-      </section>
+      </Section>
 
       <Footer />
     </main>

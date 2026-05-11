@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
@@ -20,8 +21,8 @@ export function ContactSection({
   imageAlt = "Jeremy",
 }: ContactSectionProps) {
   return (
-    <section className={styles.contactSection}>
-      <div className={styles.contactContainer}>
+    <Section className={styles.contactSection}>
+      <Container className={styles.contact}>
         <div className={styles.contactText}>
           <ScrollFadeUp index={0} duration={1.6}>
             <p className={styles.contactEyebrow}>GET IN TOUCH</p>
@@ -66,7 +67,7 @@ export function ContactSection({
             className={styles.contactPhoto}
           />
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }

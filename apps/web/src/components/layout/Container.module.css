@@ -1,0 +1,11 @@
+/*
+ * Content-well base. Pins the inner block to --content-max
+ * (declared on :root in page-shell.css) and centers it horizontally.
+ * Page-specific layout (grid/flex/gap) is composed via the className
+ * the consumer passes to <Container>.
+ */
+
+.container {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}

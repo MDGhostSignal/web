@@ -315,11 +315,9 @@
   animation: cloudFloat3 200s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
-.missionContainer {
+.mission {
   position: relative;
   z-index: 1;
-  max-width: var(--content-max);
-  margin-inline: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: calc(var(--gs-n-64) * var(--gs-px));
@@ -594,10 +592,8 @@
   background: transparent;
 }
 
-.teamContainer {
+.team {
   position: relative;
-  max-width: var(--content-max);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-64) * var(--gs-px));
@@ -751,8 +747,6 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: calc(var(--gs-n-32) * var(--gs-px));
-  max-width: var(--content-max);
-  margin-inline: auto;
 }
 
 /* Founder Card - Click to reveal modal */
@@ -971,10 +965,8 @@
   background: transparent;
 }
 
-.promisesContainer {
+.promises {
   position: relative;
-  max-width: var(--content-max);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1202,7 +1194,7 @@
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .missionContainer {
+  .mission {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-32) * var(--gs-px));
   }

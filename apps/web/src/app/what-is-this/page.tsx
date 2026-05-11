@@ -33,6 +33,7 @@ import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
+import { Container, Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
@@ -414,7 +415,7 @@ export default function WhatIsThisPage() {
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
           {/* Section 2: Advertising Harmony */}
-          <section className={styles.harmonySection}>
+          <Section className={styles.harmonySection}>
             {/* Section-spanning interaction layer — captures pointer
                 events anywhere over the Harmony animation. Press and
                 hold pauses the auto-spin; horizontal drag yaws,
@@ -485,10 +486,10 @@ export default function WhatIsThisPage() {
                 </p>
               </ScrollFadeUp>
             </div>
-          </section>
+          </Section>
 
           {/* Section 3: Values Create Value - RIGHT */}
-          <section className={`${styles.textSection} ${styles.alignRight}`}>
+          <Section className={`${styles.textSection} ${styles.alignRight}`}>
             {/* Binary-star R3F scene — two PBR spheres lit by their
                 own coloured point lights, drag-spin with inertia,
                 selective Bloom on emissive cores. Mounts only when
@@ -536,10 +537,10 @@ export default function WhatIsThisPage() {
                 </p>
               </ScrollFadeUp>
             </div>
-          </section>
+          </Section>
 
           {/* Final Section: This is the Signal - with globe below */}
-          <section className={styles.finalSection}>
+          <Section className={styles.finalSection}>
             <div className={styles.finalContent}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <Image
@@ -573,10 +574,10 @@ export default function WhatIsThisPage() {
             <div className={styles.finalGlobeWrapper}>
               <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
             </div>
-          </section>
+          </Section>
 
           {/* White Paper CTA Section */}
-          <section className={styles.whitepaperSection}>
+          <Section className={styles.whitepaperSection}>
             <div className={styles.whitepaperContent}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.whitepaperText}>
@@ -594,15 +595,15 @@ export default function WhatIsThisPage() {
                 </a>
               </ScrollFadeUp>
             </div>
-          </section>
+          </Section>
         </div>
       </div>
 
       {/* Platforms — listening platforms row, all-black monochrome marks
           on a white backdrop. Sits above the standardised Get-In-Touch
           contact section. */}
-      <section className={styles.platformsSection}>
-        <div className={styles.platformsContainer}>
+      <Section className={styles.platformsSection}>
+        <Container className={styles.platforms}>
           <ScrollFadeUp index={0} duration={1.6}>
             <h2 className={styles.platformsHeadline}>Platforms</h2>
           </ScrollFadeUp>
@@ -627,8 +628,8 @@ export default function WhatIsThisPage() {
               </li>
             </ul>
           </ScrollFadeUp>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       <ContactSection />
 

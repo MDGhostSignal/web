@@ -108,6 +108,14 @@
   width: 100%;
 }
 
+/* Invisible placeholder that holds the vertical slot the removed
+   top hero-logos row used to fill. Matches .heroLogo's clamped
+   height so the .heroContent flex-column gap keeps the headline
+   in its original position. */
+.heroLogosSpacer {
+  height: clamp(20px, 2.5vw, 30px);
+}
+
 .heroLogo {
   width: clamp(20px, 2.5vw, 30px);
   height: auto;
@@ -166,9 +174,7 @@
   clip-path: polygon(0 60px, 50% 0, 100% 60px, 100% 100%, 0 100%);
 }
 
-.featuresContainer {
-  max-width: var(--content-max);
-  margin-inline: auto;
+.features {
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-48) * var(--gs-px));
@@ -306,8 +312,6 @@
   flex-direction: column;
   gap: calc(var(--gs-n-16) * var(--gs-px));
   padding: 0 var(--edge-pad);
-  max-width: var(--content-max);
-  margin-inline: auto;
   margin-bottom: calc(var(--gs-n-80) * var(--gs-px));
 }
 
@@ -542,9 +546,7 @@
   background: var(--gs-tw-white);
 }
 
-.closingContainer {
-  max-width: var(--content-max);
-  margin-inline: auto;
+.closing {
   display: flex;
   flex-direction: column;
   align-items: center;
