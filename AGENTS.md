@@ -65,6 +65,7 @@ Rules for agents:
   - `npm run assets:audit`
   - `npm run typecheck`
   - `npm run lint`
+  - `npm run lint:css` (Stylelint — enforces the `calc(var(--gs-n-N) * var(--gs-px))` discipline; see "Token Discipline (Stylelint)" below)
 
 If `assets:audit` reports missing files:
 - Look for the file in the raw vault `assets/` and copy it into `apps/web/public/...`.
@@ -73,6 +74,21 @@ If `assets:audit` reports missing files:
 ## Design Token System (Mandatory)
 
 This repo has a **comprehensive design token system** synced from Figma. Agents MUST use these tokens instead of hard-coding values.
+
+### Token Namespaces (Four-Surface Map)
+
+The repo has **four parallel CSS token namespaces**, each scoped to a distinct surface. They are intentionally separate — do not converge them.
+
+| Surface | Namespace | Path | Why separate |
+|---|---|---|---|
+| Public site | `--gs-*` | `src/styles/generated-tokens.css` (Figma-synced) | Brand-aligned source of truth |
+| Admin tree | `--admin-*` | `src/components/admin/tokens.css` | Internal tooling; light/dark themes + pragmatic micro-pixel chrome below the public spacing scale |
+| RQ quiz + visualizations | `--rq-*` | `src/app/rq-quiz/rq-quiz.css` | Tuned visual rhythm for the quiz/results UX |
+| Design-system showcase | `--ds-*` | `src/app/design-system/design-system.module.css` | Internal reference page that demonstrates `--gs-*` without consuming it |
+
+The Stylelint rule (see "Token Discipline" below) enforces `--gs-*` discipline on the **public surface only**. The other three are excluded via `.stylelintignore` and have their own conventions documented inline.
+
+**The rules in this section apply to the `--gs-*` public surface unless stated otherwise.**
 
 ### Token Files
 
@@ -149,6 +165,66 @@ A visual reference of all tokens is available at `/design-system` in the running
 
 ---
 
+## Layout Primitives & Section Conventions (Mandatory, public site)
+
+Public pages MUST use the typed JSX primitives at `apps/web/src/components/layout/`. New `<section>` / content-well `<div>` patterns added directly without going through the primitives are out of convention.
+
+| Primitive | When to use |
+|---|---|
+| `<Section>` | Replace every `<section>` element. Semantic wrapper that forwards refs. No base CSS — apply your page band's `className` directly. |
+| `<Container>` | Width-constrained content well. Its own CSS module provides `max-width: var(--content-max); margin-inline: auto` automatically — **DO NOT redeclare those two properties in consumer CSS**. |
+
+Import:
+
+```tsx
+import { Section, Container } from "@/components/layout";
+```
+
+### Canonical structure
+
+```tsx
+<Section className={styles.heroSection}>
+  <Container className={styles.hero}>
+    {/* content */}
+  </Container>
+</Section>
+```
+
+### Class-name suffix convention
+
+| Suffix | Role | Notes |
+|---|---|---|
+| `*Section` | The semantic band | Carries padding, background, clip-path, scroll anchor, etc. Paired with `<Section>`. |
+| `*` (no suffix) | Content well — paired with `<Container>` | Page-specific grid/flex layout only. **No `max-width` or `margin-inline`** — those come from `<Container>`. |
+| `*Content` | Inner content grouping (NOT a content well) | Flex stack with no `max-width`. Use for grouping siblings inside a band or well. Stays as a plain `<div>`. |
+| `*Layout` / `*Grid` / `*List` | Specific multi-column layout shape | Use when "container" is too generic. Examples: `.featuresList` is a flex-column of cards. |
+| `*Header` | A section's lede block (eyebrow + title + intro) | Can be width-constrained — wrap in `<Container>` when it is. |
+| `*Wrapper` | Wrapper that earns its keep with a real `overflow` / `transform` / `clip-path` / position-isolation job | Don't use for pass-through wrappers. |
+
+### When to KEEP the `Container` suffix
+
+Drop the suffix when renaming. Keep it only when dropping it would conflict with an existing class in the same module — e.g. signal-sheet's `.heroContainer` (the band is already `.hero`) and `.sectionContainer` (the band is already `.section`). Documented exceptions, not the norm.
+
+### When `<Container>` is NOT the right choice
+
+Some content wells need a custom `max-width` that isn't `--content-max`. Examples in the wild: snowdrift's `.signupContainer` (640), `.descriptionContainer` (900); get-in-touch's `.formContainer` (640). These use plain `<div>` with their own className. The outer band still goes through `<Section>`.
+
+### Shared page-shell variables
+
+`apps/web/src/styles/page-shell.css` declares three CSS variables on `:root` (imported once in `layout.tsx`):
+
+- `--edge-pad: calc(var(--gs-n-112) * var(--gs-px))` — horizontal page padding
+- `--content-max: calc(var(--gs-n-1696, 1696) * var(--gs-px))` — content-well max-width (what `<Container>` consumes)
+- `--footer-max: calc(var(--gs-n-1664, 1664) * var(--gs-px))` — footer max-width
+
+Page modules consume these directly. **Do not redeclare** `--edge-pad` / `--content-max` / `--footer-max` inside any `.page` rule — they live on `:root` so the values stay synchronized.
+
+### Admin and other surfaces
+
+The admin tree has its own primitive: `<AdminShell>` at `src/components/admin/AdminShell.tsx`. Admin pages do **not** use `<Section>` / `<Container>` from `@/components/layout`. Different surface, different conventions.
+
+---
+
 ## Motion / Animation Library (Mandatory)
 
 This repo includes a **Motto-inspired motion library** (GSAP + ScrollTrigger patterns). Agents MUST reuse these components instead of creating new animations.
@@ -201,6 +277,25 @@ import { SplitLinesReveal, ScrollFadeUp } from "@/motion";
 - Keep logs concise and factual so future agents can quickly resume work.
 
 ---
+
+## Token Discipline (Stylelint)
+
+`apps/web/.stylelintrc.json` runs the `declaration-property-unit-disallowed-list` rule with `px` forbidden on the spacing-family properties (`padding*`, `margin*`, `gap`, `row-gap`, `column-gap`, `top`/`right`/`bottom`/`left`/`inset*`). The intent: every spacing value on the public site flows through the `calc(var(--gs-n-N) * var(--gs-px))` token pattern.
+
+Scope is the `--gs-*` surface only. Four other directories have their own self-contained design systems and are excluded via `.stylelintignore`:
+
+- `src/app/admin/` + `src/components/admin/` — uses `--admin-space-*` and pragmatic micro-pixel chrome
+- `src/app/rq-quiz/` + `src/components/rq/` — uses `--rq-*`
+- `src/app/design-system/` — uses `--ds-*` for the internal showcase page
+
+If you legitimately need a raw `px` literal on a covered property (canonical patterns: clip-path-paired offsets, sr-only `-1px` margin), suppress it with a comment that explains why:
+
+```css
+/* stylelint-disable-next-line declaration-property-unit-disallowed-list -- paired with the 60px peak in the clip-path polygon below; the two must move together. */
+margin-top: -60px;
+```
+
+Don't suppress without a `-- reason`.
 
 ## Orphan CSS Detection (Cleanup Trap)
 
