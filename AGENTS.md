@@ -199,3 +199,30 @@ import { SplitLinesReveal, ScrollFadeUp } from "@/motion";
   - Validation commands run and results
   - Open issues / next-step notes
 - Keep logs concise and factual so future agents can quickly resume work.
+
+---
+
+## Orphan CSS Detection (Cleanup Trap)
+
+Before deleting any CSS module class as "unused", remember that
+this repo has two patterns the naive `grep 'styles\.X'` will miss:
+
+1. **Sibling components share the page's CSS module.** Several
+   pages have peer `.tsx` files in the same directory that
+   `import styles from "./page.module.css"` — e.g.
+   `apps/web/src/app/who-are-we/{FoundersSection,SplineEmbed}.tsx`.
+   Classes used by those files are alive but invisible to a check
+   that only inspects `page.tsx`.
+2. **Dynamic bracket access.** `Button.module.css`,
+   `BrandedGhostSignal.module.css`, and `HomeTypingLoop.module.css`
+   apply variant/size classes via `styles[variant]` or
+   `styles[seg.className]`. The class name never appears as a
+   literal `styles.X` in the source.
+
+Before deleting an "orphan" class, an automated cleanup MUST:
+- Union references across every `*.tsx` in the module's directory
+  (not just the obvious consumer).
+- Match both `styles.X` and `styles\[` access patterns.
+
+A 2026-05-11 cleanup pass caught both traps mid-stream — without
+those checks ~30 alive classes would have been silently deleted.

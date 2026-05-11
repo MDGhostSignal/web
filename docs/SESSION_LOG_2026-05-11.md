@@ -271,35 +271,62 @@ pattern. My naive `styles\.X` grep doesn't catch bracket
 access. Verified each, kept as-is. No real orphans in the
 components tree.
 
+## 9. Cleanup pass #5 — naming convention standardized
+
+Established a per-role suffix convention across all page modules:
+
+| Suffix | Role |
+|---|---|
+| `*Section` | The semantic band (one per visual section). |
+| `*Container` | Content well — width-constrained via `max-width: var(--content-max)` + `margin-inline: auto`. |
+| `*Content` | Inner content grouping (flex/stack) **without** a width constraint. |
+| `*Layout` / `*Grid` | Multi-column grid or specific layout shape. |
+| `*Wrapper` | Earns its keep with `overflow` / `transform` / `clip-path` / position isolation. |
+
+Surveyed every rule with `max-width: var(--content-max)` across
+the public site, identified four mismatches where the rule did
+content-well duty but used the `*Content` suffix, and renamed
+each in CSS + the single JSX call site:
+
+| Page | Before | After |
+|---|---|---|
+| get-in-touch | `.contactContent` | `.contactContainer` |
+| for-creators | `.closingContent` | `.closingContainer` |
+| who-are-we | `.missionContent` | `.missionContainer` |
+| signal-sheet | `.heroContent` | `.heroContainer` |
+| ContactSection | `.contactContent` | `.contactContainer` |
+
+Deliberately left as-is:
+- Other pages' `.heroContent` (snowdrift, for-creators, for-advertisers, who-are-we) — these are inner flex-column groupings without `max-width`, so `*Content` is the right suffix per the new convention.
+- `.foundersGrid` (who-are-we), `.categoryList` (signal-sheet), `.journeyHeader` (for-creators) — happen to be width-constrained but their names describe more specific roles (grid / list / section header) that take precedence.
+
+## 10. AGENTS.md — orphan-detection trap documented
+
+Added a short "Orphan CSS Detection (Cleanup Trap)" section to
+`AGENTS.md` covering the two patterns that would have silently
+deleted alive classes during this session: (a) sibling components
+that share the page's CSS module (`who-are-we/FoundersSection.tsx`
++ `SplineEmbed.tsx`), and (b) dynamic bracket access
+(`styles[variant]`, `styles[seg.className]`) used in
+`Button`/`BrandedGhostSignal`/`HomeTypingLoop`.
+
+Documented the two requirements an automated cleanup must
+satisfy: union references across all `*.tsx` in the module's
+directory, and match both `styles.X` and `styles[` access
+patterns.
+
 ## Open follow-ups / next-step notes
 
-1. **Manual browser walk.** Pure unreferenced-rule deletion is
-   zero-risk by construction, but I haven't started the dev
-   server. Worth a 5-minute click through all 8 pages to
-   confirm nothing references these classes via a pattern my
-   scripts didn't catch (`classList.add`, `:global` selectors,
-   Tailwind composition).
+1. **JSX `<Section>` / `<Block>` primitive** (L). The naming
+   convention is now in place; a JSX primitive enforced by
+   types would lock the shape so future drift requires explicit
+   CSS. Pair with a `<Container>` for the width-constrained
+   well. Worth its own focused session.
 
-2. **Standardize section naming** (S/M). Pages currently mix
-   `.{name}Container` / `.{name}Content` / `.{name}Layout`
-   for the content-well role. `.{name}Container` is dominant.
-   Lots of small renames, low individual risk, low individual
-   value — only worth doing if it precedes target #3.
-
-3. **JSX `<Section>` / `<Block>` primitive** (L). Locks the
-   shape so future drift requires explicit CSS. Worthwhile
-   after target #2 lands.
-
-4. **Stylelint rule: forbid hard-coded px/rem outside the calc
+2. **Stylelint rule: forbid hard-coded px/rem outside the calc
    pattern** — would catch future token-system drift
-   automatically.
+   automatically. Separate tooling concern.
 
-5. **Audit-overcall lesson #2.** The naive orphan grep would
-   have silently deleted ~20 alive classes in who-are-we
-   (sibling-component CSS sharing) and ~12 classes in
-   `Button` / `BrandedGhostSignal` / `HomeTypingLoop`
-   (dynamic bracket access). Future automated cleanup in this
-   codebase MUST: (a) union references across every `*.tsx`
-   in the module's directory, (b) match both `styles.X` AND
-   `styles[X]` / `styles["X"]` access patterns. Worth a short
-   note in `AGENTS.md` if we keep doing this.
+3. **Manual browser re-walk after these renames** is worth
+   doing once even though CSS module renames are mechanically
+   safe — same logic as pass #3.
