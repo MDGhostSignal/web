@@ -43,15 +43,6 @@ export default function LegacyHomePage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} animateIn />
 
-      {/* Top-right admin entry — a single pill that drops straight
-         into the CRM. Internal tooling (RQ responses, design tasks)
-         lives in the admin tabs inside /admin/*. */}
-      <div className={styles.adminButtonRow}>
-        <Link href="/admin/leads" className={styles.crmBtn}>
-          CRM
-        </Link>
-      </div>
-
       {/* Single centered hero video — natural size, padded frame. */}
       <div className={styles.cloudBackground} aria-hidden="true">
         <video

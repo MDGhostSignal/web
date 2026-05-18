@@ -113,43 +113,6 @@
    Temporary Admin Buttons (top-right)
    ======================================== */
 
-/* Flex row so both admin buttons share the same fixed slot instead of
-   overlapping. Grows left from the top-right corner. */
-.adminButtonRow {
-  position: fixed;
-  top: calc(var(--gs-n-20) * var(--gs-px));
-  right: calc(var(--gs-n-20) * var(--gs-px));
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: calc(var(--gs-n-8) * var(--gs-px));
-}
-
-/* Top-right admin pill — single entry into /admin/leads. */
-.crmBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--gs-n-6) * var(--gs-px));
-  padding: calc(var(--gs-n-8) * var(--gs-px)) calc(var(--gs-n-14) * var(--gs-px));
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-decoration: none;
-  color: #fff;
-  border-radius: 6px;
-  background: #7C3AED;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
-  transition: all 200ms ease;
-}
-
-.crmBtn:hover {
-  background: #6D28D9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
-}
-
 /* ========================================
    Responsive
    ======================================== */
