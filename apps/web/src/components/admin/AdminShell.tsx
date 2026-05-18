@@ -8,7 +8,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AdminShell.module.css";
 
 export type AdminTab = {
-  /** Sub-route under /admin, e.g. "/admin/members". Rendered as an <a>. */
+  /** Sub-route under /admin, e.g. "/admin/leads". Rendered as an <a>. */
   href: string;
   /** Short display label. */
   label: string;
@@ -35,7 +35,7 @@ type Props = {
  * descendant (including portaled modals inside it).
  *
  * The shell uses `usePathname()` to mark the active tab. Tabs match
- * greedily via `startsWith` so nested routes (e.g. /admin/members/123)
+ * greedily via `startsWith` so nested routes (e.g. /admin/leads/123)
  * keep the parent tab lit.
  */
 export function AdminShell({ tabs, children, trail, onLogout }: Props) {
@@ -43,7 +43,7 @@ export function AdminShell({ tabs, children, trail, onLogout }: Props) {
 
   const isActive = (href: string) => {
     if (href === pathname) return true;
-    // Sub-route match: /admin/members should light /admin/members, but
+    // Sub-route match: /admin/leads should light /admin/leads, but
     // the top-level /admin shouldn't steal the highlight from every
     // deeper tab — require at least a trailing '/' for the prefix match.
     return pathname.startsWith(`${href}/`);

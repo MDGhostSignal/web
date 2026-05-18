@@ -17,8 +17,8 @@ import "@/components/admin/tokens.css";
  * `children` untouched whenever it detects it's rendering on /login
  * so the shell doesn't try to wrap the sign-in form.
  *
- * Tabs surface the three admin sections: Members (CRM — Phase 4),
- * RQ Responses, Design Tasks.
+ * Tabs surface the admin sections: Leads (CRM outreach + onboarding),
+ * Marketplace, RQ Responses, Design Tasks.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <AdminShell
       tabs={[
-        { href: "/admin/members", label: "Members" },
+        { href: "/admin/leads", label: "Leads" },
         { href: "/admin/marketplace", label: "Marketplace" },
         { href: "/admin/rq-responses", label: "RQ Responses" },
         { href: "/admin/design-tasks", label: "Design Tasks" },

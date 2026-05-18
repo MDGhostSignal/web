@@ -57,12 +57,16 @@ function entityToRQResult(entity: MarketplaceEntity): RQResult {
 
 type Props = {
   matches: Match[];
+  /** Pool entities to render. Defaults to the seed mocks; the page
+      composes mocks + real graduated leads from /admin/leads (via
+      `became_member_at`) so the pool stays one unified view. */
+  entities?: readonly MarketplaceEntity[];
 };
 
 type KindFilter = "all" | "brand" | "creator";
 type MatchedFilter = "all" | "matched" | "unmatched";
 
-export function PoolView({ matches }: Props) {
+export function PoolView({ matches, entities = MOCK_ENTITIES }: Props) {
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [matchedFilter, setMatchedFilter] = useState<MatchedFilter>("all");
@@ -82,7 +86,7 @@ export function PoolView({ matches }: Props) {
 
   const filtered = useMemo<MarketplaceEntity[]>(() => {
     const q = search.trim().toLowerCase();
-    return MOCK_ENTITIES.filter((e) => {
+    return entities.filter((e) => {
       if (kindFilter !== "all" && e.kind !== kindFilter) return false;
       if (matchedFilter !== "all") {
         const isMatched = (pairingsById.get(e.id) ?? 0) > 0;
@@ -101,7 +105,7 @@ export function PoolView({ matches }: Props) {
       }
       return true;
     });
-  }, [search, kindFilter, matchedFilter, pairingsById]);
+  }, [entities, search, kindFilter, matchedFilter, pairingsById]);
 
   const columns: Column<MarketplaceEntity>[] = [
     {
@@ -110,7 +114,9 @@ export function PoolView({ matches }: Props) {
       cell: (e) => (
         <div className={styles.poolNameCell}>
           <span className={styles.poolName}>{e.name}</span>
-          <span className={styles.mockPill} aria-label="Mock data">MOCK</span>
+          {e.is_mock && (
+            <span className={styles.mockPill} aria-label="Mock data">MOCK</span>
+          )}
         </div>
       ),
     },

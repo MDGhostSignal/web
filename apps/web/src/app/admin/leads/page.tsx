@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Badge,
@@ -8,9 +8,6 @@ import {
   Button,
   type Column,
   DataTable,
-  DetailsActions,
-  DetailsGrid,
-  DetailsSection,
   EmptyState,
   ErrorCard,
   ErrorPage,
@@ -39,7 +36,7 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
-import styles from "./members.module.css";
+import styles from "./leads.module.css";
 
 /* =====================================================================
  * Helpers
@@ -79,6 +76,40 @@ function fullName(m: Member): string {
   const first = m.first_name ?? "";
   const last = m.last_name ?? "";
   return `${first} ${last}`.trim() || "—";
+}
+
+/* =====================================================================
+ * Urgency — which leads need attention right now?
+ *
+ * A lead is urgent when it's in an active pipeline phase (not paused,
+ * churned, or run — the last is "already live in campaigns") AND
+ * either:
+ *   - has never been contacted (no `last_contact_at`), or
+ *   - was last contacted at least URGENT_DAYS days ago.
+ *
+ * The banner at the top of /admin/leads surfaces these so a founder
+ * walking into the page sees the most stale outreach first.
+ * ===================================================================== */
+
+const URGENT_DAYS = 7;
+
+function isUrgent(m: Member): boolean {
+  if (m.phase === "paused" || m.phase === "churned" || m.phase === "run") {
+    return false;
+  }
+  const d = daysSince(m.last_contact_at);
+  if (d === null) return true; // never contacted + in an active phase
+  return d >= URGENT_DAYS;
+}
+
+/**
+ * Higher number = more urgent. Never-contacted leads sort to the very
+ * top via a sentinel value above any realistic days-since count. Then
+ * by days-since-last-contact descending (oldest first).
+ */
+function urgencyScore(m: Member): number {
+  const d = daysSince(m.last_contact_at);
+  return d === null ? Number.MAX_SAFE_INTEGER : d;
 }
 
 type FormState = {
@@ -189,7 +220,7 @@ export default function MembersPage() {
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok || !data.ok) {
-          setError(data.error || "Failed to load members.");
+          setError(data.error || "Failed to load leads.");
           return;
         }
         setMembers(data.members as Member[]);
@@ -327,6 +358,52 @@ export default function MembersPage() {
     [members],
   );
 
+  // Generic inline-edit handler for the expanded card. Same optimistic
+  // update + rollback pattern as handleStepToggle, but accepts any
+  // partial MemberWritable so a single callback covers notes,
+  // contact_count, last_response, and any future inline fields.
+  // Returns true on success so the field editor can show its own
+  // "Saving / Saved / Error" indicator.
+  const handleMemberPatch = useCallback(
+    async (
+      memberId: string,
+      partial: MemberWritable,
+    ): Promise<boolean> => {
+      const current = members.find((m) => m.id === memberId);
+      if (!current) return false;
+
+      setMembers((prev) =>
+        prev.map((m) => (m.id === memberId ? { ...m, ...partial } : m)),
+      );
+
+      try {
+        const res = await fetch(`/api/members/${memberId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(partial),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          setError(data.error || "Failed to save changes.");
+          setMembers((prev) =>
+            prev.map((m) => (m.id === memberId ? current : m)),
+          );
+          return false;
+        }
+        const saved = data.member as Member;
+        setMembers((prev) => prev.map((m) => (m.id === memberId ? saved : m)));
+        return true;
+      } catch {
+        setError("Failed to connect to the server.");
+        setMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? current : m)),
+        );
+        return false;
+      }
+    },
+    [members],
+  );
+
   const handleDelete = useCallback(async () => {
     if (!confirmDelete) return;
     setDeleting(true);
@@ -367,8 +444,46 @@ export default function MembersPage() {
     );
   });
 
+  // Urgent leads are computed from the unfiltered list so the banner
+  // is always visible regardless of the current search/filter state —
+  // the user might be slicing the pipeline by phase but still wants
+  // to see what needs immediate action across all phases.
+  const urgent = useMemo(
+    () =>
+      members
+        .filter(isUrgent)
+        .sort((a, b) => urgencyScore(b) - urgencyScore(a)),
+    [members],
+  );
+
+  // Clicking an urgent item opens that lead in the table. Filters are
+  // cleared first so the row is guaranteed to be visible after the
+  // expand — otherwise the user might click and see no apparent
+  // result because the lead was filtered out of the current view.
+  // After React commits the state update we scroll the row into view;
+  // the double rAF ensures we run after the row has been painted (the
+  // first rAF fires before paint, the second after), so getBoundingRect
+  // sees the freshly expanded layout. `scroll-margin-top` on the row
+  // (defined in the leads CSS module) offsets for the sticky admin
+  // topbar so the row doesn't land underneath it.
+  const openLead = useCallback((id: string) => {
+    setSearchTerm("");
+    setFilterPhase("all");
+    setFilterType("all");
+    setFilterOwner("all");
+    setExpandedRow(id);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const row = document.querySelector<HTMLElement>(
+          `tr[data-row-id="${CSS.escape(id)}"]`,
+        );
+        row?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }, []);
+
   if (loading) {
-    return <Loading message="Loading members…" />;
+    return <Loading message="Loading leads…" />;
   }
 
   if (error && members.length === 0) {
@@ -404,12 +519,14 @@ export default function MembersPage() {
         </div>
       )}
 
+      <UrgentLeadsBanner urgent={urgent} onOpenLead={openLead} />
+
       {filtered.length === 0 ? (
         <EmptyState
-          title="No members match"
+          title="No leads match"
           message={
             members.length === 0
-              ? "Add your first member with the “New member” button."
+              ? "Add your first lead with the “New lead” button."
               : "Try clearing a filter or search term."
           }
         />
@@ -424,6 +541,7 @@ export default function MembersPage() {
             setConfirmDelete(m);
           }}
           onStepToggle={handleStepToggle}
+          onMemberPatch={handleMemberPatch}
         />
       )}
 
@@ -479,16 +597,16 @@ function PageHeaderBlock({
 }: HeaderProps) {
   return (
     <PageHeader
-      title="Members"
+      title="Leads"
       count={
         <Badge variant="accent">
-          {count} {count === 1 ? "member" : "members"}
+          {count} {count === 1 ? "lead" : "leads"}
         </Badge>
       }
-      subtitle="Onboarding and lifecycle management for GhostSignal creators and brand partners."
+      subtitle="Outreach and onboarding progress for prospective creators and brand partners."
       actions={
         <Button variant="primary" onClick={onCreate}>
-          + New member
+          + New lead
         </Button>
       }
       toolbar={
@@ -564,6 +682,10 @@ type TableProps = {
     stepKey: string,
     nextStatus: StepStatus,
   ) => void;
+  onMemberPatch: (
+    memberId: string,
+    partial: MemberWritable,
+  ) => Promise<boolean>;
 };
 
 function MembersTable({
@@ -573,6 +695,7 @@ function MembersTable({
   onEdit,
   onDelete,
   onStepToggle,
+  onMemberPatch,
 }: TableProps) {
   const columns: Column<Member>[] = [
     {
@@ -617,6 +740,25 @@ function MembersTable({
       key: "phase",
       header: "Phase",
       cell: (m) => {
+        // Graduated leads override the phase chrome entirely — once
+        // someone has been marked as a GhostSignal member, lifecycle
+        // progress and rot-detection are no longer meaningful on this
+        // surface (they live on the marketplace side now). Render a
+        // single solid "Member" pill that's visually distinct from
+        // every phase variant.
+        if (m.became_member_at) {
+          return (
+            <span
+              className={styles.memberStatusBadge}
+              title={`Graduated to GhostSignal member on ${formatDate(
+                m.became_member_at,
+              )}`}
+            >
+              <span aria-hidden="true">✓</span> Member
+            </span>
+          );
+        }
+
         const { done, total } = countCompleted(
           m.lifecycle_steps,
           m.member_type,
@@ -692,49 +834,66 @@ function MembersTable({
       columns={columns}
       expandedRowId={expandedRow}
       onToggleRow={(id) => setExpandedRow(expandedRow === id ? null : id)}
+      rowClassName={(m) => (m.became_member_at ? styles.graduatedRow : "")}
       renderExpanded={(m) => (
         <div className={styles.detailsBlock}>
-          <DetailsGrid>
-            <DetailsSection title="Contact">
-              <p>
-                <strong>Role:</strong> {m.role || "—"}
-              </p>
-              <p>
-                <strong>Phone:</strong> {m.phone || "—"}
-              </p>
-              <p>
-                <strong>Website:</strong>{" "}
-                {m.website ? (
-                  <a
-                    href={m.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {m.website}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </p>
-            </DetailsSection>
-            <DetailsSection title="Pipeline">
-              <p>
-                <strong>Phase:</strong> {MEMBER_PHASE_LABELS[m.phase]}
-              </p>
-              <p>
-                <strong>Owner:</strong> {m.owner || "—"}
-              </p>
-              <p>
-                <strong>Next step:</strong> {m.next_step || "—"}
-              </p>
-              <p>
-                <strong>Last contact:</strong> {formatDate(m.last_contact_at)}
-              </p>
-              <p>
-                <strong>Added:</strong> {formatDate(m.created_at)}
-              </p>
-            </DetailsSection>
-          </DetailsGrid>
+          {/* Actions row sits at the top now — the primary "become a
+              member" action is the most consequential thing a founder
+              does on this card, so it belongs above the fold. Edit /
+              Delete cluster on the right with a token gap between them. */}
+          <div className={styles.leadActions}>
+            <Button
+              variant={m.became_member_at ? "secondary" : "primary"}
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                void onMemberPatch(m.id, {
+                  became_member_at: m.became_member_at
+                    ? null
+                    : new Date().toISOString(),
+                });
+              }}
+              title={
+                m.became_member_at
+                  ? `Marked as member on ${formatDate(m.became_member_at)} — click to undo`
+                  : "Mark this lead as a full GhostSignal member; they'll appear in the marketplace pool."
+              }
+            >
+              {m.became_member_at
+                ? `✓ Member since ${formatDate(m.became_member_at)} — unmark`
+                : "Has become a GhostSignal member"}
+            </Button>
+            <div className={styles.leadActionsGroup}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(m);
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(m);
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+
+          <div className={styles.topGrid}>
+            <ContactCard member={m} />
+            <PipelineCard
+              member={m}
+              onPatch={(partial) => onMemberPatch(m.id, partial)}
+            />
+          </div>
 
           {m.tags.length > 0 && (
             <div className={styles.tagsRow}>
@@ -746,44 +905,20 @@ function MembersTable({
             </div>
           )}
 
-          {m.notes && (
-            <div className={styles.notesPanel}>
-              <h4>Notes</h4>
-              <p>{m.notes}</p>
-            </div>
-          )}
-
-          <LifecycleChecklist
-            member={m}
-            onStepToggle={(stepKey, nextStatus) =>
-              onStepToggle(m.id, stepKey, nextStatus)
-            }
-          />
-
-          <MemberComments memberId={m.id} />
-
-          <DetailsActions>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(m);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(m);
-              }}
-            >
-              Delete
-            </Button>
-          </DetailsActions>
+          {/* Lifecycle (6 steps) + Comments thread side-by-side on a
+              horizontal plane — uses the available width rather than
+              stacking the two blocks vertically, which made the
+              expanded panel disproportionately tall after the
+              lifecycle was trimmed from 13 → 6 steps. */}
+          <div className={styles.lifecycleCommentsGrid}>
+            <LifecycleChecklist
+              member={m}
+              onStepToggle={(stepKey, nextStatus) =>
+                onStepToggle(m.id, stepKey, nextStatus)
+              }
+            />
+            <MemberComments memberId={m.id} />
+          </div>
         </div>
       )}
     />
@@ -818,7 +953,7 @@ function MemberFormModal({
       onClose={onClose}
       dismissible={!isSaving}
       size="xl"
-      title={editing ? "Edit member" : "New member"}
+      title={editing ? "Edit lead" : "New lead"}
       subtitle="At minimum, provide a first name, last name, or organization."
       footer={
         <>
@@ -831,7 +966,7 @@ function MemberFormModal({
             form="member-form"
             disabled={isSaving}
           >
-            {isSaving ? "Saving…" : editing ? "Update member" : "Create member"}
+            {isSaving ? "Saving…" : editing ? "Update lead" : "Create lead"}
           </Button>
         </>
       }
@@ -1060,7 +1195,7 @@ function DeleteConfirmModal({
       onClose={onClose}
       dismissible={!deleting}
       size="sm"
-      title="Delete this member?"
+      title="Delete this lead?"
       subtitle="This action cannot be undone."
       footer={
         <>
@@ -1092,6 +1227,359 @@ function DeleteConfirmModal({
  * Lifecycle checklist — Jack's 12 checkpoints grouped by phase.
  * ===================================================================== */
 
+/* =====================================================================
+ * Urgent leads banner — sits above the main table on /admin/leads.
+ * Shows leads that need outreach attention right now (see isUrgent
+ * above for the rule). Always rendered from the unfiltered member
+ * list so the priority view is independent of the current search /
+ * filter state. Clicking an item clears filters and expands the
+ * matching row in the table below.
+ * ===================================================================== */
+
+type UrgentBannerProps = {
+  urgent: Member[];
+  onOpenLead: (id: string) => void;
+};
+
+function UrgentLeadsBanner({ urgent, onOpenLead }: UrgentBannerProps) {
+  if (urgent.length === 0) return null;
+
+  return (
+    <section className={styles.urgentBanner} aria-label="Urgent leads">
+      <header className={styles.urgentBannerHeader}>
+        <span className={styles.urgentBannerIcon} aria-hidden="true">
+          !
+        </span>
+        <h3 className={styles.urgentBannerTitle}>
+          {urgent.length}{" "}
+          {urgent.length === 1 ? "lead needs" : "leads need"} urgent action
+        </h3>
+        <span className={styles.urgentBannerSub}>
+          No response in {URGENT_DAYS}+ days
+        </span>
+      </header>
+      <ul className={styles.urgentList}>
+        {urgent.map((m) => {
+          const d = daysSince(m.last_contact_at);
+          const stale =
+            d === null ? "Never contacted" : `${d}d since last contact`;
+          return (
+            <li key={m.id}>
+              <button
+                type="button"
+                className={styles.urgentItem}
+                onClick={() => onOpenLead(m.id)}
+              >
+                <span className={styles.urgentItemName}>{fullName(m)}</span>
+                <Badge variant={phaseVariant(m.phase)}>
+                  {MEMBER_PHASE_LABELS[m.phase]}
+                </Badge>
+                <span className={styles.urgentItemStale}>{stale}</span>
+                <span className={styles.urgentItemMeta}>
+                  {m.owner ?? "—"}
+                </span>
+                <span className={styles.urgentItemArrow} aria-hidden="true">
+                  →
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/* =====================================================================
+ * Contact ID card + Pipeline card — top row of the expanded panel.
+ * Replaces the older DetailsGrid (Contact / Pipeline two-column block)
+ * with two visually distinct cards: a compact ID-card-style contact
+ * summary on the left, and a pipeline card on the right that includes
+ * an inline-editable notes textarea.
+ * ===================================================================== */
+
+function ContactCard({ member }: { member: Member }) {
+  const name = fullName(member) || "(no name)";
+  const initials = name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <section className={styles.contactCard} aria-label="Contact details">
+      <div className={styles.contactCardHeader}>
+        <div className={styles.contactAvatar} aria-hidden="true">
+          {initials || "—"}
+        </div>
+        <div className={styles.contactCardHeaderText}>
+          <div className={styles.contactCardName}>{name}</div>
+          <div className={styles.contactCardSub}>
+            <Badge variant={typeVariant(member.member_type)}>
+              {MEMBER_TYPE_LABELS[member.member_type]}
+            </Badge>
+            {member.role && (
+              <span className={styles.contactCardRole}>{member.role}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <dl className={styles.contactCardFields}>
+        <div>
+          <dt>Organization</dt>
+          <dd>{member.organization || "—"}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>
+            {member.email ? (
+              <a href={`mailto:${member.email}`}>{member.email}</a>
+            ) : (
+              "—"
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Phone</dt>
+          <dd>
+            {member.phone ? (
+              <a href={`tel:${member.phone}`}>{member.phone}</a>
+            ) : (
+              "—"
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Website</dt>
+          <dd>
+            {member.website ? (
+              <a
+                href={member.website}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {member.website}
+              </a>
+            ) : (
+              "—"
+            )}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+type PipelineCardProps = {
+  member: Member;
+  onPatch: (partial: MemberWritable) => Promise<boolean>;
+};
+
+/**
+ * Small hook: keeps a local draft in sync with an upstream value via
+ * the React 19 render-phase compare-and-set idiom (avoids the
+ * `react-hooks/set-state-in-effect` rule). The parent rewrites the
+ * member object after a successful PATCH echo; this picks that up
+ * and re-seeds the input.
+ */
+function useDraftSync<T>(upstream: T): [T, (next: T) => void] {
+  const [draft, setDraft] = useState<T>(upstream);
+  const [lastSeen, setLastSeen] = useState<T>(upstream);
+  if (upstream !== lastSeen) {
+    setLastSeen(upstream);
+    setDraft(upstream);
+  }
+  return [draft, setDraft];
+}
+
+function PipelineCard({ member, onPatch }: PipelineCardProps) {
+  const [draftNotes, setDraftNotes] = useDraftSync(member.notes ?? "");
+  const [draftResponse, setDraftResponse] = useDraftSync(
+    member.last_response ?? "",
+  );
+  const [draftCount, setDraftCount] = useDraftSync(
+    member.contact_count === null || member.contact_count === undefined
+      ? ""
+      : String(member.contact_count),
+  );
+  const [draftOwner, setDraftOwner] = useDraftSync(member.owner ?? "");
+  // The date input's value is a YYYY-MM-DD string. Slice the leading
+  // 10 chars of the stored ISO timestamp to seed it — works whether
+  // the column is `date` or `timestamptz` in Supabase.
+  const [draftLastContact, setDraftLastContact] = useDraftSync(
+    member.last_contact_at ? member.last_contact_at.slice(0, 10) : "",
+  );
+  const [status, setStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+
+  // Shared save runner — each field's onBlur computes its own
+  // before/after compare and only calls this when the value actually
+  // changed. Status pill is shared across the three fields (one
+  // indicator next to the card header rather than per-field).
+  const runSave = async (partial: MemberWritable) => {
+    setStatus("saving");
+    const ok = await onPatch(partial);
+    if (ok) {
+      setStatus("saved");
+      setTimeout(() => setStatus("idle"), 1500);
+    } else {
+      setStatus("error");
+    }
+  };
+
+  const handleNotesBlur = () => {
+    if (draftNotes === (member.notes ?? "")) return;
+    void runSave({ notes: draftNotes });
+  };
+
+  const handleResponseBlur = () => {
+    if (draftResponse === (member.last_response ?? "")) return;
+    void runSave({ last_response: draftResponse });
+  };
+
+  const handleCountBlur = () => {
+    const trimmed = draftCount.trim();
+    let nextValue: number | null;
+    if (trimmed === "") {
+      nextValue = null;
+    } else {
+      const n = Number(trimmed);
+      if (!Number.isFinite(n) || n < 0) return; // invalid — drop save
+      nextValue = Math.floor(n);
+    }
+    if (nextValue === (member.contact_count ?? null)) return;
+    void runSave({ contact_count: nextValue });
+  };
+
+  // Owner saves on change (not blur) — dropdown selections are
+  // intentional and the user expects the choice to commit immediately.
+  const handleOwnerChange = (nextOwner: string) => {
+    setDraftOwner(nextOwner);
+    const normalized = nextOwner === "" ? null : nextOwner;
+    if (normalized === (member.owner ?? null)) return;
+    void runSave({ owner: normalized });
+  };
+
+  // Date picker also saves on change — the browser commits a value only
+  // when the user picks a date, so onChange is the canonical "user
+  // chose this" event for type=date.
+  const handleLastContactChange = (next: string) => {
+    setDraftLastContact(next);
+    const current = member.last_contact_at
+      ? member.last_contact_at.slice(0, 10)
+      : "";
+    if (next === current) return;
+    // Empty string → null (clear the date). Non-empty YYYY-MM-DD is
+    // sent through as-is; Postgres timestamptz parses it as midnight
+    // UTC of the chosen day.
+    void runSave({ last_contact_at: next === "" ? null : next });
+  };
+
+  return (
+    <section className={styles.pipelineCard} aria-label="Pipeline">
+      <div className={styles.pipelineCardHeader}>
+        <span>Pipeline</span>
+        <span className={styles.pipelineCardStatus} aria-live="polite">
+          {status === "saving" && "Saving…"}
+          {status === "saved" && "Saved"}
+          {status === "error" && "Failed to save"}
+        </span>
+      </div>
+      <dl className={styles.pipelineFields}>
+        <div>
+          <dt>Phase</dt>
+          <dd>
+            <Badge variant={phaseVariant(member.phase)}>
+              {MEMBER_PHASE_LABELS[member.phase]}
+            </Badge>
+          </dd>
+        </div>
+        <div>
+          <dt>Next step</dt>
+          <dd>{member.next_step || "—"}</dd>
+        </div>
+        <div>
+          <dt>Added</dt>
+          <dd>{formatDate(member.created_at)}</dd>
+        </div>
+      </dl>
+
+      <div className={styles.pipelineInlineFields}>
+        <label className={styles.pipelineInlineField}>
+          <span className={styles.pipelineInlineLabel}>Owner</span>
+          <select
+            className={styles.pipelineInlineInput}
+            value={draftOwner}
+            onChange={(e) => handleOwnerChange(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <option value="">—</option>
+            {MEMBER_OWNERS.map((owner) => (
+              <option key={owner} value={owner}>
+                {owner}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={styles.pipelineInlineField}>
+          <span className={styles.pipelineInlineLabel}>Last contact</span>
+          <input
+            type="date"
+            className={styles.pipelineInlineInput}
+            value={draftLastContact}
+            onChange={(e) => handleLastContactChange(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </label>
+        <label className={styles.pipelineInlineField}>
+          <span className={styles.pipelineInlineLabel}>Times contacted</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            step={1}
+            className={styles.pipelineInlineInput}
+            value={draftCount}
+            onChange={(e) => setDraftCount(e.target.value)}
+            onBlur={handleCountBlur}
+            onClick={(e) => e.stopPropagation()}
+            placeholder="0"
+          />
+        </label>
+        <label className={styles.pipelineInlineField}>
+          <span className={styles.pipelineInlineLabel}>Last response</span>
+          <input
+            type="text"
+            className={styles.pipelineInlineInput}
+            value={draftResponse}
+            onChange={(e) => setDraftResponse(e.target.value)}
+            onBlur={handleResponseBlur}
+            onClick={(e) => e.stopPropagation()}
+            placeholder="What did they say? — “Wants case studies”, “Quiet since Apr”, …"
+          />
+        </label>
+      </div>
+
+      <div className={styles.pipelineNotesField}>
+        <div className={styles.pipelineNotesLabel}>Notes</div>
+        <textarea
+          className={styles.pipelineNotesTextarea}
+          value={draftNotes}
+          onChange={(e) => setDraftNotes(e.target.value)}
+          onBlur={handleNotesBlur}
+          onClick={(e) => e.stopPropagation()}
+          placeholder="Outreach details, conversation history, next-step rationale…"
+          rows={4}
+        />
+      </div>
+    </section>
+  );
+}
+
 type ChecklistProps = {
   member: Member;
   onStepToggle: (stepKey: string, nextStatus: StepStatus) => void;
@@ -1111,6 +1599,34 @@ function LifecycleChecklist({ member, onStepToggle }: ChecklistProps) {
     member.member_type,
   );
 
+  // Render a single phase group (badge header + step rows). Pulled out
+  // of the loop so the new column layout can place specific phases
+  // into specific slots: discern + court in the left column, sign +
+  // onboard in the right column, run as a full-width row below.
+  const renderPhase = (phaseKey: MemberPhase) => {
+    const steps = byPhase.get(phaseKey);
+    if (!steps || steps.length === 0) return null;
+    return (
+      <div className={styles.phaseGroup} key={phaseKey}>
+        <div className={styles.phaseGroupHeader}>
+          <Badge variant={phaseVariant(phaseKey)}>
+            {MEMBER_PHASE_LABELS[phaseKey]}
+          </Badge>
+        </div>
+        <div className={styles.stepList}>
+          {steps.map((step) => (
+            <StepRow
+              key={step.key}
+              step={step}
+              member={member}
+              onToggle={onStepToggle}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.lifecycleBlock}>
       <h4>
@@ -1123,25 +1639,12 @@ function LifecycleChecklist({ member, onStepToggle }: ChecklistProps) {
         </span>
       </h4>
 
-      {Array.from(byPhase.entries()).map(([phaseKey, steps]) => (
-        <div key={phaseKey} className={styles.phaseGroup}>
-          <div className={styles.phaseGroupHeader}>
-            <Badge variant={phaseVariant(phaseKey as MemberPhase)}>
-              {MEMBER_PHASE_LABELS[phaseKey as MemberPhase]}
-            </Badge>
-          </div>
-          <div className={styles.stepList}>
-            {steps.map((step) => (
-              <StepRow
-                key={step.key}
-                step={step}
-                member={member}
-                onToggle={onStepToggle}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+      {/* Lead-stage checklist is 6 steps across discern + court only —
+          sign / onboard / run live in the marketplace lifecycle and no
+          longer surface here. A single-column stack reads cleanly at
+          this size; revisit if more lead-stage steps are added. */}
+      {renderPhase("discern")}
+      {renderPhase("court")}
     </div>
   );
 }

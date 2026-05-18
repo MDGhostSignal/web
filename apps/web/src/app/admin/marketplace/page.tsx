@@ -1,13 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { Button, Loading, Modal } from "@/components/admin";
 import {
   MOCK_BRANDS,
   MOCK_CREATORS,
   MOCK_ENTITIES,
+  type MarketplaceEntity,
 } from "@/lib/marketplace-mocks";
 import {
   clearAll,
@@ -15,6 +16,10 @@ import {
   subscribe,
   type Match,
 } from "@/lib/marketplace-store";
+import {
+  memberToMarketplaceEntity,
+  type Member,
+} from "@/lib/members";
 
 import { MatchBoard } from "./MatchBoard";
 import { PoolView } from "./PoolView";
@@ -65,6 +70,44 @@ export default function MarketplacePage() {
     () => matches.filter((m) => m.status === "confirmed"),
     [matches],
   );
+
+  // Real members upstreamed from /admin/leads. Anyone with
+  // `became_member_at` set is treated as a marketplace participant; the
+  // page composes them with the seed mocks below so the pool stays a
+  // single unified list. Fetched once on mount — re-fetch on view
+  // changes isn't needed because the marketplace doesn't currently
+  // write members back from this page (writes happen in /admin/leads).
+  const [realMembers, setRealMembers] = useState<Member[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/members");
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (res.ok && data.ok && Array.isArray(data.members)) {
+          setRealMembers(data.members as Member[]);
+        }
+      } catch {
+        // Best-effort — pool still works with mocks alone if the
+        // members endpoint is down.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Merge mocks + graduated leads. Graduated members appear ahead of
+  // mocks so the most recent real members are easy to find; the
+  // converter returns null for non-graduated rows and non-marketplace
+  // member types, so the filter is automatic.
+  const poolEntities = useMemo<readonly MarketplaceEntity[]>(() => {
+    const real = realMembers
+      .map(memberToMarketplaceEntity)
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+    return [...real, ...MOCK_ENTITIES];
+  }, [realMembers]);
 
   // Counters in the page header
   const counters = useMemo(() => {
@@ -146,7 +189,7 @@ export default function MarketplacePage() {
 
       <main className={styles.main}>
         {view === "pool" ? (
-          <PoolView matches={confirmed} />
+          <PoolView matches={confirmed} entities={poolEntities} />
         ) : view === "match" ? (
           <MatchBoard matches={matches} />
         ) : (

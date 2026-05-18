@@ -121,6 +121,7 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     "owner",
     "next_step",
     "notes",
+    "last_response",
   ] as const;
 
   for (const key of stringKeys) {
@@ -131,6 +132,14 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     } else if (v === null) {
       out[key] = null;
     }
+  }
+
+  // contact_count is a non-negative integer; coerce + clamp.
+  if (typeof input.contact_count === "number") {
+    const n = Math.floor(input.contact_count);
+    out.contact_count = Number.isFinite(n) && n >= 0 ? n : 0;
+  } else if (input.contact_count === null) {
+    out.contact_count = null;
   }
 
   if (typeof input.member_type === "string") {
@@ -154,6 +163,12 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     out.last_contact_at = input.last_contact_at;
   } else if (input.last_contact_at === null) {
     out.last_contact_at = null;
+  }
+
+  if (typeof input.became_member_at === "string") {
+    out.became_member_at = input.became_member_at;
+  } else if (input.became_member_at === null) {
+    out.became_member_at = null;
   }
 
   if (typeof input.rq_submission_id === "string") {

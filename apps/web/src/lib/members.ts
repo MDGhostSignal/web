@@ -82,6 +82,19 @@ export type LifecycleStepDef = {
   creatorOnly?: boolean;
 };
 
+/**
+ * Lead-stage checklist only — 6 steps across the Discern + Court phases.
+ *
+ * Earlier revisions also included Sign / Onboard / Run steps (membership
+ * sent + signed, welcome box, Mercury/W9, show info, ART19 migration,
+ * campaign planning). Those are no longer tracked on the lead card:
+ * once a lead's membership is signed they graduate to a full GhostSignal
+ * member (set via the `became_member_at` flag) and move to the
+ * marketplace pool — the leads page is for outreach + qualification
+ * only. The phase enum still has sign/onboard/run for historical rows
+ * and possible re-use elsewhere; `sanitizeLifecycleSteps` drops any
+ * stored step keys that no longer exist here.
+ */
 export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   // Discern
   { key: "discernment", label: "Discernment", phase: "discern", ownerRole: "Founder" },
@@ -91,16 +104,6 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   { key: "deck_sent", label: "Deck sent", phase: "court", ownerRole: "Founder" },
   { key: "ad_copy_sent", label: "Ad Copy Guidelines sent", phase: "court", ownerRole: "Founder" },
   { key: "rq_quiz", label: "RQ quiz", phase: "court", ownerRole: "Founder" },
-  // Sign
-  { key: "membership_sent", label: "Membership Sent", phase: "sign", ownerRole: "Ops" },
-  { key: "membership_signed", label: "Membership Signed", phase: "sign", ownerRole: "Ops" },
-  // Onboard
-  { key: "welcome_box", label: "Welcome Email + Box", phase: "onboard", ownerRole: "Ops" },
-  { key: "mercury_w9", label: "Mercury / W9", phase: "onboard", ownerRole: "Finance", creatorOnly: true },
-  { key: "show_info", label: "Show Info Received", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
-  { key: "art19_migration", label: "ART19 Migration", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
-  // Run
-  { key: "campaign_planning", label: "Campaign Planning + Execution", phase: "run", ownerRole: "Ops" },
 ] as const;
 
 export const STEP_STATUSES = ["todo", "doing", "done", "skipped", "na"] as const;
@@ -190,6 +193,17 @@ export type Member = {
   owner: string | null;
   next_step: string | null;
   last_contact_at: string | null;
+  /** Free-text capture of the lead's most recent response, e.g.
+      "Wants to revisit in Q3" or "Asked for case studies". */
+  last_response: string | null;
+  /** Number of outreach touches against this lead. Incremented manually
+      by the founders as they reach out (call, email, DM, etc.). */
+  contact_count: number | null;
+  /** Timestamp set when the founders mark this lead as having graduated
+      to a full GhostSignal member. Null = still a lead. Setting this
+      grays the row in /admin/leads and surfaces the person in the
+      marketplace pool on /admin/marketplace. */
+  became_member_at: string | null;
   notes: string | null;
   tags: string[];
   lifecycle_steps: LifecycleSteps;
@@ -203,3 +217,59 @@ export type Member = {
 export type MemberWritable = Partial<
   Omit<Member, "id" | "created_at" | "updated_at" | "phase_entered_at">
 >;
+
+/* =====================================================================
+ * Marketplace bridge — convert a graduated lead (a Member with
+ * `became_member_at` set) into the shape the marketplace pool consumes.
+ * The pool component lives at /admin/marketplace and renders both the
+ * seed mocks (from `marketplace-mocks.ts`) and any rows produced by
+ * this converter, so a founder marking "has become a GhostSignal
+ * member" on a lead surfaces the same person in the pool automatically.
+ *
+ * Trait scores default to a neutral 50/50/50 until the member completes
+ * the RQ quiz — at that point a follow-up pass can pull their
+ * rq_submission_id and compute real per-axis values. RQ code / name
+ * placeholder ("RQ-?") signals "no RQ data yet" in the UI.
+ * ===================================================================== */
+
+export type MarketplaceLite = {
+  id: string;
+  kind: "creator" | "brand";
+  name: string;
+  rq_code: string;
+  rq_name: string;
+  tags: readonly string[];
+  blurb: string;
+  traits: { values: number; authenticity: number; horizon: number };
+  is_mock: boolean;
+};
+
+/**
+ * Returns null when the member can't be represented in the pool —
+ * either they haven't graduated (no `became_member_at`) or their
+ * member_type isn't a marketplace kind (only "creator" / "brand"
+ * map; "other" rows are excluded).
+ */
+export function memberToMarketplaceEntity(m: Member): MarketplaceLite | null {
+  if (!m.became_member_at) return null;
+  if (m.member_type !== "creator" && m.member_type !== "brand") return null;
+
+  const name =
+    [m.first_name, m.last_name].filter(Boolean).join(" ").trim() ||
+    m.organization ||
+    "(unnamed member)";
+
+  return {
+    // `mem-` prefix avoids id collisions with the seed-mock c-NN / b-NN
+    // pool ids — important so match-store lookups stay deterministic.
+    id: `mem-${m.id}`,
+    kind: m.member_type,
+    name,
+    rq_code: m.rq_submission_id ? "RQ-?" : "RQ-?",
+    rq_name: m.rq_submission_id ? "RQ pending" : "RQ pending",
+    tags: m.tags,
+    blurb: m.notes?.slice(0, 140) ?? `Real ${m.member_type} member.`,
+    traits: { values: 50, authenticity: 50, horizon: 50 },
+    is_mock: false,
+  };
+}

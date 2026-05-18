@@ -125,7 +125,7 @@
   gap: calc(var(--gs-n-8) * var(--gs-px));
 }
 
-/* Top-right admin pill — single entry into /admin/members. */
+/* Top-right admin pill — single entry into /admin/leads. */
 .crmBtn {
   display: inline-flex;
   align-items: center;

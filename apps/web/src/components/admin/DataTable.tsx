@@ -41,6 +41,10 @@ type Props<Row> = {
   /** Renders additional content underneath the expanded row (colSpan
       spans the whole table). Omit to get a simple non-expanding table. */
   renderExpanded?: (row: Row) => ReactNode;
+  /** Optional per-row className. Useful for marking rows visually
+      distinct without subclassing the table (e.g. grayed-out graduated
+      leads on /admin/leads). Applied alongside the default `.tbodyTr`. */
+  rowClassName?: (row: Row, index: number) => string | undefined;
   /** Accessible caption (visually hidden). */
   caption?: string;
   className?: string;
@@ -70,6 +74,7 @@ export function DataTable<Row>({
   expandedRowId,
   onToggleRow,
   renderExpanded,
+  rowClassName,
   caption,
   className,
 }: Props<Row>) {
@@ -109,9 +114,11 @@ export function DataTable<Row>({
             return (
               <Fragment key={id || rowIndex}>
                 <tr
+                  data-row-id={id}
                   className={[
                     styles.tbodyTr,
                     isExpanded ? styles.expanded : "",
+                    rowClassName?.(row, rowIndex) ?? "",
                   ]
                     .filter(Boolean)
                     .join(" ")}

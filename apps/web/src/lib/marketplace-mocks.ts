@@ -47,8 +47,11 @@ export type MarketplaceEntity = {
   blurb: string;
   /** Trait scores 0–100 across the three RQ axes. */
   traits: Traits;
-  /** Always `true` in this file — clearly visible MOCK pill in the UI. */
-  is_mock: true;
+  /** True for the seed mocks in this file (shown with a MOCK pill in
+      the UI). False for real members upstreamed from /admin/leads via
+      the `became_member_at` flag — those rows render without the
+      MOCK pill so they're distinguishable from the seed data. */
+  is_mock: boolean;
 };
 
 /* =====================================================================

@@ -47,7 +47,7 @@ export default function LegacyHomePage() {
          into the CRM. Internal tooling (RQ responses, design tasks)
          lives in the admin tabs inside /admin/*. */}
       <div className={styles.adminButtonRow}>
-        <Link href="/admin/members" className={styles.crmBtn}>
+        <Link href="/admin/leads" className={styles.crmBtn}>
           CRM
         </Link>
       </div>
