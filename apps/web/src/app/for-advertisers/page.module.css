@@ -896,6 +896,19 @@
     padding: calc(var(--gs-n-140) * var(--gs-px)) var(--edge-pad);
   }
 
+  /* Hero video reflows as a full-width backdrop on phones — at desktop
+     it sits on the right at 60 % width, but on a 375 px phone the
+     headline area on the left would be ≤140 px wide and the text would
+     compress unreadably. Full-bleed + dimmed lets the video read as
+     ambient texture behind the headline instead of fighting it. */
+  .heroVideoWrapper {
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.45;
+  }
+
   .heroHeadline {
     font-size: clamp(32px, 8vw, 48px);
   }

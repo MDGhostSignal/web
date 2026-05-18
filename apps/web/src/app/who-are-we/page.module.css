@@ -1216,6 +1216,13 @@
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }
 
+  /* The 500 px min-width on .promiseBars forces horizontal overflow
+     below ~500 px viewports — release the floor so the bars graphic
+     shrinks with its grid cell on phones. */
+  .promiseBars {
+    min-width: 0;
+  }
+
   .promisesCards {
     order: 1;
   }

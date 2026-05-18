@@ -114,7 +114,11 @@
    ============================================================================= */
 
 @media (max-width: 1024px) {
-  .contactContainer {
+  /* The grid class is .contact (not .contactContainer — that was the
+     old name before the layout primitives roll-out, when the well had
+     a Container suffix; the typo here silently kept the 2-column grid
+     active on tablets). */
+  .contact {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }
@@ -130,8 +134,13 @@
 }
 
 @media (max-width: 768px) {
+  /* Override --edge-pad locally — page-shell's 112 px is far too much
+     horizontal padding on a 375 px phone (leaves only 151 px of
+     content width). Tightening to --gs-n-32 (32 px) leaves ~311 px,
+     which is enough for the headline + body to breathe. */
   .contactSection {
-    padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+    padding: calc(var(--gs-n-80) * var(--gs-px))
+      calc(var(--gs-n-32) * var(--gs-px));
   }
 
   .contactHeadline {
@@ -140,6 +149,11 @@
 }
 
 @media (max-width: 560px) {
+  .contactSection {
+    padding: calc(var(--gs-n-64) * var(--gs-px))
+      calc(var(--gs-n-20) * var(--gs-px));
+  }
+
   .contactCta {
     width: 100%;
     justify-content: center;

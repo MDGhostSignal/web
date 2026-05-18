@@ -192,3 +192,96 @@
 .nav .navCta:focus-visible {
   opacity: 1;
 }
+
+/* ============================================================
+   Mobile + tablet — six nav links + a CTA pill don't fit in a
+   375 px viewport at desktop scale. Below 991 px (matching the
+   JS media-query that disables scroll-hide) the row tightens
+   and becomes horizontally swipeable so every link stays
+   reachable without a hamburger rebuild. Scrollbar is hidden
+   visually — touch + trackpad swipe scrolls the row instead.
+   The CTA pill, logo, and overall header chrome shrink too so
+   the bar reads as a compact bottom dock on phones.
+   ============================================================ */
+
+@media (max-width: 991px) {
+  .header {
+    height: calc(var(--gs-n-96, 96) * var(--gs-px));
+    min-height: calc(var(--gs-n-96, 96) * var(--gs-px));
+    padding-left: calc(var(--gs-n-16) * var(--gs-px));
+    padding-right: calc(var(--gs-n-16) * var(--gs-px));
+  }
+
+  .logoWrap {
+    flex: none;
+    width: calc(var(--gs-n-120, 120) * var(--gs-px));
+    height: calc(var(--gs-n-64) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
+  }
+
+  .navContainer {
+    flex: 1 1 auto;
+    min-width: 0;
+    column-gap: calc(var(--gs-n-12) * var(--gs-px));
+  }
+
+  .nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    column-gap: calc(var(--gs-n-16) * var(--gs-px));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Hide scrollbar visually — touch / trackpad swipe still works. */
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navLink {
+    flex: none;
+    height: calc(var(--gs-n-48) * var(--gs-px));
+    padding-block: calc(var(--gs-n-8) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-8) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-base) * var(--gs-px));
+  }
+
+  .navLink::after {
+    inset-inline: calc(var(--gs-n-8) * var(--gs-px));
+    bottom: calc(var(--gs-n-8, 8) * var(--gs-px));
+  }
+
+  .navCta {
+    flex: none;
+    height: calc(var(--gs-n-40) * var(--gs-px));
+    padding-block: calc(var(--gs-n-8) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding-left: calc(var(--gs-n-12) * var(--gs-px));
+    padding-right: calc(var(--gs-n-12) * var(--gs-px));
+  }
+
+  .logoWrap {
+    width: calc(var(--gs-n-100, 100) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-12) * var(--gs-px));
+  }
+
+  .nav {
+    column-gap: calc(var(--gs-n-12) * var(--gs-px));
+  }
+
+  .navLink {
+    padding-inline: calc(var(--gs-n-6) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
+  }
+
+  .navCta {
+    padding-inline: calc(var(--gs-n-12) * var(--gs-px));
+  }
+}

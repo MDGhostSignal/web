@@ -426,7 +426,11 @@
     --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
   }
 
-  .contactContainer {
+  /* Renamed from .contactContainer to .contact when the layout
+     primitives roll-out dropped the "Container" suffix — the old
+     class name silently kept the 2-column grid active on tablets
+     and phones. */
+  .contact {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-48) * var(--gs-px));
   }
