@@ -319,8 +319,13 @@ html:has(.rq-results-page) {
 }
 
 .rq-intro-link {
-  display: inline-flex;
-  align-items: center;
+  /* inline-block (not inline-flex): the "Read the GHOSTSignal White
+     Paper" link nests <span class="gs-brand"> between two {" "} JSX
+     text nodes. Under inline-flex those whitespace-only text nodes
+     become anonymous flex items and get collapsed away, producing
+     "Read theGHOSTSignalWhite Paper". inline-block preserves normal
+     inline whitespace handling so the spaces render. */
+  display: inline-block;
   color: var(--rq-accent);
   font-size: 14px;
   font-weight: 500;

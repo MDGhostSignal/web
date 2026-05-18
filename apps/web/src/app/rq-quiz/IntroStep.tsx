@@ -95,7 +95,7 @@ export function IntroStep({ description }: IntroStepProps) {
           </p>
           <nav className="rq-intro-links">
             <a
-              href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link"
+              href="https://drive.google.com/file/d/1j5eA3-OSEVnx0TP13DoqfsfD-viREGvk/view?usp=sharing"
               target="_blank"
               rel="noopener noreferrer"
               className="rq-intro-link"

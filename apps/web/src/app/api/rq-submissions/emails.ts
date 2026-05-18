@@ -344,7 +344,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="padding-right: 24px;">
-                          <a href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link" target="_blank" style="font-size: 13px; color: #c4880d; text-decoration: none; font-weight: 500;">
+                          <a href="https://drive.google.com/file/d/1j5eA3-OSEVnx0TP13DoqfsfD-viREGvk/view?usp=sharing" target="_blank" style="font-size: 13px; color: #c4880d; text-decoration: none; font-weight: 500;">
                             Read the <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> White Paper →
                           </a>
                         </td>

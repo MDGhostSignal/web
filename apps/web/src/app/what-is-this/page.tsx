@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 
 import type { ValuesControl } from "./ValuesBinary";
 import type { HarmonyControl } from "./HarmonyOrbs";
@@ -45,6 +46,7 @@ import { navLinks } from "@/lib/nav";
 export default function WhatIsThisPage() {
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const heroBackgroundRef = useRef<HTMLDivElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
   const barsRef = useRef<HTMLDivElement>(null);
   const harmonyInteractionRef = useRef<HTMLDivElement>(null);
@@ -118,6 +120,7 @@ export default function WhatIsThisPage() {
   useIsomorphicLayoutEffect(() => {
     const wrapper = heroVideoWrapperRef.current;
     const video = heroVideoRef.current;
+    const background = heroBackgroundRef.current;
     const text = heroTextRef.current;
     if (!wrapper || !video) return;
 
@@ -133,13 +136,17 @@ export default function WhatIsThisPage() {
       scrub: 1,
     } as const;
 
-    // Video: opacity fade ONLY. Every other property (filter, transform,
-    // scale, y) has been removed after repeated Chromium decoder-stall
-    // freezes — the browser will happily composite an opacity-only layer
-    // while keeping the video decoder running. Parallax on the video is
-    // not worth a frozen loop.
+    // Video + white frame: opacity fade ONLY. Every other property
+    // (filter, transform, scale, y) has been removed after repeated
+    // Chromium decoder-stall freezes — the browser will happily
+    // composite an opacity-only layer while keeping the video decoder
+    // running. Parallax on the video is not worth a frozen loop. The
+    // .heroBackground sibling fades in lockstep with the video so the
+    // four-sided white frame dissolves together with the footage —
+    // once both are gone, the starry parallax shows through the now-
+    // transparent .hero into the gap before the harmony section.
     const videoTween = gsap.fromTo(
-      video,
+      background ? [video, background] : video,
       { opacity: 1 },
       {
         opacity: 0,
@@ -274,55 +281,41 @@ export default function WhatIsThisPage() {
           removed so only the star layer shows through. */}
       <ParallaxBackground />
 
-      {/* Hero video — fills the viewport, fades/disperses as the user
-          scrolls, revealing the parallax cloud background beneath. */}
-      <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
-        <video
-          ref={heroVideoRef}
-          className={styles.heroVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          disablePictureInPicture
+      {/* Hero Section — mirrors /for-creators's hero: white-bg parent,
+          video positioned inside with a 100 px inset on three sides,
+          text/logos in a normal-flow .heroContent stack over it. */}
+      <Section className={styles.hero}>
+        {/* White hero background — owns the white that forms the
+            four-sided frame around the video. Lives as a child (not
+            on .hero) so it can be opacity-tweened independently of
+            the heroContent text, which has its own fade. */}
+        <div
+          ref={heroBackgroundRef}
+          className={styles.heroBackground}
           aria-hidden="true"
-        >
-          <source src="/images/what-is-this/garden3.mp4" type="video/mp4" />
-        </video>
+        />
+        <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
+          <video
+            ref={heroVideoRef}
+            className={styles.heroVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            disablePictureInPicture
+            aria-hidden="true"
+          >
+            <source src="/images/what-is-this/garden4.webm" type="video/webm" />
+            <source src="/images/what-is-this/garden4-optimized.mp4" type="video/mp4" />
+          </video>
+        </div>
         {/* Cherry blossom overlay — sits on top of the video AND the
             text, extending the video's falling-blossom motif onto the
             whole hero for a layered 3D read. */}
         <HeroBlossoms />
-        {/* Headline + subtitle overlaid on the left half of the video,
-            same position and framing the original white panel had, but
-            white text with no panel behind it. */}
-        <div ref={heroTextRef} className={styles.heroTextOverlay}>
-          <div className={styles.heroTextContainer}>
-            <div className={styles.heroLogoRow}>
-              <Image
-                src="/images/what-is-this/lettermark-black.png"
-                alt=""
-                width={24}
-                height={24}
-                className={styles.heroFramingLogo}
-              />
-              <Image
-                src="/images/what-is-this/lettermark-black.png"
-                alt=""
-                width={24}
-                height={24}
-                className={styles.heroFramingLogo}
-              />
-              <Image
-                src="/images/what-is-this/lettermark-black.png"
-                alt=""
-                width={24}
-                height={24}
-                className={styles.heroFramingLogo}
-              />
-            </div>
-
+        {/* Headline + subtitle in normal flow over the video. */}
+        <div ref={heroTextRef} className={styles.heroContent}>
             <h1 className={styles.heroHeadline}>
               <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
                 <span>
@@ -393,9 +386,8 @@ export default function WhatIsThisPage() {
                 className={styles.heroFramingLogo}
               />
             </div>
-          </div>
         </div>
-      </div>
+      </Section>
 
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>
@@ -459,7 +451,7 @@ export default function WhatIsThisPage() {
                   <span>could make</span>
                 </SplitLinesReveal>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
-                  <span>harmony</span>
+                  <span>harmony?</span>
                 </SplitLinesReveal>
               </h2>
             </div>
@@ -467,23 +459,28 @@ export default function WhatIsThisPage() {
             <div className={styles.bodyBlock}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  We connect podcasters and brands who love the same things.
+                  We call it Values-Based Advertising, or simply, The Signal&mdash;a new model where partnerships are rooted in shared conviction.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  Every story told, ad placed, and partnership formed is an intentional act of world making. When good brands partner with good creators and their communities, the future is shaped in the right direction.
+                  Where a brand&rsquo;s message amplifies a creator&rsquo;s voice, and a creator builds trust for the brand.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={2} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  We go beyond algorithmic targeting in search of deep resonance. So, we&rsquo;ve developed the Resonance Quotient (RQ) to help us match you with partners you&rsquo;d be proud to work with.
+                  When creators and brands share soul, the world is made in the right direction.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={3} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  This is genuine alignment: creators keep their voice, brands keep their conviction, and audiences sense harmony instead of interruption.
+                  What do we mean by shared conviction? Check out our XQ and RQ assessments to find out.
                 </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={4} duration={1.6} className={styles.elevatedCtaWrapper}>
+                <Link href="/rq-quiz" className={styles.whitepaperButton}>
+                  Find my match
+                </Link>
               </ScrollFadeUp>
             </div>
           </Section>
@@ -528,13 +525,38 @@ export default function WhatIsThisPage() {
               </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  And when a partnership shares soul? Trust flows naturally.
+                  And when advertising partnerships share soul?
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  Trust is the ultimate low-friction economic climate (Acoglu, 2023), and resonance loves this climate. 75% of listeners are happy to spend more towards brands that feel right (Edelman, 2025).
+                  Creators earn without selling out
                 </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={2} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  Brands are promoted without compromise
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={3} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  Audiences sense harmony instead of interruption
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={4} duration={1.6}>
+                <p className={styles.sectionBody}>
+                  Want to take a deeper dive into the science?
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={5} duration={1.6} className={styles.elevatedCtaWrapper}>
+                <a
+                  href="https://drive.google.com/file/d/1j5eA3-OSEVnx0TP13DoqfsfD-viREGvk/view?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.whitepaperButton}
+                >
+                  Read our white paper
+                </a>
               </ScrollFadeUp>
             </div>
           </Section>
@@ -586,7 +608,7 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
                 <a
-                  href="https://drive.google.com/file/d/1Jgn7CTqYcfqxxM8d14fjlDfVydsi2up3/view?usp=drive_link"
+                  href="https://drive.google.com/file/d/1j5eA3-OSEVnx0TP13DoqfsfD-viREGvk/view?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.whitepaperButton}

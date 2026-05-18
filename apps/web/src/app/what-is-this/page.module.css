@@ -6,29 +6,77 @@
 }
 
 /* =============================================================================
-   SPLIT-SCREEN HERO - White left panel + Image right panel
+   HERO SECTION — mirrors /for-creators .hero: white-bg parent, video
+   positioned inside with a 100 px inset on top/left/right (no bottom
+   inset) so the parent's white background shows as a three-sided frame
+   around the video. Text/logos sit in a normal-flow .heroContent stack
+   over the video.
    ============================================================================= */
 
-/* Fullscreen hero video that fades + disperses as the user scrolls,
-   revealing the starry background beneath. `overflow: visible` so the
-   downward-translating (parallax) video isn't clipped at the section's
-   bottom edge — it eases into the next section as it fades.
-   Transparent bg so the fixed starry layer is visible wherever the
-   video isn't opaque, including during its fade-out. No horizontal
-   seam at the wrapper's bottom edge. */
-.heroVideoWrapper {
-  position: relative;
+.hero {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  /* No `background` here on purpose — the white that forms the
+     four-sided video frame lives on the .heroBackground child below,
+     so it can be opacity-tweened independently of the .hero box (which
+     also contains the heroContent text — fading the whole .hero would
+     fade text twice, on top of the existing text tween). */
+  display: flex;
+  /* Vertical centering of .heroContent inside the hero — the headline +
+     subhead + two logo rows now sit as a balanced block between the
+     top and bottom of the white frame instead of pinning to the top. */
+  align-items: center;
+  /* Left-anchored: heroContent hugs the percentage padding-left below
+     rather than being centered horizontally. Pairs with the percentage
+     padding-left so the headline's left indent scales with viewport
+     width — currently 10% of hero width (≈192 px on a 1920 viewport,
+     ≈92 px inside the video's 100 px inset). Tune the percentage value
+     to taste; vertical centering is independent of it. */
+  justify-content: flex-start;
+  overflow: hidden;
+  position: relative;
   z-index: 10;
-  overflow: visible;
-  background: transparent;
+  padding: var(--edge-pad);
+  padding-left: 10%;
   /* Self-contained compositor stack — same treatment applied to
      /for-advertisers and /for-creators .hero. Prevents any sibling
      fixed/blend overlays (or future ones) from forcing the playing
      video into a shared backdrop buffer that gets rebuilt every frame. */
   isolation: isolate;
   contain: paint;
+}
+
+/* White hero background — full-bleed inside .hero, sits below the
+   video wrapper and the heroContent. Owns the white that shows as the
+   four-sided frame around the video. Opacity-tweened in lockstep with
+   the video fade so the white frame dissolves with the footage; once
+   gone, the ParallaxBackground stars are revealed through the now-
+   transparent .hero. Without this, the white block stayed solid after
+   the video faded and created a hard edge against the next section. */
+.heroBackground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--gs-tw-white);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* Video wrapper — positioned absolute inside .hero with a uniform
+   100 px inset on all four sides. The parent .heroBackground shows
+   through the inset gaps as a four-sided frame. Diverges from
+   /for-creators (which uses bottom: 0) so the scroll-fade into the
+   next section has a soft white runway at the bottom of the video
+   instead of a hard edge against the page-fold seam. */
+.heroVideoWrapper {
+  position: absolute;
+  top: calc(var(--gs-n-100) * var(--gs-px));
+  left: calc(var(--gs-n-100) * var(--gs-px));
+  right: calc(var(--gs-n-100) * var(--gs-px));
+  bottom: calc(var(--gs-n-100) * var(--gs-px));
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .heroVideo {
@@ -46,38 +94,25 @@
   will-change: opacity;
 }
 
-/* Text overlay — left half of the video, matching the original white
-   panel's footprint (same 50% width / padding / flex-center), but no
-   background and white copy so it reads over the sunset loop. */
-.heroTextOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* Was 50% (matching the original white-panel footprint). Widened
-     to 82% so the full "PODCAST ADVERTISING NETWORK" line clears the
-     final letter. The rightmost portion now overlaps the video area
-     — acceptable since copy is white on a dim sunset loop. */
-  width: 82%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--gs-n-80) * var(--gs-px));
+/* Hero content — normal-flow flex column over the inset video.
+   Mirrors /for-creators .heroContent: position:relative + z-index:2
+   so it sits above the wrapper without absolute positioning. The
+   `width:82%` and centered layout the prior .heroTextOverlay used
+   are replaced by max-width + a generous block so the headline reads
+   over the video without overflowing the 100 px frame area at the
+   top. */
+.heroContent {
+  position: relative;
   z-index: 2;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-.heroTextContainer {
-  /* Dropped the prior ~700px max-width so "PODCAST ADVERTISING NETWORK"
-     can claim the full overlay width without SplitType's `.line`
-     wrappers (overflow: hidden) clipping the final letter. Individual
-     lines still set `white-space: nowrap` (see .headlineLine) so they
-     never wrap inside this container. */
-  width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  text-align: left;
   gap: calc(var(--gs-n-24) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-1400, 1400) * var(--gs-px));
+  pointer-events: none;
+  will-change: transform, opacity;
 }
 
 /* One logo flush left, one centered, one flush right — frames the
@@ -120,11 +155,7 @@
 }
 
 @media (max-width: 1024px) {
-  .heroTextOverlay {
-    width: 90%;
-    padding: calc(var(--gs-n-64) * var(--gs-px));
-  }
-  .heroTextContainer {
+  .heroContent {
     max-width: 100%;
   }
   .heroFramingLogo {
@@ -133,10 +164,6 @@
 }
 
 @media (max-width: 768px) {
-  .heroTextOverlay {
-    width: 100%;
-    padding: calc(var(--gs-n-48) * var(--gs-px));
-  }
   .heroHeadline {
     font-size: clamp(28px, 8vw, 48px);
   }
@@ -347,7 +374,13 @@
 /* Harmony section - special layout with centered body text */
 .harmonySection {
   position: relative; /* containing block for the nocturnal sun */
-  min-height: 100vh;
+  min-height: 110vh;
+  /* Top margin opens a breathing gap between the hero's white frame
+     and this section's first headline — without it, the harmony scene
+     started immediately at the hero boundary and read as a hard
+     seam, especially after the hero white background now fades on
+     scroll (revealing the starry parallax around this gap). */
+  margin-top: calc(var(--gs-n-160) * var(--gs-px));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -739,6 +772,22 @@
 .whitepaperButton:hover {
   background: #e09d1f;
   transform: translateY(-2px);
+}
+
+/* Shared CTA wrapper for sections that have a full-bleed drag-
+   interaction overlay (harmony, values) at z-index 5. Applied to
+   the ScrollFadeUp wrapper div, not the link itself, because GSAP
+   writes a `transform` onto the SFU wrapper which creates a local
+   stacking context — any z-index on the inner link only competes
+   inside that wrapper. Lifting the wrapper here puts the whole
+   button above the drag overlay. align-self keeps the wrapper
+   content-sized in its flex column so the click target stays the
+   button's footprint only and the drag interaction continues to
+   work everywhere else. */
+.elevatedCtaWrapper {
+  position: relative;
+  z-index: 6;
+  align-self: flex-start;
 }
 
 /* =============================================================================
