@@ -51,17 +51,26 @@ export type ValuesBinaryProps = {
 export default function ValuesBinary({ controlRef }: ValuesBinaryProps = {}) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
+  // Visibility (separate from mount state) drives frameloop pause so
+  // the per-frame work goes to zero when scrolled off — two heavy R3F
+  // canvases on this page + a tab left open for minutes can exhaust
+  // GPU memory and trigger context loss. Same pattern as HarmonyOrbs.
+  const [visible, setVisible] = useState(false);
 
   // Mount the canvas only when it enters the viewport. Once it does we
-  // keep it mounted (don't tear down on scroll-out), but the canvas's
-  // frameloop="demand" + invalidation behaviour means it stops drawing
-  // once nothing changes — effectively idle when off-screen.
+  // keep it mounted (don't tear down on scroll-out); frameloop="never"
+  // while off-screen pauses the per-frame loop entirely.
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setActive(true);
+        if (entry.isIntersecting) {
+          setActive(true);
+          setVisible(true);
+        } else {
+          setVisible(false);
+        }
       },
       { rootMargin: "200px" },
     );
@@ -74,12 +83,27 @@ export default function ValuesBinary({ controlRef }: ValuesBinaryProps = {}) {
       {active ? (
         <Canvas
           dpr={[1, 1.25]}
+          frameloop={visible ? "always" : "never"}
           gl={{
             antialias: false,
             alpha: true,
             powerPreference: "high-performance",
+            failIfMajorPerformanceCaveat: false,
           }}
           camera={{ position: [0, 0.6, 5.6], fov: 32 }}
+          onCreated={({ gl }) => {
+            // See HarmonyOrbs for the rationale — preventDefault on
+            // `webglcontextlost` keeps the browser from surfacing the
+            // event as an unhandled error (which pops the Next dev
+            // overlay) and lets three.js auto-restore its state when
+            // the context is re-acquired.
+            const canvas = gl.domElement;
+            canvas.addEventListener(
+              "webglcontextlost",
+              (ev) => ev.preventDefault(),
+              false,
+            );
+          }}
         >
           <BinaryScene controlRef={controlRef} />
           <EffectComposer multisampling={0}>

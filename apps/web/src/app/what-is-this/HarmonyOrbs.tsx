@@ -74,13 +74,25 @@ export type HarmonyOrbsProps = {
 export default function HarmonyOrbs({ controlRef }: HarmonyOrbsProps = {}) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
+  // Track viewport visibility separately from mount state — once the
+  // canvas is mounted we leave it mounted (avoid re-init flashes), but
+  // we pause the per-frame work when off-screen so the GPU doesn't
+  // burn cycles. Two long-running R3F canvases on this page
+  // (HarmonyOrbs + ValuesBinary) plus a tab left open for minutes can
+  // exhaust GPU memory and trigger context loss.
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setActive(true);
+        if (entry.isIntersecting) {
+          setActive(true);
+          setVisible(true);
+        } else {
+          setVisible(false);
+        }
       },
       { rootMargin: "200px" },
     );
@@ -93,12 +105,35 @@ export default function HarmonyOrbs({ controlRef }: HarmonyOrbsProps = {}) {
       {active ? (
         <Canvas
           dpr={[1, 1.25]}
+          // `always` while visible; `never` once scrolled off so the
+          // useFrame loop sleeps. Restarts on the next IO entry.
+          frameloop={visible ? "always" : "never"}
           gl={{
             antialias: true,
             alpha: true,
             powerPreference: "high-performance",
+            // `failIfMajorPerformanceCaveat: false` lets the renderer
+            // keep running on lower-end GPUs that would otherwise
+            // refuse the context outright.
+            failIfMajorPerformanceCaveat: false,
           }}
           camera={{ position: [0, 0, 5], fov: 28 }}
+          onCreated={({ gl }) => {
+            // The native canvas fires `webglcontextlost` when the
+            // browser yanks the GPU context (idle-timeout, GPU
+            // pressure, tab-switching for a while). preventDefault
+            // tells the browser the context is recoverable; three.js
+            // listens for `webglcontextrestored` and re-uploads its
+            // textures/programs automatically. Without this, the
+            // event surfaces as an unhandled error → Next.js dev
+            // overlay pops up.
+            const canvas = gl.domElement;
+            canvas.addEventListener(
+              "webglcontextlost",
+              (ev) => ev.preventDefault(),
+              false,
+            );
+          }}
         >
           <Scene controlRef={controlRef} />
         </Canvas>

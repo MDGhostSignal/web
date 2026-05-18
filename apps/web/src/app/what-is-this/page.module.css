@@ -170,12 +170,6 @@
   .heroSubtitle {
     font-size: clamp(16px, 4vw, 22px);
   }
-  /* Allow the long "podcast advertising network" line to wrap at
-     mobile widths rather than overflow — a wrapped sub-line still
-     animates as part of its SplitLinesReveal block. */
-  .headlineLine {
-    white-space: normal;
-  }
 }
 
 /* =============================================================================
@@ -593,13 +587,16 @@
   gap: calc(var(--gs-n-24) * var(--gs-px));
 }
 
-/* Each headline line wrapper for staggered animation */
+/* Each headline line wrapper for staggered animation. Wrap naturally
+   when the line doesn't fit — the prior `white-space: nowrap` kept
+   each phrase on a single row on desktop but cut off the long
+   "podcast advertising network" line at intermediate (tablet)
+   viewport widths where the content area was too narrow. On wide
+   viewports the text still lays out on one line because the column
+   is wide enough; on narrower ones it now breaks at a word boundary
+   ("podcast advertising / network") instead of overflowing. */
 .headlineLine {
   display: block;
-  /* Keep each hero line on a single row so "podcast advertising
-     network" doesn't wrap. Overridden at ≤768px where wrapping is
-     acceptable. */
-  white-space: nowrap;
 }
 
 /* Subtitle line wrapper for staggered animation */
