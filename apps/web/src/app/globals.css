@@ -14,6 +14,16 @@ body {
   background: var(--gs-background);
   color: var(--gs-foreground);
   font-family: var(--font-sans);
+  /* Document-level catch-all for accidental horizontal overflow.
+     Several pages legitimately have elements that extend past the
+     viewport edge (e.g. for-advertisers / who-are-we cloud keyframes
+     that translate to 100vw, what-is-this hero geometry which
+     intentionally runs .page with overflow: visible). Per-page
+     overflow guards on .page can't catch position: fixed children
+     or transient transforms. `clip` (vs hidden) doesn't establish
+     a scroll container, so position: sticky / fixed descendants
+     continue to work normally. */
+  overflow-x: clip;
 }
 
 /* Motto-like header effects. Motion lives in `src/components/SiteHeader.tsx`. */
