@@ -629,6 +629,25 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
+/* Callout paragraph — for prompting CTAs inside a body block. Same
+   typographic scale as .sectionBody but framed as its own little
+   panel: soft accent-tinted background, left accent border, bumped
+   weight + slightly brighter copy so the question reads as a prompt
+   for the button below it rather than another body line. */
+.bodyCallout {
+  margin: calc(var(--gs-n-8) * var(--gs-px)) 0 0;
+  padding: calc(var(--gs-n-20) * var(--gs-px))
+    calc(var(--gs-n-24) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(251, 173, 37, 0.08);
+  border-left: 3px solid #fbad25;
+  border-radius: 4px;
+}
+
 /* =============================================================================
    FINAL SECTION - "This is the Signal" centered over globe
    ============================================================================= */
@@ -753,6 +772,16 @@
   font-size: clamp(20px, 3vw, 28px);
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.85);
+}
+
+/* Side-by-side button row for the Follow-Your-Signal section.
+   Flex-wrap so the pair stacks below the parent's content width on
+   narrow viewports instead of overflowing the centered column. */
+.whitepaperButtonRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
 }
 
 .whitepaperButton {

@@ -459,22 +459,22 @@ export default function WhatIsThisPage() {
             <div className={styles.bodyBlock}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  We call it Values-Based Advertising, or simply, The Signal&mdash;a new model where partnerships are rooted in shared conviction.
+                  Most advertising is built on reach, not resonance.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  Where a brand&rsquo;s message amplifies a creator&rsquo;s voice, and a creator builds trust for the brand.
+                  But what if advertising could make harmony?
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={2} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  When creators and brands share soul, the world is made in the right direction.
+                  We call it Values-Based Advertising, or simply, The Signal&mdash;a new model where partnerships are rooted in shared conviction. Where a brand&rsquo;s message amplifies a creator&rsquo;s voice, and a creator builds trust for the brand. When creators and brands share soul, the world is made in the right direction.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={3} duration={1.6}>
-                <p className={styles.sectionBody}>
-                  What do we mean by shared conviction? Check out our XQ and RQ assessments to find out.
+                <p className={styles.bodyCallout}>
+                  What do we mean by shared conviction? Check out our RQ assessment to find out.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={4} duration={1.6} className={styles.elevatedCtaWrapper}>
@@ -525,27 +525,18 @@ export default function WhatIsThisPage() {
               </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  And when advertising partnerships share soul?
-                </p>
-              </ScrollFadeUp>
-              <ScrollFadeUp index={1} duration={1.6}>
-                <p className={styles.sectionBody}>
+                  Values-Based Advertising means:
+                  <br />
                   Creators earn without selling out
-                </p>
-              </ScrollFadeUp>
-              <ScrollFadeUp index={2} duration={1.6}>
-                <p className={styles.sectionBody}>
+                  <br />
                   Brands are promoted without compromise
-                </p>
-              </ScrollFadeUp>
-              <ScrollFadeUp index={3} duration={1.6}>
-                <p className={styles.sectionBody}>
+                  <br />
                   Audiences sense harmony instead of interruption
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={4} duration={1.6}>
-                <p className={styles.sectionBody}>
-                  Want to take a deeper dive into the science?
+                <p className={styles.bodyCallout}>
+                  Want to take a deeper dive into the science? Read our white paper here.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={5} duration={1.6} className={styles.elevatedCtaWrapper}>
@@ -598,23 +589,31 @@ export default function WhatIsThisPage() {
             </div>
           </Section>
 
-          {/* White Paper CTA Section */}
+          {/* Follow Your Signal CTA Section — splits visitors into the
+              two persona pages (Creator / Advertiser) instead of a
+              single white-paper download. */}
           <Section className={styles.whitepaperSection}>
             <div className={styles.whitepaperContent}>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.whitepaperText}>
-                  Access our white paper and read about how <BrandedGhostSignal /> can help you make the world.
+                  Follow Your Signal.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
-                <a
-                  href="https://drive.google.com/file/d/1j5eA3-OSEVnx0TP13DoqfsfD-viREGvk/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.whitepaperButton}
-                >
-                  Read the White Paper
-                </a>
+                <div className={styles.whitepaperButtonRow}>
+                  <Link
+                    href="/for-creators"
+                    className={styles.whitepaperButton}
+                  >
+                    I am a Creator
+                  </Link>
+                  <Link
+                    href="/for-advertisers"
+                    className={styles.whitepaperButton}
+                  >
+                    I am an Advertiser
+                  </Link>
+                </div>
               </ScrollFadeUp>
             </div>
           </Section>
