@@ -26,7 +26,6 @@ import {
   MEMBER_PHASES,
   MEMBER_TYPE_LABELS,
   MEMBER_TYPES,
-  ROT_THRESHOLD_DAYS,
   type LifecycleStepDef,
   type LifecycleSteps,
   type Member,
@@ -466,6 +465,19 @@ export default function MembersPage() {
   // sees the freshly expanded layout. `scroll-margin-top` on the row
   // (defined in the leads CSS module) offsets for the sticky admin
   // topbar so the row doesn't land underneath it.
+  // "Resolved" on an urgent banner row — bump last_contact_at to now.
+  // Same `handleMemberPatch` path the inline editors use, so optimistic
+  // update + rollback applies. The urgent useMemo recomputes on the
+  // members state change, dropping the row.
+  const handleResolveUrgent = useCallback(
+    (id: string) => {
+      void handleMemberPatch(id, {
+        last_contact_at: new Date().toISOString(),
+      });
+    },
+    [handleMemberPatch],
+  );
+
   const openLead = useCallback((id: string) => {
     setSearchTerm("");
     setFilterPhase("all");
@@ -519,7 +531,11 @@ export default function MembersPage() {
         </div>
       )}
 
-      <UrgentLeadsBanner urgent={urgent} onOpenLead={openLead} />
+      <UrgentLeadsBanner
+        urgent={urgent}
+        onOpenLead={openLead}
+        onResolveLead={handleResolveUrgent}
+      />
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -764,13 +780,6 @@ function MembersTable({
           m.member_type,
         );
         const isFull = total > 0 && done === total;
-        const days = daysSince(m.phase_entered_at);
-        const isRot =
-          days !== null &&
-          days > ROT_THRESHOLD_DAYS &&
-          m.phase !== "run" &&
-          m.phase !== "paused" &&
-          m.phase !== "churned";
         return (
           <span className={styles.phaseCell}>
             <Badge variant={phaseVariant(m.phase)}>
@@ -791,13 +800,6 @@ function MembersTable({
             >
               {done}/{total}
             </span>
-            {isRot && (
-              <span
-                className={styles.rotDot}
-                title={`${days} days in ${MEMBER_PHASE_LABELS[m.phase]} — may be stuck`}
-                aria-label="Stalled in current phase"
-              />
-            )}
           </span>
         );
       },
@@ -1239,9 +1241,18 @@ function DeleteConfirmModal({
 type UrgentBannerProps = {
   urgent: Member[];
   onOpenLead: (id: string) => void;
+  /** Marks the lead as resolved — internally just bumps
+      `last_contact_at` to now, which satisfies the urgency rule
+      (≥ URGENT_DAYS stale) so the row drops off the banner and
+      doubles as a record that outreach just happened. */
+  onResolveLead: (id: string) => void;
 };
 
-function UrgentLeadsBanner({ urgent, onOpenLead }: UrgentBannerProps) {
+function UrgentLeadsBanner({
+  urgent,
+  onOpenLead,
+  onResolveLead,
+}: UrgentBannerProps) {
   if (urgent.length === 0) return null;
 
   return (
@@ -1264,7 +1275,12 @@ function UrgentLeadsBanner({ urgent, onOpenLead }: UrgentBannerProps) {
           const stale =
             d === null ? "Never contacted" : `${d}d since last contact`;
           return (
-            <li key={m.id}>
+            // Two sibling buttons inside each <li> — the row-open
+            // target on the left, the resolve action on the right. A
+            // button nested inside another button is invalid HTML, so
+            // the split keeps the markup well-formed while letting
+            // both actions click independently.
+            <li key={m.id} className={styles.urgentItemRow}>
               <button
                 type="button"
                 className={styles.urgentItem}
@@ -1278,9 +1294,14 @@ function UrgentLeadsBanner({ urgent, onOpenLead }: UrgentBannerProps) {
                 <span className={styles.urgentItemMeta}>
                   {m.owner ?? "—"}
                 </span>
-                <span className={styles.urgentItemArrow} aria-hidden="true">
-                  →
-                </span>
+              </button>
+              <button
+                type="button"
+                className={styles.urgentResolveBtn}
+                onClick={() => onResolveLead(m.id)}
+                title="Mark this lead resolved — bumps Last contact to today, dropping it off the urgent list."
+              >
+                Resolved
               </button>
             </li>
           );

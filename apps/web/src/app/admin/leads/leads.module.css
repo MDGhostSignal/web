@@ -69,15 +69,6 @@
   border-color: var(--admin-accent);
 }
 
-.rotDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #e11d48;
-  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.18);
-  flex: none;
-}
 
 /* Lifecycle checklist (expanded row). */
 .lifecycleBlock {
@@ -862,12 +853,22 @@
   gap: var(--admin-space-2);
 }
 
+/* Each urgent row is two sibling buttons inside an <li>: the main
+   open-lead target on the left, the "Resolved" action on the right.
+   The <li> itself is the flex container; both buttons keep their own
+   click target and focus state. */
+.urgentItemRow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--admin-space-2);
+}
+
 .urgentItem {
+  flex: 1 1 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   gap: var(--admin-space-3);
-  width: 100%;
   padding: var(--admin-space-3);
   font-family: var(--admin-font);
   font-size: var(--admin-text-md);
@@ -914,9 +915,35 @@
   white-space: nowrap;
 }
 
-.urgentItemArrow {
-  font-size: var(--admin-text-md);
-  color: var(--admin-text-muted);
+/* Resolve action — visually subdued by default so the row's danger
+   chrome stays the primary read; hover flips it to the success token
+   family so the user gets a "this will clear the urgency" preview. */
+.urgentResolveBtn {
+  flex: 0 0 auto;
+  padding: 0 var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: background 120ms ease, border-color 120ms ease,
+    color 120ms ease;
+}
+
+.urgentResolveBtn:hover {
+  color: var(--admin-success);
+  background: var(--admin-success-soft);
+  border-color: var(--admin-success);
+}
+
+.urgentResolveBtn:focus-visible {
+  outline: 2px solid var(--admin-success);
+  outline-offset: 2px;
 }
 
 @media (max-width: 760px) {
@@ -924,8 +951,13 @@
     grid-template-columns: 1fr;
     gap: 2px;
   }
-  .urgentItemArrow {
-    display: none;
+  .urgentItemRow {
+    /* On narrow viewports the resolve button drops below the row so
+       both have a comfortable hit target. */
+    flex-direction: column;
+  }
+  .urgentResolveBtn {
+    padding: var(--admin-space-2);
   }
 }
 
