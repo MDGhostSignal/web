@@ -43,6 +43,12 @@ const DRY = arg("dry-run", false) === true;
 // stageless rows are people Mike collected as contacts but never
 // pushed into an active pipeline — not worth importing as leads.
 const PIPELINED_ONLY = arg("pipelined-only", false) === true;
+// Inverse — only import rows WITHOUT a Nimble pipeline/stage. Used
+// for a second pass after the pipelined batch is already in the DB:
+// `--pipelined-only` got the 42 stage-assigned ones, then
+// `--stageless-only` brings in the rest without re-importing the
+// first batch.
+const STAGELESS_ONLY = arg("stageless-only", false) === true;
 const CSV_PATH = resolve(
   __dirname,
   "..",
@@ -306,13 +312,17 @@ const mapped = [];
 const skipped = [];
 const skippedStageless = [];
 for (const row of rows) {
-  if (PIPELINED_ONLY) {
-    const pipeline = (row["Pipeline name 1"] || "").trim();
-    const stage = (row["Stage name 1"] || "").trim();
-    if (!pipeline && !stage) {
-      skippedStageless.push(row);
-      continue;
-    }
+  const pipeline = (row["Pipeline name 1"] || "").trim();
+  const stage = (row["Stage name 1"] || "").trim();
+  const isStageless = !pipeline && !stage;
+  if (PIPELINED_ONLY && isStageless) {
+    skippedStageless.push(row);
+    continue;
+  }
+  if (STAGELESS_ONLY && !isStageless) {
+    // Inverse skip — drop the pipelined rows, keep stageless only.
+    skippedStageless.push(row);
+    continue;
   }
   const m = mapRow(row);
   if (m) mapped.push({ row, payload: m });
