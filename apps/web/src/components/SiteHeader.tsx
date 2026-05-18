@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { gsap, ScrollTrigger } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
@@ -38,6 +39,34 @@ export function SiteHeader({
   const logoRef = useRef<HTMLAnchorElement | null>(null);
   const linksWrapRef = useRef<HTMLDivElement | null>(null);
   const ctaRef = useRef<HTMLAnchorElement | null>(null);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // Close the overlay whenever the route changes. Render-phase
+  // compare-and-set (React-recommended "reset state on derived change"
+  // pattern) avoids the cascading-render lint rule on a useEffect.
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
+    if (mobileOpen) setMobileOpen(false);
+  }
+
+  // Lock body scroll while the overlay is open; restore on close/unmount.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
 
   // Note: we keep these as literal values because they are taken from Motto's code.
   const THRESHOLD_Y = 100;
@@ -232,6 +261,19 @@ export function SiteHeader({
           />
         </Link>
 
+        <button
+          type="button"
+          className={styles.mobileTrigger}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-nav-overlay"
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          <span className={`${styles.mobileTriggerBar} ${mobileOpen ? styles.mobileTriggerBarOpen : ""}`} aria-hidden="true" />
+          <span className={`${styles.mobileTriggerBar} ${mobileOpen ? styles.mobileTriggerBarOpen : ""}`} aria-hidden="true" />
+          <span className={`${styles.mobileTriggerBar} ${mobileOpen ? styles.mobileTriggerBarOpen : ""}`} aria-hidden="true" />
+        </button>
+
         <div className={styles.navContainer}>
           <nav
             aria-label="Primary"
@@ -276,6 +318,32 @@ export function SiteHeader({
           ) : null}
         </div>
       </header>
+
+      <div
+        id="mobile-nav-overlay"
+        className={`${styles.mobileOverlay} ${mobileOpen ? styles.mobileOverlayOpen : ""}`}
+        aria-hidden={!mobileOpen}
+      >
+        <nav aria-label="Mobile" className={styles.mobileNav}>
+          {links.map((l) => {
+            const isCta = l.cta === true;
+            const className = isCta
+              ? styles.mobileNavCta
+              : styles.mobileNavLink;
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={className}
+                onClick={closeMobile}
+                tabIndex={mobileOpen ? 0 : -1}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,15 @@
   z-index: 50;
 }
 
+/* Mobile trigger hidden by default; revealed under the ≤768 px block. */
+.mobileTrigger {
+  display: none;
+}
+
+.mobileOverlay {
+  display: none;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -194,17 +203,12 @@
 }
 
 /* ============================================================
-   Mobile + tablet — six nav links + a CTA pill don't fit in a
-   375 px viewport at desktop scale. Below 991 px (matching the
-   JS media-query that disables scroll-hide) the row tightens
-   and becomes horizontally swipeable so every link stays
-   reachable without a hamburger rebuild. Scrollbar is hidden
-   visually — touch + trackpad swipe scrolls the row instead.
-   The CTA pill, logo, and overall header chrome shrink too so
-   the bar reads as a compact bottom dock on phones.
+   Tablet (769–991 px) — six nav links + a CTA pill don't fit
+   comfortably at desktop scale, so the row tightens and becomes
+   horizontally swipeable. Trackpad + touch scrolls it sideways.
    ============================================================ */
 
-@media (max-width: 991px) {
+@media (max-width: 991px) and (min-width: 769px) {
   .header {
     height: calc(var(--gs-n-96, 96) * var(--gs-px));
     min-height: calc(var(--gs-n-96, 96) * var(--gs-px));
@@ -261,27 +265,185 @@
   }
 }
 
-@media (max-width: 480px) {
+/* ============================================================
+   Phone (≤768 px) — dedicated mobile nav.
+
+   The desktop bottom-pill is hidden entirely. The header
+   re-anchors to the top of the viewport (standard mobile
+   convention) and shows only the logo + hamburger trigger.
+   Tapping the trigger opens a full-viewport overlay with the
+   full nav stack and the CTA pill at the bottom.
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .headerRoot {
+    /* Reanchor to top — hamburger menus belong where thumbs reach
+       and where users expect to find a "menu" affordance. */
+    top: 0;
+    bottom: auto;
+  }
+
   .header {
-    padding-left: calc(var(--gs-n-12) * var(--gs-px));
-    padding-right: calc(var(--gs-n-12) * var(--gs-px));
+    height: calc(var(--gs-n-64) * var(--gs-px));
+    min-height: calc(var(--gs-n-64) * var(--gs-px));
+    padding-left: calc(var(--gs-n-16) * var(--gs-px));
+    padding-right: calc(var(--gs-n-16) * var(--gs-px));
+    /* Soft underline so the white bar separates from white page
+       sections (homepage hero is the main white surface). */
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.06);
   }
 
   .logoWrap {
-    width: calc(var(--gs-n-100, 100) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-12) * var(--gs-px));
+    flex: none;
+    width: auto;
+    height: calc(var(--gs-n-48) * var(--gs-px));
+    padding-block: 0;
+    padding-inline: 0;
   }
 
-  .nav {
-    column-gap: calc(var(--gs-n-12) * var(--gs-px));
+  .logo {
+    width: calc(var(--gs-n-44, 44) * var(--gs-px));
+    height: calc(var(--gs-n-36, 36) * var(--gs-px));
   }
 
-  .navLink {
-    padding-inline: calc(var(--gs-n-6) * var(--gs-px));
-    font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
+  /* Hide the desktop nav row + CTA pill — replaced by overlay. */
+  .navContainer {
+    display: none;
   }
 
-  .navCta {
-    padding-inline: calc(var(--gs-n-12) * var(--gs-px));
+  /* Hamburger trigger ------------------------------------------------ */
+
+  .mobileTrigger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: calc(var(--gs-n-6, 6) * var(--gs-px));
+    width: calc(var(--gs-n-44, 44) * var(--gs-px));
+    height: calc(var(--gs-n-44, 44) * var(--gs-px));
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    /* Keep above overlay backdrop so the close (X) state stays
+       interactive when the overlay is open. */
+    position: relative;
+    z-index: 2;
+    color: var(--gs-tw-black);
+  }
+
+  .mobileTriggerBar {
+    display: block;
+    width: calc(var(--gs-n-24) * var(--gs-px));
+    height: calc(var(--gs-px) * 2);
+    background: currentColor;
+    border-radius: calc(var(--gs-px) * 1);
+    transition:
+      transform 280ms cubic-bezier(0.2, 0.65, 0.2, 1),
+      opacity 200ms ease;
+    transform-origin: center;
+  }
+
+  /* Hamburger → X transform. The three bars are stacked via the
+     parent's column flex + gap; absolute-positioning the middle
+     bar onto the others lets the outer two cross cleanly. */
+  .mobileTriggerBarOpen:nth-child(1) {
+    transform: translateY(calc((var(--gs-n-6, 6) + 2) * var(--gs-px))) rotate(45deg);
+  }
+
+  .mobileTriggerBarOpen:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobileTriggerBarOpen:nth-child(3) {
+    transform: translateY(calc((var(--gs-n-6, 6) + 2) * var(--gs-px) * -1)) rotate(-45deg);
+  }
+
+  /* Overlay ---------------------------------------------------------- */
+
+  .mobileOverlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: #ffffff;
+    /* Push content below the 64px header bar. */
+    padding-top: calc(var(--gs-n-64) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-24) * var(--gs-px));
+    padding-bottom: calc(var(--gs-n-32) * var(--gs-px));
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(calc(var(--gs-n-12) * var(--gs-px) * -1));
+    transition:
+      opacity 280ms cubic-bezier(0.2, 0.65, 0.2, 1),
+      transform 320ms cubic-bezier(0.2, 0.65, 0.2, 1),
+      visibility 0s linear 320ms;
+    /* Allow scrolling if the link list ever exceeds the viewport. */
+    overflow-y: auto;
+  }
+
+  .mobileOverlayOpen {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition:
+      opacity 280ms cubic-bezier(0.2, 0.65, 0.2, 1),
+      transform 320ms cubic-bezier(0.2, 0.65, 0.2, 1),
+      visibility 0s linear 0s;
+  }
+
+  .mobileNav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: calc(var(--gs-n-8) * var(--gs-px));
+    width: 100%;
+    margin-top: calc(var(--gs-n-32) * var(--gs-px));
+  }
+
+  .mobileNavLink {
+    display: flex;
+    align-items: center;
+    padding-block: calc(var(--gs-n-16) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-8) * var(--gs-px));
+    font-family: var(--font-body);
+    font-weight: var(--gs-font-weight-bold);
+    font-size: calc(var(--gs-font-size-2xl) * var(--gs-px));
+    line-height: 1.2;
+    color: var(--gs-tw-black);
+    text-decoration: none;
+    text-transform: none;
+    border-bottom: calc(var(--gs-px) * 1) solid rgb(0 0 0 / 0.08);
+    transition: opacity 200ms ease;
+  }
+
+  .mobileNavLink:active {
+    opacity: 0.6;
+  }
+
+  .mobileNavCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    margin-top: calc(var(--gs-n-24) * var(--gs-px));
+    padding-block: calc(var(--gs-n-16) * var(--gs-px));
+    padding-inline: calc(var(--gs-n-32) * var(--gs-px));
+    border-radius: calc(var(--gs-radius-full) * var(--gs-px));
+    background: var(--gs-tw-black);
+    color: var(--gs-tw-white);
+    font-family: var(--font-body);
+    font-weight: var(--gs-font-weight-bold);
+    font-size: calc(var(--gs-font-size-lg) * var(--gs-px));
+    line-height: 1.2;
+    text-decoration: none;
+    text-transform: none;
+    transition: opacity 200ms ease;
+  }
+
+  .mobileNavCta:active {
+    opacity: 0.85;
   }
 }
