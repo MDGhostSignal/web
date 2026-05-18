@@ -1,13 +1,18 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { Button, Loading, Modal } from "@/components/admin";
 import {
   MOCK_BRANDS,
   MOCK_CREATORS,
-  MOCK_ENTITIES,
   type MarketplaceEntity,
 } from "@/lib/marketplace-mocks";
 import {
@@ -19,6 +24,7 @@ import {
 import {
   memberToMarketplaceEntity,
   type Member,
+  type MemberWritable,
 } from "@/lib/members";
 
 import { MatchBoard } from "./MatchBoard";
@@ -53,7 +59,11 @@ const VIEWS: { id: ViewMode; label: string; hint: string }[] = [
 ];
 
 export default function MarketplacePage() {
-  const [view, setView] = useState<ViewMode>("match");
+  // Default to the Pool view — when a founder clicks the
+  // Marketplace tab they almost always want to see the roster
+  // first (and the new "Membership" block on the expanded pool row
+  // is where ongoing member-onboarding lives).
+  const [view, setView] = useState<ViewMode>("pool");
   const [resetOpen, setResetOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -98,24 +108,84 @@ export default function MarketplacePage() {
     };
   }, []);
 
-  // Merge mocks + graduated leads. Graduated members appear ahead of
-  // mocks so the most recent real members are easy to find; the
-  // converter returns null for non-graduated rows and non-marketplace
-  // member types, so the filter is automatic.
+  // Pool entities = real graduated members only. The seed mocks were
+  // useful for prototyping the pool UI; with the marketplace now
+  // wired to /admin/leads via `became_member_at`, the pool reflects
+  // the actual roster. (MatchBoard + Map still demo against
+  // MOCK_ENTITIES until real members carry RQ scores.)
   const poolEntities = useMemo<readonly MarketplaceEntity[]>(() => {
-    const real = realMembers
+    return realMembers
       .map(memberToMarketplaceEntity)
       .filter((e): e is NonNullable<typeof e> => e !== null);
-    return [...real, ...MOCK_ENTITIES];
   }, [realMembers]);
 
-  // Counters in the page header
+  // Sidebar counter helpers — split the live roster by kind so the
+  // sidebar reflects real members rather than the (now-unused) mocks.
+  const poolKindCounts = useMemo(() => {
+    let creators = 0;
+    let brands = 0;
+    for (const e of poolEntities) {
+      if (e.kind === "creator") creators += 1;
+      else if (e.kind === "brand") brands += 1;
+    }
+    return { creators, brands };
+  }, [poolEntities]);
+
+  // Edit-from-pool: the expanded row on the Pool view writes back
+  // changes to onboarding lifecycle steps. Same optimistic-update +
+  // rollback pattern as /admin/leads's handleMemberPatch — but the
+  // marketplace doesn't have a global error banner, so failures fall
+  // back to console.error.
+  const handleMemberPatch = useCallback(
+    async (
+      memberId: string,
+      partial: MemberWritable,
+    ): Promise<boolean> => {
+      const current = realMembers.find((m) => m.id === memberId);
+      if (!current) return false;
+
+      setRealMembers((prev) =>
+        prev.map((m) => (m.id === memberId ? { ...m, ...partial } : m)),
+      );
+
+      try {
+        const res = await fetch(`/api/members/${memberId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(partial),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          console.error("Marketplace member patch failed:", data);
+          setRealMembers((prev) =>
+            prev.map((m) => (m.id === memberId ? current : m)),
+          );
+          return false;
+        }
+        const saved = data.member as Member;
+        setRealMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? saved : m)),
+        );
+        return true;
+      } catch (err) {
+        console.error("Marketplace member patch threw:", err);
+        setRealMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? current : m)),
+        );
+        return false;
+      }
+    },
+    [realMembers],
+  );
+
+  // Counters in the sidebar. The `confirmed` match list still uses
+  // mock ids (MatchBoard / Map are mock-driven), so the matched
+  // counters reference MOCK_CREATORS / MOCK_BRANDS as their
+  // denominators until those views move to real-member data too.
   const counters = useMemo(() => {
-    const totalEntities = MOCK_ENTITIES.length;
     const matchedBrands = new Set(confirmed.map((m) => m.brand_id)).size;
     const matchedCreators = new Set(confirmed.map((m) => m.creator_id)).size;
     return {
-      totalEntities,
       totalMatches: confirmed.length,
       matchedBrands,
       matchedCreators,
@@ -128,7 +198,10 @@ export default function MarketplacePage() {
         <div className={styles.sidebarBrand}>
           <h1 className={styles.sidebarTitle}>Marketplace</h1>
           <p className={styles.sidebarSubtitle}>
-            {MOCK_CREATORS.length} creators · {MOCK_BRANDS.length} brands
+            {poolKindCounts.creators} creator
+            {poolKindCounts.creators === 1 ? "" : "s"} ·{" "}
+            {poolKindCounts.brands} brand
+            {poolKindCounts.brands === 1 ? "" : "s"}
           </p>
         </div>
 
@@ -189,7 +262,12 @@ export default function MarketplacePage() {
 
       <main className={styles.main}>
         {view === "pool" ? (
-          <PoolView matches={confirmed} entities={poolEntities} />
+          <PoolView
+            matches={confirmed}
+            entities={poolEntities}
+            members={realMembers}
+            onMemberPatch={handleMemberPatch}
+          />
         ) : view === "match" ? (
           <MatchBoard matches={matches} />
         ) : (

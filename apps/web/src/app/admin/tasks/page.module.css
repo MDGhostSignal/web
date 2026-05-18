@@ -1,5 +1,5 @@
 /* =============================================================================
-   /admin/design-tasks — page-specific styles
+   /admin/tasks — page-specific styles
    =============================================================================
 
    Page chrome (background, topbar, centred content column) is now
@@ -36,17 +36,100 @@
 }
 
 /* ---- Toolbar ------------------------------------------------------- */
+/* Two-column page layout — fixed-width sidebar holding all filter
+   controls, fluid main column for the task action toolbar + grid.
+   The sidebar sticks below the admin topbar so filters stay reachable
+   while scrolling a long list. Collapses to a single column on
+   narrower viewports so each section keeps its measure.
+   ---------------------------------------------------------------
+   Viewport breakout: AdminShell wraps the page in a centred
+   max-width content box, which kept the sidebar floating inboard
+   of the screen. The width: 100vw + margin-left: calc(50% - 50vw)
+   pattern (same one /admin/marketplace uses) escapes that box so
+   the sidebar hugs the actual left edge of the viewport and the
+   main column gets the rest of the screen width. AdminShell's
+   .shell carries overflow-x: hidden so this can't induce a
+   horizontal scrollbar. */
+.layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: var(--admin-space-5);
+  align-items: start;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 0 var(--admin-space-4) 0 var(--admin-space-3);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+  position: sticky;
+  top: var(--admin-space-5);
+}
+
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.sidebarSectionTitle {
+  margin: 0;
+  padding: 0 var(--admin-space-3);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sidebarFilters {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Filter buttons in the sidebar fill the row (label left, count
+   right) instead of hugging their content like the prior horizontal
+   filter tabs. Same .filterTab base styles apply for color + active
+   state; this just changes layout direction. */
+.sidebarFilters .filterTab {
+  justify-content: space-between;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--admin-space-4);
+  }
+  .sidebarSection {
+    min-width: 200px;
+    flex: 1 1 200px;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  min-width: 0;
+}
+
+/* Toolbar now holds only the "+ New Task" button — pin it to the
+   right edge of the main column so it sits at the visual top of the
+   task grid, matching its original position on the prior layout. */
 .toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--admin-space-4);
-  flex-wrap: wrap;
-}
-
-.filterTabs {
-  display: flex;
-  gap: var(--admin-space-1);
 }
 
 .filterTab {
@@ -310,6 +393,20 @@
   color: var(--admin-text-muted);
 }
 
+/* Creator → assignee pairing on the meta row. "By: Mike" is the
+   default muted color; the arrow + assignee pops in accent so the
+   "who owns this" answer reads at a glance. Unassigned italic muted
+   so it's clearly an absence rather than a name. */
+.taskAssignee {
+  color: var(--admin-accent);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.taskAssigneeUnset {
+  font-style: italic;
+  color: var(--admin-text-muted);
+}
+
 .taskDue {
   color: var(--admin-warn);
 }
@@ -388,6 +485,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--admin-space-2);
+  /* min-width: 0 lets the grouped column shrink to its grid track —
+     without it, a wide <select> (e.g. "Martin Drexler (Munich, DE)")
+     forces the grid cell to its intrinsic content width and overflows
+     the modal, triggering a horizontal scrollbar. */
+  min-width: 0;
+}
+
+.formGroup .select {
+  /* Pin to the column width so long option labels don't widen the cell. */
+  width: 100%;
 }
 
 .label {

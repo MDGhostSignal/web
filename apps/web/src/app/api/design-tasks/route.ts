@@ -10,6 +10,9 @@ interface TaskPayload {
   priority: "low" | "medium" | "high";
   due_date?: string | null;
   created_by?: string;
+  /** Founder name the task is assigned to. Independent of `created_by`
+      — a founder can create a task for someone else. Null = unassigned. */
+  assigned_to?: string | null;
 }
 
 // Founder mapping based on country
@@ -199,6 +202,7 @@ export async function POST(request: NextRequest) {
       priority: body.priority || "medium",
       due_date: body.due_date || null,
       created_by: founderName,
+      assigned_to: body.assigned_to ?? null,
     };
 
     const response = await fetch(
@@ -260,6 +264,7 @@ export async function PATCH(request: NextRequest) {
     if (body.status !== undefined) updateData.status = body.status;
     if (body.priority !== undefined) updateData.priority = body.priority;
     if (body.due_date !== undefined) updateData.due_date = body.due_date || null;
+    if (body.assigned_to !== undefined) updateData.assigned_to = body.assigned_to || null;
 
     const response = await fetch(
       `${config.url}/rest/v1/${TABLE_NAME}?id=eq.${body.id}`,

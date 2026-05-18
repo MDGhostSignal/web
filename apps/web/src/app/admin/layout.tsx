@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         { href: "/admin/leads", label: "Leads" },
         { href: "/admin/marketplace", label: "Marketplace" },
         { href: "/admin/rq-responses", label: "RQ Responses" },
-        { href: "/admin/design-tasks", label: "Design Tasks" },
+        { href: "/admin/tasks", label: "Tasks" },
       ]}
       onLogout={handleLogout}
     >

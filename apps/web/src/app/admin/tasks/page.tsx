@@ -40,6 +40,8 @@ interface Task {
   created_at: string;
   due_date?: string | null;
   created_by?: string;
+  /** Founder the task is assigned to. Null/undefined = unassigned. */
+  assigned_to?: string | null;
   comment_count?: number;
   latest_comment_at?: string | null;
 }
@@ -128,6 +130,9 @@ export default function DesignTasksPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<TaskStatus | "all">("all");
+  // Second filter row — by assignee. "all" shows every task regardless
+  // of assignment; a founder name shows only tasks assigned to them.
+  const [assigneeFilter, setAssigneeFilter] = useState<Founder | "all">("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -146,6 +151,10 @@ export default function DesignTasksPage() {
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [dueDate, setDueDate] = useState("");
   const [createdBy, setCreatedBy] = useState<Founder>("Mike Sense");
+  // Empty string = unassigned. On create the default mirrors createdBy
+  // (user assigns to themselves unless they pick someone else); on
+  // edit, seeded from the row's current assigned_to.
+  const [assignedTo, setAssignedTo] = useState<Founder | "">("");
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -211,6 +220,7 @@ export default function DesignTasksPage() {
     setPriority("medium");
     setDueDate("");
     setCreatedBy("Mike Sense");
+    setAssignedTo("");
     setEditingId(null);
   }, []);
 
@@ -243,6 +253,7 @@ export default function DesignTasksPage() {
               description: description.trim(),
               priority,
               due_date: dueDate || null,
+              assigned_to: assignedTo || null,
             }),
           });
           const data = await response.json();
@@ -261,6 +272,7 @@ export default function DesignTasksPage() {
               priority,
               due_date: dueDate || null,
               created_by: createdBy,
+              assigned_to: assignedTo || null,
             }),
           });
           const data = await response.json();
@@ -274,7 +286,7 @@ export default function DesignTasksPage() {
         setIsSaving(false);
       }
     },
-    [title, description, priority, dueDate, createdBy, editingId, isSaving, closeModal],
+    [title, description, priority, dueDate, createdBy, assignedTo, editingId, isSaving, closeModal],
   );
 
   const handleEdit = useCallback((task: Task) => {
@@ -284,6 +296,7 @@ export default function DesignTasksPage() {
     setPriority(task.priority);
     setDueDate(task.due_date || "");
     setCreatedBy((task.created_by as Founder) || "Mike Sense");
+    setAssignedTo((task.assigned_to as Founder | "" | undefined) ?? "");
     setIsModalOpen(true);
   }, []);
 
@@ -344,9 +357,13 @@ export default function DesignTasksPage() {
     });
   })();
 
-  const filteredTasks = orderedTasks.filter(
-    (task) => filter === "all" || task.status === filter,
-  );
+  const filteredTasks = orderedTasks.filter((task) => {
+    if (filter !== "all" && task.status !== filter) return false;
+    if (assigneeFilter !== "all" && task.assigned_to !== assigneeFilter) {
+      return false;
+    }
+    return true;
+  });
 
   const taskCounts = {
     all: tasks.length,
@@ -378,39 +395,84 @@ export default function DesignTasksPage() {
           </div>
         )}
 
-        {/* Filter Tabs + Create Button */}
-        <div className={styles.toolbar}>
-          <div className={styles.filterTabs}>
-            {(
-              [
-                "all",
-                "pending",
-                "in_progress",
-                "completed",
-                "in_review",
-                "archived",
-              ] as const
-            ).map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilter(status)}
-                className={`${styles.filterTab} ${filter === status ? styles.filterTabActive : ""}`}
-              >
-                {status === "all"
-                  ? "All"
-                  : status === "in_progress"
-                    ? "In Progress"
-                    : status === "in_review"
-                      ? "In Review"
-                      : status.charAt(0).toUpperCase() + status.slice(1)}
-                <span className={styles.filterCount}>{taskCounts[status]}</span>
-              </button>
-            ))}
-          </div>
-          <Button variant="primary" onClick={openCreateModal}>
-            + New Task
-          </Button>
-        </div>
+        {/* Two-column layout — sidebar with all filters on the left,
+            main column with the "New Task" action + task grid on the
+            right. The sidebar is sticky so filters stay reachable
+            while scrolling the task list. Collapses to a single
+            column under 900 px. */}
+        <div className={styles.layout}>
+          <aside className={styles.sidebar} aria-label="Task filters">
+            <div className={styles.sidebarSection}>
+              <h2 className={styles.sidebarSectionTitle}>Status</h2>
+              <div className={styles.sidebarFilters}>
+                {(
+                  [
+                    "all",
+                    "pending",
+                    "in_progress",
+                    "completed",
+                    "in_review",
+                    "archived",
+                  ] as const
+                ).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setFilter(status)}
+                    className={`${styles.filterTab} ${filter === status ? styles.filterTabActive : ""}`}
+                  >
+                    <span>
+                      {status === "all"
+                        ? "All"
+                        : status === "in_progress"
+                          ? "In Progress"
+                          : status === "in_review"
+                            ? "In Review"
+                            : status.charAt(0).toUpperCase() +
+                              status.slice(1)}
+                    </span>
+                    <span className={styles.filterCount}>
+                      {taskCounts[status]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.sidebarSection}>
+              <h2 className={styles.sidebarSectionTitle}>Assignee</h2>
+              <div className={styles.sidebarFilters}>
+                <button
+                  onClick={() => setAssigneeFilter("all")}
+                  className={`${styles.filterTab} ${assigneeFilter === "all" ? styles.filterTabActive : ""}`}
+                >
+                  <span>Everyone</span>
+                  <span className={styles.filterCount}>{tasks.length}</span>
+                </button>
+                {FOUNDERS.map((f) => {
+                  const count = tasks.filter(
+                    (t) => t.assigned_to === f.name,
+                  ).length;
+                  return (
+                    <button
+                      key={f.name}
+                      onClick={() => setAssigneeFilter(f.name)}
+                      className={`${styles.filterTab} ${assigneeFilter === f.name ? styles.filterTabActive : ""}`}
+                    >
+                      <span>{f.name.split(" ")[0]}</span>
+                      <span className={styles.filterCount}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
+
+          <div className={styles.main}>
+            <div className={styles.toolbar}>
+              <Button variant="primary" onClick={openCreateModal}>
+                + New Task
+              </Button>
+            </div>
 
         {/* Task List — render real tiles first, then numbered empty
             placeholders to round out the grid up to MIN_VISIBLE_TILES.
@@ -511,6 +573,15 @@ export default function DesignTasksPage() {
                         By: {task.created_by}
                       </span>
                     )}
+                    {task.assigned_to ? (
+                      <span className={styles.taskAssignee}>
+                        → {task.assigned_to}
+                      </span>
+                    ) : (
+                      <span className={styles.taskAssigneeUnset}>
+                        → Unassigned
+                      </span>
+                    )}
                     <DueDateBadge
                       isoDate={task.due_date}
                       isInactive={
@@ -577,6 +648,8 @@ export default function DesignTasksPage() {
             ));
           })()}
         </section>
+          </div>
+        </div>
       </div>
 
       {/* Create/Edit Modal */}
@@ -584,7 +657,7 @@ export default function DesignTasksPage() {
         open={isModalOpen}
         onClose={closeModal}
         dismissible={!isSaving}
-        size="md"
+        size="lg"
         title={editingId ? "Edit Task" : "Create New Task"}
         footer={
           <>
@@ -594,7 +667,7 @@ export default function DesignTasksPage() {
             <Button
               variant="primary"
               type="submit"
-              form="design-task-form"
+              form="task-form"
               disabled={isSaving}
             >
               {isSaving ? "Saving…" : editingId ? "Update Task" : "Create Task"}
@@ -603,7 +676,7 @@ export default function DesignTasksPage() {
         }
       >
         <form
-          id="design-task-form"
+          id="task-form"
           onSubmit={handleSubmit}
           className={styles.form}
         >
@@ -639,18 +712,41 @@ export default function DesignTasksPage() {
             />
           </div>
 
-          {!editingId && (
+          <div className={styles.formRow}>
+            {!editingId && (
+              <div className={styles.formGroup}>
+                <label htmlFor="createdBy" className={styles.label}>
+                  Created By
+                </label>
+                <select
+                  id="createdBy"
+                  value={createdBy}
+                  onChange={(e) => setCreatedBy(e.target.value as Founder)}
+                  className={styles.select}
+                  disabled={isSaving}
+                >
+                  {FOUNDERS.map((founder) => (
+                    <option key={founder.name} value={founder.name}>
+                      {founder.name} ({founder.location})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className={styles.formGroup}>
-              <label htmlFor="createdBy" className={styles.label}>
-                Created By
+              <label htmlFor="assignedTo" className={styles.label}>
+                Assigned To
               </label>
               <select
-                id="createdBy"
-                value={createdBy}
-                onChange={(e) => setCreatedBy(e.target.value as Founder)}
+                id="assignedTo"
+                value={assignedTo}
+                onChange={(e) =>
+                  setAssignedTo(e.target.value as Founder | "")
+                }
                 className={styles.select}
                 disabled={isSaving}
               >
+                <option value="">— Unassigned —</option>
                 {FOUNDERS.map((founder) => (
                   <option key={founder.name} value={founder.name}>
                     {founder.name} ({founder.location})
@@ -658,7 +754,7 @@ export default function DesignTasksPage() {
                 ))}
               </select>
             </div>
-          )}
+          </div>
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>

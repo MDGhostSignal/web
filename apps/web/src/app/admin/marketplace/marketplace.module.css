@@ -791,9 +791,575 @@
 
 /* Signal Profile block — top border separates from the grid above. */
 .poolGraphBlock {
-  border-top: 1px solid var(--admin-border);
-  padding-top: var(--admin-space-5);
   margin-top: var(--admin-space-5);
+}
+
+/* Full-width button-style summary — the prior small "Signal Profile"
+   header read as a quiet collapsible heading rather than an action.
+   This version uses the accent token family and a big paddded bar so
+   it's unmistakably a primary click target sitting at the bottom of
+   the expanded row. Strips the native `<summary>` chrome (disclosure
+   triangle on Chromium, default list-style on Firefox/Safari). */
+.poolGraphSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  width: 100%;
+  padding: var(--admin-space-4) var(--admin-space-5);
+  font-family: var(--admin-font);
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent);
+  border-radius: var(--admin-radius-md);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.poolGraphSummary::-webkit-details-marker {
+  display: none;
+}
+
+.poolGraphSummary:hover {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+.poolGraphSummaryLabel {
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-bold, 700);
+  color: var(--admin-accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.poolGraphSummary:hover .poolGraphSummaryLabel {
+  color: var(--admin-bg, #0b0f12);
+}
+
+.poolGraphSummaryHint {
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-accent);
+}
+
+.poolGraphSummary:hover .poolGraphSummaryHint {
+  color: var(--admin-bg, #0b0f12);
+}
+
+/* Show "Click to view ▾" by default; flip to "Hide ▴" once open. */
+.poolGraphSummaryOpen {
+  display: none;
+}
+
+.poolGraphBlock[open] .poolGraphSummaryClosed {
+  display: none;
+}
+
+.poolGraphBlock[open] .poolGraphSummaryOpen {
+  display: inline;
+}
+
+.poolGraphBlock[open] .poolGraphScope {
+  margin-top: var(--admin-space-4);
+}
+
+/* =============================================================================
+   Marketplace member details — replicates the leads ContactCard +
+   PipelineCard pair, plus a comments thread, on the expanded pool row.
+   `mm` prefix scopes the styles so they don't collide with the existing
+   .pool* / .membership* classes nearby.
+   ============================================================================= */
+
+.mmDetailsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: var(--admin-space-4);
+  align-items: stretch;
+  margin-top: var(--admin-space-5);
+}
+
+@media (max-width: 760px) {
+  .mmDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mmContactCard,
+.mmPipelineCard,
+.mmCommentsCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.mmCommentsCard {
+  margin-top: var(--admin-space-5);
+}
+
+.mmCardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--admin-space-2);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmCardStatus,
+.mmCardSub {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Contact card */
+
+.mmContactHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+}
+
+.mmContactAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+}
+
+.mmContactHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mmContactName {
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+}
+
+.mmContactSub {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  flex-wrap: wrap;
+}
+
+.mmContactRole {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-secondary);
+}
+
+.mmContactFields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--admin-space-2);
+}
+
+.mmContactFields > div {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: var(--admin-space-2);
+  align-items: baseline;
+}
+
+.mmContactFields dt {
+  margin: 0;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmContactFields dd {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+  word-break: break-word;
+}
+
+.mmContactFields a {
+  color: var(--admin-accent);
+}
+
+/* Outreach card — editable fields */
+
+.mmInlineFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--admin-space-3);
+}
+
+@media (max-width: 560px) {
+  .mmInlineFields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mmInlineField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  min-width: 0;
+}
+
+.mmInlineLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmInlineInput {
+  width: 100%;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+}
+
+.mmInlineInput:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-1);
+}
+
+.mmNotesField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.mmNotesTextarea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  resize: vertical;
+}
+
+.mmNotesTextarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-1);
+}
+
+/* Pipeline read-only fields (Phase / Next step / Added / Signed). */
+
+.mmPipelineFields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--admin-space-3);
+}
+
+.mmPipelineFields > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mmPipelineFields dt {
+  margin: 0;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmPipelineFields dd {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+}
+
+/* =============================================================================
+   Lifecycle + Comments side-by-side grid (mirrors the leads page's
+   .lifecycleCommentsGrid). Stretches both columns to the taller card
+   so the row reads as a single visual band.
+   ============================================================================= */
+
+.mmLifecycleCommentsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--admin-space-4);
+  align-items: stretch;
+  margin-top: var(--admin-space-5);
+}
+
+@media (max-width: 860px) {
+  .mmLifecycleCommentsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Lifecycle block — same visual treatment the leads page uses for its
+   LifecycleChecklist (`.lifecycleBlock`, `.phaseGroup`, `.stepRow`,
+   `.stepRoleTag`, `.stepDate`, `.progressPill`). Duplicated here under
+   the `mm` prefix per the AGENTS.md note about leaving leads code
+   untouched. */
+
+.mmLifecycleBlock {
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.mmLifecycleTitle {
+  margin: 0 0 var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmProgressPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--admin-space-3);
+  vertical-align: middle;
+  min-width: 44px;
+  padding: 2px 10px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.mmProgressPillFull {
+  color: var(--admin-success);
+  background: var(--admin-success-soft);
+  border-color: var(--admin-success);
+}
+
+.mmPhaseGroup {
+  margin-top: var(--admin-space-4);
+}
+
+.mmPhaseGroup:first-of-type {
+  margin-top: var(--admin-space-3);
+}
+
+.mmPhaseGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  margin-bottom: var(--admin-space-2);
+}
+
+.mmStepList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mmStepRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: 6px 8px;
+  border-radius: var(--admin-radius-sm);
+  transition: background 120ms ease;
+  cursor: pointer;
+}
+
+.mmStepRow:hover {
+  background: var(--admin-surface-2);
+}
+
+.mmStepRowNa {
+  opacity: 0.45;
+}
+
+.mmStepCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--admin-accent);
+  cursor: pointer;
+}
+
+.mmStepCheckbox:disabled {
+  cursor: not-allowed;
+}
+
+.mmStepLabel {
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+}
+
+.mmStepLabelDone {
+  text-decoration: line-through;
+  color: var(--admin-text-muted);
+}
+
+.mmStepRoleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mmStepDate {
+  padding: 4px 6px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-secondary);
+  min-width: 110px;
+  text-align: right;
+}
+
+/* Comments */
+
+/* Vertical form stack — small author selector on top, big textarea
+   that flex-grows to fill the remaining card height, Post button
+   pinned bottom-right. Card itself stretches against the Lifecycle
+   block via the parent grid's align-items: stretch, so the textarea
+   ends up tall whenever Lifecycle is tall. */
+.mmCommentForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.mmCommentAuthor {
+  width: fit-content;
+  max-width: 220px;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+}
+
+.mmCommentAuthor:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-1);
+}
+
+.mmCommentFormFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mmCommentTextarea {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 140px;
+  padding: var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  resize: vertical;
+}
+
+.mmCommentTextarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-1);
+}
+
+.mmCommentEmpty {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  font-style: italic;
+  color: var(--admin-text-muted);
+}
+
+.mmCommentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.mmCommentItem {
+  padding: var(--admin-space-3);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+}
+
+.mmCommentHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--admin-space-2);
+  margin-bottom: var(--admin-space-1);
+}
+
+.mmCommentStamp {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.mmCommentBody {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.55;
+  color: var(--admin-text-secondary);
+  white-space: pre-wrap;
 }
 
 /* RQResultsGraph host card. The public RQ graph component is authored
@@ -885,38 +1451,29 @@
   fill: rgba(0, 0, 0, 0.3);
 }
 
-/* Trait bar — horizontal fill showing 0-100 score */
-.traitBar {
-  position: relative;
-  display: flex;
+/* "Next action" cell — replaces the prior Values / Authenticity /
+   Horizon trait bars. Pairs the phase badge (left) with the step
+   label (right). Mock entities and fully-onboarded members render a
+   neutral marker via .poolStatusEmpty / success badge respectively. */
+.poolStatusCell {
+  display: inline-flex;
   align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  background: var(--admin-surface-2);
-  border-radius: var(--admin-radius-sm);
+  gap: var(--admin-space-2);
+  min-width: 0;
+}
+
+.poolStatusLabel {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  white-space: nowrap;
   overflow: hidden;
-  min-width: 88px;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
-.traitFill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: linear-gradient(
-    90deg,
-    var(--admin-accent-soft),
-    var(--admin-accent)
-  );
-  opacity: 0.7;
-  transition: width var(--admin-transition-base);
-}
-
-.traitValue {
-  position: relative;
-  font-family: var(--admin-font-mono);
-  font-size: var(--admin-text-xs);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-primary);
-  font-variant-numeric: tabular-nums;
+.poolStatusEmpty {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
 }
 
 /* =====================================================================
@@ -978,6 +1535,181 @@
 .anchorKindBtnActive:hover {
   background: var(--admin-bg-elevated);
   color: var(--admin-accent-strong);
+}
+
+/* =============================================================================
+   Urgent members banner — top of /admin/marketplace?view=pool. Mirrors
+   the leads `.urgent*` banner styling (same destructive token family,
+   same card chrome, same row-with-resolve-button structure) under the
+   `mm` prefix to keep marketplace styles self-contained.
+   ============================================================================= */
+
+.mmUrgentBanner {
+  margin-bottom: var(--admin-space-4);
+  padding: var(--admin-space-4);
+  background: var(--admin-destructive-soft);
+  border: 1px solid var(--admin-destructive-border);
+  border-radius: var(--admin-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.mmUrgentHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  flex-wrap: wrap;
+}
+
+.mmUrgentIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-bold);
+  color: #fff;
+  background: var(--admin-destructive);
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.mmUrgentTitle {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+}
+
+.mmUrgentSub {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmUrgentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.mmUrgentItemRow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--admin-space-2);
+}
+
+.mmUrgentItem {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.2fr) auto minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.mmUrgentItem:hover {
+  background: var(--admin-surface-2);
+  border-color: var(--admin-destructive-border);
+}
+
+.mmUrgentItem:focus-visible {
+  outline: 2px solid var(--admin-destructive);
+  outline-offset: 2px;
+}
+
+.mmUrgentItemName {
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mmUrgentItemNext {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mmUrgentItemStale {
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-destructive);
+}
+
+.mmUrgentItemMeta {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mmUrgentResolveBtn {
+  flex: 0 0 auto;
+  padding: 0 var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.mmUrgentResolveBtn:hover {
+  color: var(--admin-success);
+  background: var(--admin-success-soft);
+  border-color: var(--admin-success);
+}
+
+.mmUrgentResolveBtn:focus-visible {
+  outline: 2px solid var(--admin-success);
+  outline-offset: 2px;
+}
+
+@media (max-width: 860px) {
+  .mmUrgentItem {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .mmUrgentItemRow {
+    flex-direction: column;
+  }
+  .mmUrgentResolveBtn {
+    padding: var(--admin-space-2);
+  }
 }
 
 .anchorList {

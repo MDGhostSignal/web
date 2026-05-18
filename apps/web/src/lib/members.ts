@@ -83,19 +83,21 @@ export type LifecycleStepDef = {
 };
 
 /**
- * Lead-stage checklist only — 6 steps across the Discern + Court phases.
+ * Full lifecycle definition — 13 steps across all 5 active phases.
  *
- * Earlier revisions also included Sign / Onboard / Run steps (membership
- * sent + signed, welcome box, Mercury/W9, show info, ART19 migration,
- * campaign planning). Those are no longer tracked on the lead card:
- * once a lead's membership is signed they graduate to a full GhostSignal
- * member (set via the `became_member_at` flag) and move to the
- * marketplace pool — the leads page is for outreach + qualification
- * only. The phase enum still has sign/onboard/run for historical rows
- * and possible re-use elsewhere; `sanitizeLifecycleSteps` drops any
- * stored step keys that no longer exist here.
+ * Each surface renders only the slice it cares about:
+ *  - /admin/leads renders Discern + Court (6 steps) on the lead card.
+ *  - /admin/marketplace (pool) renders Sign + Onboard + Run (7 steps)
+ *    on the expanded member row, since marketplace members are
+ *    post-graduation and the onboarding work happens there.
+ *
+ * Keeping all 13 in one place means `sanitizeLifecycleSteps` accepts
+ * the keys for both surfaces (the per-surface filtering is purely a
+ * render concern) and a row carries its full history regardless of
+ * which page is editing it.
  */
 export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
+  // ---- Leads surface (Discern + Court) -----------------------------
   // Discern
   { key: "discernment", label: "Discernment", phase: "discern", ownerRole: "Founder" },
   // Court
@@ -104,7 +106,27 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   { key: "deck_sent", label: "Deck sent", phase: "court", ownerRole: "Founder" },
   { key: "ad_copy_sent", label: "Ad Copy Guidelines sent", phase: "court", ownerRole: "Founder" },
   { key: "rq_quiz", label: "RQ quiz", phase: "court", ownerRole: "Founder" },
+  // ---- Marketplace surface (Sign + Onboard + Run) -----------------
+  // Sign
+  { key: "membership_sent", label: "Membership Sent", phase: "sign", ownerRole: "Ops" },
+  { key: "membership_signed", label: "Membership Signed", phase: "sign", ownerRole: "Ops" },
+  // Onboard
+  { key: "welcome_box", label: "Welcome Email + Box", phase: "onboard", ownerRole: "Ops" },
+  { key: "mercury_w9", label: "Mercury / W9", phase: "onboard", ownerRole: "Finance", creatorOnly: true },
+  { key: "show_info", label: "Show Info Received", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
+  { key: "art19_migration", label: "ART19 Migration", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
+  // Run
+  { key: "campaign_planning", label: "Campaign Planning + Execution", phase: "run", ownerRole: "Ops" },
 ] as const;
+
+/**
+ * Step keys that surface on the marketplace pool expanded row — Sign
+ * + Onboard + Run phases only. Used to filter LIFECYCLE_STEPS down to
+ * the marketplace slice without duplicating the array.
+ */
+export const MARKETPLACE_LIFECYCLE_KEYS = LIFECYCLE_STEPS.filter(
+  (s) => s.phase === "sign" || s.phase === "onboard" || s.phase === "run",
+).map((s) => s.key);
 
 export const STEP_STATUSES = ["todo", "doing", "done", "skipped", "na"] as const;
 export type StepStatus = (typeof STEP_STATUSES)[number];
