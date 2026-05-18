@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode, useMemo, useState } from "react";
 
 import styles from "./DataTable.module.css";
 
@@ -25,6 +25,11 @@ export type Column<Row> = {
   width?: string;
   /** Optional explicit className applied to both <th> and <td>. */
   className?: string;
+  /** Ascending-direction comparator. Presence makes the column header
+   *  a clickable sort toggle: 1st click → asc, 2nd click → desc, 3rd
+   *  click → asc again. DataTable flips the result for desc internally
+   *  so callers only have to write the asc comparator. */
+  sort?: (a: Row, b: Row) => number;
 };
 
 type Props<Row> = {
@@ -89,26 +94,80 @@ export function DataTable<Row>({
 
   const colCount = columns.length;
 
+  // Sort state lives inside the table so consumers don't have to plumb
+  // it through their own state. Clicking a sortable header cycles
+  // direction (asc → desc → asc). Clicking a different sortable header
+  // resets direction to asc on the new column.
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const displayRows = useMemo(() => {
+    if (!sortKey) return rows;
+    const col = columns.find((c) => c.key === sortKey);
+    if (!col?.sort) return rows;
+    const cmp = col.sort;
+    const sorted = [...rows].sort(cmp);
+    return sortDir === "asc" ? sorted : sorted.reverse();
+  }, [rows, columns, sortKey, sortDir]);
+
+  const toggleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
   return (
     <div className={styles.wrap}>
       <table className={tableCls}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead className={styles.thead}>
           <tr>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={[styles.th, col.className].filter(Boolean).join(" ")}
-                style={col.width ? { width: col.width } : undefined}
-                scope="col"
-              >
-                {col.header}
-              </th>
-            ))}
+            {columns.map((col) => {
+              const isActive = sortKey === col.key;
+              const ariaSort = !col.sort
+                ? undefined
+                : isActive
+                  ? sortDir === "asc"
+                    ? "ascending"
+                    : "descending"
+                  : "none";
+              return (
+                <th
+                  key={col.key}
+                  className={[styles.th, col.className].filter(Boolean).join(" ")}
+                  style={col.width ? { width: col.width } : undefined}
+                  scope="col"
+                  aria-sort={ariaSort}
+                >
+                  {col.sort ? (
+                    <button
+                      type="button"
+                      className={[
+                        styles.thSort,
+                        isActive ? styles.thSortActive : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={() => toggleSort(col.key)}
+                    >
+                      <span>{col.header}</span>
+                      <span className={styles.thSortGlyph} aria-hidden="true">
+                        {isActive ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                      </span>
+                    </button>
+                  ) : (
+                    col.header
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, rowIndex) => {
+          {displayRows.map((row, rowIndex) => {
             const id = getRowId(row);
             const isExpanded = expandedRowId === id;
             return (

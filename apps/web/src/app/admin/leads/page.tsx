@@ -746,6 +746,12 @@ function MembersTable({
     {
       key: "type",
       header: "Type",
+      // Sort alphabetically by the human label ("Brand" / "Creator" /
+      // "Other") so the visible order matches what's on screen.
+      sort: (a, b) =>
+        MEMBER_TYPE_LABELS[a.member_type].localeCompare(
+          MEMBER_TYPE_LABELS[b.member_type],
+        ),
       cell: (m) => (
         <Badge variant={typeVariant(m.member_type)}>
           {MEMBER_TYPE_LABELS[m.member_type]}
@@ -808,6 +814,15 @@ function MembersTable({
       key: "owner",
       header: "Owner",
       variant: "muted",
+      // Unassigned rows ("") sort to the bottom on asc, top on desc —
+      // the empty string would otherwise sort first alphabetically.
+      sort: (a, b) => {
+        const av = a.owner ?? "";
+        const bv = b.owner ?? "";
+        if (av === "" && bv !== "") return 1;
+        if (bv === "" && av !== "") return -1;
+        return av.localeCompare(bv);
+      },
       cell: (m) => m.owner || "—",
     },
     {

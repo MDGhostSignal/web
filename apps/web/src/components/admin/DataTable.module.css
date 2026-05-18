@@ -34,6 +34,42 @@
   white-space: nowrap;
 }
 
+/* Sortable header button — same typography as the static <th>, but a
+   clickable button with a sort-direction glyph on the right. Stripped
+   of native button chrome so the column reads as a header at rest;
+   the glyph is the affordance. */
+.thSort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.thSort:hover {
+  color: var(--admin-text-primary);
+}
+
+.thSortActive {
+  color: var(--admin-accent);
+}
+
+.thSortGlyph {
+  display: inline-block;
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+.thSortActive .thSortGlyph {
+  opacity: 1;
+}
+
 .tbodyTr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;

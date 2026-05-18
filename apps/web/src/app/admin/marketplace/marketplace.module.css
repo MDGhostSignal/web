@@ -1538,6 +1538,74 @@
 }
 
 /* =============================================================================
+   Add-member modal form — quick-add for graduating a person directly
+   into the pool. Two-column rows for paired short fields; type +
+   single-column rows for fields that look better wide.
+   ============================================================================= */
+
+.mmAddForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.mmAddFormRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--admin-space-3);
+}
+
+.mmAddFormRow:first-child {
+  grid-template-columns: minmax(0, 200px);
+}
+
+@media (max-width: 560px) {
+  .mmAddFormRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mmAddFormField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  min-width: 0;
+}
+
+.mmAddFormField > span {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mmAddFormField input,
+.mmAddFormField select {
+  width: 100%;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+}
+
+.mmAddFormField input:focus,
+.mmAddFormField select:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-1);
+}
+
+.mmAddFormError {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-destructive);
+}
+
+/* =============================================================================
    Urgent members banner — top of /admin/marketplace?view=pool. Mirrors
    the leads `.urgent*` banner styling (same destructive token family,
    same card chrome, same row-with-resolve-button structure) under the

@@ -4,9 +4,11 @@ import { useCallback, useMemo, useState } from "react";
 
 import {
   Badge,
+  Button,
   type Column,
   DataTable,
   EmptyState,
+  Modal,
   SearchInput,
   typeVariant,
 } from "@/components/admin";
@@ -22,6 +24,7 @@ import {
   type LifecycleSteps,
   type Member,
   type MemberPhase,
+  type MemberType,
   type MemberWritable,
   type StepStatus,
 } from "@/lib/members";
@@ -82,6 +85,11 @@ type Props = {
     memberId: string,
     partial: MemberWritable,
   ) => Promise<boolean>;
+  /** Create a new member who graduates straight into the pool — POST
+      with `became_member_at` set so the row surfaces here on the next
+      paint. Returns the created member (or null on failure) so the
+      pool can scroll-to/expand the new row. */
+  onCreateMember?: (input: MemberWritable) => Promise<Member | null>;
 };
 
 type KindFilter = "all" | "brand" | "creator";
@@ -146,11 +154,22 @@ export function PoolView({
   entities = EMPTY_ENTITIES,
   members,
   onMemberPatch,
+  onCreateMember,
 }: Props) {
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [matchedFilter, setMatchedFilter] = useState<MatchedFilter>("all");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  // Add-member modal state. Kept here (rather than in MarketplacePage)
+  // because the form + scroll-to-new-row UX is local to the pool.
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [addType, setAddType] = useState<MemberType>("creator");
+  const [addFirstName, setAddFirstName] = useState("");
+  const [addLastName, setAddLastName] = useState("");
+  const [addOrg, setAddOrg] = useState("");
+  const [addEmail, setAddEmail] = useState("");
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addSaving, setAddSaving] = useState(false);
 
   // Map entity-id → number of confirmed pairings, so we can show a
   // "matched N" pill in the table without re-walking the matches list
@@ -360,6 +379,18 @@ export function PoolView({
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, RQ, or tag…"
         />
+        {onCreateMember && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              setAddError(null);
+              setIsAddOpen(true);
+            }}
+          >
+            + Add member
+          </Button>
+        )}
         <div className={styles.filterChips}>
           <FilterChipGroup
             label="Kind"
@@ -462,6 +493,151 @@ export function PoolView({
             );
           }}
         />
+      )}
+
+      {/* Add-member modal — surface for graduating a person directly
+          into the pool without going through /admin/leads first. POSTs
+          to /api/members via the parent's onCreateMember with
+          `became_member_at` set so the row appears in the pool
+          immediately. */}
+      {onCreateMember && (
+        <Modal
+          open={isAddOpen}
+          onClose={() => {
+            if (!addSaving) setIsAddOpen(false);
+          }}
+          dismissible={!addSaving}
+          size="md"
+          title="Add member to pool"
+          subtitle="Creates a graduated member directly — they'll appear in the pool below."
+          footer={
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setIsAddOpen(false)}
+                disabled={addSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                form="mm-add-member-form"
+                disabled={addSaving}
+              >
+                {addSaving ? "Adding…" : "Add to pool"}
+              </Button>
+            </>
+          }
+        >
+          <form
+            id="mm-add-member-form"
+            className={styles.mmAddForm}
+            onSubmit={async (ev) => {
+              ev.preventDefault();
+              if (addSaving) return;
+              const first = addFirstName.trim();
+              const last = addLastName.trim();
+              const org = addOrg.trim();
+              const email = addEmail.trim();
+              if (!first && !last && !org) {
+                setAddError(
+                  "Add a name or an organization so the row has something to render.",
+                );
+                return;
+              }
+              setAddError(null);
+              setAddSaving(true);
+              const created = await onCreateMember({
+                first_name: first || null,
+                last_name: last || null,
+                organization: org || null,
+                email: email || null,
+                member_type: addType,
+                became_member_at: new Date().toISOString(),
+              });
+              setAddSaving(false);
+              if (created) {
+                setIsAddOpen(false);
+                setAddFirstName("");
+                setAddLastName("");
+                setAddOrg("");
+                setAddEmail("");
+                // Surface the new row immediately — scroll + expand.
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    const row = document.querySelector<HTMLElement>(
+                      `tr[data-row-id="${CSS.escape(`mem-${created.id}`)}"]`,
+                    );
+                    row?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
+                });
+                setExpandedRow(`mem-${created.id}`);
+              } else {
+                setAddError("Failed to add member. Try again or check the server logs.");
+              }
+            }}
+          >
+            <div className={styles.mmAddFormRow}>
+              <label className={styles.mmAddFormField}>
+                <span>Type</span>
+                <select
+                  value={addType}
+                  onChange={(e) => setAddType(e.target.value as MemberType)}
+                  disabled={addSaving}
+                >
+                  <option value="creator">Creator</option>
+                  <option value="brand">Brand</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+            </div>
+            <div className={styles.mmAddFormRow}>
+              <label className={styles.mmAddFormField}>
+                <span>First name</span>
+                <input
+                  type="text"
+                  value={addFirstName}
+                  onChange={(e) => setAddFirstName(e.target.value)}
+                  disabled={addSaving}
+                  autoFocus
+                />
+              </label>
+              <label className={styles.mmAddFormField}>
+                <span>Last name</span>
+                <input
+                  type="text"
+                  value={addLastName}
+                  onChange={(e) => setAddLastName(e.target.value)}
+                  disabled={addSaving}
+                />
+              </label>
+            </div>
+            <div className={styles.mmAddFormRow}>
+              <label className={styles.mmAddFormField}>
+                <span>Organization</span>
+                <input
+                  type="text"
+                  value={addOrg}
+                  onChange={(e) => setAddOrg(e.target.value)}
+                  disabled={addSaving}
+                />
+              </label>
+              <label className={styles.mmAddFormField}>
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={addEmail}
+                  onChange={(e) => setAddEmail(e.target.value)}
+                  disabled={addSaving}
+                />
+              </label>
+            </div>
+            {addError && (
+              <p className={styles.mmAddFormError}>{addError}</p>
+            )}
+          </form>
+        </Modal>
       )}
     </div>
   );

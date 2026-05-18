@@ -131,6 +131,35 @@ export default function MarketplacePage() {
     return { creators, brands };
   }, [poolEntities]);
 
+  // Create-from-pool: graduates a new member directly into the
+  // marketplace without going through /admin/leads first. POSTs to
+  // /api/members and prepends the created row to local state so the
+  // pool shows it immediately. Returns the created Member (or null
+  // on failure) so the caller can scroll-to / expand the new row.
+  const handleCreateMember = useCallback(
+    async (input: MemberWritable): Promise<Member | null> => {
+      try {
+        const res = await fetch("/api/members", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok || !data.member) {
+          console.error("Marketplace member create failed:", data);
+          return null;
+        }
+        const created = data.member as Member;
+        setRealMembers((prev) => [created, ...prev]);
+        return created;
+      } catch (err) {
+        console.error("Marketplace member create threw:", err);
+        return null;
+      }
+    },
+    [],
+  );
+
   // Edit-from-pool: the expanded row on the Pool view writes back
   // changes to onboarding lifecycle steps. Same optimistic-update +
   // rollback pattern as /admin/leads's handleMemberPatch — but the
@@ -267,6 +296,7 @@ export default function MarketplacePage() {
             entities={poolEntities}
             members={realMembers}
             onMemberPatch={handleMemberPatch}
+            onCreateMember={handleCreateMember}
           />
         ) : view === "match" ? (
           <MatchBoard matches={matches} />
