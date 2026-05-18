@@ -291,6 +291,14 @@
     /* Soft underline so the white bar separates from white page
        sections (homepage hero is the main white surface). */
     box-shadow: 0 1px 0 rgb(0 0 0 / 0.06);
+    transition: box-shadow 200ms ease;
+  }
+
+  /* When the menu page is open, the header bar visually merges with
+     the white overlay below — drop the hairline so the X close button
+     reads as floating on a single uninterrupted white surface. */
+  .headerRootOpen .header {
+    box-shadow: none;
   }
 
   .logoWrap {
@@ -299,11 +307,21 @@
     height: calc(var(--gs-n-48) * var(--gs-px));
     padding-block: 0;
     padding-inline: 0;
+    transition: opacity 200ms ease;
   }
 
   .logo {
     width: calc(var(--gs-n-44, 44) * var(--gs-px));
     height: calc(var(--gs-n-36, 36) * var(--gs-px));
+  }
+
+  /* Hide the logo while the menu page is open so the takeover reads
+     as a dedicated screen rather than an overlay on top of the
+     existing header. opacity (not display: none) preserves the
+     trigger's right-edge anchor via the header's justify-content. */
+  .headerRootOpen .logoWrap {
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* Hide the desktop nav row + CTA pill — replaced by overlay. */

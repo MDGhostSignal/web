@@ -248,7 +248,10 @@ export function SiteHeader({
   }, [THRESHOLD_Y, animateIn, animateInDelay, contextRef, rootRef]);
 
   return (
-    <div ref={rootRef} className={styles.headerRoot}>
+    <div
+      ref={rootRef}
+      className={`${styles.headerRoot} ${mobileOpen ? styles.headerRootOpen : ""}`}
+    >
       <header className={`${styles.header} js-sh`}>
         <Link ref={logoRef} href="/" className={`${styles.logoWrap} js-sh-logo-wrap`}>
           <Image
