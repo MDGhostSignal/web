@@ -110,21 +110,22 @@ export default function GetInTouchPage() {
           <ScrollFadeUp index={0} duration={1.6}>
             {submitStatus === "success" ? (
               <div className={styles.successMessage}>
-                <div className={styles.successIcon}>
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <circle cx="24" cy="24" r="24" fill="#22c55e" fillOpacity="0.1" />
+                <p className={styles.successEyebrow}>SIGNAL RECEIVED</p>
+                <div className={styles.successIcon} aria-hidden="true">
+                  <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="23" stroke="#FBAD25" strokeWidth="1.5" />
                     <path
-                      d="M16 24L22 30L32 18"
-                      stroke="#22c55e"
-                      strokeWidth="3"
+                      d="M15 24L21 30L33 18"
+                      stroke="#FBAD25"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
                 </div>
-                <h2 className={styles.successTitle}>Message Sent!</h2>
+                <h2 className={styles.successTitle}>Message sent</h2>
                 <p className={styles.successText}>
-                  Thank you for reaching out. We&apos;ll get back to you shortly.
+                  Thank you for reaching out. We&apos;ll be in touch shortly.
                 </p>
                 <button
                   type="button"
