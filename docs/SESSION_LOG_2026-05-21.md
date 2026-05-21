@@ -415,3 +415,10 @@ The moment that commit was pushed, the Vercel webhook fired and a build for `597
   - `MERCURY_SYNC_URL` — `https://www.ghostsignal.cloud/api/admin/finance/sync`.
 - Once those exist, the workflow fires at the next quarter-hour boundary. Manual test: Actions tab → "Mercury sync" → Run workflow.
 - Still outstanding from earlier today: verify the sending domain at `resend.com/domains` so the Marketing daily digest can deliver to all cofounders (today only Resend's verified-owner email is accepted).
+
+### End-of-day status (added after the Mercury workflow went live)
+
+- Both GitHub Actions secrets are now configured on the `MDGhostSignal/web` repo: `CRON_SECRET` (same value as `.env.local` and Vercel env vars) + `MERCURY_SYNC_URL` (`https://www.ghostsignal.cloud/api/admin/finance/sync`).
+- The `Mercury sync` workflow has been manually dispatched + completed green. The 15-minute schedule takes over from here; the next automatic run lands at the next `*/15` boundary (GitHub Actions best-effort).
+- That closes today's Mercury → Supabase loop end-to-end in production: GitHub Actions → POST sync route → `runMercurySync()` → Supabase upsert → admin dashboard reads cached rows. Live.
+- The only setup task remaining for the team (not blocking anything we shipped today) is the Resend sending-domain verification so the Marketing daily digest at `0 15 * * *` can deliver to cofounders.
