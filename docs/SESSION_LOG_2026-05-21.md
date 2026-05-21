@@ -265,3 +265,75 @@ Plan: `C:\Users\heyma\.claude\plans\abstract-spinning-stallman.md` (overwritten 
 - Per-user audit log + per-user favourites on the Copy Library.
 - ICS calendar feed for personal-calendar subscription.
 - Image-combination generator (the original aspiration; still parked).
+
+---
+
+## Admin Sidebar Nav Refactor + Dashboard Home — fourth feature shipped today
+
+The fourth substantial change of the day: ripped out the top-bar tab strip and replaced it with a persistent left sidebar across all `/admin/*` routes, then promoted `/admin` from a redirect into a real dashboard home. Plan: `C:\Users\heyma\.claude\plans\abstract-spinning-stallman.md` (overwritten from the Copy + Social plan after Phase 1–3 exploration).
+
+### Decisions confirmed up front
+
+- **Convert Marketing sub-items to real routes** (`/admin/marketing/assets`, `/copy`, `/social`) and delete the in-page chip nav (`SubTabNav`). The sidebar is now the single source of nav.
+- **Inline SVG icons** in a new `components/admin/icons.tsx` (no new deps; matches the existing `Modal` / `SearchInput` / `ThemeToggle` pattern).
+- **`/admin` becomes a real dashboard home** (deviation from the recommended "keep the redirect" — user picked the bigger scope).
+
+### Architecture
+
+- `AdminShell.tsx` refactored from a single-column layout (sticky top bar + content) into a two-row, two-column layout: top bar (logo + theme + sign-out + mobile hamburger) above a body row of `<AdminSidebar>` + content.
+- New `AdminSidebar.tsx` + `AdminSidebar.module.css` — 256 px wide, fixed-left, sits below the top bar on desktop. Below 768 px the sidebar hides off-canvas; the hamburger in the top bar opens it as a drawer with backdrop + scroll-lock + Escape-close + route-change-auto-close. Pattern borrowed from the public-site `SiteHeader` mobile nav.
+- Hierarchical nav data model: `AdminNavItem { href, label, icon, children? }` + `AdminNavSubItem { href, label }`. The layout passes this in instead of the previous flat `tabs[]`.
+- Active state derives entirely from `usePathname()`. A row is active when the path exactly matches or starts with `href + "/"`. Parent rows get a softer "ancestor" tint when one of their children is active; the active row carries a 2 px left accent strip.
+- Expansion is **URL-only**, no localStorage. A parent's children only render when the path is inside the parent's section. Trade-off: you can't preview Marketing's children without clicking in. Acceptable at 6 items; revisit if the menu grows past ~12.
+
+### Marketing route refactor
+
+- New `apps/web/src/app/admin/marketing/layout.tsx` owns the shared `PageHeader title="Marketing"` and the `DueBanner`. Sub-tab chip strip (`SubTabNav`) is gone.
+- Three new sub-route pages: `apps/web/src/app/admin/marketing/{assets,copy,social}/page.tsx`. Each is a 3-line consumer over the existing section component — `AssetsSection`, `CopySection`, `SocialSection` are untouched.
+- `apps/web/src/app/admin/marketing/page.tsx` is now a 5-line server-component `redirect("/admin/marketing/assets")`.
+- `apps/web/src/app/admin/marketing/components/SubTabNav.tsx` deleted (orphan after the refactor).
+- `DueBanner` updated — defaults to `<Link href="/admin/marketing/social">` for the CTA; legacy `onOpenSocial` callback prop kept optional for safety (no callers post-refactor).
+
+### Dashboard home at `/admin`
+
+- `apps/web/src/app/admin/page.tsx` rewritten from a one-liner `redirect("/admin/leads")` into a full dashboard composition.
+- Three KPI cards in a responsive grid (3 cols → 2 → 1):
+  - **Total cash** — sum of `available_balance` across Mercury accounts + 30-day net flow (green when positive) + relative last-synced badge. Pulls `/api/admin/finance/accounts` + `/api/admin/finance/transactions?limit=500`.
+  - **Social posts due** — count of `status=scheduled` posts in the next 48 h, plus first 3 titles with relative times. Pulls `/api/admin/marketing-social?from=now&to=+48h&status=scheduled`.
+  - **Lead pipeline** — active member count + chip grid showing counts across Discern / Court / Sign / Onboard / Run. Pulls `/api/members`.
+- Each card is independently load-stateful — one card erroring doesn't blank the dashboard.
+- New tiny `HomeKpiCard` primitive at `apps/web/src/app/admin/components/HomeKpiCard.tsx` carries the loading/error chrome.
+
+### Reused utilities + tokens
+
+- `parseAmountCents`, `sumAmountsCents`, `formatCents`, `formatRelativeTimePast` from `lib/mercury-types.ts` for the Finance card (bigint-safe math throughout — no `Number(amount)` calls).
+- `MEMBER_PHASE_LABELS` from `lib/members.ts` for the Leads card.
+- Sidebar tokens: `--admin-bg-elevated` (surface), `--admin-border` (right edge), `--admin-accent` (active-row strip, icon tint on active), `--admin-accent-soft` (active row bg), `--admin-accent-softer` (ancestor parent tint), `--admin-surface-hover` (hover), `--admin-z-header: 100` (sidebar layer; never crosses `--admin-z-modal: 1000`).
+- Top-bar height stamped as a CSS var on the shell (`--admin-topbar-height: 64px`) so the sidebar can sit cleanly below it.
+
+### Gotchas hit + resolved
+
+- **The 5-min DueBanner poll** previously called `onOpenSocial()` which was a local-state setter. After the routes refactor, that callback would no-op (there's no local state to set). Made the prop optional and added a `<Link>` fallback so the banner works in both worlds.
+- **`SocialPostRow.posted_at` clearing on status transitions** — handled in Phase C of the Copy/Social work; nothing new here, but tested again against the new sub-routes.
+- **`usePathname()` returns `""` on first render** in some Next.js 16 conditions — handled with `?? ""` everywhere.
+
+### Files touched
+
+- New: `apps/web/src/components/admin/{AdminSidebar.tsx,AdminSidebar.module.css,icons.tsx}`; `apps/web/src/app/admin/marketing/{layout,assets/page,copy/page,social/page}.tsx`; `apps/web/src/app/admin/{admin-home.module.css,components/HomeKpiCard.tsx}`.
+- Edited: `apps/web/src/components/admin/{AdminShell.tsx,AdminShell.module.css,index.ts}`, `apps/web/src/app/admin/{page,layout}.tsx`, `apps/web/src/app/admin/marketing/{page.tsx,components/social/DueBanner.tsx}`.
+- Deleted: `apps/web/src/app/admin/marketing/components/SubTabNav.tsx`.
+
+### Validation
+
+- `typecheck` / `lint` / `lint:css` / `assets:audit` / `build` all green.
+- New routes registered: `/admin` (dashboard home), `/admin/marketing/{assets,copy,social}` (sub-tab routes), `/admin/marketing` (now a static redirect).
+- Mobile drawer behaviour verified: hamburger appears below 768 px, drawer slides in, Escape closes, route-change auto-closes, body scroll locked while open.
+- Theme parity: light/dark via the existing `data-theme` attribute; sidebar follows.
+
+### Phase D candidates (deferred)
+
+- Persist user-toggled expansion to localStorage (current URL-only rule fine at 6 items; revisit beyond ~12).
+- Section dividers / group headers (only worth adding past 8–10 top-level items).
+- Sidebar-level search ("⌘ K") to jump to any section/sub-section.
+- Sidebar bottom slot for status (last Mercury sync) or quick actions.
+- Dashboard "today" widgets — recent task changes, latest RQ submissions, recent admin activity log.

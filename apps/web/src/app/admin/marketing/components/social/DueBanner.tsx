@@ -8,8 +8,11 @@ import type { SocialPostRow } from "@/lib/social-posts-types";
 import styles from "../../marketing.module.css";
 
 type Props = {
-  /** Click handler — switches the parent's sub-tab to Social. */
-  onOpenSocial: () => void;
+  /** Optional — if provided, the CTA fires a callback instead of
+   *  navigating. Used by legacy local-state callers (none after the
+   *  sub-routes refactor). Default behaviour is a Link to
+   *  /admin/marketing/social. */
+  onOpenSocial?: () => void;
 };
 
 type ListResponse = {
@@ -73,9 +76,19 @@ export function DueBanner({ onOpenSocial }: Props) {
         </strong>{" "}
         in the next 48 hours
       </span>
-      <Button variant="secondary" size="sm" onClick={onOpenSocial}>
-        Open scheduler
-      </Button>
+      {onOpenSocial ? (
+        <Button variant="secondary" size="sm" onClick={onOpenSocial}>
+          Open scheduler
+        </Button>
+      ) : (
+        <Button
+          variant="secondary"
+          size="sm"
+          href="/admin/marketing/social"
+        >
+          Open scheduler
+        </Button>
+      )}
     </div>
   );
 }

@@ -1,0 +1,250 @@
+/* =============================================================================
+   /admin (Dashboard home) — top-of-CRM landing.
+
+   Three KPI cards arranged in a 3-column grid (collapses to 1 column at
+   768 px). Each card carries its own load + error state so a single
+   failed fetch doesn't blank the dashboard.
+   ============================================================================= */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-6);
+  padding-bottom: var(--admin-space-16);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--admin-space-4);
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Card chrome ---------------------------------------------------- */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-6);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+  text-decoration: none;
+  color: inherit;
+  min-height: 200px;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.card:hover {
+  border-color: var(--admin-border-strong);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.cardLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.cardValue {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-4xl);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.cardValueError {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-4xl);
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  line-height: 1.1;
+}
+
+.cardSub {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+}
+
+.cardSubDim {
+  color: var(--admin-text-muted);
+}
+
+.cardBody {
+  margin-top: auto;
+  padding-top: var(--admin-space-3);
+  border-top: 1px solid var(--admin-border);
+}
+
+.cardOpen {
+  margin-top: auto;
+  font-size: var(--admin-text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-accent);
+  opacity: 0.7;
+  transition: opacity 150ms ease;
+}
+
+.card:hover .cardOpen {
+  opacity: 1;
+}
+
+.cardError {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-error-text);
+}
+
+.cardSkeleton {
+  height: 36px;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    var(--admin-surface-1) 0%,
+    var(--admin-surface-2) 50%,
+    var(--admin-surface-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: cardSkel 1.4s ease-in-out infinite;
+  border-radius: var(--admin-radius-sm);
+}
+
+@keyframes cardSkel {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* --- Finance card body --------------------------------------------- */
+
+.financeNet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+}
+
+.financeNetLabel {
+  font-size: var(--admin-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted);
+}
+
+.financeNetPositive {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-md);
+  color: var(--admin-success);
+}
+
+.financeNetNeutral {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+}
+
+/* --- Social card body ---------------------------------------------- */
+
+.dueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.dueListItem {
+  display: flex;
+  align-items: baseline;
+  gap: var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+}
+
+.dueListWhen {
+  flex-shrink: 0;
+  font-family: var(--admin-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-muted);
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.dueListTitle {
+  color: var(--admin-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dueListMore {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  font-style: italic;
+}
+
+/* --- Leads card body ----------------------------------------------- */
+
+.phaseGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--admin-space-2);
+}
+
+@media (max-width: 480px) {
+  .phaseGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.phaseChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--admin-space-2);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-sm);
+  text-align: center;
+}
+
+.phaseLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--admin-text-muted);
+}
+
+.phaseCount {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-lg);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}

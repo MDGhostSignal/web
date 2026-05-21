@@ -9,7 +9,9 @@
  */
 
 export { AdminShell } from "./AdminShell";
-export type { AdminTab } from "./AdminShell";
+
+export { AdminSidebar } from "./AdminSidebar";
+export type { AdminNavItem, AdminNavSubItem } from "./AdminSidebar";
 
 export { ThemeToggle } from "./ThemeToggle";
 export type { AdminTheme } from "./ThemeToggle";

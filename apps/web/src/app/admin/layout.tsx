@@ -8,6 +8,15 @@ import { AdminShell } from "@/components/admin";
 // Load admin tokens once for every /admin/* route, including /admin/login.
 // Leaf pages don't need to import this again.
 import "@/components/admin/tokens.css";
+import {
+  IconDashboard,
+  IconFinance,
+  IconLeads,
+  IconMarketing,
+  IconMarketplace,
+  IconRQ,
+  IconTasks,
+} from "@/components/admin/icons";
 
 /**
  * Shared chrome for all /admin/* routes (not /admin/login).
@@ -17,8 +26,9 @@ import "@/components/admin/tokens.css";
  * `children` untouched whenever it detects it's rendering on /login
  * so the shell doesn't try to wrap the sign-in form.
  *
- * Tabs surface the admin sections: Leads (CRM outreach + onboarding),
- * Marketplace, RQ Responses, Design Tasks, Marketing assets, Finance.
+ * Primary navigation lives in the persistent left sidebar. Marketing
+ * carries three children (Assets / Copy / Social) that the sidebar
+ * exposes as expandable sub-items.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -43,13 +53,31 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <AdminShell
-      tabs={[
-        { href: "/admin/leads", label: "Leads" },
-        { href: "/admin/marketplace", label: "Marketplace" },
-        { href: "/admin/rq-responses", label: "RQ Responses" },
-        { href: "/admin/tasks", label: "Tasks" },
-        { href: "/admin/marketing", label: "Marketing" },
-        { href: "/admin/finance", label: "Finance" },
+      nav={[
+        { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
+        { href: "/admin/leads", label: "Leads", icon: <IconLeads /> },
+        {
+          href: "/admin/marketplace",
+          label: "Marketplace",
+          icon: <IconMarketplace />,
+        },
+        {
+          href: "/admin/rq-responses",
+          label: "RQ Responses",
+          icon: <IconRQ />,
+        },
+        { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
+        {
+          href: "/admin/marketing",
+          label: "Marketing",
+          icon: <IconMarketing />,
+          children: [
+            { href: "/admin/marketing/assets", label: "Assets" },
+            { href: "/admin/marketing/copy", label: "Copy" },
+            { href: "/admin/marketing/social", label: "Social" },
+          ],
+        },
+        { href: "/admin/finance", label: "Finance", icon: <IconFinance /> },
       ]}
       onLogout={handleLogout}
     >
