@@ -82,6 +82,8 @@ export const config = {
     "/api/admin/finance/accounts",
     "/api/admin/finance/transactions",
     "/api/admin/finance/trend",
+    // Marketing Asset Library — list, item, files, and any sub-route.
+    "/api/admin/marketing-assets/:path*",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).

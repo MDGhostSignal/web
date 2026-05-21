@@ -112,3 +112,74 @@ After the implementation pass above, we wired the integration up against real Me
 - Running locally against real Mercury production data, read-only token.
 - 2 accounts + 11 transactions cached in Supabase. Dashboard renders.
 - Vercel deployment + cron firing in production still pending (next step).
+
+---
+
+## Marketing Asset Library — second feature shipped today
+
+After Finance went live, we built the **Marketing tab** end-to-end in the same session. Plan: `C:\Users\heyma\.claude\plans\abstract-spinning-stallman.md` (overwritten from the Mercury plan after planning Phase 1–4).
+
+### Goal
+
+A curated catalog inside admin for the team's brand assets, logos, white paper, brand guide, and marketing material — Google Drive's role reduced to "one of three places things can live," not the source of truth. **Not** a Drive replacement: at 3–5 people the equation for a full Drive API integration doesn't pencil out. Drive URLs are first-class entries alongside Supabase Storage uploads and existing static repo assets.
+
+### Architecture
+
+Two-table schema in Supabase:
+- `marketing_assets` (parent: title, description, category enum `brand | marketing | docs`, tags text[])
+- `marketing_asset_files` (variants: source_type `drive_url | storage | static`, exactly one of `storage_path` / `static_public_url` / `external_url` populated, `is_primary` partial unique index)
+
+One logical asset like "GhostSignal Brandmark (Horizontal, White)" carries N file variants (SVG, EPS, PNG @1x/@2x/@4x, WebP).
+
+### Phases shipped
+
+- **Phase A** — schema + Supabase Storage bucket (`marketing-assets`, public, 50 MB limit, MIME allowlist), read-only API + dashboard skeleton with chip filters + grid + detail modal.
+- **Phase B** — write API (POST asset, PATCH asset, DELETE asset with Storage cascade, POST file variant with dual-path upload, DELETE variant), AssetForm with TagInput, VariantUpload (drag-drop + Drive URL paste + signed-URL escape hatch for files > 4 MB to bypass Vercel's body-size limit).
+- **Phase C** — `apps/web/scripts/seed-marketing-assets.mjs`: idempotent direct-supabaseRest seed reading `logo/`, `apps/web/public/images/{brand,for-creators,for-advertisers}/`, `brandguide/GhostSignal-BrandGuide.pdf`, `docs/WHITE_PAPER.md`. Groups density-scaled logo variants via the `LOGO_VARIANT_REGEX`. Copies non-public files into `apps/web/public/brand/{ext}/`.
+- **Polish pass** — server-side preview enrichment (list endpoint now returns `previews: Record<assetId, { url, mime }>` + `variantCounts` from a parallel `marketing_asset_files` query). Cards dispatch on MIME: images render `<img>`, videos render `<video preload="metadata">` (browser-native first-frame poster), PDFs render `<object>` with the browser's built-in PDF viewer (pointer-events disabled so clicks still reach the parent button), everything else gets a styled mime-badge tile. Detail modal carries the same dispatch with a 480 px PDF hero and `<video controls>` for videos.
+
+### Live data
+
+Seed run hit Supabase production: **174 assets / 214 file variants / 172 files copied** into `apps/web/public/brand/`. Breakdown: Brand 149 · Marketing 23 · Docs 2. All 174 assets have exactly one primary variant (partial unique index working).
+
+### Decisions worth remembering
+
+- **Public Storage bucket** — same trust model as `apps/web/public/`. No signed-read-URL machinery.
+- **`source_type` lives on the file row**, not the asset, so one logical asset can mix backends.
+- **Three URL columns + check constraint** (`storage_path`, `static_public_url`, `external_url`) enforces exactly-one populated per file row.
+- **No Drive API in v1** — Drive URLs are stored as plain text in `external_url`. A service-account integration is documented as a v2 idea in `docs/MARKETING_ASSETS.md`.
+- **Inline mime sniffing** — magic-number table for 12 formats, no `file-type` npm dep.
+- **Dual-path upload** — files ≤ 4 MB go through the proxy POST; larger ones request a signed URL and PUT directly to Supabase, then POST a confirm. `MAX_PROXY_UPLOAD_BYTES = 4 * 1024 * 1024` constant in `lib/marketing-assets.ts`.
+- **Logo file copy duplication** — seed copies from `logo/` (tracked) to `apps/web/public/brand/{ext}/` so Next.js can serve them at stable `/brand/...` URLs. ~16 MB of duplication. The cleaner long-term answer is migrating to Supabase Storage, deferred.
+
+### Gotchas hit and resolved during the session
+
+- Initial tsconfig target ES2017 rejected named-capture-group regex (`(?<stem>...)`). Rewrote to positional groups.
+- `asserts X is T` TypeScript narrowing requires a parameter — can't assert on a module-level const. Replaced with plain throw.
+- Bare `<img>` Next.js lint warnings were suppressed with `eslint-disable-next-line @next/next/no-img-element` + rationale (mixed-source URLs, Drive thumbnails — next/image's loader is the wrong tool for internal admin).
+
+### File counts touched
+
+- New files: 24 (lib × 3, API routes × 4, page + components × 9, schema SQL, runbook, seed script, plus `apps/web/public/brand/**` × 172 seeded files).
+- Edited: `apps/web/src/app/admin/layout.tsx` (added Marketing tab), `apps/web/src/proxy.ts` (added `/api/admin/marketing-assets/:path*` to the matcher).
+- Note: the Phase A/B/C breakdown lived in tasks #14–22.
+
+### Validation
+
+- `npm run typecheck && npm run lint && npm run lint:css && npm run assets:audit` — all green at every phase.
+- `npm run build` — `/admin/marketing` route + 4 API routes registered cleanly.
+- Seed `--dry-run` then live: idempotent re-run confirmed (skipped previously-inserted rows).
+- Live UI check: thumbnails render for SVG/PNG/JPG/WebP, video first-frames render for MP4/WebM, PDF first page renders inline for the brand guide.
+
+### Outstanding actions for the user (post-deploy)
+
+- After the next Vercel deploy of `main`: nothing new is required on the Vercel side for Marketing — no new env vars beyond what Mercury already added. The schema applies via the same Supabase project. The bucket needs to be created on the Supabase production project (same name `marketing-assets`).
+- Re-run the seed against the production Supabase if you want the prod admin to be populated on day one (you ran it against the dev Supabase URL configured in `.env.local`).
+
+### Open Phase D candidates (deferred)
+
+- Image-combination generator (the user's original aspiration — deferred at planning time).
+- Drive folder watcher service account that creates draft catalog entries.
+- Per-PDF lazy-mount via `IntersectionObserver` if PDF count ever grows past ~10 (each grid card currently downloads the full PDF; one PDF today, so invisible).
+- Auto-generated poster frames for videos (skipping for now — `<video preload="metadata">` first-frame is fine).
+- Per-user audit log of "who viewed what" — requires the v2 auth model migration noted in the Mercury runbook.

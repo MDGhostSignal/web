@@ -18,7 +18,7 @@ import "@/components/admin/tokens.css";
  * so the shell doesn't try to wrap the sign-in form.
  *
  * Tabs surface the admin sections: Leads (CRM outreach + onboarding),
- * Marketplace, RQ Responses, Design Tasks, Finance.
+ * Marketplace, RQ Responses, Design Tasks, Marketing assets, Finance.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -48,6 +48,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         { href: "/admin/marketplace", label: "Marketplace" },
         { href: "/admin/rq-responses", label: "RQ Responses" },
         { href: "/admin/tasks", label: "Tasks" },
+        { href: "/admin/marketing", label: "Marketing" },
         { href: "/admin/finance", label: "Finance" },
       ]}
       onLogout={handleLogout}
