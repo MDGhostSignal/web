@@ -1,0 +1,393 @@
+/* =============================================================================
+   /admin/finance — Mercury cash-monitoring dashboard.
+
+   Uses --admin-* tokens (this surface is excluded from the public-site
+   --gs-* Stylelint rule via .stylelintignore). Layout target: 1440 desktop,
+   gracefully collapses to single-column at 768.
+   ============================================================================= */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-8);
+  padding-bottom: var(--admin-space-16);
+}
+
+/* --- Sticky page header trailing cluster (refresh + sync badge) ----- */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+}
+
+.syncPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-1) var(--admin-space-3);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  background: var(--admin-surface-1);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-xs);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.syncPillDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--admin-success);
+  flex-shrink: 0;
+}
+
+.syncPillDotStale {
+  background: var(--admin-warn);
+}
+
+.syncPillDotError {
+  background: var(--admin-destructive);
+}
+
+/* --- Stale data banner ---------------------------------------------- */
+
+.staleBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4) var(--admin-space-5);
+  border: 1px solid var(--admin-warn);
+  background: var(--admin-warn-soft);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+}
+
+.staleBannerError {
+  border-color: var(--admin-destructive-border);
+  background: var(--admin-destructive-soft);
+}
+
+.staleBannerBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-1);
+}
+
+.staleBannerTitle {
+  font-size: var(--admin-text-md);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.staleBannerDetail {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  margin: 0;
+}
+
+/* --- KPI hero row --------------------------------------------------- */
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--admin-space-4);
+}
+
+@media (max-width: 768px) {
+  .kpiRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-6);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpiLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.kpiValue {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-4xl);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.kpiValueDim {
+  color: var(--admin-text-muted);
+}
+
+.kpiSub {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  margin-top: auto;
+}
+
+.kpiTrendPositive {
+  color: var(--admin-success);
+}
+
+.kpiTrendNeutral {
+  color: var(--admin-text-muted);
+}
+
+/* --- Section heading (reused for accounts + transactions) ----------- */
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+  margin-bottom: var(--admin-space-4);
+}
+
+.sectionTitle {
+  font-size: var(--admin-text-xl);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.sectionMeta {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+/* --- Account cards -------------------------------------------------- */
+
+.accountsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--admin-space-4);
+}
+
+.accountCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-5);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+  min-height: 140px;
+}
+
+.accountHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--admin-space-2);
+}
+
+.accountName {
+  font-size: var(--admin-text-md);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.accountNumber {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+  margin-top: var(--admin-space-1);
+}
+
+.accountBalance {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-3xl);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.accountAvailable {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+}
+
+.accountAvailableValue {
+  font-family: var(--admin-font-mono);
+  color: var(--admin-text-primary);
+  margin-left: var(--admin-space-2);
+}
+
+.accountSparklineSlot {
+  margin-top: auto;
+  height: 32px;
+  border-radius: var(--admin-radius-xs);
+  background: var(--admin-surface-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-xs);
+}
+
+/* --- Transactions table cells -------------------------------------- */
+
+.txAmount {
+  font-family: var(--admin-font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.txAmountInflow {
+  color: var(--admin-success);
+}
+
+.txAmountOutflow {
+  color: var(--admin-text-secondary);
+}
+
+.txCounterparty {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.txCounterpartyName {
+  font-weight: 500;
+  color: var(--admin-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txCounterpartyDesc {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txDate {
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-secondary);
+  white-space: nowrap;
+}
+
+/* --- Transaction detail (Modal body) ------------------------------- */
+
+.txDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+  padding: var(--admin-space-2) 0;
+}
+
+.txDetailHero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.txDetailAmount {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-4xl);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.txDetailCounterparty {
+  font-size: var(--admin-text-lg);
+  color: var(--admin-text-secondary);
+}
+
+.txDetailGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--admin-space-2) var(--admin-space-5);
+}
+
+.txDetailKey {
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-sm);
+  letter-spacing: 0.02em;
+}
+
+.txDetailValue {
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Charts -------------------------------------------------------- */
+
+.chartFrame {
+  padding: var(--admin-space-4);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+}
+
+.chartEmpty {
+  padding: var(--admin-space-6);
+  border: 1px dashed var(--admin-border);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-lg);
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-sm);
+  text-align: center;
+}
+
+/* --- Skeleton placeholders ----------------------------------------- */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--admin-surface-1) 0%,
+    var(--admin-surface-2) 50%,
+    var(--admin-surface-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  border-radius: var(--admin-radius-sm);
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeletonKpiValue {
+  height: 36px;
+  width: 60%;
+  margin-top: var(--admin-space-1);
+}
+
+.skeletonAccountBalance {
+  height: 32px;
+  width: 55%;
+}
+
+.skeletonRow {
+  height: 16px;
+  width: 100%;
+}

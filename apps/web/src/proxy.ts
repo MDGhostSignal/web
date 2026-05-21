@@ -27,7 +27,15 @@ import {
  * https://nextjs.org/docs/messages/middleware-to-proxy
  */
 
-const PUBLIC_SUBPATHS = ["/admin/login"];
+const PUBLIC_SUBPATHS = [
+  "/admin/login",
+  // Vercel Cron hits the Mercury sync endpoint with a Bearer token, not
+  // the admin cookie. We let the path through here and enforce the
+  // bearer-token check inside the route handler itself. The "Refresh
+  // now" UI button still works because the route accepts either auth
+  // path. See apps/web/src/app/api/admin/finance/sync/route.ts.
+  "/api/admin/finance/sync",
+];
 
 export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -69,6 +77,11 @@ export const config = {
     "/api/members/:path*",
     "/api/design-tasks/:path*",
     "/api/rq-submissions/list",
+    // Finance read endpoints — sync POST is allowlisted in
+    // PUBLIC_SUBPATHS above so Vercel Cron can reach it.
+    "/api/admin/finance/accounts",
+    "/api/admin/finance/transactions",
+    "/api/admin/finance/trend",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).
