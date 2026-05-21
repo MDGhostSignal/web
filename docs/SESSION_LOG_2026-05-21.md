@@ -422,3 +422,107 @@ The moment that commit was pushed, the Vercel webhook fired and a build for `597
 - The `Mercury sync` workflow has been manually dispatched + completed green. The 15-minute schedule takes over from here; the next automatic run lands at the next `*/15` boundary (GitHub Actions best-effort).
 - That closes today's Mercury → Supabase loop end-to-end in production: GitHub Actions → POST sync route → `runMercurySync()` → Supabase upsert → admin dashboard reads cached rows. Live.
 - The only setup task remaining for the team (not blocking anything we shipped today) is the Resend sending-domain verification so the Marketing daily digest at `0 15 * * *` can deliver to cofounders.
+
+---
+
+## Contracts tab (esignatures.com integration) — fifth feature shipped today
+
+A sixth top-level admin tab — **Contracts** — that becomes the team's single pane of glass for every creator + brand agreement. Mirrors the corpus from esignatures.com into Supabase via webhook events, surfaces awaiting/expiring/active KPIs, auto-links signers to CRM members by email, and adds an in-app composer for sending new contracts without leaving the CRM.
+
+Plan: `C:\Users\heyma\.claude\plans\abstract-spinning-stallman.md` (overwritten after the deploy-outage post-mortem).
+
+### Up-front discoveries that shaped the schema
+
+Phase A ran `apps/web/scripts/probe-esignatures.mjs` against the live esignatures account before locking any schema. Key facts surfaced:
+
+1. **HTTP Basic auth with the API token as username, empty password.** Bearer auth is rejected with `403`. The literal docs mention a `?token=` query-param variant too; Basic was used because it keeps the token out of URL logs.
+2. **There is no `GET /contracts` list endpoint.** Trying it returns `{ status: "error", data: { error_code: "not-supported" } }`. The plan's "backfill by paginating /contracts" idea was scrapped — discoverability has to come from webhooks + caller-known ids. Import-by-id is the only manual backfill path.
+3. **The contract envelope is `{ data: { contract: {…} } }`** — one level deeper than the templates endpoint's `{ data: {…} }`. Unwrapped in `lib/esignatures.ts`.
+4. **Only one active template at the moment** and it carries an empty `placeholder_fields: []`, which simplifies the Phase C composer (no template fields to render today — but the dynamic renderer handles them for future templates).
+
+### Phase A — Foundation
+
+- Schema: `docs/CONTRACTS_SUPABASE_SCHEMA.sql`. Five tables: `contracts` (id PK is the esignatures contract id, raw jsonb of the full API payload, both `member_id` confirmed + `suggested_member_id` auto-match, status enum, counterparty kind enum, soft-archive via `archived_at`), `contract_signers`, `contract_templates`, `contract_webhook_events` (audit log including invalid-signature attempts), `contract_sync_runs` (audit row per manual import / resync). RLS enabled with no policies — service-role bypass intentional.
+- `apps/web/src/lib/esignatures-types.ts` — `EsignaturesContract`, `EsignaturesSigner`, `EsignaturesTemplate` wire shapes + `ContractRow` / `ContractSignerRow` / `ContractTemplateRow` DB shapes + `CONTRACT_STATUSES` / `CONTRACT_STATUS_LABELS` / `CONTRACT_AWAITING_STATUSES` / `CONTRACT_ACTIVE_STATUSES` / `COUNTERPARTY_KINDS` constants + small helpers (`normalizeStatus`, `parseIsoOrNull`).
+- `apps/web/src/lib/esignatures.ts` — typed REST client. Functions: `listTemplates`, `getTemplate`, `getContract`, `createContract`, `withdrawContract`, `resendSigner`. `EsignaturesError` class carries status + path + detail.
+- `apps/web/src/lib/esignatures-webhook.ts` — HMAC-SHA256 signature verification (timing-safe), payload extraction (tolerant of both `data.contract` and top-level shapes), `upsertContractFromApi(contract, { presetMemberId? })` which preserves existing notes / `member_id` / `archived_at` and computes `suggested_member_id` via signer-email matching that skips `@ghostsignal.cloud` (our own countersigner) and only fires when exactly one CRM member matches one signer email.
+- `apps/web/src/lib/members.ts` — added `findMembersByEmail(email)` lookup used by the webhook + import flows.
+
+### Phase B — Dashboard
+
+- API routes — eight new endpoints:
+  - `GET/POST /api/admin/contracts` — list (filters: `status` / `counterparty` / `unlinked` / `archived` / `search` / `limit` / `offset`; default order is `updated_at` desc nullslast then `created_at` desc; default excludes archived). POST dispatches on body shape: `{ contract_id }` triggers Import-by-id (calls `getContract`, upserts, writes `contract_sync_runs` row with `scope='manual-import'`); `{ template_id }` triggers Phase C Send-from-CRM (see below).
+  - `GET/PATCH/DELETE /api/admin/contracts/[id]` — single-contract read with hydrated linked + suggested member rows; PATCH validates `member_id` (UUID or null), `suggested_member_id`, `counterparty_kind`, `notes`, `archived_at`; DELETE is soft (sets `archived_at`).
+  - `POST /api/admin/contracts/[id]/resync` — manual safety-valve fetch + upsert for when a webhook delivery is dropped.
+  - `POST /api/admin/contracts/[id]/remind` — proxies the per-signer reminder endpoint.
+  - `GET /api/admin/contracts/templates` — live passthrough to esignatures (corpus is tiny; no local cache needed yet).
+  - `POST /api/admin/contracts/webhook` — public-allowlisted in `proxy.ts`. Reads raw body for HMAC, always inserts an audit row regardless of validity (`signature_valid: true/false`), 401s on invalid signature, 200s even on malformed payloads so esignatures doesn't retry-storm a broken handler.
+  - `GET /api/admin/members/lite?ids=…` or `?q=…` — small batch / search endpoint for hydrating linked-member names in the contracts dashboard and powering the composer's MemberPicker. Returns name / email / org / member_type fields only.
+- Dashboard UI at `/admin/contracts`:
+  - `ContractsKpiRow` — three cards: Awaiting Signature (sent + viewed), Expiring Soon (active with `expires_at` within 30 days), Active (signed + completed, not archived). Mount-time `Date.now()` snapshot via lazy `useState` initializer to satisfy `react-hooks/purity` (the rule rejects `Date.now()` in render bodies and `setState` inside `useEffect`).
+  - `ContractsFilterSidebar` — sticky left rail. Quick filters (All / Needs linking / Archived) + Status (8 statuses) + Counterparty (creator / brand / other), each with live counts derived from in-memory rows.
+  - `ContractsTable` — DataTable-backed, six columns (Contract title + truncated id / Counterparty badge / Status badge / Signed date / Expires date / Linked-to member), all sortable, title cell is a `<Link>` to the detail page.
+  - `ImportContractModal` — paste an esignatures contract id, server fetches + upserts.
+  - `ContractComposer` (Phase C — see below) launched from the header.
+- Detail view at `/admin/contracts/[id]`:
+  - `ContractDetailCard` — title + status pill + Resync / Archive header actions, metadata grid (Sent / Signed / Expires / Template / Counterparty dropdown), Internal-notes textarea with dirty-tracking + Save/Cancel actions, signer list with per-signer Send-reminder buttons (only shown when contract is `sent` or `viewed` and the signer hasn't signed yet).
+  - `ContractPdfEmbed` — `<object data type="application/pdf">` when esignatures has published the signed PDF URL, fallback placeholder otherwise. Mirrors the asset library's PDF embed pattern.
+  - `LinkMemberPanel` — three states: (1) Linked → name + Unlink button. (2) Suggested match → Confirm / Reject + an "or pick a different member" search-pick widget. (3) Unlinked → search-pick widget. Each action PATCHes the contract endpoint.
+
+### Phase C — Send new contract composer
+
+- `POST /api/admin/contracts` `template_id` branch implemented (was a 501 stub at the end of Phase B). Validates signers (each needs name + valid email), normalises placeholder fields, auto-attaches `metadata.ghostsignal_member_id` + `metadata.source: "ghostsignal-crm"`, calls `createContract`, then persists locally via `upsertContractFromApi` with `presetMemberId` so the dashboard sees the new row without waiting on the webhook.
+- `ContractComposer` modal: template dropdown (live-fetched on open) → `MemberPicker` (search + pick — auto-fills the first signer's name + email from the chosen member) → `TemplateFieldsRenderer` (dynamic per template's `placeholder_fields`; handles text/date/number/checkbox/select/dropdown/signature types, surfaces a warning under unknown types and passes them through as text) → signer-list editor (multi-signer with add/remove) → optional title override + "Send as test" toggle → Submit. On 201, parent reloads the list and `router.push`es to the new contract's detail page.
+- `MemberPicker` — debounced search (220 ms) against `/api/admin/members/lite?q=…`, picked-state card with Change action.
+- `TemplateFieldsRenderer` — input dispatch by type, supports default values + required flags, unknown types annotated rather than failing.
+
+### Gotchas hit + resolved
+
+- **`react-hooks/purity` rejects `Date.now()` in render and `setState` inside `useEffect`.** Fix: lazy `useState` initializer `useState<number>(() => Date.now())` snapshots once at mount; counts derive via `useMemo` from that snapshot plus the row data.
+- **Turbopack SWC worker crash on the detail page** ("Jest worker encountered 2 child process exceptions, exceeding retry limit") — surfaced when clicking a contract from the list. Two compounding factors: stale `.next` cache from earlier feature work + `reactCompiler: true` in `next.config.ts` (the React Compiler uses `jest-worker` for its pool — that's where the misleading error name comes from). Two-part fix: (1) refactored `/admin/contracts/[id]/page.tsx` into a tiny server shell that `await`s `params` and forwards the id as a prop to a new `ContractDetailView` client component, keeping `use(params)` out of the client tree; (2) hoisted inline `async () => { await foo(); setX(false); }` arrow handlers in `ContractDetailCard` to stable `useCallback`s (a known React-Compiler trip-hazard), lifted a nested ternary + type-cast inside the counterparty `<select>` `onChange` to a plain `parseKind()` helper, hoisted an inline `style={{…}}` literal to a module-level `const`. After deleting `.next` and restarting dev, the detail page rendered cleanly (`GET /admin/contracts/<uuid> 200`).
+- **`use(params)` in a client component** worked in production builds (build passed every gate) but tripped Turbopack dev-mode compilation. The server-shell pattern is the safer convention going forward.
+
+### Layout regression on Marketplace + Tasks pages — fixed in the same pass
+
+User flagged that `/admin/marketplace` (Pool + Match) and `/admin/tasks` had their inner content slipping behind the admin sidebar at common viewport widths, while `/admin/leads`, `/admin/finance`, and `/admin/contracts` looked correct.
+
+Root cause: both pages used a `width: 100vw; margin-left: calc(50% - 50vw)` viewport-breakout pattern that assumed `AdminShell` centred its content with `margin: 0 auto`. AdminShell actually **offsets** content with `margin-left: 256px` on desktop (to clear the fixed admin sidebar), leaving the right margin auto. The breakout math then overshot to the left and pushed the inner page content under the sidebar.
+
+Fix: removed the breakout from `marketplace.module.css .page` and `tasks/page.module.css .layout`. Both pages now sit inside AdminShell's natural content box, which already provides the 256-px sidebar offset and the `var(--admin-space-6)` lateral padding that leads / finance / contracts use. The "template" is now consistent: pages don't need width/margin overrides — AdminShell does the layout work.
+
+### Validation
+
+All AGENTS.md gates green:
+- `typecheck` — clean.
+- `lint` — clean (after the `react-hooks/purity` + `react-hooks/set-state-in-effect` fixes).
+- `lint:css` — clean.
+- `assets:audit` — `OK: 51 referenced public assets exist.`
+- `build` — clean. New routes registered: `/admin/contracts`, `/admin/contracts/[id]`, plus `/api/admin/contracts`, `/api/admin/contracts/[id]`, `/api/admin/contracts/[id]/remind`, `/api/admin/contracts/[id]/resync`, `/api/admin/contracts/templates`, `/api/admin/contracts/webhook`, `/api/admin/members/lite`.
+
+Live verification: dev server `npm run dev` after `rm -rf .next` rendered `/admin/contracts` and `/admin/contracts/<id>` without crashes; API endpoint returned the persisted contract with hydrated linked/suggested-member rows.
+
+### Files touched
+
+- New (`apps/web/src/lib/`): `esignatures.ts`, `esignatures-types.ts`, `esignatures-webhook.ts`.
+- New (API routes — 7 files): `apps/web/src/app/api/admin/contracts/route.ts`, `apps/web/src/app/api/admin/contracts/[id]/route.ts`, `apps/web/src/app/api/admin/contracts/[id]/resync/route.ts`, `apps/web/src/app/api/admin/contracts/[id]/remind/route.ts`, `apps/web/src/app/api/admin/contracts/templates/route.ts`, `apps/web/src/app/api/admin/contracts/webhook/route.ts`, `apps/web/src/app/api/admin/members/lite/route.ts`.
+- New (`apps/web/src/app/admin/contracts/`): `page.tsx`, `contracts.module.css`, `[id]/page.tsx` (server shell), `[id]/ContractDetailView.tsx` (client view), `components/ContractsKpiRow.tsx`, `components/ContractsFilterSidebar.tsx`, `components/ContractsTable.tsx`, `components/ContractDetailCard.tsx`, `components/ContractPdfEmbed.tsx`, `components/LinkMemberPanel.tsx`, `components/ImportContractModal.tsx`, `components/ContractComposer.tsx`, `components/MemberPicker.tsx`, `components/TemplateFieldsRenderer.tsx`.
+- New (scripts + docs): `apps/web/scripts/probe-esignatures.mjs`, `docs/CONTRACTS_SUPABASE_SCHEMA.sql`.
+- Edited: `apps/web/src/app/admin/layout.tsx` (added Contracts entry with `IconContracts`), `apps/web/src/components/admin/icons.tsx` (added `IconContracts` — paper outline + ruled lines + signature flourish), `apps/web/src/lib/members.ts` (added `findMembersByEmail`), `apps/web/src/proxy.ts` (allowlisted `/api/admin/contracts/webhook` in `PUBLIC_SUBPATHS`; added `/api/admin/contracts/:path*` + `/api/admin/members/:path*` to the matcher), `apps/web/src/app/admin/marketplace/marketplace.module.css` + `apps/web/src/app/admin/tasks/page.module.css` (removed viewport-breakout that overlapped the admin sidebar).
+
+### Outstanding actions for the user
+
+1. **Configure the esignatures.com webhook URL** at https://esignatures.com → Account → API & Webhooks → Webhooks. URL: `https://www.ghostsignal.cloud/api/admin/contracts/webhook`. Enable all contract events (contract_signed / contract_sent / contract_viewed / contract_declined / contract_expired / contract_withdrawn). No separate signing secret — esignatures HMACs with the API token, same value we have. Verify via `select event_type, signature_valid, received_at from contract_webhook_events order by received_at desc limit 5;`.
+2. **Confirm `ESIGNATURES_API_TOKEN` is present in Vercel production env vars** (currently only required for `.env.local`; production webhook receiver will 401 without it).
+3. **Backfill any historical contracts that matter** via the "Import by ID" button on the dashboard — copy the contract id from its esignatures.com URL, paste, submit. There is no bulk list endpoint (verified by the Phase A probe), so this is one-at-a-time.
+4. **Set counterparty kind** (creator / brand / other) on imported contracts via the dropdown on the detail page — filters in the sidebar key off this.
+5. Carry-over from earlier: Resend domain verification still blocks the Marketing daily digest from reaching cofounders other than the verified-owner email.
+
+### Phase D candidates (deferred)
+
+- Bulk-send to a list of creators / brands (composer is one-at-a-time today).
+- Contract version history (esignatures supports it; we render current state only).
+- Effective-date column populated from `placeholder_fields` (today's only template carries no fields, so deferred).
+- Automated renewal-reminder emails when `expires_at` is within N days.
+- ICS calendar feed for upcoming contract expirations.
+- "Approve before send" workflow for cofounder review of outgoing contracts.
+- Per-PDF caching to avoid re-downloading the signed PDF on every detail-page view.

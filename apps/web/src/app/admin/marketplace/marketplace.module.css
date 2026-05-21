@@ -13,17 +13,12 @@
   grid-template-columns: 220px 1fr;
   gap: var(--admin-space-5);
   align-items: start;
-  /* Break out of AdminShell's centered max-width content box so the
-     sidebar can hug the actual screen edge. `margin-left:
-     calc(50% - 50vw)` shifts this element from "centred-content
-     coords" back to "viewport coords"; `width: 100vw` then spans the
-     full viewport. AdminShell's .shell adds `overflow-x: hidden` so
-     this can't induce a horizontal scrollbar. */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  /* Tight lateral padding — left for sidebar breathing room, right
-     so main content doesn't kiss the viewport edge. */
-  padding: 0 var(--admin-space-4) 0 var(--admin-space-3);
+  /* Sits inside AdminShell's content box — which already provides the
+     left offset that clears the admin sidebar (256 px on desktop) and
+     the lateral padding (--admin-space-6). The earlier viewport-
+     breakout pattern (width: 100vw + margin-left: calc(50% - 50vw))
+     ended up shoving content under the admin sidebar on common widths
+     because AdminShell's content is offset, not centred. */
 }
 
 .main {

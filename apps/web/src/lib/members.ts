@@ -7,6 +7,8 @@
  * the Postgres schema changes.
  */
 
+import { supabaseRest } from "@/lib/supabase-admin";
+
 export const MEMBER_TYPES = ["creator", "brand", "other"] as const;
 export type MemberType = (typeof MEMBER_TYPES)[number];
 
@@ -294,4 +296,31 @@ export function memberToMarketplaceEntity(m: Member): MarketplaceLite | null {
     traits: { values: 50, authenticity: 50, horizon: 50 },
     is_mock: false,
   };
+}
+
+/* =====================================================================
+ * Server-side lookups (used by integrations like the Contracts feature)
+ * ===================================================================== */
+
+/**
+ * Find member rows whose `email` (case-insensitive) matches `email`.
+ * Returns 0, 1, or many — caller decides what to do (the Contracts
+ * feature treats 1 as "auto-suggest", 0 as "no link", >1 as "ambiguous,
+ * don't suggest").
+ *
+ * Kept here so the webhook receiver + import-by-id + create-from-CRM
+ * flows all use the same matcher.
+ */
+export async function findMembersByEmail(
+  email: string,
+): Promise<Array<{ id: string; first_name: string | null; last_name: string | null; organization: string | null; member_type: MemberType }>> {
+  const normalised = email.trim().toLowerCase();
+  if (!normalised || !normalised.includes("@")) return [];
+  const res = await supabaseRest<
+    Array<{ id: string; first_name: string | null; last_name: string | null; organization: string | null; member_type: MemberType }>
+  >(
+    `members?select=id,first_name,last_name,organization,member_type&email=ilike.${encodeURIComponent(normalised)}&limit=5`,
+  );
+  if (!res.ok) return [];
+  return res.data;
 }

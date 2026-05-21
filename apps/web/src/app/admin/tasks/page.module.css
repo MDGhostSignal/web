@@ -42,22 +42,14 @@
    while scrolling a long list. Collapses to a single column on
    narrower viewports so each section keeps its measure.
    ---------------------------------------------------------------
-   Viewport breakout: AdminShell wraps the page in a centred
-   max-width content box, which kept the sidebar floating inboard
-   of the screen. The width: 100vw + margin-left: calc(50% - 50vw)
-   pattern (same one /admin/marketplace uses) escapes that box so
-   the sidebar hugs the actual left edge of the viewport and the
-   main column gets the rest of the screen width. AdminShell's
-   .shell carries overflow-x: hidden so this can't induce a
-   horizontal scrollbar. */
+   Sits inside AdminShell's content box; the admin sidebar offset
+   + lateral padding already come from AdminShell, so no viewport
+   breakout is needed here. */
 .layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--admin-space-5);
   align-items: start;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  padding: 0 var(--admin-space-4) 0 var(--admin-space-3);
 }
 
 .sidebar {

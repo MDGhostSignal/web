@@ -143,3 +143,17 @@ export function IconClose(props: Props) {
     </svg>
   );
 }
+
+/** Contracts — sheet of paper with a signature flourish at the bottom. */
+export function IconContracts(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M15 3v4h4" />
+      <line x1="8" y1="11" x2="14" y2="11" />
+      <line x1="8" y1="14" x2="16" y2="14" />
+      {/* signature flourish */}
+      <path d="M8 18c1-1.4 2-1.4 3 0s2 1.4 3 0" />
+    </svg>
+  );
+}

@@ -1,0 +1,494 @@
+/* =============================================================================
+   /admin/contracts — Contracts management dashboard.
+
+   Uses --admin-* tokens (this surface is excluded from the public-site
+   --gs-* Stylelint rule via .stylelintignore). Layout target: 1440 desktop;
+   collapses to single-column at 1024 and stacks the filter sidebar above
+   the table at 768.
+   ============================================================================= */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-8);
+  padding-bottom: var(--admin-space-16);
+}
+
+/* --- KPI hero row --------------------------------------------------- */
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--admin-space-4);
+}
+
+@media (max-width: 768px) {
+  .kpiRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-6);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+  min-height: 132px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpiCardAccent {
+  border-color: var(--admin-accent-border);
+}
+
+.kpiLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.kpiValue {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-4xl);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.kpiSub {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  margin-top: auto;
+}
+
+/* --- Main layout: filter sidebar + table --------------------------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--admin-space-6);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Filter sidebar ------------------------------------------------- */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+  padding: var(--admin-space-5);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+  position: sticky;
+  top: var(--admin-space-4);
+}
+
+@media (max-width: 1024px) {
+  .filters {
+    position: static;
+  }
+}
+
+.filtersGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.filtersGroupTitle {
+  font-size: var(--admin-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-2) var(--admin-space-3);
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.filterChip:hover {
+  background: var(--admin-surface-1);
+  color: var(--admin-text-primary);
+}
+
+.filterChipActive {
+  background: var(--admin-surface-1);
+  color: var(--admin-text-primary);
+  border-color: var(--admin-border);
+  font-weight: 500;
+}
+
+.filterChipCount {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.filterDivider {
+  height: 1px;
+  background: var(--admin-border);
+  margin: var(--admin-space-1) 0;
+}
+
+/* --- Table area ---------------------------------------------------- */
+
+.tableHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  margin-bottom: var(--admin-space-3);
+}
+
+.tableCount {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+.tableActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+.search {
+  min-width: 240px;
+}
+
+/* --- Table cells --------------------------------------------------- */
+
+.cellTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cellTitleName {
+  font-weight: 500;
+  color: var(--admin-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellTitleSub {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cellMember {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cellMemberName {
+  color: var(--admin-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellMemberUnlinked {
+  color: var(--admin-text-muted);
+  font-style: italic;
+}
+
+.cellMemberSuggested {
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-xs);
+}
+
+.cellDate {
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-secondary);
+  white-space: nowrap;
+}
+
+.cellDateMuted {
+  color: var(--admin-text-muted);
+}
+
+/* --- Modal forms (import + composer skeleton) --------------------- */
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.formLabel {
+  font-size: var(--admin-text-sm);
+  font-weight: 500;
+  color: var(--admin-text-primary);
+}
+
+.formInput {
+  width: 100%;
+  padding: var(--admin-space-3) var(--admin-space-4);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-md);
+  font-family: var(--admin-font-mono);
+  transition: border-color 0.12s ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--admin-accent-border);
+}
+
+.formHint {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.formError {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-destructive);
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--admin-space-3);
+  margin-top: var(--admin-space-4);
+}
+
+/* --- Detail page --------------------------------------------------- */
+
+.detailLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--admin-space-6);
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .detailLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detailMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+}
+
+.detailSide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.detailCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-6);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  border-radius: var(--admin-radius-lg);
+}
+
+.detailCardTitle {
+  font-size: var(--admin-text-lg);
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.detailMeta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--admin-space-2) var(--admin-space-5);
+}
+
+.detailMetaKey {
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-sm);
+  letter-spacing: 0.02em;
+}
+
+.detailMetaValue {
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-sm);
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.detailHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+  flex-wrap: wrap;
+}
+
+.detailHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  flex-wrap: wrap;
+}
+
+/* --- PDF embed ----------------------------------------------------- */
+
+.pdfFrame {
+  width: 100%;
+  height: 720px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-md);
+}
+
+.pdfEmpty {
+  padding: var(--admin-space-8);
+  border: 1px dashed var(--admin-border);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-muted);
+  text-align: center;
+  font-size: var(--admin-text-sm);
+}
+
+/* --- Signers list -------------------------------------------------- */
+
+.signersList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.signerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-3) var(--admin-space-4);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-md);
+}
+
+.signerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.signerName {
+  font-weight: 500;
+  color: var(--admin-text-primary);
+}
+
+.signerEmail {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.signerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+/* --- Link Member panel -------------------------------------------- */
+
+.linkPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.linkSuggestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4);
+  border: 1px solid var(--admin-accent-border);
+  background: var(--admin-accent-soft);
+  border-radius: var(--admin-radius-md);
+}
+
+.linkSuggestionLabel {
+  font-size: var(--admin-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.linkSuggestionName {
+  font-weight: 500;
+  color: var(--admin-text-primary);
+}
+
+.linkConfirmed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-4);
+  border: 1px solid var(--admin-success-border, var(--admin-border));
+  background: var(--admin-success-soft, var(--admin-surface-1));
+  border-radius: var(--admin-radius-md);
+}
+
+.linkButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+.notesArea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--admin-space-3);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-sm);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.notesArea:focus {
+  outline: none;
+  border-color: var(--admin-accent-border);
+}

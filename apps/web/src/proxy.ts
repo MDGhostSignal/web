@@ -39,6 +39,10 @@ const PUBLIC_SUBPATHS = [
   // accepts the CRON_SECRET bearer OR the admin cookie (manual
   // "Send digest now" trigger from the UI).
   "/api/admin/marketing-social/digest",
+  // esignatures.com webhook — they POST event updates here with an
+  // X-Signature-SHA256 header. The route enforces HMAC verification
+  // internally; no admin cookie, no CRON_SECRET.
+  "/api/admin/contracts/webhook",
 ];
 
 export async function proxy(req: NextRequest) {
@@ -94,6 +98,13 @@ export const config = {
     // endpoint under this prefix is allowlisted in PUBLIC_SUBPATHS
     // above so Vercel Cron can reach it.
     "/api/admin/marketing-social/:path*",
+    // Contracts (esignatures.com integration). The /webhook sub-path
+    // is allowlisted in PUBLIC_SUBPATHS so esignatures.com can POST
+    // events without an admin cookie.
+    "/api/admin/contracts/:path*",
+    // Members lite-lookup (used by the contracts dashboard + the Phase C
+    // composer to hydrate member labels / search-pick a counterparty).
+    "/api/admin/members/:path*",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).
