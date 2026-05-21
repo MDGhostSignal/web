@@ -337,3 +337,81 @@ The fourth substantial change of the day: ripped out the top-bar tab strip and r
 - Sidebar-level search ("⌘ K") to jump to any section/sub-section.
 - Sidebar bottom slot for status (last Mercury sync) or quick actions.
 - Dashboard "today" widgets — recent task changes, latest RQ submissions, recent admin activity log.
+
+---
+
+## Marketplace Pool / Match / Map sidebar sub-items — small follow-up to the nav refactor
+
+A regression flagged by the user immediately after the sidebar refactor: Marketplace has three views (Pool / Match / Map) that used to live in local state inside `/admin/marketplace/page.tsx`. The new sidebar didn't expose them.
+
+### What changed
+
+- `AdminSidebar` gained **query-param-aware active detection**. `AdminNavSubItem` now accepts an optional `isDefault: boolean`. New helpers `parseHref()` + `subItemActive()` compare both pathname and search params; existing path-only sub-items (Marketing's Assets/Copy/Social) are unaffected.
+- `AdminShell` wraps **both** the sidebar and the main content area in `<Suspense fallback={null}>` so any admin page using `useSearchParams` (now including the marketplace) doesn't break Next.js static prerendering of the route tree.
+- `admin/layout.tsx` — Marketplace gained three children: `?view=pool` (marked `isDefault: true` so it stays active on the bare `/admin/marketplace` URL too), `?view=match`, `?view=map`.
+- `marketplace/page.tsx` — `view` is derived from `useSearchParams()`; `setView` does `router.replace(url, { scroll: false })` so the URL stays the source of truth. The marketplace's existing page-local sidebar (brand title + stats + reset/help buttons) stays as-is; it now reads/writes the same URL state the global sidebar drives.
+
+### Why query params, not real sub-routes (like Marketing)
+
+The marketplace page is ~550 lines with Phaser dynamic imports, a `useSyncExternalStore` over localStorage, modals for reset/help, and selected-entity state shared across views. Splitting into three sub-routes would mean extracting all that into a shared layout-level context — meaningful refactor for negligible gain. Query params keep the existing structure and let the sidebar deep-link.
+
+### Commit
+
+`df79bae feat(admin): marketplace Pool/Match/Map as sidebar sub-items` — 4 files, +111 / -19.
+
+---
+
+## Three-day deploy outage — diagnosed and fixed late afternoon
+
+After all the day's feature work, the user noticed nothing had reached production for three days — `ghostsignal.cloud` was still serving the build from commit `9c66a8f` (the last commit before today's batch). Every push since had silently failed to deploy.
+
+### The investigation
+
+- **Git was healthy.** `origin/main` had all five commits we'd pushed today. `git log` confirmed.
+- **Vercel was reachable.** Manual curls to `https://www.ghostsignal.cloud` returned correctly via Vercel edge.
+- **The proxy was running** — `/admin/*` correctly redirected to `/admin/login`. But that's a fixed-Vercel behaviour and doesn't prove which build is serving.
+- **The smoking gun**: every new admin API route returned **404** in production. `/api/admin/finance/sync`, `/api/admin/marketing-copy`, `/api/admin/marketing-social/digest` — all not in the deployed build.
+- **Vercel deployment list** (per a user screenshot) showed only the same 3-day-old `9c66a8f` commit, with three "Redeploy of …" entries — manual redeploys of the stale SHA. Zero commit-triggered deploys for any of today's pushes.
+- **The MCP path failed.** We tried twice to bind Vercel's MCP server (`https://mcp.vercel.com/sse`) into Claude Code via `/mcp` + full session restarts. The handshake printed "Authentication successful, but server reconnection failed" both times; no `mcp__vercel__*` tools ever surfaced in the session. Continuing to retry was wasting cycles.
+- **Pivoted to the Vercel REST API directly.** User generated a personal Vercel API token (`vcp_…`, scoped to the `ghostsignal` team) and dropped it into `apps/web/.env.local` as `VERCEL_API_TOKEN`. From there we could probe everything programmatically without touching the MCP.
+
+### The root cause
+
+A POST to `/v13/deployments` (manual deploy trigger) returned `HTTP 400` with the error:
+
+> `cron_jobs_limits_reached`: *"Hobby accounts are limited to daily cron jobs. This cron expression (\*/15 \* \* \* \*) would run more than once per day."*
+
+The user's Vercel project sits on the free **Hobby tier**. Three days ago we shipped commit `d5b16a5` (Finance tab + Mercury sync) which introduced `apps/web/vercel.json` with a 15-minute cron entry. Hobby tier rejects any cron more frequent than daily, **and rejects the entire deployment** alongside it. The validation happens at deploy-creation time, before any build runs — so no failed-build rows showed up in the Deployments tab. Every push since `d5b16a5` carried the same `vercel.json` and was silently rejected.
+
+### The fix
+
+The user chose to stay on the free Vercel tier and trigger the Mercury sync from an external scheduler instead. Commit `597d962 chore(ops): move Mercury sync cron from Vercel to GitHub Actions`:
+
+- **`apps/web/vercel.json`**: dropped the `*/15 * * * *` entry. Kept the once-daily Marketing digest at `0 15 * * *` (under the Hobby limit).
+- **`.github/workflows/mercury-sync.yml`** — new file. Schedule `*/15 * * * *` + manual `workflow_dispatch`. Single curl POST to `MERCURY_SYNC_URL` with `Authorization: Bearer ${{ secrets.CRON_SECRET }}`. Concurrency group `mercury-sync` with `cancel-in-progress: true` so back-to-back runs don't stack. 5-minute timeout per run.
+- **`docs/MERCURY_INTEGRATION.md`** — updated architecture diagram (GitHub Actions → POST), added a paragraph explaining the Vercel Hobby limitation as historical context, expanded the setup checklist to spell out the THREE places `CRON_SECRET` now lives (`.env.local`, Vercel env vars, GitHub Actions Secrets) plus the new `MERCURY_SYNC_URL` GitHub secret. Replaced the "Vercel Dashboard → Crons" monitoring section with "Repo → Actions → 'Mercury sync'".
+
+The moment that commit was pushed, the Vercel webhook fired and a build for `597d962` went `BUILDING` → `READY` in 80 seconds. Production now reflects every commit we've pushed today. End-to-end verification:
+
+| Path | Before fix | After fix |
+|---|---|---|
+| `/admin/marketing/copy` | 404 (route not in build) | 307 (proxy redirect to login) |
+| `/admin/marketing/social` | 404 | 307 |
+| `/admin/marketing/assets` | 404 | 307 |
+| `/api/admin/finance/sync` | 404 | 405 (POST-only, route exists) |
+| `/api/admin/marketing-copy` | 404 | 401 (proxy gating it, route exists) |
+| `/api/admin/marketing-social/digest` | 404 | 405 (POST-only, route exists) |
+
+### Lessons captured
+
+- **Vercel's free tier validates `vercel.json` cron expressions at deploy-creation time, not at build time.** When validation fails, the failure does NOT appear as a failed-deploy row in the dashboard — the deploy simply isn't created. Easy to miss.
+- **The Vercel MCP (`mcp.vercel.com/sse`) didn't bind reliably in this Claude Code setup.** Tried full session restarts twice. The Vercel REST API + a personal API token (`VERCEL_API_TOKEN` in `.env.local`) is the working path for now.
+- **The webhook integration is healthy** — the moment the cron-config was valid, the next push deployed within seconds.
+
+### Outstanding setup the user owns
+
+- Add two GitHub Actions secrets at `github.com/MDGhostSignal/web → Settings → Secrets and variables → Actions`:
+  - `CRON_SECRET` — same value as in `apps/web/.env.local` + Vercel env vars.
+  - `MERCURY_SYNC_URL` — `https://www.ghostsignal.cloud/api/admin/finance/sync`.
+- Once those exist, the workflow fires at the next quarter-hour boundary. Manual test: Actions tab → "Mercury sync" → Run workflow.
+- Still outstanding from earlier today: verify the sending domain at `resend.com/domains` so the Marketing daily digest can deliver to all cofounders (today only Resend's verified-owner email is accepted).
