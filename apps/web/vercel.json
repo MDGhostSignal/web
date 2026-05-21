@@ -2,12 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/admin/finance/sync",
-      "schedule": "*/15 * * * *"
-    },
-    {
       "path": "/api/admin/marketing-social/digest",
       "schedule": "0 15 * * *"
     }
   ]
 }
+

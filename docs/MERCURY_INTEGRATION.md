@@ -5,11 +5,11 @@ The `/admin/finance` tab pulls data from [Mercury](https://mercury.com) (our bus
 ## Architecture
 
 ```
-┌──────────────────────────┐         every 15 min
-│  Vercel Cron             │ ───────────────────────┐
-│  (apps/web/vercel.json)  │                        ▼
-└──────────────────────────┘     POST /api/admin/finance/sync
-                                  Authorization: Bearer <CRON_SECRET>
+┌──────────────────────────┐         every 15 min (best-effort)
+│  GitHub Actions schedule │ ───────────────────────┐
+│  .github/workflows/      │                        ▼
+│   mercury-sync.yml       │     POST /api/admin/finance/sync
+└──────────────────────────┘     Authorization: Bearer <CRON_SECRET>
                                         │
                                         ▼
                           ┌────────────────────────────┐
@@ -35,7 +35,9 @@ The `/admin/finance` tab pulls data from [Mercury](https://mercury.com) (our bus
                                               └──────────────────┘
 ```
 
-The dashboard **never** calls Mercury directly. Reads are always from Supabase, so the UI stays fast and survives a Mercury outage. The "Refresh now" button triggers the same sync route the cron uses.
+The dashboard **never** calls Mercury directly. Reads are always from Supabase, so the UI stays fast and survives a Mercury outage. The "Refresh now" button triggers the same sync route the GitHub Actions scheduler uses.
+
+> **Why GitHub Actions and not Vercel Cron.** This project runs on the Vercel **Hobby** tier, which rejects any cron expression more frequent than once per day — and rejects the entire deployment alongside it. We discovered this the hard way: after introducing the original Vercel Cron entry at `*/15 * * * *`, three days of pushes were silently blocked. Moving the trigger to GitHub Actions keeps the 15-minute cadence while letting the rest of the project deploy on the free tier. The Vercel `vercel.json` still carries one cron entry — the once-daily Marketing digest — which is under the Hobby limit. If we ever upgrade to Vercel Pro, the workflow can be retired and the cron entry restored.
 
 ## Environment variables
 
@@ -59,7 +61,11 @@ Existing env vars used by this integration (already set for the rest of admin): 
 
 1. **Apply the schema.** In the Supabase SQL editor, run `docs/MERCURY_SUPABASE_SCHEMA.sql`. Verify the three tables exist and the indices are created. If Supabase prompts about Row Level Security, choose **Enable RLS** — the schema explicitly enables it at the bottom and we deliberately leave the policy set empty so only the service-role key (used server-side) can read/write these tables.
 2. **Generate a sandbox token.** Log into [api-sandbox.mercury.com](https://api-sandbox.mercury.com/), Settings → API Tokens → New Token → **Read Only**. No IP allowlist needed for read-only tokens.
-3. **Generate `CRON_SECRET`.** `openssl rand -hex 32` (or any 32+ char random string). Set it in both `.env.local` and Vercel.
+3. **Generate `CRON_SECRET`.** `openssl rand -hex 32` (or any 32+ char random string). Set it in **three** places (all the same value):
+   - `apps/web/.env.local` — local dev "Refresh now" + the smoke test below.
+   - Vercel project Environment Variables (Production + Preview) — for the daily Marketing digest cron.
+   - **GitHub repo Secrets** (`Settings → Secrets and variables → Actions`) under the name `CRON_SECRET` — for the Mercury sync workflow.
+   Also add a fourth secret on the GitHub repo: **`MERCURY_SYNC_URL`** set to `https://www.ghostsignal.cloud/api/admin/finance/sync` (the full URL to the production sync endpoint). The workflow reads both at runtime.
 4. **Smoke-test the sync.** With the dev server running, hit the sync endpoint manually:
    ```bash
    curl -X POST \
@@ -67,7 +73,7 @@ Existing env vars used by this integration (already set for the rest of admin): 
      http://localhost:3000/api/admin/finance/sync
    ```
    Expect `{ "ok": true, "accountCount": N, "transactionCount": N, ... }`. In Supabase, confirm `mercury_sync_runs` has a row with `status = 'ok'`.
-5. **Deploy.** Push to main; Vercel Cron picks up `apps/web/vercel.json` automatically.
+5. **Deploy.** Push to main; Vercel ships the latest code on each commit. The Mercury sync schedule lives separately in `.github/workflows/mercury-sync.yml` and fires every 15 minutes from GitHub Actions (best-effort — GitHub's scheduler can delay by 5–15 minutes under platform load). The daily Marketing digest cron still lives in `apps/web/vercel.json` and fires from Vercel Cron at 15:00 UTC.
 
 ## Sandbox → production swap
 
@@ -97,10 +103,14 @@ To rotate without downtime:
 
 Always visible at the top of `/admin/finance` — it surfaces the most recent `mercury_sync_runs` row. If the badge is yellow or older than 45 minutes, something is wrong.
 
+### GitHub Actions
+
+- **Repo → Actions → "Mercury sync"** shows the last N scheduled runs. Each run's log includes the curl output + the route's JSON response (`{ ok: true, accountCount, transactionCount, durationMs }`).
+- Manually trigger an immediate run from the Actions page via **"Run workflow"** if you ever need an on-demand sync.
+
 ### Vercel dashboard
 
-- **Deployments → Crons** shows the 15-min cron's last N invocations with HTTP status.
-- **Logs → Filter by `/api/admin/finance/sync`** shows full stdout/stderr from the route handler.
+- **Logs → Filter by `/api/admin/finance/sync`** shows full stdout/stderr from the route handler regardless of who triggered it (GitHub Actions, the "Refresh now" button, or curl).
 
 ### Supabase query
 

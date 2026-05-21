@@ -1,0 +1,72 @@
+# Mercury → Supabase sync, scheduled by GitHub Actions.
+#
+# This used to be a Vercel Cron (apps/web/vercel.json) at */15 * * * *,
+# but Vercel's Hobby tier rejects any cron more frequent than once per
+# day — and rejects the entire deployment alongside it. We moved the
+# trigger here so the project can deploy on the free Vercel tier
+# without giving up on a 15-minute Mercury refresh cadence.
+#
+# How it works
+# ────────────
+# GitHub Actions fires this workflow on a schedule (and on manual
+# dispatch). The job does a single curl POST to the production
+# Mercury sync endpoint with the shared CRON_SECRET as a bearer
+# token. The route accepts either CRON_SECRET (this path) or the
+# admin_auth cookie (the "Refresh now" button), so behaviour is
+# identical to the old Vercel Cron.
+#
+# Caveats
+# ───────
+# GitHub Actions cron is best-effort. During platform peak load the
+# scheduler can delay runs by 5–15 minutes; expect Mercury data
+# freshness to occasionally land in the 15–30 minute window instead
+# of every 15 minutes on the dot. The dashboard's "Last synced X ago"
+# badge surfaces the actual freshness so this stays observable.
+#
+# Setup
+# ─────
+# Two secrets must exist on the repo (Settings → Secrets and
+# variables → Actions):
+#   - CRON_SECRET     — same value that's set as a Vercel env var
+#                       and in apps/web/.env.local
+#   - MERCURY_SYNC_URL — full URL to the production sync endpoint,
+#                       e.g. https://www.ghostsignal.cloud/api/admin/finance/sync
+#                       (kept as a secret so the URL can change
+#                       without code edits; not because it's sensitive)
+
+name: Mercury sync
+
+on:
+  schedule:
+    # Every 15 minutes. GitHub's scheduler honours this in best-effort
+    # fashion — see "Caveats" above.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+# Cancel an in-flight run if a newer scheduled run kicks off — there's
+# no point stacking syncs on top of each other (the sync orchestrator
+# is itself idempotent, but we'd rather not pay for redundant minutes).
+concurrency:
+  group: mercury-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/admin/finance/sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          MERCURY_SYNC_URL: ${{ secrets.MERCURY_SYNC_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$MERCURY_SYNC_URL" ]; then
+            echo "::error::Missing CRON_SECRET or MERCURY_SYNC_URL secret."
+            exit 1
+          fi
+          # -f makes curl exit non-zero on HTTP >= 400, so this step
+          # fails the workflow if the sync route errors. The route's
+          # JSON response goes to the run log via -i.
+          curl -fsS -i -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$MERCURY_SYNC_URL"
