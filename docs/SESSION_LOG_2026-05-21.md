@@ -526,3 +526,36 @@ Live verification: dev server `npm run dev` after `rm -rf .next` rendered `/admi
 - ICS calendar feed for upcoming contract expirations.
 - "Approve before send" workflow for cofounder review of outgoing contracts.
 - Per-PDF caching to avoid re-downloading the signed PDF on every detail-page view.
+
+---
+
+## Mercury sync workflow — secrets reconciled, schedule now actually firing
+
+After the Contracts ship, the user reported the `Mercury sync` GitHub Actions workflow was failing with:
+
+```
+::error::Missing CRON_SECRET or MERCURY_SYNC_URL secret.
+Process completed with exit code 1.
+```
+
+### Root cause
+
+The session-log "End-of-day status" addendum from earlier claimed the GitHub Actions secrets were configured, but in practice they had been added to the **wrong repository** — the local clone has two remotes (`old-origin` → `MDDMUC/ghostsignal`, `origin` → `MDGhostSignal/web`), and the workflow runs against `MDGhostSignal/web`. Secrets on the old repo are invisible to the workflow on the new repo.
+
+### Fix
+
+User re-added both secrets at `https://github.com/MDGhostSignal/web/settings/secrets/actions` under **Repository secrets**:
+
+- `CRON_SECRET` — same hex string as `apps/web/.env.local` and the Vercel env var.
+- `MERCURY_SYNC_URL` — `https://www.ghostsignal.cloud/api/admin/finance/sync`.
+
+Then re-ran the workflow via **Actions → Mercury sync → Run workflow**. Went green. The 15-minute schedule now takes over from here; next automatic run lands at the next `*/15` boundary (best-effort per GitHub Actions' scheduler).
+
+### Lesson captured
+
+Whenever the team adds secrets to a repo via the GitHub UI, **verify the URL path includes `MDGhostSignal/web`**, not `MDDMUC/ghostsignal` (the older clone still referenced in this checkout's `old-origin`). The `old-origin` is intentionally kept around for `git diff old-origin/main` style cross-checks but should never be the target for new state.
+
+### Status
+
+- Mercury → Supabase loop now fully live end-to-end in production for real: GitHub Actions (15-min schedule, MDGhostSignal/web repo) → POST `/api/admin/finance/sync` with `Bearer CRON_SECRET` → `runMercurySync()` → Supabase upsert → dashboard reads cached rows.
+- The Marketing daily digest cron (Vercel side, `0 15 * * *`) is still gated on Resend domain verification before it can deliver to anyone besides the verified-owner email.
