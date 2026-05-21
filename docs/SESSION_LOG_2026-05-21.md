@@ -559,3 +559,134 @@ Whenever the team adds secrets to a repo via the GitHub UI, **verify the URL pat
 
 - Mercury → Supabase loop now fully live end-to-end in production for real: GitHub Actions (15-min schedule, MDGhostSignal/web repo) → POST `/api/admin/finance/sync` with `Bearer CRON_SECRET` → `runMercurySync()` → Supabase upsert → dashboard reads cached rows.
 - The Marketing daily digest cron (Vercel side, `0 15 * * *`) is still gated on Resend domain verification before it can deliver to anyone besides the verified-owner email.
+
+---
+
+## Leads → Contacts rename + Marketplace edit modal + shipping fields — sixth feature shipped today
+
+Late-evening triple bundle. User asked for three coupled changes — the underlying member CRM grows from a "leads pipeline" with outreach fields to a fuller "contacts" record that the team can mail boxes to, with marketplace-side editing parity.
+
+### Decisions confirmed up front
+
+- **Rename only `Leads` → `Contacts`** (URL + sidebar label + user-facing copy). Internal variable names (`openLead`, `UrgentLeadsBanner`, etc.) and `IconLeads` export name kept as-is to keep the diff scoped; the icon is visually fine for "Contacts" (silhouette + plus = contact-book iconography). The `IconContracts` name from yesterday's esignatures work sits one character apart in the import-name list, so leaving the leads icon's internal name alone keeps the auto-import behavior unambiguous.
+- **Add edit to marketplace pool — not via a new in-row form**, but by reusing a shared modal that both surfaces consume. Inline cards (`MarketplaceMemberDetails`, `MembershipBlock`) keep their one-field-at-a-time auto-save behaviour; the modal is for "edit every field at once," including the new shipping section.
+- **Shipping fields go on the `members` table** (not a separate `member_addresses` lookup table). One member, one address — keeps the form trivial and the PostgREST query a flat select. If a member ever needs multiple shipping destinations later we can break it out.
+- **Flat columns + `shipping_` prefix** (not a `shipping_address jsonb`). Queryable, indexable, ergonomic in the form, no key-bag indirection.
+
+### Schema migration
+
+`docs/CRM_MEMBERS_SHIPPING_FIELDS_MIGRATION.sql` — idempotent `alter table … add column if not exists` for six fields:
+
+| Column | Notes |
+|---|---|
+| `shipping_address_line1` | Street |
+| `shipping_address_line2` | Apt / suite, optional |
+| `shipping_city` | |
+| `shipping_state` | International-tolerant ("State / Province" in the form) |
+| `shipping_postal_code` | |
+| `shipping_country` | Plain text, no enum |
+
+Partial index `members_shipping_ready_idx` on `(id) where line1 + city + country are all non-null` — cheap to maintain (most members null until backfilled) and lets a future "ready to ship" filter answer in O(matches), not O(rows).
+
+User applied the migration in Supabase live; production schema now carries the six columns.
+
+### Reusable `MemberEditModal`
+
+New shared component at `apps/web/src/app/admin/components/MemberEditModal.tsx` + colocated CSS module. Captures every editable Member field:
+
+- Identity: first/last name, email, phone, member_type, organization, role, website.
+- Status: phase, owner, next_step, last_contact_at.
+- Free text: tags (CSV input), notes.
+- Shipping address (the new section): the six fields above, laid out as full-width street + line2, then a four-up grid of city / state / postal / country.
+
+**Initial state pattern:** lazy `useState` initialiser from `member` prop. Parent drives re-seeding via a stable `key` prop (`key={editingMemberId ?? "closed"}`) so opening the modal against a different member remounts the component with fresh form state. This sidesteps the `react-hooks/set-state-in-effect` rule that bit us during the Contracts work — same root cause, different surface.
+
+`onSave(payload: MemberWritable)` handed back to the parent; the parent handles the API call + state update + error surface. Parent owns the `isSaving` + `errorMessage` props the modal renders.
+
+### Marketplace pool — Edit member button
+
+`PoolView` gains:
+- `editingMemberId` + `editSaving` + `editError` state.
+- An `Edit member` button at the top of each expanded real-member row (gated on `is_mock=false`).
+- `<MemberEditModal>` rendered at the bottom of the component, wired to `onMemberPatch` (already the optimistic-update + rollback pipeline from the inline cards — same plumbing, just a bigger payload).
+
+Inline auto-save cards (`MarketplaceMemberDetails` + `MembershipBlock`) untouched — they still own owner / last contact / contact count / last response / notes / lifecycle steps. The modal is the "bulk edit + shipping address" path.
+
+### Contacts page (formerly leads)
+
+`git mv apps/web/src/app/admin/leads → contacts` + `git mv leads/leads.module.css → contacts/contacts.module.css` (history preserved). Import updated.
+
+User-facing copy changes (the surface area the user sees, not the variable names):
+
+- Sidebar entry label: `Leads` → `Contacts`
+- `PageHeader` title + count badge: `Contacts` / `N contacts`
+- Loading / empty / error strings: "Loading contacts…", "No contacts match", "Failed to load contacts."
+- Modal titles + footer buttons: "Edit contact" / "New contact" / "Update contact" / "Create contact"
+- Action buttons: "+ New contact"
+- Tooltips on the urgent-banner resolve button
+- Confirm delete title: "Delete this contact?"
+- Aria labels: `aria-label="Urgent contacts"`
+- Dashboard home card: `"Contact pipeline"` linking to `/admin/contacts`
+
+Inline form on the Contacts page extended with the same Shipping address section the new modal carries (same six fields, same layout, just inside the existing `.form` instead of the modal component). CSS additions in `contacts.module.css`: `.shippingSection`, `.shippingHeader`, `.shippingTitle`, `.shippingHint`.
+
+### Redirects
+
+`next.config.ts` gains two permanent redirects so any existing bookmark / Slack link / cofounder muscle-memory still lands correctly:
+
+```
+/admin/leads          → /admin/contacts          (308, permanent)
+/admin/leads/:path*   → /admin/contacts/:path*   (308, permanent)
+```
+
+### Gotchas hit + resolved
+
+- **`react-hooks/set-state-in-effect`** rejected the obvious "re-seed form on prop change" pattern (`useEffect(() => setForm(memberToForm(member)), [open, member])`). Same rule that bit us during the Contracts KPI row earlier. Resolved with the lazy-`useState` + parent `key` pattern, which is the React-idiomatic answer when initial state legitimately comes from props.
+- **Working-directory drift in the bash tool** after `git mv leads contacts` — staged paths needed absolute / relative-from-`apps/web` references rather than the repo-root paths I instinctively typed. No code impact, just a couple of false-start `git add` commands.
+- **Dev server held a stale module map** after the directory rename. Killed via `taskkill /F /T /PID`, `rm -rf .next`, restarted — `GET /admin/contracts 200`, `GET /admin/finance 200` confirmed the rebuild is healthy.
+
+### Files touched
+
+- New: `apps/web/src/app/admin/components/MemberEditModal.tsx` + `.module.css`, `docs/CRM_MEMBERS_SHIPPING_FIELDS_MIGRATION.sql`.
+- Renamed: `apps/web/src/app/admin/leads/page.tsx` → `contacts/page.tsx`, `leads/leads.module.css` → `contacts/contacts.module.css`.
+- Edited:
+  - `apps/web/src/lib/members.ts` — added 6 shipping fields to `Member` type.
+  - `apps/web/src/app/api/members/route.ts` — added the 6 shipping field keys to `sanitizePayload`'s `stringKeys` (trim + nullify-empty pattern, same as the other free-text columns).
+  - `apps/web/src/app/admin/contacts/page.tsx` — extended `FormState` / `EMPTY_FORM` / `memberToForm` / `formToPayload` with the 6 shipping fields, added the Shipping section to the modal form, updated user-facing copy.
+  - `apps/web/src/app/admin/contacts/contacts.module.css` — added `.shippingSection`, `.shippingHeader`, `.shippingTitle`, `.shippingHint`.
+  - `apps/web/src/app/admin/marketplace/PoolView.tsx` — added the `Edit member` button, `editingMemberId` / `editSaving` / `editError` state, mounted the shared modal.
+  - `apps/web/src/app/admin/marketplace/marketplace.module.css` — added `.mmActionsRow` for the new button row.
+  - `apps/web/src/app/admin/layout.tsx` — sidebar entry renamed.
+  - `apps/web/src/app/admin/page.tsx` — dashboard card relabeled + relinked.
+  - `apps/web/next.config.ts` — two new permanent redirects.
+
+### Validation
+
+- `typecheck` / `lint` / `lint:css` / `assets:audit` all green.
+- `npm run build` — `/admin/contacts` registered as the static route (replaces `/admin/leads`, which is now a 308 redirect handled by middleware before any route resolution).
+- Manual smoke: refreshed `/admin/contacts`, opened the New / Edit modal, verified the Shipping section renders + saves. Opened `/admin/marketplace`, expanded a real member row, clicked "Edit member" → modal opens with the source data populated, saving applies the optimistic update.
+- Schema migration ran cleanly in the user's Supabase. The six columns + the partial index now exist in production.
+
+### End-of-day status
+
+Everything that landed today is on `origin/main` and healthy. Vercel webhook fires on each push; the contracts feature + the contacts rename + the marketplace edit modal are all deploying. The 15-minute Mercury sync runs from `MDGhostSignal/web` Actions. Both Vercel crons (Marketing digest at `0 15 * * *`, Mercury sync removed earlier) are live.
+
+### Outstanding follow-ups (carry forward, not blocking)
+
+1. **Resend sending-domain verification** at `resend.com/domains` so the Marketing daily digest can deliver to all four cofounders instead of only the verified-owner address. Unchanged from the morning's note.
+2. **Backfill historical contracts** via the dashboard's Import-by-ID flow as needed. There's no esignatures list endpoint (verified by the Phase A probe), so this is one-at-a-time.
+3. **Configure the esignatures.com webhook URL** at `https://esignatures.com → API & Webhooks` pointing at `https://www.ghostsignal.cloud/api/admin/contracts/webhook`.
+4. **Backfill shipping addresses** on existing members through the new modal as the team gathers the data. The partial index `members_shipping_ready_idx` is in place, so once a member has line1+city+country populated they'll surface fast in any future "ready to ship" query.
+
+### Today's commit shape (chronological)
+
+- `2236159` feat(admin): persistent left sidebar + dashboard home
+- `df79bae` feat(admin): marketplace Pool/Match/Map as sidebar sub-items
+- `5466791` docs(session-log): marketplace subnav + deploy outage diagnosis
+- `597d962` chore(ops): move Mercury sync cron from Vercel to GitHub Actions
+- `5686915` docs(session-log): close out — GitHub Actions secrets live, mercury loop end-to-end
+- `a32fef9` feat(admin): contracts tab — esignatures.com integration end-to-end
+- `b867808` docs(session-log): mercury sync secrets reconciled to MDGhostSignal/web
+- `142ac77` feat(admin): rename Leads → Contacts + member edit modal + shipping fields
+
+Six substantial admin features shipped across the day, one cron-infrastructure migration, and three deferred-issue resolutions (deploy outage diagnosis, Mercury cron secrets, Turbopack SWC crash on the contract detail page).
