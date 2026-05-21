@@ -183,3 +183,85 @@ Seed run hit Supabase production: **174 assets / 214 file variants / 172 files c
 - Per-PDF lazy-mount via `IntersectionObserver` if PDF count ever grows past ~10 (each grid card currently downloads the full PDF; one PDF today, so invisible).
 - Auto-generated poster frames for videos (skipping for now — `<video preload="metadata">` first-frame is fine).
 - Per-user audit log of "who viewed what" — requires the v2 auth model migration noted in the Mercury runbook.
+
+---
+
+## Copy Library + Social Media Scheduler — third feature shipped today
+
+After the Marketing Asset Library, we converted `/admin/marketing` into a **sub-tab router** (Assets / Copy / Social) and shipped two more substantial features behind it: the **Copy Library** and the **Social Media Scheduler**.
+
+Plan: `C:\Users\heyma\.claude\plans\abstract-spinning-stallman.md` (overwritten from the Asset Library plan after Phase 1–3 exploration + decisions).
+
+### Decisions confirmed up front
+
+- **In-app banner + daily 8 AM email digest** for alerts (Recommended option from the AskUserQuestion sweep).
+- **Reuse `marketing-assets` bucket** with a `/social/<post_id>/...` path prefix for social-post images (no second bucket).
+- **Copy library editable** — seed once from website + social-post packs, then add/edit/tag freely through admin.
+- **Substack as a third platform tag**, same workflow as Facebook + Instagram (no separate "newsletter entity").
+
+### Architecture
+
+- `/admin/marketing/page.tsx` restructured to host three sub-sections via `useState<'assets'|'copy'|'social'>('assets')`. The existing Asset Library extracted into `sections/AssetsSection.tsx` with no behaviour change — pure refactor.
+- New `SubTabNav` chip component sits in the `PageHeader.toolbar` slot.
+- Parallel API namespaces: existing `/api/admin/marketing-assets/...` left untouched; new endpoints under `/api/admin/marketing-copy/...` and `/api/admin/marketing-social/...`. Documented as a future refactor candidate to `/api/admin/marketing/{assets,copy,social}/...` when those routes are next touched.
+
+### Copy Library (Phase A)
+
+- Schema: single `copy_snippets` table with `copy_snippet_kind` enum (`tagline | headline | subhead | value_prop | cta | social_hook | long_form | glossary`) + `copy_snippet_persona` enum (`creators | advertisers | both`) + freeform `tags text[]` + `favorite bool` (partial unique index for fast favorite filtering). RLS enabled with no policies.
+- API: `GET/POST /api/admin/marketing-copy`, `GET/PATCH/DELETE /api/admin/marketing-copy/[id]`. Filters via PostgREST query params (`kind`, `persona`, `tag`, `search`, `favorite`).
+- UI: `CopySection` with `SnippetFilters` (search + kind/persona dropdowns + favorites toggle), `SnippetList` (grouped by kind, favourites bubble in via parent sort), `SnippetCard` with **Copy** button that uses `navigator.clipboard.writeText` (fallback to `document.execCommand`) and flashes "Copied!" for 1.5 s, and `SnippetForm` (create/edit/delete in one modal).
+- Seed: **56 entries live in Supabase** as of this commit — harvested from the public website (`/page.tsx`, `/for-creators/page.tsx`, `/for-advertisers/page.tsx`, `/what-is-this/page.tsx`, `/who-are-we/page.tsx`, `/signal-sheet/page.tsx`, `/snowdrift/page.tsx`) + the social-post packs at the repo root (`social_media_posts.md`, `improved_social_posts_pack.txt`, `ghost_signal_all_social_posts_pack.txt`). Breakdown: 3 taglines, 8 CTAs, 6 headlines, 8 subheads, 9 value-props, 9 social hooks, 8 long-form paragraphs, 5 glossary anchors. 5 favourites pinned (the anchor taglines + one canonical long-form line).
+- Helpers added: `apps/web/src/lib/clipboard.ts` (typed wrapper with execCommand fallback), `apps/web/src/lib/copy-snippets-types.ts`.
+
+### Social Scheduler (Phase B)
+
+- Schema: `social_posts` (one row per planned post, with `body` + optional `body_facebook` / `body_instagram` / `body_substack` overrides + `platforms text[]` + `scheduled_at timestamptz` + `social_post_status enum`), `social_post_images` (child table, `position int` for carousel ordering), `social_post_notifications` (audit log + dedupe for the digest cron). All RLS-enabled, no policies.
+- API: 5 routes — list/create, get-with-images / patch / delete (cascades to Storage), dual-path image upload (proxy ≤4 MB / signed PUT URL for larger — identical to the asset library pattern), single-image delete. PATCH auto-stamps `posted_at` on Scheduled→Posted transition + clears it on the way back.
+- UI: `WeekCalendar` (7-column Mon→Sun, today highlight, prev/today/next nav, per-day "+" button), `PostCell` (platform-coloured bars + time + truncated title with draft/posted/skipped visual states), `PostComposer` (per-platform body variants reveal only when multi-platform), `PostDetail` (read mode with per-platform body resolution + status transitions + Edit/Delete/Duplicate/Prepare-to-post action cluster + inline image upload + per-image delete), `PostImageUpload` (drag-drop dual-path).
+- Helpers added: `apps/web/src/lib/social-posts-types.ts` (types + `bodyForPlatform` resolver + `PLATFORM_COLORS`).
+
+### Alerts + polish (Phase C)
+
+- `apps/web/src/lib/email.ts` — new thin Resend wrapper (`sendEmail`, `parseRecipientList`, `escapeHtml`). Existing RQ-submission email paths intentionally left unchanged (live customer flow — refactor deferred to a separate touch).
+- `POST /api/admin/marketing-social/digest` — daily cron + manual trigger. Dual auth: `Bearer CRON_SECRET` (Vercel Cron path) OR admin cookie (manual trigger from the UI / curl). Selects scheduled posts due today/tomorrow in UTC, dedupes via the `social_post_notifications` table (23-hour window), sends a rendered HTML+text digest via Resend, then writes audit rows. Returns a structured summary including `dueCount`, `notifiedCount`, `resendId`, and `via`.
+- `apps/web/vercel.json` — second cron entry: `{ "path": "/api/admin/marketing-social/digest", "schedule": "0 15 * * *" }`. 15:00 UTC = 8 AM Pacific in winter / 7 AM in summer — DST drift documented.
+- `DueBanner` — top-of-page alert at `/admin/marketing` that polls `/api/admin/marketing-social?from=now&to=+48h&status=scheduled` every 5 min and surfaces "N posts due in the next 48 hours" with an **Open scheduler** CTA that switches to the Social sub-tab.
+- `PreparePostMode` — the "publish moment" companion launched from any Scheduled post's detail. Auto-copies the platform-specific caption to the clipboard on open (and on platform swap for multi-platform posts), lists images as direct-download links, and provides a one-click **Mark as posted** finisher that transitions status + stamps `posted_at`.
+- `Duplicate` button in `PostDetail` — pre-fills a fresh composer with the source post's title / body / platforms / variants / notes scheduled **+7 days**. Images intentionally NOT carried (Storage objects stay attached to the original post). Optimised for weekly cadence.
+
+### Proxy updates (`apps/web/src/proxy.ts`)
+
+- Added `/api/admin/marketing-copy/:path*` and `/api/admin/marketing-social/:path*` to the matcher.
+- Added `/api/admin/marketing-social/digest` to `PUBLIC_SUBPATHS` so Vercel Cron's bearer auth can reach it (same pattern as the Mercury sync allowlist; the route handler enforces the bearer-or-cookie check internally).
+
+### Live verification
+
+- Copy seed ran cleanly against the user's Supabase: 56 inserts, 0 skipped (first run). Re-run dry confirmed idempotency.
+- Digest pipeline end-to-end verified via a silent smoke test: temporarily swapped `RESEND_DIGEST_TO` to a single verified address, restarted dev, created a synthetic scheduled post, fired `POST /api/admin/marketing-social/digest` with the `CRON_SECRET` bearer → `HTTP 200`, `sent: true`, `resendId: 56019165-7060-48d3-8d62-0262dcc3ab5b`. Email delivered. Synthetic post + backup files cleaned up; original 4-recipient list restored.
+- All four AGENTS.md gates green at every checkpoint: `typecheck`, `lint`, `lint:css`, `assets:audit`. `npm run build` registers all new routes (`/admin/marketing` plus 9 new `/api/admin/marketing-{copy,social}/*` endpoints).
+
+### Gotchas hit + resolved
+
+- **Resend 403 in testing mode**: discovered that the Resend account currently only allows sending to the verified-owner email (`martin@ghostsignal.cloud`). Production digests to Mike / Jack / Jeremy will fail with the same 403 until the user verifies their sending domain at `resend.com/domains`. Documented in the runbook + flagged to user.
+- **Next.js dev does not hot-reload `.env.local`** (re-hit, same lesson as Mercury). Required full dev-server restarts twice during the smoke test cycle.
+- **`SocialPostRow`-vs-`SocialPostWithImages` typing on `composeInitial`**: the Duplicate flow needed to pre-fill the composer with a partially-cleared shape. Resolved by spreading the source post and overwriting identity / scheduling / status / images fields, which TypeScript accepts because `SocialPostWithImages extends SocialPostRow` structurally.
+
+### Files touched
+
+- New: `apps/web/src/lib/{clipboard,copy-snippets-types,email,social-posts-types}.ts` (4 lib files), `apps/web/scripts/seed-copy-snippets.mjs`, `apps/web/src/app/api/admin/marketing-copy/**` (2 routes), `apps/web/src/app/api/admin/marketing-social/**` (5 routes), `apps/web/src/app/admin/marketing/components/SubTabNav.tsx` + `components/copy/**` (4 files) + `components/social/**` (6 files), `apps/web/src/app/admin/marketing/sections/**` (3 files), `docs/MARKETING_COPY_LIBRARY{,_SCHEMA}.*` (2), `docs/MARKETING_SOCIAL_SCHEDULER{,_SCHEMA}.*` (2).
+- Edited: `apps/web/src/app/admin/marketing/page.tsx` (now the sub-tab router), `apps/web/src/app/admin/marketing/marketing.module.css` (large additions for sub-tab nav, copy cards, calendar, post pills, composer, prepare mode, due banner), `apps/web/src/proxy.ts` (new matcher + PUBLIC_SUBPATHS entries), `apps/web/vercel.json` (second cron).
+
+### Outstanding actions for the user
+
+1. **Verify the sending domain on Resend** before the daily 8 AM digest can deliver to the cofounder list. Steps: resend.com/domains → Add domain → enter `ghostsignal.cloud` (or your preferred sending domain) → add the 3 DNS records → wait for the green check → confirm `RESEND_FROM` uses an address at that verified domain (e.g. `Ghost Signal Digest <digest@ghostsignal.cloud>`).
+2. Production schemas already applied (per the user). Confirm the Vercel cron list shows BOTH `/api/admin/finance/sync` (`*/15 * * * *`) AND `/api/admin/marketing-social/digest` (`0 15 * * *`) after the next deploy.
+3. Optional next: tee up the Vercel MCP OAuth on a Claude Code restart so env-var management can happen inline rather than in clicks.
+
+### Phase D candidates (deferred, in runbook)
+
+- Drag-to-reschedule on the calendar (planned for Phase C but cut — at 9 posts/month the composer-date-edit path is sufficient).
+- Recent-assets sidebar in the composer pulling from the Marketing Asset Library.
+- Auto-publishing to Facebook Graph / Instagram Content Publishing / Substack APIs.
+- Per-user audit log + per-user favourites on the Copy Library.
+- ICS calendar feed for personal-calendar subscription.
+- Image-combination generator (the original aspiration; still parked).

@@ -35,6 +35,10 @@ const PUBLIC_SUBPATHS = [
   // now" UI button still works because the route accepts either auth
   // path. See apps/web/src/app/api/admin/finance/sync/route.ts.
   "/api/admin/finance/sync",
+  // Same pattern for the daily social-post digest cron. The route
+  // accepts the CRON_SECRET bearer OR the admin cookie (manual
+  // "Send digest now" trigger from the UI).
+  "/api/admin/marketing-social/digest",
 ];
 
 export async function proxy(req: NextRequest) {
@@ -84,6 +88,12 @@ export const config = {
     "/api/admin/finance/trend",
     // Marketing Asset Library — list, item, files, and any sub-route.
     "/api/admin/marketing-assets/:path*",
+    // Marketing Copy Library — list, item, and any sub-route.
+    "/api/admin/marketing-copy/:path*",
+    // Marketing Social Scheduler — list, item, images. The digest
+    // endpoint under this prefix is allowlisted in PUBLIC_SUBPATHS
+    // above so Vercel Cron can reach it.
+    "/api/admin/marketing-social/:path*",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).
