@@ -35,7 +35,7 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
-import styles from "./leads.module.css";
+import styles from "./contacts.module.css";
 
 /* =====================================================================
  * Helpers
@@ -126,6 +126,12 @@ type FormState = {
   last_contact_at: string;
   notes: string;
   tagsCsv: string;
+  shipping_address_line1: string;
+  shipping_address_line2: string;
+  shipping_city: string;
+  shipping_state: string;
+  shipping_postal_code: string;
+  shipping_country: string;
 };
 
 const EMPTY_FORM: FormState = {
@@ -143,6 +149,12 @@ const EMPTY_FORM: FormState = {
   last_contact_at: "",
   notes: "",
   tagsCsv: "",
+  shipping_address_line1: "",
+  shipping_address_line2: "",
+  shipping_city: "",
+  shipping_state: "",
+  shipping_postal_code: "",
+  shipping_country: "",
 };
 
 function memberToForm(m: Member): FormState {
@@ -161,6 +173,12 @@ function memberToForm(m: Member): FormState {
     last_contact_at: m.last_contact_at ? m.last_contact_at.slice(0, 10) : "",
     notes: m.notes ?? "",
     tagsCsv: m.tags.join(", "),
+    shipping_address_line1: m.shipping_address_line1 ?? "",
+    shipping_address_line2: m.shipping_address_line2 ?? "",
+    shipping_city: m.shipping_city ?? "",
+    shipping_state: m.shipping_state ?? "",
+    shipping_postal_code: m.shipping_postal_code ?? "",
+    shipping_country: m.shipping_country ?? "",
   };
 }
 
@@ -183,6 +201,12 @@ function formToPayload(f: FormState): MemberWritable {
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean),
+    shipping_address_line1: f.shipping_address_line1.trim() || null,
+    shipping_address_line2: f.shipping_address_line2.trim() || null,
+    shipping_city: f.shipping_city.trim() || null,
+    shipping_state: f.shipping_state.trim() || null,
+    shipping_postal_code: f.shipping_postal_code.trim() || null,
+    shipping_country: f.shipping_country.trim() || null,
   };
 }
 
@@ -219,7 +243,7 @@ export default function MembersPage() {
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok || !data.ok) {
-          setError(data.error || "Failed to load leads.");
+          setError(data.error || "Failed to load contacts.");
           return;
         }
         setMembers(data.members as Member[]);
@@ -495,7 +519,7 @@ export default function MembersPage() {
   }, []);
 
   if (loading) {
-    return <Loading message="Loading leads…" />;
+    return <Loading message="Loading contacts…" />;
   }
 
   if (error && members.length === 0) {
@@ -539,10 +563,10 @@ export default function MembersPage() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          title="No leads match"
+          title="No contacts match"
           message={
             members.length === 0
-              ? "Add your first lead with the “New lead” button."
+              ? "Add your first contact with the “New contact” button."
               : "Try clearing a filter or search term."
           }
         />
@@ -613,16 +637,16 @@ function PageHeaderBlock({
 }: HeaderProps) {
   return (
     <PageHeader
-      title="Leads"
+      title="Contacts"
       count={
         <Badge variant="accent">
-          {count} {count === 1 ? "lead" : "leads"}
+          {count} {count === 1 ? "contact" : "contacts"}
         </Badge>
       }
       subtitle="Outreach and onboarding progress for prospective creators and brand partners."
       actions={
         <Button variant="primary" onClick={onCreate}>
-          + New lead
+          + New contact
         </Button>
       }
       toolbar={
@@ -873,7 +897,7 @@ function MembersTable({
               title={
                 m.became_member_at
                   ? `Marked as member on ${formatDate(m.became_member_at)} — click to undo`
-                  : "Mark this lead as a full GhostSignal member; they'll appear in the marketplace pool."
+                  : "Mark this contact as a full GhostSignal member; they'll appear in the marketplace pool."
               }
             >
               {m.became_member_at
@@ -970,7 +994,7 @@ function MemberFormModal({
       onClose={onClose}
       dismissible={!isSaving}
       size="xl"
-      title={editing ? "Edit lead" : "New lead"}
+      title={editing ? "Edit contact" : "New contact"}
       subtitle="At minimum, provide a first name, last name, or organization."
       footer={
         <>
@@ -983,7 +1007,7 @@ function MemberFormModal({
             form="member-form"
             disabled={isSaving}
           >
-            {isSaving ? "Saving…" : editing ? "Update lead" : "Create lead"}
+            {isSaving ? "Saving…" : editing ? "Update contact" : "Create contact"}
           </Button>
         </>
       }
@@ -1186,6 +1210,92 @@ function MemberFormModal({
             disabled={isSaving}
           />
         </div>
+
+        <section className={styles.shippingSection}>
+          <header className={styles.shippingHeader}>
+            <h3 className={styles.shippingTitle}>Shipping address</h3>
+            <span className={styles.shippingHint}>
+              For mailing membership boxes + swag. Optional.
+            </span>
+          </header>
+          <div className={styles.formGroupFull}>
+            <label className={styles.label} htmlFor="shipping_address_line1">
+              Street address
+            </label>
+            <input
+              id="shipping_address_line1"
+              className={styles.input}
+              placeholder="123 Main St"
+              value={form.shipping_address_line1}
+              onChange={(e) => up("shipping_address_line1", e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+          <div className={styles.formGroupFull}>
+            <label className={styles.label} htmlFor="shipping_address_line2">
+              Apt / suite (optional)
+            </label>
+            <input
+              id="shipping_address_line2"
+              className={styles.input}
+              placeholder="Suite 200"
+              value={form.shipping_address_line2}
+              onChange={(e) => up("shipping_address_line2", e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="shipping_city">
+                City
+              </label>
+              <input
+                id="shipping_city"
+                className={styles.input}
+                value={form.shipping_city}
+                onChange={(e) => up("shipping_city", e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="shipping_state">
+                State / Province
+              </label>
+              <input
+                id="shipping_state"
+                className={styles.input}
+                value={form.shipping_state}
+                onChange={(e) => up("shipping_state", e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="shipping_postal_code">
+                Postal code
+              </label>
+              <input
+                id="shipping_postal_code"
+                className={styles.input}
+                value={form.shipping_postal_code}
+                onChange={(e) => up("shipping_postal_code", e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="shipping_country">
+                Country
+              </label>
+              <input
+                id="shipping_country"
+                className={styles.input}
+                placeholder="United States"
+                value={form.shipping_country}
+                onChange={(e) => up("shipping_country", e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+          </div>
+        </section>
       </form>
     </Modal>
   );
@@ -1212,7 +1322,7 @@ function DeleteConfirmModal({
       onClose={onClose}
       dismissible={!deleting}
       size="sm"
-      title="Delete this lead?"
+      title="Delete this contact?"
       subtitle="This action cannot be undone."
       footer={
         <>
@@ -1271,14 +1381,14 @@ function UrgentLeadsBanner({
   if (urgent.length === 0) return null;
 
   return (
-    <section className={styles.urgentBanner} aria-label="Urgent leads">
+    <section className={styles.urgentBanner} aria-label="Urgent contacts">
       <header className={styles.urgentBannerHeader}>
         <span className={styles.urgentBannerIcon} aria-hidden="true">
           !
         </span>
         <h3 className={styles.urgentBannerTitle}>
           {urgent.length}{" "}
-          {urgent.length === 1 ? "lead needs" : "leads need"} urgent action
+          {urgent.length === 1 ? "contact needs" : "contacts need"} urgent action
         </h3>
         <span className={styles.urgentBannerSub}>
           No response in {URGENT_DAYS}+ days
@@ -1314,7 +1424,7 @@ function UrgentLeadsBanner({
                 type="button"
                 className={styles.urgentResolveBtn}
                 onClick={() => onResolveLead(m.id)}
-                title="Mark this lead resolved — bumps Last contact to today, dropping it off the urgent list."
+                title="Mark this contact resolved — bumps Last contact to today, dropping it off the urgent list."
               >
                 Resolved
               </button>

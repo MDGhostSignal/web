@@ -29,6 +29,8 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
+import { MemberEditModal } from "../components/MemberEditModal";
+
 import styles from "./marketplace.module.css";
 import {
   MarketplaceMemberComments,
@@ -160,6 +162,13 @@ export function PoolView({
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [matchedFilter, setMatchedFilter] = useState<MatchedFilter>("all");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  // Full-edit modal — drives the "Edit member" button on each expanded
+  // pool row. Captures every member field (identity, status, shipping
+  // address). Distinct from the inline edits in MarketplaceMemberDetails
+  // / MembershipBlock which auto-save individual fields without a modal.
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   // Add-member modal state. Kept here (rather than in MarketplacePage)
   // because the form + scroll-to-new-row UX is local to the pool.
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -437,6 +446,25 @@ export function PoolView({
                 : null;
             return (
               <>
+                {/* 0. Full-edit action — opens the modal with every
+                       member field (identity, status, shipping). The
+                       inline cards below auto-save individual fields;
+                       this is for bulk edits + the shipping address. */}
+                {sourceMember && onMemberPatch && (
+                  <div className={styles.mmActionsRow}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setEditError(null);
+                        setEditingMemberId(sourceMember.id);
+                      }}
+                    >
+                      Edit member
+                    </Button>
+                  </div>
+                )}
+
                 {/* 1. Member details — replicates the leads card:
                        ContactCard + editable outreach fields (owner,
                        last contact w/ date picker, times contacted,
@@ -639,6 +667,43 @@ export function PoolView({
           </form>
         </Modal>
       )}
+
+      {/* Full-edit modal — wired to the "Edit member" button on each
+          expanded pool row. Reuses the same component the Contacts
+          page uses, so both surfaces share field coverage (incl. the
+          shipping-address section). `key` keyed on the editing member
+          id so opening the modal against a different member remounts
+          it with the new source data (initial-state-from-props
+          pattern). */}
+      <MemberEditModal
+        key={editingMemberId ?? "closed"}
+        open={editingMemberId !== null}
+        member={
+          editingMemberId && members
+            ? members.find((m) => m.id === editingMemberId) ?? null
+            : null
+        }
+        isSaving={editSaving}
+        errorMessage={editError}
+        onClose={() => {
+          if (!editSaving) {
+            setEditingMemberId(null);
+            setEditError(null);
+          }
+        }}
+        onSave={async (payload) => {
+          if (!editingMemberId || !onMemberPatch) return;
+          setEditSaving(true);
+          setEditError(null);
+          const ok = await onMemberPatch(editingMemberId, payload);
+          setEditSaving(false);
+          if (ok) {
+            setEditingMemberId(null);
+          } else {
+            setEditError("Couldn't save. Try again.");
+          }
+        }}
+      />
     </div>
   );
 }

@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <AdminShell
       nav={[
         { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
-        { href: "/admin/leads", label: "Leads", icon: <IconLeads /> },
+        { href: "/admin/contacts", label: "Contacts", icon: <IconLeads /> },
         {
           href: "/admin/marketplace",
           label: "Marketplace",

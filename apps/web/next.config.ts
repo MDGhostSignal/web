@@ -42,6 +42,18 @@ const nextConfig: NextConfig = {
         destination: "/admin/design-tasks/:path*",
         permanent: true,
       },
+      // /admin/leads was renamed to /admin/contacts. Bookmarks and old
+      // internal references continue to land on the canonical URL.
+      {
+        source: "/admin/leads",
+        destination: "/admin/contacts",
+        permanent: true,
+      },
+      {
+        source: "/admin/leads/:path*",
+        destination: "/admin/contacts/:path*",
+        permanent: true,
+      },
     ];
   },
 };

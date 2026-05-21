@@ -1,0 +1,130 @@
+/* =============================================================================
+   MemberEditModal — shared edit-member form used by /admin/contacts and
+   the /admin/marketplace pool. Mirrors the form chrome that used to
+   live inline in /admin/leads, plus a Shipping address section.
+
+   Token discipline: every colour, radius, spacing pulls from
+   --admin-* tokens — same surface family as the rest of the admin app.
+   ============================================================================= */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+/* Dense auto-flow grid for short text/select fields. At the xl modal
+   width (~780 px content) this packs 3–4 fields per row without
+   leaving empty columns. */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--admin-space-3) var(--admin-space-4);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Tags + notes + street address break out to the full modal width. */
+.formGroupFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--admin-text-base);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-secondary);
+}
+
+.input,
+.textarea,
+.select {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  transition:
+    border-color var(--admin-transition-base),
+    background var(--admin-transition-base);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-2);
+}
+
+/* Native <option> renders via the OS panel which doesn't inherit
+   admin theme colours — force dark-on-light for readability. */
+.select option {
+  color: #111;
+  background: #fff;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+
+/* --- Section divider (Shipping address) ---------------------------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding-top: var(--admin-space-4);
+  margin-top: var(--admin-space-2);
+  border-top: 1px solid var(--admin-border);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.sectionHint {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+/* --- Error slot ---------------------------------------------------- */
+
+.error {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: var(--admin-destructive-soft);
+  border: 1px solid var(--admin-destructive-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-sm);
+}
+
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

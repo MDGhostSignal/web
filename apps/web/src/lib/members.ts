@@ -232,6 +232,16 @@ export type Member = {
   tags: string[];
   lifecycle_steps: LifecycleSteps;
   rq_submission_id: string | null;
+  /** Shipping address — populated when the team needs to mail
+      membership boxes / branded swag. All six fields are optional;
+      backfilled per-member as the team gathers them. See
+      docs/CRM_MEMBERS_SHIPPING_FIELDS_MIGRATION.sql. */
+  shipping_address_line1: string | null;
+  shipping_address_line2: string | null;
+  shipping_city: string | null;
+  shipping_state: string | null;
+  shipping_postal_code: string | null;
+  shipping_country: string | null;
 };
 
 /**

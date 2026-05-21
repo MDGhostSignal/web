@@ -284,10 +284,10 @@ export default function AdminHome() {
           }
         />
 
-        {/* Leads card */}
+        {/* Contacts card */}
         <HomeKpiCard
-          label="Lead pipeline"
-          href="/admin/leads"
+          label="Contact pipeline"
+          href="/admin/contacts"
           state={
             leads.kind === "loading"
               ? "loading"

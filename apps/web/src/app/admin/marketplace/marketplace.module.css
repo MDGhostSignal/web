@@ -1110,6 +1110,18 @@
    so the row reads as a single visual band.
    ============================================================================= */
 
+/* Right-aligned action row at the top of an expanded pool row —
+   currently hosts the "Edit member" button that opens MemberEditModal.
+   Inline auto-save cards still live below; this is for bulk edits +
+   the shipping-address section. */
+.mmActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--admin-space-2);
+  margin-bottom: var(--admin-space-3);
+}
+
 .mmLifecycleCommentsGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

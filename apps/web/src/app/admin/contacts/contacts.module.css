@@ -783,6 +783,38 @@
   min-height: 64px;
 }
 
+/* Shipping address — separated visually from the core identity fields
+   above with a top border so the form reads as two semantic sections
+   (status + outreach above, mailing address below). */
+.shippingSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding-top: var(--admin-space-4);
+  margin-top: var(--admin-space-2);
+  border-top: 1px solid var(--admin-border);
+}
+
+.shippingHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+}
+
+.shippingTitle {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.shippingHint {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
 @media (max-width: 640px) {
   .formGrid {
     grid-template-columns: 1fr;
