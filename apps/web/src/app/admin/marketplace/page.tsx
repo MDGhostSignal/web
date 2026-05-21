@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -58,12 +59,31 @@ const VIEWS: { id: ViewMode; label: string; hint: string }[] = [
   { id: "map", label: "Map", hint: "Spatial view of confirmed matches" },
 ];
 
+function viewFromParam(raw: string | null): ViewMode {
+  if (raw === "match" || raw === "map") return raw;
+  return "pool";
+}
+
 export default function MarketplacePage() {
-  // Default to the Pool view — when a founder clicks the
-  // Marketplace tab they almost always want to see the roster
-  // first (and the new "Membership" block on the expanded pool row
-  // is where ongoing member-onboarding lives).
-  const [view, setView] = useState<ViewMode>("pool");
+  // View is driven by the `?view=` query param so the persistent
+  // left sidebar (see AdminSidebar) can deep-link to Pool / Match /
+  // Map without us re-mounting the page on switch.
+  //
+  // Pool is the default — when a founder clicks the Marketplace
+  // tab they almost always want to see the roster first (and the
+  // "Membership" block on the expanded pool row is where ongoing
+  // member-onboarding lives).
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const view = viewFromParam(searchParams?.get("view") ?? null);
+  const setView = useCallback(
+    (next: ViewMode) => {
+      const url =
+        next === "pool" ? "/admin/marketplace" : `/admin/marketplace?view=${next}`;
+      router.replace(url, { scroll: false });
+    },
+    [router],
+  );
   const [resetOpen, setResetOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 

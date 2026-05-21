@@ -60,6 +60,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           href: "/admin/marketplace",
           label: "Marketplace",
           icon: <IconMarketplace />,
+          children: [
+            {
+              href: "/admin/marketplace?view=pool",
+              label: "Pool",
+              isDefault: true,
+            },
+            { href: "/admin/marketplace?view=match", label: "Match" },
+            { href: "/admin/marketplace?view=map", label: "Map" },
+          ],
         },
         {
           href: "/admin/rq-responses",

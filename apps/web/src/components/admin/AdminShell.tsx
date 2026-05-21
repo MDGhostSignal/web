@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 
 import { AdminSidebar, type AdminNavItem } from "./AdminSidebar";
 import { IconHamburger } from "./icons";
@@ -87,12 +87,25 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
       </header>
 
       <div className={styles.body}>
-        <AdminSidebar
-          nav={nav}
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-        />
-        <main className={styles.content}>{children}</main>
+        {/* AdminSidebar uses useSearchParams() to deep-link sub-items
+            (e.g. /admin/marketplace?view=pool). Wrap it in Suspense
+            so static prerendering of admin pages doesn't bail to
+            dynamic rendering across the whole route tree. */}
+        <Suspense fallback={null}>
+          <AdminSidebar
+            nav={nav}
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+          />
+        </Suspense>
+        {/* Mirror Suspense around the main content so any admin page
+            that calls useSearchParams (e.g. /admin/marketplace using
+            ?view=pool|match|map) doesn't bail static prerendering of
+            the route tree. Empty fallback — pages render fast enough
+            that a brief blank is cheaper than a skeleton. */}
+        <main className={styles.content}>
+          <Suspense fallback={null}>{children}</Suspense>
+        </main>
       </div>
     </div>
   );
