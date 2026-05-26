@@ -115,13 +115,6 @@ export function MarketplaceMemberDetails({ member, onPatch }: Props) {
 
 function ContactCard({ member }: { member: Member }) {
   const name = fullName(member);
-  const initials = name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
   const address = formatAddress(member);
 
   const [avatarUrl, setAvatarUrl] = useDraftSync(member.avatar_url ?? null);
@@ -184,35 +177,69 @@ function ContactCard({ member }: { member: Member }) {
     }
   }
 
+  // Year shown on the welcome-card hero — matches the year on the
+  // physical Welcome Box card we ship to fully-fledged members.
+  // Falls back to created_at when became_member_at is unset (mocks).
+  const memberSinceYear = (() => {
+    const iso = member.became_member_at ?? member.created_at;
+    if (!iso) return null;
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : d.getFullYear();
+  })();
+
   return (
     <section className={styles.mmIdCard} aria-label="Member ID card">
-      <div className={styles.mmIdCardHeader}>
+      {/* Welcome card hero — black with diagonal multicolor stripes,
+          mirrors the physical Welcome Box card. The member's company
+          logo (uploaded avatar) sits in the top-left where it acts as
+          the visual identifier; name + "Member Since {year}" below.
+          Empty state swaps the circular avatar for a rectangular
+          rounded "Click to upload a logo" placeholder so the call-to-
+          action is unmistakable. */}
+      <div className={styles.mmWelcomeCard}>
+        <div
+          className={styles.mmWelcomeCardStripes}
+          aria-hidden="true"
+        />
+
         <button
           type="button"
-          className={styles.mmIdCardAvatar}
+          className={[
+            styles.mmWelcomeCardAvatar,
+            avatarUrl
+              ? styles.mmWelcomeCardAvatarFilled
+              : styles.mmWelcomeCardAvatarEmpty,
+          ].join(" ")}
           onClick={() => fileInputRef.current?.click()}
           aria-label={
             avatarUrl
-              ? "Replace avatar — click to upload a new image"
-              : "Upload avatar"
+              ? "Replace logo — click to upload a new image"
+              : "Click to upload a logo"
           }
           disabled={uploadStatus.kind === "uploading"}
         >
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarUrl}
-              alt={`${name} avatar`}
-              className={styles.mmIdCardAvatarImg}
-            />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={avatarUrl}
+                alt={`${name} logo`}
+                className={styles.mmWelcomeCardAvatarImg}
+              />
+              <span
+                className={styles.mmWelcomeCardAvatarOverlay}
+                aria-hidden="true"
+              >
+                {uploadStatus.kind === "uploading" ? "Uploading…" : "Change"}
+              </span>
+            </>
           ) : (
-            <span className={styles.mmIdCardAvatarInitials}>
-              {initials || "—"}
+            <span className={styles.mmWelcomeCardAvatarEmptyLabel}>
+              {uploadStatus.kind === "uploading"
+                ? "Uploading…"
+                : "Click to upload a logo"}
             </span>
           )}
-          <span className={styles.mmIdCardAvatarOverlay} aria-hidden="true">
-            {uploadStatus.kind === "uploading" ? "Uploading…" : "Change"}
-          </span>
         </button>
 
         <input
@@ -227,35 +254,51 @@ function ContactCard({ member }: { member: Member }) {
           }}
         />
 
-        <div className={styles.mmIdCardHeaderText}>
-          <div className={styles.mmIdCardName}>{name}</div>
-          <div className={styles.mmIdCardSub}>
-            <Badge variant={member.member_type === "creator" ? "creator" : "brand"}>
-              {MEMBER_TYPE_LABELS[member.member_type]}
-            </Badge>
-            {member.role && (
-              <span className={styles.mmIdCardRole}>{member.role}</span>
-            )}
-            {member.organization && (
-              <span className={styles.mmIdCardOrg}>{member.organization}</span>
-            )}
-          </div>
-          {avatarUrl && (
-            <button
-              type="button"
-              className={styles.mmIdCardAvatarRemove}
-              onClick={handleRemove}
-              disabled={uploadStatus.kind === "uploading"}
-            >
-              Remove image
-            </button>
-          )}
-          {uploadStatus.kind === "error" && (
-            <span className={styles.mmIdCardAvatarError} role="alert">
-              {uploadStatus.message}
-            </span>
+        <div className={styles.mmWelcomeCardText}>
+          <div className={styles.mmWelcomeCardName}>{name}</div>
+          {memberSinceYear !== null && (
+            <div className={styles.mmWelcomeCardSince}>
+              Member Since {memberSinceYear}
+            </div>
           )}
         </div>
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/brand/gs-brandmark-hor-white.png"
+          alt="GhostSignal"
+          className={styles.mmWelcomeCardWordmark}
+        />
+      </div>
+
+      {/* Sub-info row: type badge, role, organization, plus the avatar
+          remove link + any upload error. Lives BELOW the welcome card
+          so the visual hero isn't cluttered with editable affordances. */}
+      <div className={styles.mmIdCardSubInfo}>
+        <Badge variant={member.member_type === "creator" ? "creator" : "brand"}>
+          {MEMBER_TYPE_LABELS[member.member_type]}
+        </Badge>
+        {member.role && (
+          <span className={styles.mmIdCardRole}>{member.role}</span>
+        )}
+        {member.organization && (
+          <span className={styles.mmIdCardOrg}>{member.organization}</span>
+        )}
+        {avatarUrl && (
+          <button
+            type="button"
+            className={styles.mmIdCardAvatarRemove}
+            onClick={handleRemove}
+            disabled={uploadStatus.kind === "uploading"}
+          >
+            Remove image
+          </button>
+        )}
+        {uploadStatus.kind === "error" && (
+          <span className={styles.mmIdCardAvatarError} role="alert">
+            {uploadStatus.message}
+          </span>
+        )}
       </div>
 
       <dl className={styles.mmIdCardFields}>
