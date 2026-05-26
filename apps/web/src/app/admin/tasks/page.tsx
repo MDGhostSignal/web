@@ -358,7 +358,13 @@ export default function DesignTasksPage() {
   })();
 
   const filteredTasks = orderedTasks.filter((task) => {
-    if (filter !== "all" && task.status !== filter) return false;
+    // "All" excludes archived — archived tasks are only visible when the
+    // user explicitly selects the Archived filter.
+    if (filter === "all") {
+      if (task.status === "archived") return false;
+    } else if (task.status !== filter) {
+      return false;
+    }
     if (assigneeFilter !== "all" && task.assigned_to !== assigneeFilter) {
       return false;
     }
@@ -366,7 +372,7 @@ export default function DesignTasksPage() {
   });
 
   const taskCounts = {
-    all: tasks.length,
+    all: tasks.filter((t) => t.status !== "archived").length,
     pending: tasks.filter((t) => t.status === "pending").length,
     in_progress: tasks.filter((t) => t.status === "in_progress").length,
     completed: tasks.filter((t) => t.status === "completed").length,
