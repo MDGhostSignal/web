@@ -195,39 +195,55 @@ export function ContractDetailView({ id }: Props) {
       )}
 
       {state.kind === "ready" && (
-        <div className={styles.detailLayout}>
-          <div className={styles.detailMain}>
-            <ContractDetailCard
-              contract={state.data.contract}
-              onResync={handleResync}
-              onArchive={handleArchive}
-              onUpdate={handleUpdate}
-              onRemindSigner={handleRemind}
-              busy={busy}
-            />
-            <ContractPdfEmbed url={readPdfUrl(state.data.contract.raw)} />
-          </div>
-          <div className={styles.detailSide}>
-            <div className={styles.detailCard}>
-              <div className={styles.detailCardTitle}>Counterparty</div>
-              <LinkMemberPanel
-                contractId={state.data.contract.id}
-                memberId={state.data.contract.member_id}
-                suggestedMemberId={state.data.contract.suggested_member_id}
-                linkedMember={state.data.linkedMember}
-                suggestedMember={state.data.suggestedMember}
-                onUpdated={load}
+        <>
+          {/* Top row — 2-column: contract details (1fr) + counterparty
+              card (360 px). Each card is denser content that benefits
+              from a side-by-side layout. */}
+          <div className={styles.detailLayout}>
+            <div className={styles.detailMain}>
+              <ContractDetailCard
+                contract={state.data.contract}
+                onResync={handleResync}
+                onArchive={handleArchive}
+                onUpdate={handleUpdate}
+                onRemindSigner={handleRemind}
+                busy={busy}
               />
             </div>
+            <div className={styles.detailSide}>
+              <div className={styles.detailCard}>
+                <div className={styles.detailCardTitle}>Counterparty</div>
+                <LinkMemberPanel
+                  contractId={state.data.contract.id}
+                  memberId={state.data.contract.member_id}
+                  suggestedMemberId={state.data.contract.suggested_member_id}
+                  linkedMember={state.data.linkedMember}
+                  suggestedMember={state.data.suggestedMember}
+                  onUpdated={load}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* PDF embed — full-width below the 2-col header. PDFs
+              benefit from horizontal real estate; the 360 px side
+              column above would waste it here. The iframe targets the
+              proxy route (/api/admin/contracts/:id/pdf) which
+              re-fetches a fresh signed S3 URL on every load —
+              esignatures URLs expire after ~48h and our cached one
+              was returning S3 AccessDenied. */}
+          <ContractPdfEmbed
+            contractId={state.data.contract.id}
+            hasPdf={hasPdfInRaw(state.data.contract.raw)}
+          />
+        </>
       )}
     </div>
   );
 }
 
-function readPdfUrl(raw: unknown): string | null {
-  if (!raw || typeof raw !== "object") return null;
+function hasPdfInRaw(raw: unknown): boolean {
+  if (!raw || typeof raw !== "object") return false;
   const obj = raw as { contract_pdf_url?: unknown };
-  return typeof obj.contract_pdf_url === "string" ? obj.contract_pdf_url : null;
+  return typeof obj.contract_pdf_url === "string" && obj.contract_pdf_url.length > 0;
 }
