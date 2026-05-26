@@ -126,6 +126,8 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   { key: "rq_completed", label: "RQ quiz completed", phase: "run", ownerRole: "Member" },
   { key: "xq_completed", label: "XQ quiz completed", phase: "run", ownerRole: "Member" },
   { key: "campaign_planning", label: "Campaign Planning + Execution", phase: "run", ownerRole: "Ops" },
+  { key: "upload_to_drive", label: "Upload to Drive", phase: "run", ownerRole: "Ops" },
+  { key: "label_calendar", label: "Label as Calendar", phase: "run", ownerRole: "Ops" },
 ] as const;
 
 /**
