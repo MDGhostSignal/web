@@ -1,24 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Button,
+  EmptyState,
   ErrorCard,
   Loading,
   Modal,
 } from "@/components/admin";
+import type { CalendarView } from "@/lib/social-calendar";
+import {
+  fetchRangeForView,
+  startOfDay,
+  stepAnchor,
+} from "@/lib/social-calendar";
 import type {
   SocialPostRow,
   SocialPostWithImages,
 } from "@/lib/social-posts-types";
 
+import { CalendarHeader } from "../components/social/CalendarHeader";
+import { DayCalendar } from "../components/social/DayCalendar";
 import { PostComposer } from "../components/social/PostComposer";
 import { PostDetail } from "../components/social/PostDetail";
-import {
-  startOfWeek,
-  WeekCalendar,
-} from "../components/social/WeekCalendar";
+import { WeekCalendar } from "../components/social/WeekCalendar";
 import styles from "../marketing.module.css";
 
 type ListResponse = {
@@ -41,37 +47,64 @@ type CreatePayload = Parameters<
   React.ComponentProps<typeof PostComposer>["onSubmit"]
 >[0];
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const VIEW_STORAGE_KEY = "ghostsignal.admin.social.view";
+const VALID_VIEWS: CalendarView[] = ["day", "week", "month", "year"];
 
 /**
- * Social Media Scheduler section. Loads a wide window of posts
- * (current week ± 4 weeks) on mount so the calendar can scrub
- * forward / backward without re-fetching, and refreshes on every
- * write.
+ * Social Media Scheduler section. Four views (Day / Week / Month /
+ * Year) swap inside a shared CalendarHeader. The view choice persists
+ * across reloads in localStorage. Each (view, anchor) change triggers
+ * a refetch of the relevant time window.
+ *
+ * Month and Year are placeholder cards in Phase 1 — the switcher works
+ * and the navigation steps through year/month boundaries correctly,
+ * so the wiring is in place when their grid components land.
  */
 export function SocialSection() {
+  const [view, setView] = useState<CalendarView>("week");
+  const [anchor, setAnchor] = useState<Date>(() => startOfDay(new Date()));
   const [posts, setPosts] = useState<SocialPostRow[]>([]);
   const [state, setState] = useState<LoadState>({ kind: "loading" });
-  const [weekStart, setWeekStart] = useState<Date>(() =>
-    startOfWeek(new Date()),
-  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] =
     useState<SocialPostWithImages | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [composeDay, setComposeDay] = useState<Date | null>(null);
+  const [composeDate, setComposeDate] = useState<Date | null>(null);
   const [composeInitial, setComposeInitial] = useState<
     SocialPostWithImages | null
   >(null);
   const [composing, setComposing] = useState(false);
 
+  // Hydrate the persisted view choice once after mount. Doing this in
+  // an effect (not lazy useState init) avoids an SSR/CSR markup mismatch
+  // — the server has no localStorage.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    try {
+      const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (stored && (VALID_VIEWS as string[]).includes(stored)) {
+        setView(stored as CalendarView);
+      }
+    } catch {
+      // localStorage unavailable (private mode, etc.) — stay on default.
+    }
+  }, []);
+
+  function handleViewChange(next: CalendarView): void {
+    setView(next);
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, next);
+    } catch {
+      // ignore — UI still works without persistence.
+    }
+  }
+
   const loadList = useCallback(async () => {
-    // Window: last 8 weeks → next 12 weeks. Generous; users rarely
-    // scrub further. We can revisit with proper viewport-driven
-    // fetching if it ever bites.
-    const now = Date.now();
-    const from = new Date(now - 8 * WEEK_MS).toISOString();
-    const to = new Date(now + 12 * WEEK_MS).toISOString();
+    const { start, end } = fetchRangeForView(view, anchor);
+    const from = start.toISOString();
+    const to = end.toISOString();
     try {
       const res = await fetch(
         `/api/admin/marketing-social?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&limit=500`,
@@ -90,7 +123,7 @@ export function SocialSection() {
         message: err instanceof Error ? err.message : String(err),
       });
     }
-  }, []);
+  }, [view, anchor]);
 
   const loadDetail = useCallback(async (id: string) => {
     const res = await fetch(
@@ -159,7 +192,7 @@ export function SocialSection() {
     }
     const json = (await res.json()) as { post: SocialPostRow };
     setComposing(false);
-    setComposeDay(null);
+    setComposeDate(null);
     await loadList();
     setSelectedId(json.post.id);
   }
@@ -174,20 +207,17 @@ export function SocialSection() {
   );
 
   function goPrev(): void {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() - 7);
-    setWeekStart(d);
+    setAnchor((a) => stepAnchor(view, a, -1));
   }
   function goNext(): void {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 7);
-    setWeekStart(d);
+    setAnchor((a) => stepAnchor(view, a, 1));
   }
   function goToday(): void {
-    setWeekStart(startOfWeek(new Date()));
+    setAnchor(startOfDay(new Date()));
   }
-  function startCompose(day: Date | null): void {
-    setComposeDay(day);
+
+  function startCompose(when: Date | null): void {
+    setComposeDate(when);
     setComposeInitial(null);
     setComposing(true);
   }
@@ -195,21 +225,14 @@ export function SocialSection() {
   function startDuplicate(source: SocialPostWithImages): void {
     // Pre-fill the composer with this post's contents, scheduled one
     // week later. The composer creates a fresh row — original is
-    // untouched. Images are NOT carried over (we keep the original's
-    // Storage objects unique to the original post).
+    // untouched. Images are NOT carried over.
     const sourcedDate = new Date(source.scheduled_at);
     if (!Number.isNaN(sourcedDate.getTime())) {
       sourcedDate.setDate(sourcedDate.getDate() + 7);
     }
-    setComposeDay(
-      Number.isNaN(sourcedDate.getTime()) ? null : sourcedDate,
-    );
+    setComposeDate(Number.isNaN(sourcedDate.getTime()) ? null : sourcedDate);
     setComposeInitial({
       ...source,
-      // Strip identity + scheduling so the composer treats this as a
-      // template rather than an edit. The composer's `initial` prop is
-      // SocialPostRow-shaped; we keep the body / title / platforms /
-      // notes that it actually reads, and clear the rest.
       id: "",
       scheduled_at: sourcedDate.toISOString(),
       posted_at: null,
@@ -229,7 +252,8 @@ export function SocialSection() {
           {scheduledCount} scheduled
           <span className={styles.sectionMetaDim}>
             {" "}
-            · {draftCount} {draftCount === 1 ? "draft" : "drafts"} · {posts.length} total
+            · {draftCount} {draftCount === 1 ? "draft" : "drafts"} ·{" "}
+            {posts.length} total
           </span>
         </div>
         <Button variant="primary" onClick={() => startCompose(null)}>
@@ -257,15 +281,41 @@ export function SocialSection() {
       )}
 
       {state.kind === "ready" && (
-        <WeekCalendar
-          weekStart={weekStart}
-          posts={posts}
-          onPrev={goPrev}
-          onNext={goNext}
-          onToday={goToday}
-          onSelectPost={(id) => setSelectedId(id)}
-          onAddOnDay={(day) => startCompose(day)}
-        />
+        <div className={styles.calendarWrap}>
+          <CalendarHeader
+            view={view}
+            anchor={anchor}
+            onViewChange={handleViewChange}
+            onPrev={goPrev}
+            onNext={goNext}
+            onToday={goToday}
+          />
+
+          {view === "day" && (
+            <DayCalendar
+              day={anchor}
+              posts={posts}
+              onSelectPost={(id) => setSelectedId(id)}
+              onAddAt={(when) => startCompose(when)}
+            />
+          )}
+
+          {view === "week" && (
+            <WeekCalendar
+              weekStart={anchor}
+              posts={posts}
+              onSelectPost={(id) => setSelectedId(id)}
+              onAddOnDay={(day) => startCompose(day)}
+            />
+          )}
+
+          {(view === "month" || view === "year") && (
+            <EmptyState
+              title={`${view === "month" ? "Month" : "Year"} view — coming in next pass`}
+              message={`The ${view} grid is part of the next phase. The switcher and range navigation already step through ${view} boundaries, so the data and routing are in place — only the grid component is missing. Switch back to Day or Week to plan posts in the meantime.`}
+            />
+          )}
+        </div>
       )}
 
       {composing && (
@@ -274,18 +324,18 @@ export function SocialSection() {
           title={composeInitial ? "Duplicate post" : "Add post"}
           onClose={() => {
             setComposing(false);
-            setComposeDay(null);
+            setComposeDate(null);
             setComposeInitial(null);
           }}
           size="lg"
         >
           <PostComposer
             initial={composeInitial}
-            initialDate={composeDay}
+            initialDate={composeDate}
             onSubmit={handleCreate}
             onCancel={() => {
               setComposing(false);
-              setComposeDay(null);
+              setComposeDate(null);
               setComposeInitial(null);
             }}
             submitLabel={composeInitial ? "Create duplicate" : "Save draft"}
