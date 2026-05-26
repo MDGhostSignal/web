@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -10,7 +10,8 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { Button, Loading, Modal } from "@/components/admin";
+import { Button, Loading, Modal, PageHeader } from "@/components/admin";
+import { IconInfo } from "@/components/admin/icons";
 import {
   MOCK_BRANDS,
   MOCK_CREATORS,
@@ -53,12 +54,6 @@ const MatchMap = dynamic(() => import("./PhaserMap"), {
 
 type ViewMode = "pool" | "match" | "map";
 
-const VIEWS: { id: ViewMode; label: string; hint: string }[] = [
-  { id: "pool", label: "Pool", hint: "All creators + brands in one table" },
-  { id: "match", label: "Match", hint: "Suggested pairs by resonance" },
-  { id: "map", label: "Map", hint: "Spatial view of confirmed matches" },
-];
-
 function viewFromParam(raw: string | null): ViewMode {
   if (raw === "match" || raw === "map") return raw;
   return "pool";
@@ -66,24 +61,14 @@ function viewFromParam(raw: string | null): ViewMode {
 
 export default function MarketplacePage() {
   // View is driven by the `?view=` query param so the persistent
-  // left sidebar (see AdminSidebar) can deep-link to Pool / Match /
-  // Map without us re-mounting the page on switch.
+  // left admin sidebar (see AdminSidebar) deep-links to Pool / Match /
+  // Map. No in-page nav owns it any more — the sidebar is the single
+  // source of view-switching.
   //
   // Pool is the default — when a founder clicks the Marketplace
-  // tab they almost always want to see the roster first (and the
-  // "Membership" block on the expanded pool row is where ongoing
-  // member-onboarding lives).
-  const router = useRouter();
+  // tab they almost always want to see the roster first.
   const searchParams = useSearchParams();
   const view = viewFromParam(searchParams?.get("view") ?? null);
-  const setView = useCallback(
-    (next: ViewMode) => {
-      const url =
-        next === "pool" ? "/admin/marketplace" : `/admin/marketplace?view=${next}`;
-      router.replace(url, { scroll: false });
-    },
-    [router],
-  );
   const [resetOpen, setResetOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -243,71 +228,48 @@ export default function MarketplacePage() {
 
   return (
     <div className={styles.page}>
-      <aside className={styles.sidebar} aria-label="Marketplace navigation">
-        <div className={styles.sidebarBrand}>
-          <h1 className={styles.sidebarTitle}>Marketplace</h1>
-          <p className={styles.sidebarSubtitle}>
-            {poolKindCounts.creators} creator
-            {poolKindCounts.creators === 1 ? "" : "s"} ·{" "}
-            {poolKindCounts.brands} brand
-            {poolKindCounts.brands === 1 ? "" : "s"}
-          </p>
-        </div>
-
-        <nav
-          className={styles.sidebarNav}
-          role="tablist"
-          aria-label="Marketplace views"
-        >
-          {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              role="tab"
-              aria-selected={view === v.id}
-              type="button"
-              onClick={() => setView(v.id)}
-              className={`${styles.sidebarNavItem} ${
-                view === v.id ? styles.sidebarNavItemActive : ""
-              }`}
+      <PageHeader
+        title="Marketplace"
+        subtitle={`${poolKindCounts.creators} creator${
+          poolKindCounts.creators === 1 ? "" : "s"
+        } · ${poolKindCounts.brands} brand${
+          poolKindCounts.brands === 1 ? "" : "s"
+        }`}
+        actions={
+          <>
+            <div className={styles.statsStrip} aria-label="Matching summary">
+              <StatItem label="Matches" value={counters.totalMatches} />
+              <span className={styles.statsStripDot} aria-hidden="true">
+                ·
+              </span>
+              <StatItem
+                label="Brands matched"
+                value={`${counters.matchedBrands}/${MOCK_BRANDS.length}`}
+              />
+              <span className={styles.statsStripDot} aria-hidden="true">
+                ·
+              </span>
+              <StatItem
+                label="Creators matched"
+                value={`${counters.matchedCreators}/${MOCK_CREATORS.length}`}
+              />
+            </div>
+            <span className={styles.statsStripDivider} aria-hidden="true" />
+            <Button
+              variant="secondary"
+              onClick={() => setHelpOpen(true)}
+              leadingIcon={<IconInfo />}
             >
-              <span className={styles.sidebarNavLabel}>{v.label}</span>
-              <span className={styles.sidebarNavHint}>{v.hint}</span>
-            </button>
-          ))}
-        </nav>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setHelpOpen(true)}
-          className={styles.sidebarHelpBtn}
-        >
-          How matching works
-        </Button>
-
-        <div className={styles.sidebarStats}>
-          <SidebarStat label="Matches" value={counters.totalMatches} />
-          <SidebarStat
-            label="Brands matched"
-            value={`${counters.matchedBrands}/${MOCK_BRANDS.length}`}
-          />
-          <SidebarStat
-            label="Creators matched"
-            value={`${counters.matchedCreators}/${MOCK_CREATORS.length}`}
-          />
-        </div>
-
-        {matches.length > 0 ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setResetOpen(true)}
-            className={styles.sidebarResetBtn}
-          >
-            Reset matches…
-          </Button>
-        ) : null}
-      </aside>
+              How matching works
+            </Button>
+            {matches.length > 0 ? (
+              <Button variant="ghost" onClick={() => setResetOpen(true)}>
+                Reset matches…
+              </Button>
+            ) : null}
+          </>
+        }
+      />
 
       <main className={styles.main}>
         {view === "pool" ? (
@@ -550,7 +512,7 @@ export default function MarketplacePage() {
   );
 }
 
-function SidebarStat({
+function StatItem({
   label,
   value,
 }: {
@@ -558,9 +520,9 @@ function SidebarStat({
   value: string | number;
 }) {
   return (
-    <div className={styles.sidebarStat}>
-      <span className={styles.sidebarStatLabel}>{label}</span>
-      <span className={styles.sidebarStatValue}>{value}</span>
-    </div>
+    <span className={styles.statsStripItem}>
+      <span className={styles.statsStripValue}>{value}</span>
+      <span className={styles.statsStripLabel}>{label}</span>
+    </span>
   );
 }

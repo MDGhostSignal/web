@@ -242,6 +242,10 @@ export type Member = {
   shipping_state: string | null;
   shipping_postal_code: string | null;
   shipping_country: string | null;
+  /** Public CDN URL for the member's avatar / brand logo. Populated by
+      POST /api/members/[id]/avatar; null when no image has been
+      uploaded yet. See docs/CRM_MEMBERS_AVATAR_MIGRATION.sql. */
+  avatar_url: string | null;
 };
 
 /**

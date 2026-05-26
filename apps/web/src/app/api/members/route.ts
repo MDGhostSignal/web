@@ -128,6 +128,7 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     "shipping_state",
     "shipping_postal_code",
     "shipping_country",
+    "avatar_url",
   ] as const;
 
   for (const key of stringKeys) {

@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -18,6 +19,25 @@ import {
 } from "@/lib/members";
 
 import styles from "./marketplace.module.css";
+
+/** Format the six shipping address fields into a single human-readable
+ *  string. Skips empty fields gracefully; returns null when every field
+ *  is empty so the caller can render a placeholder. */
+function formatAddress(m: Member): string | null {
+  const line1 = m.shipping_address_line1?.trim();
+  const line2 = m.shipping_address_line2?.trim();
+  const city = m.shipping_city?.trim();
+  const state = m.shipping_state?.trim();
+  const postal = m.shipping_postal_code?.trim();
+  const country = m.shipping_country?.trim();
+
+  const street = [line1, line2].filter(Boolean).join(", ");
+  const cityState = [city, [state, postal].filter(Boolean).join(" ")]
+    .filter(Boolean)
+    .join(", ");
+  const composed = [street, cityState, country].filter(Boolean).join(" · ");
+  return composed.length > 0 ? composed : null;
+}
 
 /* =====================================================================
  * Marketplace member details — replicates the contact / pipeline /
@@ -85,7 +105,13 @@ export function MarketplaceMemberDetails({ member, onPatch }: Props) {
   );
 }
 
-/* ---- Contact card --------------------------------------------------- */
+/* ---- Contact card — ID-card layout ---------------------------------
+   Large avatar / brand logo on the left (with click-to-upload), name +
+   type badge on the right. Below: a two-column grid of fields
+   (Organization, Email, Phone, Website, Address). Avatar uploads go
+   through POST /api/members/[id]/avatar; the response includes the
+   updated member, but the parent's list refresh is the source of truth
+   so we use useDraftSync for the local optimistic mirror. */
 
 function ContactCard({ member }: { member: Member }) {
   const name = fullName(member);
@@ -96,26 +122,143 @@ function ContactCard({ member }: { member: Member }) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+  const address = formatAddress(member);
+
+  const [avatarUrl, setAvatarUrl] = useDraftSync(member.avatar_url ?? null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadStatus, setUploadStatus] = useState<
+    | { kind: "idle" }
+    | { kind: "uploading" }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" });
+
+  async function handleFile(file: File) {
+    setUploadStatus({ kind: "uploading" });
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const res = await fetch(`/api/members/${member.id}/avatar`, {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setUploadStatus({
+          kind: "error",
+          message: (json as { error?: string })?.error ?? `HTTP ${res.status}`,
+        });
+        return;
+      }
+      const json = (await res.json()) as { member: Member };
+      setAvatarUrl(json.member.avatar_url ?? null);
+      setUploadStatus({ kind: "idle" });
+    } catch (err) {
+      setUploadStatus({
+        kind: "error",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  async function handleRemove() {
+    setUploadStatus({ kind: "uploading" });
+    try {
+      const res = await fetch(`/api/members/${member.id}/avatar`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setUploadStatus({
+          kind: "error",
+          message: (json as { error?: string })?.error ?? `HTTP ${res.status}`,
+        });
+        return;
+      }
+      setAvatarUrl(null);
+      setUploadStatus({ kind: "idle" });
+    } catch (err) {
+      setUploadStatus({
+        kind: "error",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
 
   return (
-    <section className={styles.mmContactCard} aria-label="Contact details">
-      <div className={styles.mmContactHeader}>
-        <div className={styles.mmContactAvatar} aria-hidden="true">
-          {initials || "—"}
-        </div>
-        <div className={styles.mmContactHeaderText}>
-          <div className={styles.mmContactName}>{name}</div>
-          <div className={styles.mmContactSub}>
+    <section className={styles.mmIdCard} aria-label="Member ID card">
+      <div className={styles.mmIdCardHeader}>
+        <button
+          type="button"
+          className={styles.mmIdCardAvatar}
+          onClick={() => fileInputRef.current?.click()}
+          aria-label={
+            avatarUrl
+              ? "Replace avatar — click to upload a new image"
+              : "Upload avatar"
+          }
+          disabled={uploadStatus.kind === "uploading"}
+        >
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt={`${name} avatar`}
+              className={styles.mmIdCardAvatarImg}
+            />
+          ) : (
+            <span className={styles.mmIdCardAvatarInitials}>
+              {initials || "—"}
+            </span>
+          )}
+          <span className={styles.mmIdCardAvatarOverlay} aria-hidden="true">
+            {uploadStatus.kind === "uploading" ? "Uploading…" : "Change"}
+          </span>
+        </button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          className={styles.mmIdCardFileInput}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void handleFile(file);
+            e.target.value = "";
+          }}
+        />
+
+        <div className={styles.mmIdCardHeaderText}>
+          <div className={styles.mmIdCardName}>{name}</div>
+          <div className={styles.mmIdCardSub}>
             <Badge variant={member.member_type === "creator" ? "creator" : "brand"}>
               {MEMBER_TYPE_LABELS[member.member_type]}
             </Badge>
             {member.role && (
-              <span className={styles.mmContactRole}>{member.role}</span>
+              <span className={styles.mmIdCardRole}>{member.role}</span>
+            )}
+            {member.organization && (
+              <span className={styles.mmIdCardOrg}>{member.organization}</span>
             )}
           </div>
+          {avatarUrl && (
+            <button
+              type="button"
+              className={styles.mmIdCardAvatarRemove}
+              onClick={handleRemove}
+              disabled={uploadStatus.kind === "uploading"}
+            >
+              Remove image
+            </button>
+          )}
+          {uploadStatus.kind === "error" && (
+            <span className={styles.mmIdCardAvatarError} role="alert">
+              {uploadStatus.message}
+            </span>
+          )}
         </div>
       </div>
-      <dl className={styles.mmContactFields}>
+
+      <dl className={styles.mmIdCardFields}>
         <div>
           <dt>Organization</dt>
           <dd>{member.organization || "—"}</dd>
@@ -155,6 +298,10 @@ function ContactCard({ member }: { member: Member }) {
               "—"
             )}
           </dd>
+        </div>
+        <div className={styles.mmIdCardAddressRow}>
+          <dt>Address</dt>
+          <dd>{address ?? "—"}</dd>
         </div>
       </dl>
     </section>
