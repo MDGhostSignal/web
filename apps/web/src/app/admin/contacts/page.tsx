@@ -35,6 +35,8 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
+import { XQSummaryCard } from "@/components/admin/XQSummaryCard";
+
 import { ContactLifecycleStepper } from "./ContactLifecycleStepper";
 import styles from "./contacts.module.css";
 
@@ -896,6 +898,13 @@ function MembersTable({
               onPatch={(partial) => onMemberPatch(m.id, partial)}
             />
           </div>
+
+          {/* XQ summary — only when the contact has a linked Conviction
+              Index submission (set by /xq-quiz's email-link best-effort
+              after they complete the public quiz). */}
+          {m.xq_submission_id && (
+            <XQSummaryCard submissionId={m.xq_submission_id} />
+          )}
 
           {m.tags.length > 0 && (
             <div className={styles.tagsRow}>

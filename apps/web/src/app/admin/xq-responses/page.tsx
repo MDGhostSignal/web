@@ -1,84 +1,367 @@
 "use client";
 
-import { PageHeader } from "@/components/admin";
+import { useEffect, useState } from "react";
 
+import {
+  Badge,
+  Button,
+  type Column,
+  DataTable,
+  EmptyState,
+  ErrorPage,
+  Loading,
+  Modal,
+  PageHeader,
+  SearchInput,
+  typeVariant,
+} from "@/components/admin";
+
+import { SubmissionDetail, type XQSubmissionLite } from "./SubmissionDetail";
 import styles from "./xq-responses.module.css";
 
+type StatusFilter = "all" | "incomplete" | "complete";
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 /**
- * /admin/xq-responses — XQ submissions list.
+ * /admin/xq-responses — Conviction Index submissions admin.
  *
- * Placeholder for now. The XQ quiz is the free top-of-funnel half of
- * GhostSignal's XQ + RQ matching ecosystem (see
- * `memory/project_rq_xq_ecosystem.md`): XQ answers the internal
- * "what's my conviction substance?" question, RQ answers the external
- * "how do those convictions communicate in a partnership?" question.
- *
- * Plug-in plan when Jeremy's XQ scoring code lands:
- *
- *  1. Add an `xq_submissions` table to the schema (mirror
- *     `rq_submissions` shape — see the RQ migration in `docs/`).
- *  2. Land a scoring lib at `apps/web/src/lib/xq/scoring.ts` (mirrors
- *     `lib/rq/scoring.ts` — pure functions, no React).
- *  3. Add a public quiz route under `/xq-quiz` (mirrors `/rq-quiz`).
- *  4. Add `/api/xq-submissions` POST + list routes (mirror
- *     `/api/rq-submissions`).
- *  5. Replace this placeholder body with the parallel of
- *     `app/admin/rq-responses/page.tsx` — DataTable of submissions,
- *     status filter, detail modal with the XQ axis breakdown +
- *     graph component.
- *  6. Wire the marketplace lifecycle step `xq_completed` to
- *     auto-detect completion once `xq_submission_id` is set on the
- *     Member row (currently a manual checkbox — same future move
- *     planned for `rq_completed`).
+ * Mirrors /admin/rq-responses in shape: DataTable with status filter +
+ * search, expandable row → SubmissionDetail. Delete flow uses the
+ * /api/xq-submissions/[id] DELETE endpoint with a confirmation modal.
  */
-export default function XqResponsesPage() {
+export default function XQResponsesPage() {
+  const [submissions, setSubmissions] = useState<XQSubmissionLite[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const [confirmDelete, setConfirmDelete] = useState<XQSubmissionLite | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/xq-submissions/list");
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok || !data.ok) {
+          setError(data.error || "Failed to fetch submissions");
+          return;
+        }
+        setSubmissions(data.submissions ?? []);
+      } catch {
+        if (!cancelled) setError("Failed to connect to the server");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const completeCount = submissions.filter(
+    (s) => (s.status ?? "complete") === "complete",
+  ).length;
+  const incompleteCount = submissions.filter(
+    (s) => (s.status ?? "complete") === "incomplete",
+  ).length;
+
+  const filtered = submissions.filter((s) => {
+    const status = s.status ?? "complete";
+    if (statusFilter !== "all" && status !== statusFilter) return false;
+    const q = searchTerm.toLowerCase();
+    if (!q) return true;
+    return (
+      s.first_name?.toLowerCase().includes(q) ||
+      s.last_name?.toLowerCase().includes(q) ||
+      s.email?.toLowerCase().includes(q) ||
+      s.organization?.toLowerCase().includes(q) ||
+      s.xq_code?.toLowerCase().includes(q) ||
+      s.xq_archetype_name?.toLowerCase().includes(q)
+    );
+  });
+
+  async function handleConfirmDelete() {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(
+        `/api/xq-submissions/${encodeURIComponent(confirmDelete.id)}`,
+        { method: "DELETE" },
+      );
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setDeleteError(data.error || "Failed to delete submission.");
+        return;
+      }
+      setSubmissions((prev) => prev.filter((s) => s.id !== confirmDelete.id));
+      if (expandedRow === confirmDelete.id) setExpandedRow(null);
+      setConfirmDelete(null);
+    } catch {
+      setDeleteError("Network error during delete.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const columns: Column<XQSubmissionLite>[] = [
+    {
+      key: "date",
+      header: "Date",
+      variant: "muted",
+      cell: (row) => (
+        <span className={styles.date}>{formatDate(row.submitted_at)}</span>
+      ),
+    },
+    {
+      key: "name",
+      header: "Name",
+      variant: "nowrap",
+      cell: (row) =>
+        `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim() || "—",
+    },
+    {
+      key: "email",
+      header: "Email",
+      variant: "truncate",
+      cell: (row) =>
+        row.email ? (
+          <a
+            className={styles.email}
+            href={`mailto:${row.email}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {row.email}
+          </a>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      key: "org",
+      header: "Organization",
+      variant: "truncate",
+      cell: (row) => row.organization || "—",
+    },
+    {
+      key: "type",
+      header: "Type",
+      cell: (row) => (
+        <Badge variant={typeVariant(row.participant_type)}>
+          {row.participant_type || "—"}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      cell: (row) => {
+        const s = row.status ?? "complete";
+        return (
+          <Badge variant={s === "complete" ? "success" : "warn"}>
+            {s === "complete" ? "Complete" : "Incomplete"}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "archetype",
+      header: "Archetype",
+      variant: "nowrap",
+      cell: (row) => (
+        <span className={styles.archetypeCell}>
+          <span className={styles.archetypeName}>
+            {row.xq_archetype_name || "—"}
+          </span>
+          {row.xq_code && (
+            <span className={styles.archetypeCode}>{row.xq_code}</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "expand",
+      header: "",
+      variant: "numeric",
+      cell: (row) => (
+        <span className={styles.expandGlyph}>
+          {expandedRow === row.id ? "−" : "+"}
+        </span>
+      ),
+    },
+  ];
+
+  if (loading) return <Loading message="Loading XQ submissions…" />;
+  if (error) return <ErrorPage message={error} />;
+
   return (
-    <div className={styles.page}>
+    <div>
       <PageHeader
-        title="XQ Responses"
-        subtitle="The free top-of-funnel quiz — internal conviction-substance discovery."
+        title="XQ Submissions"
+        subtitle="Conviction Index — strategic convictions and lived business values, scored archetype + four-bucket value blueprint per submission."
+        count={
+          <Badge variant="accent">
+            {filtered.length}{" "}
+            {filtered.length === 1 ? "submission" : "submissions"}
+          </Badge>
+        }
+        toolbar={
+          <div className={styles.toolbarRow}>
+            <SearchInput
+              placeholder="Search by name, email, organization, archetype, or code…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div
+              className={styles.statusFilter}
+              role="tablist"
+              aria-label="Filter by status"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={statusFilter === "all"}
+                className={`${styles.statusTab} ${statusFilter === "all" ? styles.statusTabActive : ""}`}
+                onClick={() => setStatusFilter("all")}
+              >
+                All{" "}
+                <span className={styles.statusTabCount}>{submissions.length}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={statusFilter === "complete"}
+                className={`${styles.statusTab} ${statusFilter === "complete" ? styles.statusTabActive : ""}`}
+                onClick={() => setStatusFilter("complete")}
+              >
+                Complete{" "}
+                <span className={styles.statusTabCount}>{completeCount}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={statusFilter === "incomplete"}
+                className={`${styles.statusTab} ${statusFilter === "incomplete" ? styles.statusTabActive : ""}`}
+                onClick={() => setStatusFilter("incomplete")}
+              >
+                Incomplete{" "}
+                <span className={styles.statusTabCount}>{incompleteCount}</span>
+              </button>
+            </div>
+          </div>
+        }
       />
 
-      <section className={styles.placeholderHero}>
-        <h2 className={styles.placeholderTitle}>
-          Waiting on the XQ scoring code from Jeremy
-        </h2>
-        <p className={styles.placeholderBody}>
-          The XQ quiz is one half of GhostSignal&apos;s matching ecosystem
-          (the other half is <strong>RQ</strong>, the premium
-          marketplace-matching engine). Once the XQ scoring code is in,
-          this page becomes a submissions table mirroring{" "}
-          <code>/admin/rq-responses</code>: filters, status, detail
-          modal, axis breakdown.
-        </p>
-        <p className={styles.placeholderBody}>
-          Plug-in points (in <code>page.tsx</code> above):
-        </p>
-        <ol className={styles.placeholderList}>
-          <li>
-            Add an <code>xq_submissions</code> Supabase table (mirror
-            <code> rq_submissions</code>).
-          </li>
-          <li>
-            Land scoring at <code>apps/web/src/lib/xq/scoring.ts</code>.
-          </li>
-          <li>
-            Public quiz route under <code>/xq-quiz</code>.
-          </li>
-          <li>
-            <code>/api/xq-submissions</code> POST + list routes.
-          </li>
-          <li>
-            Replace this placeholder with the parallel of the RQ admin
-            page (DataTable + detail modal + graph).
-          </li>
-          <li>
-            Wire the marketplace lifecycle step{" "}
-            <code>xq_completed</code> to auto-detect completion when{" "}
-            <code>xq_submission_id</code> is set on the Member row.
-          </li>
-        </ol>
-      </section>
+      {filtered.length === 0 ? (
+        <EmptyState
+          title={
+            submissions.length === 0
+              ? "No XQ submissions yet"
+              : "No submissions match your filter"
+          }
+          message={
+            submissions.length === 0
+              ? "Once people complete the public /xq-quiz, their dossiers will land here."
+              : "Try clearing the search or switching the status filter."
+          }
+        />
+      ) : (
+        <DataTable
+          rows={filtered}
+          columns={columns}
+          expandedRowId={expandedRow}
+          onToggleRow={(id) =>
+            setExpandedRow((curr) => (curr === id ? null : id))
+          }
+          renderExpanded={(row) => (
+            <div className={styles.detailsBlock}>
+              <div className={styles.detailsActions}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDelete(row);
+                  }}
+                >
+                  Delete submission
+                </Button>
+              </div>
+              <SubmissionDetail submission={row} />
+            </div>
+          )}
+        />
+      )}
+
+      {confirmDelete && (
+        <Modal
+          open
+          onClose={() => {
+            if (!deleting) {
+              setConfirmDelete(null);
+              setDeleteError(null);
+            }
+          }}
+          size="md"
+          title="Delete XQ submission?"
+          dismissible={!deleting}
+          footer={
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Delete permanently"}
+              </Button>
+            </>
+          }
+        >
+          <p className={styles.modalBody}>
+            This permanently removes the submission for{" "}
+            <strong>
+              {confirmDelete.first_name} {confirmDelete.last_name}
+            </strong>
+            {confirmDelete.email && (
+              <>
+                {" "}
+                (<code>{confirmDelete.email}</code>)
+              </>
+            )}
+            . No undo.
+          </p>
+          {deleteError && (
+            <p className={styles.modalError} role="alert">
+              {deleteError}
+            </p>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

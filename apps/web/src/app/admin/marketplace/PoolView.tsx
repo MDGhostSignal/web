@@ -28,6 +28,8 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
+import { XQSummaryCard } from "@/components/admin/XQSummaryCard";
+
 import { MemberEditModal } from "../components/MemberEditModal";
 
 import { LifecycleStepper } from "./LifecycleStepper";
@@ -473,6 +475,14 @@ export function PoolView({
                     member={sourceMember}
                     onPatch={onMemberPatch}
                   />
+                )}
+
+                {/* 2b. XQ summary — surfaced when the member has a
+                       linked Conviction Index submission (set by the
+                       /xq-quiz POST's email-link best-effort). Renders
+                       nothing when not linked. */}
+                {sourceMember && sourceMember.xq_submission_id && (
+                  <XQSummaryCard submissionId={sourceMember.xq_submission_id} />
                 )}
 
                 {/* 3. Comments. The legacy MembershipBlock checkbox

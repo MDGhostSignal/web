@@ -1,70 +1,323 @@
 /* =============================================================================
-   /admin/xq-responses — XQ Responses placeholder
+   /admin/xq-responses — XQ Submissions admin
 
-   Mirrors the rq-responses module structure so when Jeremy's XQ scoring
-   code lands, the page can grow into a parallel of /admin/rq-responses
-   without a CSS rewrite. For now we only ship the page wrapper + the
-   empty-state cue.
+   Mirrors /admin/rq-responses in shape: toolbar (search + status filter),
+   DataTable with expandable row, detail panel with archetype dossier +
+   four-bucket value blueprint.
 
-   Uses --admin-* tokens (admin tree is excluded from the public-site
-   --gs-* Stylelint rule via .stylelintignore — raw px / hex is fine).
+   Uses --admin-* tokens (admin tree excluded from the public --gs-*
+   Stylelint rule via .stylelintignore — raw px / hex is fine).
    ============================================================================= */
 
-.page {
+/* --- Toolbar --------------------------------------------------------- */
+
+.toolbarRow {
   display: flex;
-  flex-direction: column;
-  gap: var(--admin-space-6);
-  padding-bottom: var(--admin-space-16);
+  gap: var(--admin-space-3);
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.placeholderHero {
+.statusFilter {
+  display: inline-flex;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.statusTab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: var(--admin-space-2) var(--admin-space-3);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  border-radius: var(--admin-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--admin-transition-fast), color var(--admin-transition-fast);
+}
+
+.statusTab:hover {
+  color: var(--admin-text-primary);
+}
+
+.statusTabActive,
+.statusTabActive:hover {
+  background: var(--admin-bg-elevated);
+  color: var(--admin-text-primary);
+}
+
+.statusTabCount {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-2);
+  padding: 1px 7px;
+  border-radius: 99px;
+}
+
+/* --- Table cell variants -------------------------------------------- */
+
+.date {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.email {
+  color: var(--admin-accent);
+  text-decoration: none;
+}
+.email:hover {
+  text-decoration: underline;
+}
+
+.archetypeCell {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-space-3);
-  padding: var(--admin-space-8);
-  background: var(--admin-bg-elevated);
+  gap: 2px;
+  min-width: 140px;
+}
+.archetypeName {
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  font-size: var(--admin-text-sm);
+}
+.archetypeCode {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.expandGlyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--admin-border);
+  border-radius: 50%;
+  color: var(--admin-text-muted);
+  font-family: var(--admin-font-mono);
+}
+
+/* --- Expanded details block ----------------------------------------- */
+
+.detailsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.detailsActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--admin-space-2);
+}
+
+/* --- Detail panel chrome -------------------------------------------- */
+
+.detailWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-4);
+  background: var(--admin-surface-1);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
 }
 
-.placeholderTitle {
-  margin: 0;
-  font-size: var(--admin-text-xl);
-  font-weight: var(--admin-weight-semibold);
+.archHero {
+  background: linear-gradient(135deg, var(--admin-accent-soft), rgba(0, 0, 0, 0));
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  padding: var(--admin-space-5);
+  text-align: center;
+}
+
+.archTag {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.archName {
+  margin: 0 0 4px;
+  font-size: var(--admin-text-3xl);
+  font-weight: var(--admin-weight-bold);
   color: var(--admin-text-primary);
   letter-spacing: -0.01em;
 }
-
-.placeholderBody {
+.archTagline {
   margin: 0;
+  font-style: italic;
+  color: var(--admin-accent);
+  opacity: 0.85;
   font-size: var(--admin-text-md);
-  color: var(--admin-text-secondary);
-  line-height: 1.6;
-  max-width: 720px;
+}
+.archCode {
+  margin-top: 10px;
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
 }
 
-.placeholderBody strong {
+.archDesc {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  line-height: 1.65;
+  color: var(--admin-text-secondary);
+}
+
+.axisStrip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--admin-space-2);
+}
+@media (max-width: 700px) {
+  .axisStrip { grid-template-columns: 1fr; }
+}
+
+.axisCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--admin-space-3);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+}
+.axisCellLabel {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.axisCellValue {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-primary);
+  font-weight: var(--admin-weight-semibold);
+}
+
+/* --- Section + buckets ---------------------------------------------- */
+
+.sectionTitle {
+  margin: var(--admin-space-2) 0 0;
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
   color: var(--admin-text-primary);
 }
 
-.placeholderBody code {
+.bucket {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bucketLabel {
+  font-size: var(--admin-text-xs);
+  font-family: var(--admin-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: var(--admin-weight-semibold);
+}
+.bucketLabel_nn { color: var(--admin-destructive); }
+.bucketLabel_core { color: var(--admin-accent); }
+.bucketLabel_asp { color: #d1b3ff; }
+.bucketLabel_bg { color: var(--admin-text-muted); }
+
+.bucketEmpty {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  margin: 3px;
+  border-radius: var(--admin-radius-sm);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-2);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-primary);
+}
+.tag_nn {
+  border-color: var(--admin-destructive);
+  color: var(--admin-destructive);
+  background: var(--admin-destructive-soft);
+}
+.tag_core {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+.tag_asp {
+  border-color: #d1b3ff;
+  color: #d1b3ff;
+  background: rgba(209, 179, 255, 0.08);
+}
+.tag_bg {
+  opacity: 0.6;
+}
+
+/* --- Meta grid ------------------------------------------------------ */
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--admin-space-3);
+  padding-top: var(--admin-space-3);
+  border-top: 1px solid var(--admin-border);
+}
+@media (max-width: 700px) {
+  .metaGrid { grid-template-columns: 1fr; }
+}
+
+.metaCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.metaLabel {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.metaValue {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  word-break: break-word;
+}
+.metaValue a {
+  color: var(--admin-accent);
+}
+
+/* --- Modal body ----------------------------------------------------- */
+
+.modalBody {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+  line-height: 1.5;
+}
+.modalBody code {
   font-family: var(--admin-font-mono);
   font-size: var(--admin-text-sm);
   padding: 1px 6px;
   background: var(--admin-surface-2);
-  border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-xs);
-  color: var(--admin-text-primary);
 }
-
-.placeholderList {
-  margin: var(--admin-space-2) 0 0;
-  padding-left: var(--admin-space-5);
-  color: var(--admin-text-secondary);
-  font-size: var(--admin-text-md);
-  line-height: 1.8;
-}
-
-.placeholderList li {
-  margin-bottom: var(--admin-space-1);
+.modalError {
+  margin: var(--admin-space-3) 0 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-error-text);
 }

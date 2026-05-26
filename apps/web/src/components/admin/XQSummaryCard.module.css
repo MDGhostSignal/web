@@ -1,0 +1,161 @@
+/* Compact XQ summary card surfaced on the marketplace pool +
+   contacts member detail. Visually pairs with the RQ result graph
+   while staying compact. Admin tokens; this dir is excluded from the
+   public --gs-* Stylelint discipline. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+}
+
+.tag {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.name {
+  margin: 0;
+  font-size: var(--admin-text-lg);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  margin: 2px 0 0;
+  font-style: italic;
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-sm);
+}
+
+.code {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-2);
+  padding: 3px 8px;
+  border-radius: var(--admin-radius-pill);
+  white-space: nowrap;
+}
+
+.skeleton,
+.error {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+  padding: var(--admin-space-2) 0;
+}
+.error {
+  color: var(--admin-error-text);
+}
+
+/* --- Axis strip ---------------------------------------------------- */
+
+.axisStrip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--admin-space-2);
+}
+@media (max-width: 600px) {
+  .axisStrip { grid-template-columns: 1fr; }
+}
+
+.axisCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--admin-space-2);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+}
+
+.axisLabel {
+  font-size: 10px;
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.axisValue {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-primary);
+  font-weight: var(--admin-weight-semibold);
+}
+
+/* --- Compact buckets ---------------------------------------------- */
+
+.bucketsCompact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  padding-top: var(--admin-space-2);
+  border-top: 1px solid var(--admin-border);
+}
+
+.bucketRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--admin-space-2);
+}
+
+.bucketLabel {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-family: var(--admin-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: var(--admin-weight-semibold);
+}
+.bucketLabel_nn { color: var(--admin-destructive); }
+.bucketLabel_core { color: var(--admin-accent); }
+.bucketLabel_asp { color: #d1b3ff; }
+
+.tagPill {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px;
+  border-radius: var(--admin-radius-sm);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-2);
+  font-size: 11px;
+  color: var(--admin-text-primary);
+}
+.tagPill_nn {
+  border-color: var(--admin-destructive);
+  color: var(--admin-destructive);
+  background: var(--admin-destructive-soft);
+}
+.tagPill_core {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+.tagPill_asp {
+  border-color: #d1b3ff;
+  color: #d1b3ff;
+  background: rgba(209, 179, 255, 0.08);
+}
+
+.meta {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  font-family: var(--admin-font-mono);
+  margin-top: 2px;
+}

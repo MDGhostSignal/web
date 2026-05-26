@@ -1,0 +1,427 @@
+/* XQ Index — public quiz styles.
+ *
+ * Borrows the RQ quiz's color palette + typography for visual parity
+ * (per user direction "use the exact same styling as the RQ quiz")
+ * but lives in its own file so the two surfaces can evolve
+ * independently and the XQ-specific question shapes (binary A/B
+ * cards, stress-test checkbox grids, archetype dossier with 4 value
+ * buckets) get the layout they need. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --xq-accent: #FBAD25;
+  --xq-accent-soft: rgba(251, 173, 37, 0.18);
+  --xq-bg: #0b0f12;
+  --xq-card: #10171c;
+  --xq-text: #FFFFFF;
+  --xq-muted: #BCBCBC;
+  --xq-line: rgba(251, 173, 37, 0.18);
+  --xq-line-soft: rgba(255, 255, 255, 0.08);
+  --xq-nn: #ff9191;
+  --xq-asp: #d1b3ff;
+  --xq-bg-grad: radial-gradient(ellipse at top, #14181c, #0b0f12 70%);
+  --xq-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --xq-mono: 'Inter', ui-monospace, monospace;
+}
+
+.gs-brand { white-space: nowrap; }
+.gs-brand-ghost { font-weight: 700; text-transform: uppercase; }
+.gs-brand-signal { font-weight: 300; }
+
+html:has(.xq-page) {
+  background: var(--xq-bg);
+  overflow-y: scroll;
+}
+
+.xq-page {
+  min-height: 100vh;
+  background: var(--xq-bg-grad);
+  color: var(--xq-text);
+  font-family: var(--xq-font);
+  padding: 80px 24px 100px;
+}
+
+/* --- Back-home pill (mirrors .rq-back-home) ---------------------- */
+.xq-back-home {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--xq-line-soft);
+  border-radius: 999px;
+  color: var(--xq-muted);
+  font: inherit;
+  font-family: var(--xq-font);
+  font-size: 13px;
+  text-decoration: none;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+.xq-back-home:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--xq-text);
+  border-color: var(--xq-line);
+}
+.xq-back-home-arrow { font-size: 14px; line-height: 1; }
+
+/* --- Container ---------------------------------------------------- */
+.xq-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* --- Header bar (title + phase pill) ----------------------------- */
+.xq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.xq-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.xq-header p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--xq-muted);
+  line-height: 1.5;
+  max-width: 600px;
+}
+.xq-phase-pill {
+  font-family: var(--xq-mono);
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--xq-line);
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--xq-accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- Progress bar (mirrors RQ's morse strip in spirit) ----------- */
+.xq-progress {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 36px;
+}
+.xq-progress-fill {
+  height: 100%;
+  background: var(--xq-accent);
+  transition: width 0.4s ease;
+}
+
+/* --- Stage section header ---------------------------------------- */
+.xq-stage-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  color: var(--xq-text);
+}
+.xq-stage-lede {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: var(--xq-muted);
+  line-height: 1.5;
+}
+
+/* --- Question card ----------------------------------------------- */
+.xq-q-block {
+  background: var(--xq-card);
+  border: 1px solid var(--xq-line-soft);
+  padding: 22px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+.xq-q-tag {
+  font-family: var(--xq-mono);
+  font-size: 11px;
+  color: var(--xq-accent);
+  margin-bottom: 8px;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.xq-q-text {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  line-height: 1.55;
+  color: var(--xq-text);
+}
+.xq-q-options {
+  display: grid;
+  gap: 6px;
+}
+.xq-opt {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--xq-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.xq-opt:hover {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--xq-text);
+  border-color: var(--xq-line-soft);
+}
+.xq-opt input {
+  margin-top: 3px;
+  accent-color: var(--xq-accent);
+}
+.xq-opt input:checked + span,
+.xq-opt:has(input:checked) {
+  color: var(--xq-text);
+  border-color: var(--xq-line);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Buttons ----------------------------------------------------- */
+.xq-btn {
+  appearance: none;
+  background: var(--xq-accent);
+  color: #081014;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-family: var(--xq-font);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.xq-btn:hover { filter: brightness(1.06); }
+.xq-btn:active { transform: translateY(1px); }
+.xq-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
+
+.xq-btn-ghost {
+  background: transparent;
+  color: var(--xq-muted);
+  border: 1px solid var(--xq-line-soft);
+}
+.xq-btn-ghost:hover { background: rgba(255, 255, 255, 0.04); color: var(--xq-text); }
+
+.xq-err {
+  color: var(--xq-nn);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* --- Intro screen ------------------------------------------------ */
+.xq-intro {
+  text-align: center;
+  max-width: 720px;
+  margin: 60px auto 0;
+}
+.xq-intro h1 {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 32px 0 14px;
+  line-height: 1.15;
+}
+.xq-intro-sub {
+  font-size: 15px;
+  color: var(--xq-muted);
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+.xq-intro-summary {
+  font-size: 14.5px;
+  color: var(--xq-muted);
+  line-height: 1.65;
+  margin: 0 auto 32px;
+  max-width: 600px;
+}
+
+/* --- Contact step ------------------------------------------------ */
+.xq-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.xq-field label {
+  font-size: 13px;
+  color: var(--xq-muted);
+  font-weight: 500;
+}
+.xq-field input,
+.xq-field select {
+  background: var(--xq-card);
+  border: 1px solid var(--xq-line-soft);
+  color: var(--xq-text);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 14px;
+}
+.xq-field input:focus,
+.xq-field select:focus {
+  outline: 2px solid var(--xq-accent);
+  outline-offset: 1px;
+}
+.xq-field-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 600px) {
+  .xq-field-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* --- Stress-test checkbox grid (Phase 3) ------------------------- */
+.xq-stress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.xq-stress-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--xq-line-soft);
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--xq-muted);
+  transition: all 0.2s;
+}
+.xq-stress-box:hover { border-color: rgba(255, 255, 255, 0.18); color: var(--xq-text); }
+.xq-stress-box input { margin: 0; accent-color: var(--xq-accent); }
+.xq-stress-box.checked { border-color: var(--xq-accent); color: var(--xq-accent); background: rgba(251, 173, 37, 0.05); }
+.xq-stress-box.checked.nn { border-color: var(--xq-nn); color: var(--xq-nn); background: rgba(255, 145, 145, 0.04); }
+.xq-stress-box.checked.asp { border-color: var(--xq-asp); color: var(--xq-asp); background: rgba(209, 179, 255, 0.04); }
+.xq-stress-help {
+  font-size: 13px;
+  color: var(--xq-muted);
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* --- Results dossier --------------------------------------------- */
+.xq-result-hero {
+  background: linear-gradient(135deg, var(--xq-accent-soft), rgba(0, 0, 0, 0));
+  border: 1px solid var(--xq-line);
+  border-radius: 14px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.xq-result-tag {
+  font-family: var(--xq-mono);
+  color: var(--xq-accent);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 6px;
+}
+.xq-result-name {
+  margin: 0 0 4px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--xq-text);
+  letter-spacing: -0.01em;
+}
+.xq-result-tagline {
+  font-style: italic;
+  color: var(--xq-accent);
+  opacity: 0.85;
+  margin: 0;
+  font-size: 15px;
+}
+.xq-result-desc {
+  line-height: 1.65;
+  font-size: 14.5px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--xq-line-soft);
+  padding: 22px;
+  border-radius: 12px;
+  margin: 0 0 22px;
+  color: var(--xq-text);
+}
+.xq-result-bias {
+  margin: 20px 0 26px;
+  font-size: 13px;
+  color: var(--xq-muted);
+  font-family: var(--xq-mono);
+}
+.xq-result-bias strong { color: var(--xq-text); }
+.xq-result-section-title {
+  font-size: 17px;
+  margin: 0 0 16px;
+  color: var(--xq-text);
+  letter-spacing: 0.2px;
+}
+.xq-bucket {
+  margin-bottom: 22px;
+}
+.xq-bucket-label {
+  font-size: 12px;
+  margin: 0 0 8px;
+  display: block;
+  text-transform: uppercase;
+  font-family: var(--xq-mono);
+  letter-spacing: 0.6px;
+  font-weight: 700;
+}
+.xq-bucket-label.nn { color: var(--xq-nn); }
+.xq-bucket-label.core { color: var(--xq-accent); }
+.xq-bucket-label.asp { color: var(--xq-asp); }
+.xq-bucket-label.bg { color: var(--xq-muted); }
+.xq-tag {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--xq-line-soft);
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 4px;
+  font-weight: 500;
+}
+.xq-tag.nn { border-color: var(--xq-nn); color: var(--xq-nn); background: rgba(255, 145, 145, 0.05); }
+.xq-tag.asp { border-color: var(--xq-asp); color: var(--xq-asp); background: rgba(209, 179, 255, 0.05); }
+.xq-tag.bg { opacity: 0.6; }
+.xq-result-empty {
+  font-size: 13px;
+  color: var(--xq-muted);
+  margin-top: 4px;
+}
+
+/* --- Submit status banner --------------------------------------- */
+.xq-submit-status {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.xq-submit-status.success {
+  background: rgba(80, 220, 130, 0.1);
+  border: 1px solid rgba(80, 220, 130, 0.4);
+  color: #6bd994;
+}
+.xq-submit-status.error {
+  background: rgba(255, 145, 145, 0.1);
+  border: 1px solid rgba(255, 145, 145, 0.4);
+  color: var(--xq-nn);
+}

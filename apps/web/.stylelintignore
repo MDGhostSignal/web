@@ -13,6 +13,11 @@ src/components/admin/
 src/app/rq-quiz/
 src/components/rq/
 
+# XQ Conviction Index quiz: --xq-* token namespace, mirrors RQ's
+# exemption pattern. Self-contained public surface with its own token
+# system tuned to match the RQ quiz visual language.
+src/app/xq-quiz/
+
 # Design-system showcase page: --ds-* tokens, internal tooling page
 # that demonstrates the public token system without consuming it.
 src/app/design-system/

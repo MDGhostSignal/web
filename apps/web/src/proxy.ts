@@ -109,5 +109,10 @@ export const config = {
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).
     "/api/rq-submissions/:id",
+    // XQ — same shape as RQ: admin gates the list + per-id delete,
+    // the base POST stays public so the /xq-quiz page can submit
+    // pre-auth.
+    "/api/xq-submissions/list",
+    "/api/xq-submissions/:id",
   ],
 };

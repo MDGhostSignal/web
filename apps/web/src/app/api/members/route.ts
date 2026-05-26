@@ -184,6 +184,12 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     out.rq_submission_id = null;
   }
 
+  if (typeof input.xq_submission_id === "string") {
+    out.xq_submission_id = input.xq_submission_id;
+  } else if (input.xq_submission_id === null) {
+    out.xq_submission_id = null;
+  }
+
   if (input.lifecycle_steps && typeof input.lifecycle_steps === "object") {
     out.lifecycle_steps = sanitizeLifecycleSteps(input.lifecycle_steps);
   }
