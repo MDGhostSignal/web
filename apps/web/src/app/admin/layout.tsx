@@ -78,7 +78,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         },
         { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
         {
-          href: "/admin/marketing",
+          // Parent links directly to the Social Planner sub-page —
+          // most-used Marketing surface, so clicking the tab lands
+          // there without a redirect hop. The section-match logic in
+          // AdminSidebar still expands + highlights the Marketing
+          // group when the user is on Assets or Copy.
+          href: "/admin/marketing/social",
           label: "Marketing",
           icon: <IconMarketing />,
           children: [

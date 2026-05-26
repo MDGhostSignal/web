@@ -170,8 +170,20 @@ function NavRow({
 }) {
   const currentSearch = new URLSearchParams(searchParams);
   const isExactActive = pathname === item.href;
+  // "Inside section" matches both the parent's own href AND any of
+  // its children's paths. Lets the parent link point straight at the
+  // default sub-page (e.g. Marketing → /admin/marketing/social) while
+  // still expanding + highlighting itself when the user is on a
+  // sibling sub-page (e.g. /admin/marketing/assets).
   const isInsideSection =
-    pathname === item.href || pathname.startsWith(item.href + "/");
+    pathname === item.href ||
+    pathname.startsWith(item.href + "/") ||
+    Boolean(
+      item.children?.some((c) => {
+        const childPath = parseHref(c.href).path;
+        return pathname === childPath || pathname.startsWith(childPath + "/");
+      }),
+    );
   const childActiveHref = item.children?.find((c) =>
     subItemActive(c, pathname, currentSearch),
   )?.href;
