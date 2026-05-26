@@ -1047,3 +1047,357 @@
 .graduatedRow .memberStatusBadge {
   opacity: 1;
 }
+
+/* Collapsible wrapper around the legacy 6-step LifecycleChecklist —
+   matches the marketplace pool's `.mmLifecycleDetails` pattern. */
+
+.lifecycleDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+}
+
+.lifecycleDetailsSummary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-2) var(--admin-space-3);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-secondary);
+  list-style: none;
+  transition: background 120ms ease;
+}
+
+.lifecycleDetailsSummary::-webkit-details-marker {
+  display: none;
+}
+
+.lifecycleDetailsSummary:hover {
+  background: var(--admin-surface-2);
+  color: var(--admin-text-primary);
+}
+
+.lifecycleDetails[open] .lifecycleDetailsSummary {
+  background: var(--admin-surface-2);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+}
+
+/* =====================================================================
+ * Contact lifecycle stepper — same visual language as the marketplace
+ * pool stepper but with 4 overall statuses (Discern · Courting ·
+ * Member · Stopped) and 3 sub-steps inside Courting. Two variants:
+ *  - .stepperCompact: inline pip-bar inside the "Lifecycle" column
+ *  - .stepperFull: full Stripe/Material-style stepper at the top of
+ *    the expanded panel.
+ * See ./ContactLifecycleStepper.tsx for the derivation logic.
+ * ===================================================================== */
+
+/* ---- Compact (table cell) -------------------------------------------- */
+
+.stepperCompact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-1);
+  min-width: 180px;
+}
+
+.stepperCompactBar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.stepperCompactPip {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--admin-surface-2);
+  transition: background 120ms ease;
+}
+
+.stepperCompactPipDone {
+  background: var(--admin-accent);
+}
+
+.stepperCompactPipCurrent {
+  background: var(--admin-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--admin-accent);
+}
+
+.stepperCompactStopped .stepperCompactPip {
+  background: var(--admin-surface-1);
+}
+
+.stepperCompactLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stepperCompactProgress {
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepperCompactPhase {
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.stepperCompactStepLabel {
+  color: var(--admin-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stepperCompactComplete {
+  color: var(--admin-success);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.stepperCompactStopped {
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+/* ---- Full (expanded panel top) --------------------------------------- */
+
+.stepperFull {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-5);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.stepperFullStopped {
+  opacity: 0.55;
+}
+
+.stepperFullHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+}
+
+.stepperFullHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepperFullTitle {
+  margin: 0;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stepperFullSummary {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+}
+
+.stepperFullSummary strong {
+  color: var(--admin-text-primary);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.stepperFullSummaryComplete {
+  color: var(--admin-success);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.stepperFullSummaryStopped {
+  color: var(--admin-text-muted);
+  font-style: italic;
+}
+
+.stepperFullPill {
+  flex-shrink: 0;
+  padding: var(--admin-space-1) var(--admin-space-3);
+  background: var(--admin-surface-2);
+  border-radius: 999px;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  font-variant-numeric: tabular-nums;
+  align-self: center;
+}
+
+.stepperFullPillFull {
+  background: var(--admin-success-soft);
+  color: var(--admin-success);
+}
+
+.stepperFullStoppedPill {
+  flex-shrink: 0;
+  padding: var(--admin-space-1) var(--admin-space-3);
+  background: var(--admin-destructive-soft);
+  color: var(--admin-destructive);
+  border-radius: 999px;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  align-self: center;
+}
+
+.stepperFullRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--admin-space-2);
+  overflow-x: auto;
+  padding-bottom: var(--admin-space-2);
+}
+
+.stepperFullPhaseGap {
+  flex-shrink: 0;
+  align-self: center;
+  width: var(--admin-space-3);
+  height: 1px;
+  background: var(--admin-border);
+  margin-top: 36px;
+}
+
+.stepperFullPhase {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-2);
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-surface-1);
+}
+
+.stepperFullPhase[data-phase="discern"] {
+  background: rgba(100, 200, 255, 0.06);
+}
+
+.stepperFullPhase[data-phase="courting"] {
+  background: rgba(251, 173, 37, 0.06);
+}
+
+.stepperFullPhase[data-phase="member"] {
+  background: rgba(50, 255, 150, 0.05);
+}
+
+.stepperFullPhaseHeader {
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.stepperFullPhaseSteps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--admin-space-1);
+}
+
+.stepperFullStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--admin-space-2);
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 160px;
+}
+
+.stepperFullConnector {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 14px;
+  flex: 0 0 auto;
+  width: var(--admin-space-2);
+  height: 2px;
+  background: var(--admin-border);
+  border-radius: 1px;
+}
+
+.stepperFullConnectorActive {
+  background: var(--admin-accent);
+}
+
+.stepperFullCircle {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--admin-border);
+  background: var(--admin-bg-elevated);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.stepperFullCircleDone {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: var(--admin-bg);
+}
+
+.stepperFullCircleCurrent {
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-accent-soft);
+  color: var(--admin-accent);
+  width: 36px;
+  height: 36px;
+}
+
+.stepperFullStepLabel {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--admin-text-secondary);
+  text-align: center;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+@media (max-width: 900px) {
+  .stepperFullRow {
+    flex-direction: column;
+    gap: var(--admin-space-3);
+  }
+  .stepperFullPhaseGap {
+    display: none;
+  }
+}

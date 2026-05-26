@@ -35,6 +35,7 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
+import { ContactLifecycleStepper } from "./ContactLifecycleStepper";
 import styles from "./contacts.module.css";
 
 /* =====================================================================
@@ -784,55 +785,8 @@ function MembersTable({
     },
     {
       key: "phase",
-      header: "Phase",
-      cell: (m) => {
-        // Graduated leads override the phase chrome entirely — once
-        // someone has been marked as a GhostSignal member, lifecycle
-        // progress and rot-detection are no longer meaningful on this
-        // surface (they live on the marketplace side now). Render a
-        // single solid "Member" pill that's visually distinct from
-        // every phase variant.
-        if (m.became_member_at) {
-          return (
-            <span
-              className={styles.memberStatusBadge}
-              title={`Graduated to GhostSignal member on ${formatDate(
-                m.became_member_at,
-              )}`}
-            >
-              <span aria-hidden="true">✓</span> Member
-            </span>
-          );
-        }
-
-        const { done, total } = countCompleted(
-          m.lifecycle_steps,
-          m.member_type,
-        );
-        const isFull = total > 0 && done === total;
-        return (
-          <span className={styles.phaseCell}>
-            <Badge variant={phaseVariant(m.phase)}>
-              {MEMBER_PHASE_LABELS[m.phase]}
-            </Badge>
-            <span
-              className={[
-                styles.progressPill,
-                isFull ? styles.progressPillFull : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              title={
-                total === 0
-                  ? "No applicable steps"
-                  : `${done} of ${total} lifecycle steps complete`
-              }
-            >
-              {done}/{total}
-            </span>
-          </span>
-        );
-      },
+      header: "Lifecycle",
+      cell: (m) => <ContactLifecycleStepper member={m} variant="compact" />,
     },
     {
       key: "owner",
@@ -878,10 +832,17 @@ function MembersTable({
       rowClassName={(m) => (m.became_member_at ? styles.graduatedRow : "")}
       renderExpanded={(m) => (
         <div className={styles.detailsBlock}>
-          {/* Actions row sits at the top now — the primary "become a
-              member" action is the most consequential thing a founder
-              does on this card, so it belongs above the fold. Edit /
-              Delete cluster on the right with a token gap between them. */}
+          {/* Lifecycle stepper — promoted to the top of the panel. Same
+              visual treatment as the marketplace pool stepper. Read-only
+              here; the underlying fields (phase, last_contact_at,
+              last_response, became_member_at) are edited via the
+              PipelineCard / "Has become a GhostSignal member" button
+              below, and the stepper reflects the derived state. */}
+          <ContactLifecycleStepper member={m} variant="full" />
+
+          {/* Actions row — the primary "become a member" action plus
+              Edit / Delete. Sits below the stepper now (the stepper is
+              the more informative scan target). */}
           <div className={styles.leadActions}>
             <Button
               variant={m.became_member_at ? "secondary" : "primary"}
@@ -952,12 +913,23 @@ function MembersTable({
               expanded panel disproportionately tall after the
               lifecycle was trimmed from 13 → 6 steps. */}
           <div className={styles.lifecycleCommentsGrid}>
-            <LifecycleChecklist
-              member={m}
-              onStepToggle={(stepKey, nextStatus) =>
-                onStepToggle(m.id, stepKey, nextStatus)
-              }
-            />
+            {/* The 6-step Discern+Court checklist is now secondary —
+                the new ContactLifecycleStepper at the top of the panel
+                is the primary lifecycle view. Keeps the granular steps
+                one click away for per-step tracking (first contact,
+                meeting, deck sent, etc.). */}
+            <details className={styles.lifecycleDetails}>
+              <summary className={styles.lifecycleDetailsSummary}>
+                <span>Show step details</span>
+                <span aria-hidden="true">▾</span>
+              </summary>
+              <LifecycleChecklist
+                member={m}
+                onStepToggle={(stepKey, nextStatus) =>
+                  onStepToggle(m.id, stepKey, nextStatus)
+                }
+              />
+            </details>
             <MemberComments memberId={m.id} />
           </div>
         </div>
