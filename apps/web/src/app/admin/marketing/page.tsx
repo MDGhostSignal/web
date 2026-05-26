@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 
 /**
- * /admin/marketing redirects to the Assets sub-tab. The three real
- * sections now live as their own routes:
+ * /admin/marketing redirects to the Social Planner — most-used
+ * Marketing sub-page, so landing there saves a click. The three real
+ * sections live as their own routes:
  *
  *   /admin/marketing/assets
  *   /admin/marketing/copy
@@ -13,5 +14,5 @@ import { redirect } from "next/navigation";
  * is gone.
  */
 export default function MarketingPage() {
-  redirect("/admin/marketing/assets");
+  redirect("/admin/marketing/social");
 }

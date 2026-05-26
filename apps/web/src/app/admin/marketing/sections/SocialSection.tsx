@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Button,
@@ -48,21 +48,19 @@ type CreatePayload = Parameters<
   React.ComponentProps<typeof PostComposer>["onSubmit"]
 >[0];
 
-const VIEW_STORAGE_KEY = "ghostsignal.admin.social.view";
-const VALID_VIEWS: CalendarView[] = ["day", "week", "month", "year"];
-
 /**
  * Social Media Scheduler section. Four views (Day / Week / Month /
- * Year) swap inside a shared CalendarHeader. The view choice persists
- * across reloads in localStorage. Each (view, anchor) change triggers
- * a refetch of the relevant time window.
- *
- * Month and Year are placeholder cards in Phase 1 — the switcher works
- * and the navigation steps through year/month boundaries correctly,
- * so the wiring is in place when their grid components land.
+ * Year) swap inside a shared CalendarHeader. Month is always the
+ * entry view — the planner is most useful at-a-glance over a month,
+ * and a deterministic entry point beats a remembered one for shared
+ * admin UX (founders look at the same screen). Each (view, anchor)
+ * change triggers a refetch of the relevant time window.
  */
 export function SocialSection() {
-  const [view, setView] = useState<CalendarView>("week");
+  // Always enter on Month view. The switcher still lets the user
+  // pick Day / Week / Year within the session, but the choice is not
+  // persisted — every fresh open of the page lands back on Month.
+  const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState<Date>(() => startOfDay(new Date()));
   const [posts, setPosts] = useState<SocialPostRow[]>([]);
   const [state, setState] = useState<LoadState>({ kind: "loading" });
@@ -76,30 +74,8 @@ export function SocialSection() {
   >(null);
   const [composing, setComposing] = useState(false);
 
-  // Hydrate the persisted view choice once after mount. Doing this in
-  // an effect (not lazy useState init) avoids an SSR/CSR markup mismatch
-  // — the server has no localStorage.
-  const hydratedRef = useRef(false);
-  useEffect(() => {
-    if (hydratedRef.current) return;
-    hydratedRef.current = true;
-    try {
-      const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
-      if (stored && (VALID_VIEWS as string[]).includes(stored)) {
-        setView(stored as CalendarView);
-      }
-    } catch {
-      // localStorage unavailable (private mode, etc.) — stay on default.
-    }
-  }, []);
-
   function handleViewChange(next: CalendarView): void {
     setView(next);
-    try {
-      window.localStorage.setItem(VIEW_STORAGE_KEY, next);
-    } catch {
-      // ignore — UI still works without persistence.
-    }
   }
 
   const loadList = useCallback(async () => {

@@ -84,7 +84,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           children: [
             { href: "/admin/marketing/assets", label: "Assets" },
             { href: "/admin/marketing/copy", label: "Copy" },
-            { href: "/admin/marketing/social", label: "Social" },
+            { href: "/admin/marketing/social", label: "Social Planner" },
           ],
         },
         { href: "/admin/finance", label: "Finance", icon: <IconFinance /> },
