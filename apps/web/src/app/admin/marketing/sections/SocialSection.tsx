@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Button,
-  EmptyState,
   ErrorCard,
   Loading,
   Modal,
@@ -26,6 +25,7 @@ import { MonthCalendar } from "../components/social/MonthCalendar";
 import { PostComposer } from "../components/social/PostComposer";
 import { PostDetail } from "../components/social/PostDetail";
 import { WeekCalendar } from "../components/social/WeekCalendar";
+import { YearCalendar } from "../components/social/YearCalendar";
 import styles from "../marketing.module.css";
 
 type ListResponse = {
@@ -228,6 +228,11 @@ export function SocialSection() {
     handleViewChange("day");
   }
 
+  function drillToMonth(month: Date): void {
+    setAnchor(startOfDay(month));
+    handleViewChange("month");
+  }
+
   function startDuplicate(source: SocialPostWithImages): void {
     // Pre-fill the composer with this post's contents, scheduled one
     // week later. The composer creates a fresh row — original is
@@ -326,9 +331,11 @@ export function SocialSection() {
           )}
 
           {view === "year" && (
-            <EmptyState
-              title="Year view — coming in next pass"
-              message="The year grid is part of the next phase. The switcher and range navigation already step through year boundaries, so the data and routing are in place — only the grid component is missing. Switch back to Day, Week, or Month to plan posts in the meantime."
+            <YearCalendar
+              anchor={anchor}
+              posts={posts}
+              onSelectMonth={drillToMonth}
+              onSelectDay={drillToDay}
             />
           )}
         </div>
