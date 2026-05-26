@@ -43,7 +43,15 @@ assets/**
 !assets/.gitkeep
 
 # Local tool/agent settings
-.claude/
+# Ignore everything under .claude/ EXCEPT the shareable project config
+# (skills, agents, slash commands, and the team-shared settings.json).
+# Personal stuff like settings.local.json and transcripts stays ignored.
+.claude/*
+!.claude/skills/
+!.claude/agents/
+!.claude/commands/
+!.claude/hooks/
+!.claude/settings.json
 .grok/
 
 # Temporary files

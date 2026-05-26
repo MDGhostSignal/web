@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run lint:css *)",
+      "Bash(npm run assets:audit *)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(tasklist *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-ship-checks.mjs\"",
+            "timeout": 180,
+            "statusMessage": "Running pre-ship gates (typecheck, lint, css, assets)…"
+          }
+        ]
+      }
+    ]
+  }
+}
