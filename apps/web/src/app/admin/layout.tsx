@@ -17,6 +17,7 @@ import {
   IconMarketplace,
   IconRQ,
   IconTasks,
+  IconXQ,
 } from "@/components/admin/icons";
 
 /**
@@ -75,6 +76,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           href: "/admin/rq-responses",
           label: "RQ Responses",
           icon: <IconRQ />,
+        },
+        {
+          href: "/admin/xq-responses",
+          label: "XQ Responses",
+          icon: <IconXQ />,
         },
         { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
         {

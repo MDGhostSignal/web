@@ -76,6 +76,19 @@ export function IconRQ(props: Props) {
   );
 }
 
+/** XQ Responses — same speech-bubble silhouette as RQ to signal the
+ *  pairing, with an "x" mark inside instead of the question-mark
+ *  hook. */
+export function IconXQ(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M21 12c0 4.4-4 8-9 8a10 10 0 0 1-3.5-.6L4 21l1-3.5A7.4 7.4 0 0 1 3 12c0-4.4 4-8 9-8s9 3.6 9 8z" />
+      <line x1="9.5" y1="9.5" x2="14.5" y2="14.5" />
+      <line x1="14.5" y1="9.5" x2="9.5" y2="14.5" />
+    </svg>
+  );
+}
+
 /** Tasks — checked list. */
 export function IconTasks(props: Props) {
   return (

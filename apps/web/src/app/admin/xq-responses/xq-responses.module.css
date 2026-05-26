@@ -1,0 +1,70 @@
+/* =============================================================================
+   /admin/xq-responses — XQ Responses placeholder
+
+   Mirrors the rq-responses module structure so when Jeremy's XQ scoring
+   code lands, the page can grow into a parallel of /admin/rq-responses
+   without a CSS rewrite. For now we only ship the page wrapper + the
+   empty-state cue.
+
+   Uses --admin-* tokens (admin tree is excluded from the public-site
+   --gs-* Stylelint rule via .stylelintignore — raw px / hex is fine).
+   ============================================================================= */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-6);
+  padding-bottom: var(--admin-space-16);
+}
+
+.placeholderHero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-8);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.placeholderTitle {
+  margin: 0;
+  font-size: var(--admin-text-xl);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.placeholderBody {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+.placeholderBody strong {
+  color: var(--admin-text-primary);
+}
+
+.placeholderBody code {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-sm);
+  padding: 1px 6px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-xs);
+  color: var(--admin-text-primary);
+}
+
+.placeholderList {
+  margin: var(--admin-space-2) 0 0;
+  padding-left: var(--admin-space-5);
+  color: var(--admin-text-secondary);
+  font-size: var(--admin-text-md);
+  line-height: 1.8;
+}
+
+.placeholderList li {
+  margin-bottom: var(--admin-space-1);
+}
