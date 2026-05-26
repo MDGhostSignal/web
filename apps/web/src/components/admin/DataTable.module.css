@@ -148,7 +148,12 @@
   position: sticky;
   left: 0;
   width: 100%;
-  max-width: min(calc(100vw - 48px), 1400px);
+  /* Clamp to the viewport so the sticky panel doesn't extend past
+     visible bounds when the table has horizontal overflow. No fixed
+     ceiling — content fills the available width of the admin shell
+     so wide screens are utilised (matches the shell's own no-cap
+     rule on .content). */
+  max-width: calc(100vw - 48px);
   box-sizing: border-box;
   padding: var(--admin-space-6);
   display: flex;

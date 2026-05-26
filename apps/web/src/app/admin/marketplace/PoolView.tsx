@@ -31,6 +31,7 @@ import {
 
 import { MemberEditModal } from "../components/MemberEditModal";
 
+import { LifecycleStepper } from "./LifecycleStepper";
 import styles from "./marketplace.module.css";
 import {
   MarketplaceMemberComments,
@@ -291,13 +292,11 @@ export function PoolView({
       ),
     },
     {
-      // Replaces the prior Values / Authenticity / Horizon trait
-      // columns. Surfaces the next pending lifecycle step for real
-      // members (looked up via the `mem-` id prefix in
-      // entityToMemberId), so the table doubles as an onboarding
-      // worklist. Mocks have no underlying member and show "—".
+      // Compact lifecycle stepper — pip-bar + "X/Y · Phase · Next step"
+      // label, so the table doubles as an at-a-glance onboarding worklist.
+      // Mocks have no underlying member and show "—".
       key: "status",
-      header: "Next action",
+      header: "Lifecycle",
       cell: (e) => {
         const memberId = entityToMemberId(e.id);
         const member =
@@ -305,33 +304,7 @@ export function PoolView({
         if (!member) {
           return <span className={styles.poolStatusEmpty}>—</span>;
         }
-
-        // Walk the marketplace slice of LIFECYCLE_STEPS in order;
-        // first step that's neither done nor N/A is the next action.
-        const stepKeys = new Set(MARKETPLACE_LIFECYCLE_KEYS);
-        const nextStep = LIFECYCLE_STEPS.find((s) => {
-          if (!stepKeys.has(s.key)) return false;
-          if (s.creatorOnly && member.member_type !== "creator") return false;
-          const stored = member.lifecycle_steps?.[s.key];
-          return stored?.status !== "done";
-        });
-
-        if (!nextStep) {
-          return (
-            <span className={styles.poolStatusCell}>
-              <Badge variant="success">All steps complete</Badge>
-            </span>
-          );
-        }
-
-        return (
-          <span className={styles.poolStatusCell}>
-            <Badge variant="info">
-              {MEMBER_PHASE_LABELS[nextStep.phase]}
-            </Badge>
-            <span className={styles.poolStatusLabel}>{nextStep.label}</span>
-          </span>
-        );
+        return <LifecycleStepper member={member} variant="compact" />;
       },
     },
     {
@@ -465,10 +438,37 @@ export function PoolView({
                   </div>
                 )}
 
-                {/* 1. Member details — replicates the leads card:
-                       ContactCard + editable outreach fields (owner,
-                       last contact w/ date picker, times contacted,
-                       last response, notes). Real members only. */}
+                {/* 1. Lifecycle stepper — promoted to the top of the
+                       panel as the most important "where are we / what's
+                       next" signal. Clicking a circle toggles done/undo.
+                       The detailed checklist (with owner role + per-step
+                       date) lives further down inside a collapsible. */}
+                {sourceMember && onMemberPatch && (
+                  <LifecycleStepper
+                    member={sourceMember}
+                    variant="full"
+                    onToggle={async (stepKey, nextDone) => {
+                      const today = new Date().toISOString().slice(0, 10);
+                      const stored =
+                        sourceMember.lifecycle_steps?.[stepKey];
+                      const merged: LifecycleSteps = {
+                        ...(sourceMember.lifecycle_steps ?? {}),
+                        [stepKey]: {
+                          status: (nextDone ? "done" : "todo") as StepStatus,
+                          completed_at: nextDone
+                            ? (stored?.completed_at ?? today)
+                            : null,
+                        },
+                      };
+                      await onMemberPatch(sourceMember.id, {
+                        lifecycle_steps: merged,
+                      });
+                    }}
+                  />
+                )}
+
+                {/* 2. Member details — ContactCard + editable outreach
+                       fields. Real members only. */}
                 {sourceMember && onMemberPatch && (
                   <MarketplaceMemberDetails
                     member={sourceMember}
@@ -476,16 +476,25 @@ export function PoolView({
                   />
                 )}
 
-                {/* 2. Lifecycle checklist + Comments thread side-by-
-                       side — same arrangement leads page uses on its
-                       bottom row. Real members only. */}
+                {/* 3. Lifecycle details (collapsible) + Comments
+                       side-by-side. The stepper above is the primary
+                       interaction surface; this checklist exists for
+                       bulk-editing + per-step owner/date metadata. */}
                 {sourceMember && (
                   <div className={styles.mmLifecycleCommentsGrid}>
                     {onMemberPatch && (
-                      <MembershipBlock
-                        member={sourceMember}
-                        onPatch={onMemberPatch}
-                      />
+                      <details className={styles.mmLifecycleDetails}>
+                        <summary
+                          className={styles.mmLifecycleDetailsSummary}
+                        >
+                          <span>Show step details</span>
+                          <span aria-hidden="true">▾</span>
+                        </summary>
+                        <MembershipBlock
+                          member={sourceMember}
+                          onPatch={onMemberPatch}
+                        />
+                      </details>
                     )}
                     <MarketplaceMemberComments memberId={sourceMember.id} />
                   </div>
