@@ -22,6 +22,7 @@ import type {
 
 import { CalendarHeader } from "../components/social/CalendarHeader";
 import { DayCalendar } from "../components/social/DayCalendar";
+import { MonthCalendar } from "../components/social/MonthCalendar";
 import { PostComposer } from "../components/social/PostComposer";
 import { PostDetail } from "../components/social/PostDetail";
 import { WeekCalendar } from "../components/social/WeekCalendar";
@@ -222,6 +223,11 @@ export function SocialSection() {
     setComposing(true);
   }
 
+  function drillToDay(day: Date): void {
+    setAnchor(startOfDay(day));
+    handleViewChange("day");
+  }
+
   function startDuplicate(source: SocialPostWithImages): void {
     // Pre-fill the composer with this post's contents, scheduled one
     // week later. The composer creates a fresh row — original is
@@ -309,10 +315,20 @@ export function SocialSection() {
             />
           )}
 
-          {(view === "month" || view === "year") && (
+          {view === "month" && (
+            <MonthCalendar
+              anchor={anchor}
+              posts={posts}
+              onSelectPost={(id) => setSelectedId(id)}
+              onDrillToDay={drillToDay}
+              onAddOnDay={(day) => startCompose(day)}
+            />
+          )}
+
+          {view === "year" && (
             <EmptyState
-              title={`${view === "month" ? "Month" : "Year"} view — coming in next pass`}
-              message={`The ${view} grid is part of the next phase. The switcher and range navigation already step through ${view} boundaries, so the data and routing are in place — only the grid component is missing. Switch back to Day or Week to plan posts in the meantime.`}
+              title="Year view — coming in next pass"
+              message="The year grid is part of the next phase. The switcher and range navigation already step through year boundaries, so the data and routing are in place — only the grid component is missing. Switch back to Day, Week, or Month to plan posts in the meantime."
             />
           )}
         </div>
