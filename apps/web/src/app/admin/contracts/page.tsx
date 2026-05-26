@@ -11,6 +11,8 @@ import {
   PageHeader,
   SearchInput,
 } from "@/components/admin";
+import { IconExternal } from "@/components/admin/icons";
+import { ESIGNATURES_TEMPLATES } from "@/lib/esignatures-templates";
 import type { ContractRow } from "@/lib/esignatures-types";
 
 import { ContractComposer } from "./components/ContractComposer";
@@ -160,6 +162,15 @@ export default function ContractsPage() {
           <>
             <Button variant="secondary" onClick={() => setImportOpen(true)}>
               Import by ID
+            </Button>
+            <Button
+              variant="secondary"
+              href={ESIGNATURES_TEMPLATES.creator.editUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              trailingIcon={<IconExternal />}
+            >
+              + New Creator Contract
             </Button>
             <Button variant="primary" onClick={() => setComposerOpen(true)}>
               Send new contract
