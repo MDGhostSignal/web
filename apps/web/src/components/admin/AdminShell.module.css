@@ -136,8 +136,10 @@
   flex: 1;
   min-width: 0;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  /* No max-width — admin chrome is mostly tables, grids, and
+     dashboards that benefit from filling wide screens. The horizontal
+     padding below (--admin-space-6 = 24 px) is the only spacer between
+     the content edge and the viewport edge. */
   padding: var(--admin-space-8) var(--admin-space-6) var(--admin-space-16);
 }
 
