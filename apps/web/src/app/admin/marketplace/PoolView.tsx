@@ -23,7 +23,6 @@ import {
   MEMBER_PHASE_LABELS,
   type LifecycleSteps,
   type Member,
-  type MemberPhase,
   type MemberType,
   type MemberWritable,
   type StepStatus,
@@ -476,28 +475,12 @@ export function PoolView({
                   />
                 )}
 
-                {/* 3. Lifecycle details (collapsible) + Comments
-                       side-by-side. The stepper above is the primary
-                       interaction surface; this checklist exists for
-                       bulk-editing + per-step owner/date metadata. */}
+                {/* 3. Comments. The legacy MembershipBlock checkbox
+                       checklist was retired now that the LifecycleStepper
+                       at the top of the panel is the single source of
+                       per-step interaction. */}
                 {sourceMember && (
-                  <div className={styles.mmLifecycleCommentsGrid}>
-                    {onMemberPatch && (
-                      <details className={styles.mmLifecycleDetails}>
-                        <summary
-                          className={styles.mmLifecycleDetailsSummary}
-                        >
-                          <span>Show step details</span>
-                          <span aria-hidden="true">▾</span>
-                        </summary>
-                        <MembershipBlock
-                          member={sourceMember}
-                          onPatch={onMemberPatch}
-                        />
-                      </details>
-                    )}
-                    <MarketplaceMemberComments memberId={sourceMember.id} />
-                  </div>
+                  <MarketplaceMemberComments memberId={sourceMember.id} />
                 )}
 
                 {/* 3. Signal Profile — bottom of the panel, with a
@@ -721,158 +704,6 @@ export function PoolView({
  * FilterChipGroup — reusable little segmented control. Extracted here
  * since the same shape appears in MatchBoard's tier filter too.
  * ===================================================================== */
-
-/* =====================================================================
- * MarketplaceLifecycleChecklist — mimics the leads-page
- * LifecycleChecklist exactly (progress pill, phase badges, step rows
- * with role tag + completion date) but scoped to the marketplace slice
- * of LIFECYCLE_STEPS (Sign / Onboard / Run). Renders inside the
- * Lifecycle + Comments side-by-side grid on the expanded pool row.
- * ===================================================================== */
-
-const MARKETPLACE_PHASES_IN_ORDER: MemberPhase[] = ["sign", "onboard", "run"];
-
-function phaseVariantInline(phase: MemberPhase) {
-  switch (phase) {
-    case "sign":
-      return "warn" as const;
-    case "onboard":
-      return "warn" as const;
-    case "run":
-      return "success" as const;
-    default:
-      return "neutral" as const;
-  }
-}
-
-function formatStepDate(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-type MembershipBlockProps = {
-  member: Member;
-  onPatch: (memberId: string, partial: MemberWritable) => Promise<boolean>;
-};
-
-function MembershipBlock({ member, onPatch }: MembershipBlockProps) {
-  const stepKeys = new Set(MARKETPLACE_LIFECYCLE_KEYS);
-  const marketplaceSteps = LIFECYCLE_STEPS.filter((s) => stepKeys.has(s.key));
-
-  // Group by phase for the per-phase render below.
-  const byPhase = new Map<MemberPhase, typeof LIFECYCLE_STEPS>();
-  for (const step of marketplaceSteps) {
-    const list = (byPhase.get(step.phase) ?? []) as typeof LIFECYCLE_STEPS;
-    byPhase.set(step.phase, [...list, step] as typeof LIFECYCLE_STEPS);
-  }
-
-  // Progress count — N/A steps (creator-only on a brand) don't count
-  // toward either done or total. Same logic the leads LifecycleChecklist
-  // uses via countCompleted in @/lib/members.
-  let done = 0;
-  let total = 0;
-  for (const step of marketplaceSteps) {
-    if (step.creatorOnly && member.member_type !== "creator") continue;
-    total += 1;
-    if (member.lifecycle_steps?.[step.key]?.status === "done") done += 1;
-  }
-  const isFull = total > 0 && done === total;
-
-  const handleToggle = async (stepKey: string, isDone: boolean) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const stored = member.lifecycle_steps?.[stepKey];
-    const merged: LifecycleSteps = {
-      ...(member.lifecycle_steps ?? {}),
-      [stepKey]: {
-        status: (isDone ? "done" : "todo") as StepStatus,
-        completed_at: isDone ? (stored?.completed_at ?? today) : null,
-      },
-    };
-    await onPatch(member.id, { lifecycle_steps: merged });
-  };
-
-  return (
-    <section className={styles.mmLifecycleBlock} aria-label="Lifecycle">
-      <h4 className={styles.mmLifecycleTitle}>
-        Lifecycle
-        <span
-          className={[
-            styles.mmProgressPill,
-            isFull ? styles.mmProgressPillFull : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {done}/{total}
-        </span>
-      </h4>
-
-      {MARKETPLACE_PHASES_IN_ORDER.map((phaseKey) => {
-        const steps = byPhase.get(phaseKey);
-        if (!steps || steps.length === 0) return null;
-        return (
-          <div key={phaseKey} className={styles.mmPhaseGroup}>
-            <div className={styles.mmPhaseGroupHeader}>
-              <Badge variant={phaseVariantInline(phaseKey)}>
-                {MEMBER_PHASE_LABELS[phaseKey]}
-              </Badge>
-            </div>
-            <div className={styles.mmStepList}>
-              {steps.map((step) => {
-                const stored = member.lifecycle_steps?.[step.key];
-                const isNa =
-                  step.creatorOnly && member.member_type !== "creator";
-                const status: StepStatus = stored?.status ?? "todo";
-                const isDone = status === "done";
-                const rowCls = [
-                  styles.mmStepRow,
-                  isNa ? styles.mmStepRowNa : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ");
-                const labelCls = [
-                  styles.mmStepLabel,
-                  isDone ? styles.mmStepLabelDone : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ");
-                return (
-                  <label key={step.key} className={rowCls}>
-                    <input
-                      type="checkbox"
-                      className={styles.mmStepCheckbox}
-                      checked={isDone}
-                      disabled={isNa}
-                      onChange={(ev) =>
-                        void handleToggle(step.key, ev.target.checked)
-                      }
-                    />
-                    <span className={labelCls}>
-                      {step.label}
-                      {isNa && " (N/A)"}
-                    </span>
-                    <span className={styles.mmStepRoleTag}>
-                      {step.ownerRole}
-                    </span>
-                    <span className={styles.mmStepDate}>
-                      {isDone ? formatStepDate(stored?.completed_at) : ""}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </section>
-  );
-}
 
 /* =====================================================================
  * MarketplaceUrgentBanner — top-of-pool priority list. Mirrors the
