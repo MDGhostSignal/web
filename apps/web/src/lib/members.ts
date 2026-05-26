@@ -73,6 +73,10 @@ export const STEP_OWNER_ROLES = [
   "Ops",
   "Finance",
   "Creator",
+  /** Used for steps the member themselves drives (e.g. completing the
+   *  RQ / XQ quiz). Reads accurately for both creators and brands —
+   *  preferred over "Creator" when the action isn't creator-specific. */
+  "Member",
 ] as const;
 export type StepOwnerRole = (typeof STEP_OWNER_ROLES)[number];
 
@@ -117,7 +121,10 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   { key: "mercury_w9", label: "Mercury / W9", phase: "onboard", ownerRole: "Finance", creatorOnly: true },
   { key: "show_info", label: "Show Info Received", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
   { key: "art19_migration", label: "ART19 Migration", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
+  { key: "art19_tutorial_sent", label: "Art 19 setup & tutorial sent", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
   // Run
+  { key: "rq_completed", label: "RQ quiz completed", phase: "run", ownerRole: "Member" },
+  { key: "xq_completed", label: "XQ quiz completed", phase: "run", ownerRole: "Member" },
   { key: "campaign_planning", label: "Campaign Planning + Execution", phase: "run", ownerRole: "Ops" },
 ] as const;
 
