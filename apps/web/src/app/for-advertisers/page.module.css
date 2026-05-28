@@ -889,6 +889,19 @@
   }
 }
 
+/* Hide the mariah statue PNG on phone/tablet-portrait viewports. Its
+   ParallaxY translates 35rem in both directions; on narrow viewports
+   where .visualImage is full-width (per the ≤1024 block above), the
+   image drifts far below the .business section it's anchored to and
+   floats over unrelated content as the user keeps scrolling. The
+   sculpture is decorative — the section's content carries on text
+   alone. */
+@media (max-width: 991px) {
+  .businessVisual {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .page {
     --edge-pad: calc(var(--gs-n-28) * var(--gs-px));

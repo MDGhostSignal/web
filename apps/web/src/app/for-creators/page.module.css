@@ -721,15 +721,48 @@
   }
 }
 
+/* Mobile hero treatment — mirrors what-is-this. Kill the 100 px white
+   frame around the video so the footage fills the viewport edge-to-edge;
+   move horizontal padding from .hero onto .heroContent so the text still
+   has breathing room. !important on the wrapper inset + .hero padding
+   prevents the narrower-breakpoint blocks below (768/560/420) from
+   re-asserting the desktop frame at phone widths. */
+@media (max-width: 991px) {
+  .hero {
+    padding: 0 !important;
+    min-height: 100dvh;
+    /* Vertically center content (default base is flex-start so the
+       headline would sit at y:0 of the hero, hidden under the 64 px
+       fixed header bar). Centering matches what-is-this mobile. */
+    align-items: center;
+  }
+  .heroVideoWrapper {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  .heroVideo {
+    /* Switch from `contain` (letterboxed) to `cover` so the video fills
+       the now-full-bleed wrapper without dark navy bars showing through
+       the gaps. Lose strict aspect-ratio fidelity on mobile in exchange
+       for an edge-to-edge feel that matches what-is-this. */
+    object-fit: cover;
+    object-position: center;
+  }
+  .heroContent {
+    padding-inline: var(--edge-pad);
+  }
+}
+
 @media (max-width: 768px) {
   .page {
     --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
   }
 
-  .hero {
-    min-height: 100vh;
-    padding: calc(var(--gs-n-140) * var(--gs-px)) var(--edge-pad);
-  }
+  /* .hero padding + min-height handled by the ≤991 px block above
+     (padding: 0 + min-height: 100dvh + align-items: center). Removed
+     the legacy 140 px padding + 100vh (buggy on mobile chrome) rule. */
 
   .heroHeadline {
     font-size: clamp(28px, 7vw, 42px);
@@ -796,10 +829,7 @@
     --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
   }
 
-  .hero {
-    min-height: 100vh;
-    padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
-  }
+  /* .hero handled by the ≤991 px block above. */
 
   .heroHeadline {
     font-size: clamp(24px, 8vw, 36px);
