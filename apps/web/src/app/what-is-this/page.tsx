@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,6 +43,18 @@ import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
 
+// Module-scope helpers for the desktop-only R3F scene gate.
+// useSyncExternalStore requires stable subscribe/getSnapshot references,
+// which is easiest to guarantee by defining them outside the component.
+const SCENE_MQ = "(min-width: 992px)";
+const subscribeSceneMq = (callback: () => void) => {
+  const mq = window.matchMedia(SCENE_MQ);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+};
+const getSceneMqSnapshot = () => window.matchMedia(SCENE_MQ).matches;
+const getSceneMqServerSnapshot = () => false;
+
 export default function WhatIsThisPage() {
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -82,6 +94,20 @@ export default function WhatIsThisPage() {
     dragged: boolean;
   } | null>(null);
   const [valuesGrabbing, setValuesGrabbing] = useState(false);
+
+  // Gate the heavy R3F scenes (HarmonyOrbs, ValuesBinary) to desktop
+  // only. On touch viewports they cost GPU/CPU for no payoff — the
+  // drag interactions are CSS-disabled anyway, and the scenery is
+  // positioned with viewport-anchored coordinates that pushed off the
+  // right edge of phone/tablet-portrait screens (the earlier "right-
+  // side gap" bug). Server snapshot is `false` so SSR matches mobile;
+  // both components are `dynamic({ ssr: false })` anyway so there's no
+  // hydration mismatch when desktop opts back in after first paint.
+  const sceneEnabled = useSyncExternalStore(
+    subscribeSceneMq,
+    getSceneMqSnapshot,
+    getSceneMqServerSnapshot,
+  );
 
   const onValuesPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     valuesDragRef.current = {
@@ -124,42 +150,50 @@ export default function WhatIsThisPage() {
     const text = heroTextRef.current;
     if (!wrapper || !video) return;
 
-    const trigger = {
-      trigger: wrapper,
-      start: "top top",
-      // Fade completes inside the first viewport of scroll so the video
-      // is fully gone by the time the next section reaches the
-      // viewport top — no visible seam between hero and the section
-      // below it. Was "+=140%" (longer, more gradual) but the seam
-      // read as a transition glitch.
-      end: "+=80%",
-      scrub: 1,
-    } as const;
+    // On touch viewports (≤991 px) skip the 3 scrub-fade tweens entirely.
+    // scrub:1 recomputes opacity / y on every scroll frame across three
+    // ScrollTriggers, which on mid-range phones turned scrolling into the
+    // harmony section into a hard freeze. The hero scrolls off-screen
+    // naturally as the user advances; without the fade you just lose the
+    // soft cross-dissolve into the starry section. Acceptable trade.
+    const isDesktop = window.matchMedia("(min-width: 992px)").matches;
 
-    // Video + white frame: opacity fade ONLY. Every other property
-    // (filter, transform, scale, y) has been removed after repeated
-    // Chromium decoder-stall freezes — the browser will happily
-    // composite an opacity-only layer while keeping the video decoder
-    // running. Parallax on the video is not worth a frozen loop. The
-    // .heroBackground sibling fades in lockstep with the video so the
-    // four-sided white frame dissolves together with the footage —
-    // once both are gone, the starry parallax shows through the now-
-    // transparent .hero into the gap before the harmony section.
-    const videoTween = gsap.fromTo(
-      background ? [video, background] : video,
-      { opacity: 1 },
-      {
-        opacity: 0,
-        ease: "power1.inOut",
-        scrollTrigger: trigger,
-      },
-    );
+    const tweens: Array<{ tween: gsap.core.Tween | null }> = [];
 
-    // Text overlay: plain fade + slight lift (no blur — keeps copy sharp
-    // as it leaves). Shorter scroll distance so copy is gone before the
-    // video has fully dispersed, which lets the sky reveal cleanly.
-    const textTween = text
-      ? gsap.fromTo(
+    if (isDesktop) {
+      const trigger = {
+        trigger: wrapper,
+        start: "top top",
+        // Fade completes inside the first viewport of scroll so the video
+        // is fully gone by the time the next section reaches the
+        // viewport top — no visible seam between hero and the section
+        // below it. Was "+=140%" (longer, more gradual) but the seam
+        // read as a transition glitch.
+        end: "+=80%",
+        scrub: 1,
+      } as const;
+
+      // Video + white frame: opacity fade ONLY. Every other property
+      // (filter, transform, scale, y) has been removed after repeated
+      // Chromium decoder-stall freezes — the browser will happily
+      // composite an opacity-only layer while keeping the video decoder
+      // running.
+      const videoTween = gsap.fromTo(
+        background ? [video, background] : video,
+        { opacity: 1 },
+        {
+          opacity: 0,
+          ease: "power1.inOut",
+          scrollTrigger: trigger,
+        },
+      );
+      tweens.push({ tween: videoTween });
+
+      // Text overlay: plain fade + slight lift (no blur — keeps copy sharp
+      // as it leaves). Shorter scroll distance so copy is gone before the
+      // video has fully dispersed, which lets the sky reveal cleanly.
+      if (text) {
+        const textTween = gsap.fromTo(
           text,
           { opacity: 1, y: 0 },
           {
@@ -173,16 +207,17 @@ export default function WhatIsThisPage() {
               scrub: 1,
             },
           },
-        )
-      : null;
+        );
+        tweens.push({ tween: textTween });
+      }
 
-    // Bars-graph fade-in — runs in lockstep with the video fade-out
-    // (same trigger / start / end / scrub) so the bars emerge at exactly
-    // the same scroll-rate that the video disappears. Target opacity
-    // 0.6 matches the prior static value; CSS starts the wrapper at 0.
-    const bars = barsRef.current;
-    const barsTween = bars
-      ? gsap.fromTo(
+      // Bars-graph fade-in — runs in lockstep with the video fade-out
+      // (same trigger / start / end / scrub) so the bars emerge at exactly
+      // the same scroll-rate that the video disappears. Target opacity
+      // 0.6 matches the prior static value; CSS starts the wrapper at 0.
+      const bars = barsRef.current;
+      if (bars) {
+        const barsTween = gsap.fromTo(
           bars,
           { opacity: 0 },
           {
@@ -190,8 +225,16 @@ export default function WhatIsThisPage() {
             ease: "power1.inOut",
             scrollTrigger: trigger,
           },
-        )
-      : null;
+        );
+        tweens.push({ tween: barsTween });
+      }
+    } else {
+      // Mobile: leave .heroBackground transparent (CSS), let the bars
+      // reveal as a static element via opacity 1 directly (skip the
+      // fade-in choreography).
+      const bars = barsRef.current;
+      if (bars) gsap.set(bars, { opacity: 0.6 });
+    }
 
     // Belt-and-suspenders looping. The `loop` attribute is the primary
     // guarantee; these event listeners are safety-nets for cases where a
@@ -219,12 +262,10 @@ export default function WhatIsThisPage() {
       video.removeEventListener("pause", onPause);
       video.removeEventListener("ended", onEnded);
       document.removeEventListener("visibilitychange", onVisibility);
-      videoTween.scrollTrigger?.kill();
-      videoTween.kill();
-      textTween?.scrollTrigger?.kill();
-      textTween?.kill();
-      barsTween?.scrollTrigger?.kill();
-      barsTween?.kill();
+      for (const entry of tweens) {
+        entry.tween?.scrollTrigger?.kill();
+        entry.tween?.kill();
+      }
     };
   }, []);
 
@@ -278,8 +319,12 @@ export default function WhatIsThisPage() {
       <SiteHeader links={navLinks} />
 
       {/* Starry night background — the feathered cloud overlay has been
-          removed so only the star layer shows through. */}
-      <ParallaxBackground />
+          removed so only the star layer shows through.
+          Desktop-only: two infinite CSS twinkle keyframes + a rAF scroll
+          listener that mutates two custom properties on every scroll
+          frame. Cheap individually but contributes to mobile scroll
+          jank when combined with everything else. */}
+      {sceneEnabled && <ParallaxBackground />}
 
       {/* Hero Section — mirrors /for-creators's hero: white-bg parent,
           video positioned inside with a 100 px inset on three sides,
@@ -312,8 +357,11 @@ export default function WhatIsThisPage() {
         </div>
         {/* Cherry blossom overlay — sits on top of the video AND the
             text, extending the video's falling-blossom motif onto the
-            whole hero for a layered 3D read. */}
-        <HeroBlossoms />
+            whole hero for a layered 3D read. Desktop-only; the canvas
+            particle sim is heavy enough to chop scroll on mid-range
+            mobile devices, and the visual loss on phone is acceptable
+            (the underlying video already shows blossoms falling). */}
+        {sceneEnabled && <HeroBlossoms />}
         {/* Headline + subtitle in normal flow over the video. */}
         <div ref={heroTextRef} className={styles.heroContent}>
             <h1 className={styles.heroHeadline}>
@@ -397,12 +445,19 @@ export default function WhatIsThisPage() {
            refracts the vertical color bars like light through water.
            The wrapping div is what GSAP fades in (in lockstep with the
            video's fade-out); BarsRipple just fills it. */}
-        <div ref={barsRef} className={styles.decorativeBars} aria-hidden="true">
-          <BarsRipple
-            src="/images/what-is-this/color-bars.png"
-            className={styles.decorativeBarsCanvas}
-          />
-        </div>
+        {/* Desktop-only: BarsRipple is a canvas-based shallow-water
+            simulation. On hover-incapable devices it falls back to a
+            static image, but the wrapper still allocates the canvas
+            element and runs its IntersectionObserver. Skip entirely on
+            mobile while we hunt the freeze. */}
+        {sceneEnabled && (
+          <div ref={barsRef} className={styles.decorativeBars} aria-hidden="true">
+            <BarsRipple
+              src="/images/what-is-this/color-bars.png"
+              className={styles.decorativeBarsCanvas}
+            />
+          </div>
+        )}
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
@@ -434,9 +489,11 @@ export default function WhatIsThisPage() {
                   PBR-shaded geometry, so dragging the orbit reveals
                   genuine 3D forms. Different sizes, different speeds,
                   three independent orbital planes. */}
-              <div className={styles.harmonyOrbsWrapper}>
-                <HarmonyOrbs controlRef={harmonyControlRef} />
-              </div>
+              {sceneEnabled && (
+                <div className={styles.harmonyOrbsWrapper}>
+                  <HarmonyOrbs controlRef={harmonyControlRef} />
+                </div>
+              )}
             </div>
             {/* Headline centered */}
             <div className={styles.headlineBlock}>
@@ -493,9 +550,11 @@ export default function WhatIsThisPage() {
                 visible (IntersectionObserver inside the component)
                 so it costs nothing while the user is at the top of
                 the page. Replaces an earlier CSS-3D placeholder. */}
-            <div className={styles.valuesBinaryWrapper}>
-              <ValuesBinary controlRef={valuesControlRef} />
-            </div>
+            {sceneEnabled && (
+              <div className={styles.valuesBinaryWrapper}>
+                <ValuesBinary controlRef={valuesControlRef} />
+              </div>
+            )}
             {/* Section-spanning interaction layer — captures pointer
                 events anywhere over the Values section so the cursor
                 reads as a hand and the user can click to freeze the
@@ -584,9 +643,16 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
             </div>
             {/* Globe behind the headline */}
-            <div className={styles.finalGlobeWrapper}>
-              <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
-            </div>
+            {/* Desktop-only: ScrollScenes is a ~700-LOC WebGL globe +
+                ring shader system. Even with pointer-events disabled
+                on the wrapper, the canvas mounts a useFrame loop on
+                IntersectionObserver entry — prime suspect for the
+                "freeze when scrolling below the hero" report. */}
+            {sceneEnabled && (
+              <div className={styles.finalGlobeWrapper}>
+                <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
+              </div>
+            )}
           </Section>
 
           {/* Follow Your Signal CTA Section — splits visitors into the

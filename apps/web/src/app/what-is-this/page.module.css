@@ -1,7 +1,14 @@
 .page {
   position: relative;
   min-height: 100dvh;
-  overflow: visible;
+  /* overflow-x: clip prevents the R3F scenes + harmony sun (which
+     position themselves with viewport-height units anchored to the
+     center of the viewport) from creating horizontal scroll on
+     narrow viewports. clip (not hidden) avoids creating a scroll
+     container, so sticky/fixed descendants still position against
+     the viewport. */
+  overflow-x: clip;
+  overflow-y: visible;
   background: transparent;
 }
 
@@ -15,7 +22,10 @@
 
 .hero {
   width: 100%;
-  min-height: 100vh;
+  /* Dynamic viewport unit — accounts for mobile browser chrome
+     (URL bar) collapsing, which 100vh ignores and causes hero
+     content to get cut off at the bottom on mobile Safari/Chrome. */
+  min-height: 100dvh;
   /* No `background` here on purpose — the white that forms the
      four-sided video frame lives on the .heroBackground child below,
      so it can be opacity-tweened independently of the .hero box (which
@@ -160,6 +170,41 @@
   }
   .heroFramingLogo {
     width: calc(var(--gs-n-20) * var(--gs-px));
+  }
+}
+
+@media (max-width: 991px) {
+  /* On phone/tablet the 100 px white frame around the video eats most
+     of the viewport — at 400 px wide the video shrinks to ~200 px.
+     Hard-disable the frame in three layers:
+
+     1. .hero loses all padding so nothing pushes the video inward.
+        (.heroContent re-adds horizontal padding so text doesn't touch
+        the edge.) The body text fade tween still works because it
+        targets opacity / y on heroContent, not the .hero box.
+
+     2. .heroVideoWrapper drops its 100 px inset and goes full-bleed
+        with !important to defeat any source-order issue if a stylesheet
+        somewhere re-asserts the desktop inset.
+
+     3. .heroBackground goes transparent — even if (1) and (2) somehow
+        fail, there's no white pixel to show as a frame. The element
+        stays in the DOM so the existing fade-tween that targets it
+        doesn't error. */
+  .hero {
+    padding: 0;
+  }
+  .heroVideoWrapper {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  .heroBackground {
+    background: transparent;
+  }
+  .heroContent {
+    padding-inline: var(--edge-pad);
   }
 }
 
@@ -860,9 +905,14 @@
     font-size: clamp(28px, 7vw, 42px);
   }
 
-  .sectionBody {
-    font-size: var(--gs-text-lg-size);
-    line-height: var(--gs-text-lg-leading);
+  /* Mobile body — previous rule SHRUNK body to lg (18 px) which made
+     the long paragraphs hard to read against the dark backdrop.
+     Stay at xl (20 px) and bump line-height to 1.55 for comfortable
+     long-form reading on phone viewports. */
+  .sectionBody,
+  .bodyCallout {
+    font-size: var(--gs-text-xl-size);
+    line-height: 1.55;
   }
 
   .finalSection {
@@ -876,6 +926,47 @@
 
   .finalTagline {
     font-size: clamp(18px, 5vw, 28px);
+  }
+}
+
+/* ===========================================================================
+   Touch-class viewports (≤991 px)
+   ---------------------------------------------------------------------------
+   Covers phone portrait + landscape (up to iPhone Pro Max landscape ~932 px)
+   AND tablet portrait (iPad ~768 px). Two things have to happen across this
+   whole range, not just at ≤768 px:
+
+   (1) Disable interaction with the three large WebGL/R3F scenes (values
+       binary, harmony orbs, signal globe). Their pointer/touch handlers
+       eat the scroll gesture; on touch with no precision pointer, you can't
+       drag meaningfully anyway. `pointer-events: none` on the wrappers also
+       blocks the canvas-level `addEventListener` listeners ScrollScenes
+       attaches directly (browser does not dispatch pointer events to
+       descendants of an element with effective `pointer-events: none`).
+
+   (2) Hide the decorative parts of those scenes that are positioned with
+       viewport-anchored coords (e.g. `left: calc(50% + 9vh + 160px)` on
+       .harmonySun). At 800-900 px width these push the scene off the right
+       edge of the viewport — the "huge right-side gap" the user saw with
+       the harmony animation hanging in the margin.
+
+   This block sits BEFORE the ≤768 px block in source so phone-only
+   typography/padding tweaks below can still narrow further; rules here
+   cascade through both ranges.
+   =========================================================================== */
+
+@media (max-width: 991px) {
+  .valuesInteraction,
+  .harmonyInteraction,
+  .finalGlobeWrapper {
+    pointer-events: none;
+    touch-action: auto;
+  }
+
+  .harmonySun,
+  .harmonyOrbsWrapper,
+  .valuesBinaryWrapper {
+    display: none;
   }
 }
 

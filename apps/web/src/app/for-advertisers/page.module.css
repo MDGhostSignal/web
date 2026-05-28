@@ -29,7 +29,10 @@
 
 .hero {
   width: 100%;
-  min-height: 120vh;
+  /* Dynamic viewport unit — accounts for mobile browser chrome
+     (URL bar) collapsing, which 100vh ignores and causes hero
+     content to get cut off at the bottom on mobile Safari/Chrome. */
+  min-height: 120dvh;
   /* Matches the loop video's black — no seam between video and container. */
   background: #000;
   display: flex;

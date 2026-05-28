@@ -55,12 +55,14 @@
   text-align: center;
 }
 
-/* Hero Headline - Monster Headline M1 (10% larger than standard) */
+/* Hero Headline - Monster Headline M1 (10% larger than standard).
+   Min raised from 35 → 44 so the headline still reads as a hero on
+   phone viewports (375–480 px) instead of looking like a paragraph. */
 .heroHeadline {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-size: clamp(35px, 6.6vw, 88px);
+  font-size: clamp(44px, 8vw, 88px);
   line-height: 1.1;
   color: #ffffff;
   text-transform: uppercase;
@@ -121,15 +123,17 @@
   .heroSection {
     padding: calc(var(--gs-n-80, 80) * var(--gs-px)) calc(var(--gs-n-24, 24) * var(--gs-px));
   }
+
+  /* Mobile CTA — bigger touch target, more visual weight as the
+     primary action on the landing fold. */
+  .ctaButton {
+    padding: calc(var(--gs-n-20, 20) * var(--gs-px)) calc(var(--gs-n-48, 48) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-lg, 18) * var(--gs-px));
+  }
 }
 
 @media (max-width: 480px) {
   .heroSection {
     padding: calc(var(--gs-n-60, 60) * var(--gs-px)) calc(var(--gs-n-16, 16) * var(--gs-px));
-  }
-
-  .ctaButton {
-    padding: calc(var(--gs-n-14, 14) * var(--gs-px)) calc(var(--gs-n-32, 32) * var(--gs-px));
-    font-size: calc(var(--gs-font-size-base, 16) * var(--gs-px));
   }
 }

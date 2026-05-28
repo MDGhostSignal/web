@@ -55,6 +55,10 @@ export function ScrollFadeUp({
     const el = document.querySelector<HTMLElement>(`[data-gs-sfu="${id}"]`);
     if (!el) return;
 
+    // Position drift from font swap is corrected by
+    // ScrollTriggerOrchestrator which calls ScrollTrigger.refresh()
+    // once `document.fonts.ready` resolves — no per-component gating
+    // needed here.
     const tween = gsap.fromTo(
       el,
       { y: distance, opacity: 0 },

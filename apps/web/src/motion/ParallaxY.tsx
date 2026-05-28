@@ -26,6 +26,8 @@ export function ParallaxY({ children, range = ["-10rem", "10rem"] }: Props) {
     if (!el) return;
     const trigger = el.parentElement ?? el;
 
+    // Position drift from font swap is corrected by
+    // ScrollTriggerOrchestrator's post-fonts-ready refresh.
     const tween = gsap.fromTo(
       el,
       { y: range[0] },

@@ -74,6 +74,12 @@ body.is-head-active .js-sh-main-link[data-sh-role="hide"] {
     -moz-osx-font-smoothing: grayscale;
     /* Reserve space for scrollbar to prevent layout shift between pages */
     scrollbar-gutter: stable;
+    /* Second line of defense against horizontal overflow — body has
+       overflow-x: clip but in older browsers (iOS Safari <16) `clip`
+       falls back to `visible` and body would still scroll horizontally.
+       Putting the same guard on html stops the document element from
+       scrolling either way. */
+    overflow-x: clip;
   }
 
   a {

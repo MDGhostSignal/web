@@ -51,6 +51,14 @@ export function SplitLinesReveal({
     const el = document.querySelector<HTMLElement>(`[data-gs-split="${id}"]`);
     if (!el) return;
 
+    // NOTE: an earlier version deferred the split to `document.fonts.ready`
+    // to avoid splitting at fallback-font widths. That introduced a worse
+    // bug — on mobile (particularly the what-is-this hero) the animation
+    // never fired at all, leaving headlines permanently hidden behind the
+    // yPercent:110 line mask. Splitting synchronously inside the layout
+    // effect is the historical behavior; font-swap position drift is
+    // handled by ScrollTriggerOrchestrator which calls
+    // ScrollTrigger.refresh() once fonts.ready resolves.
     const splitOuter = new SplitType(el, { types: "lines" });
     const splitInner = new SplitType(splitOuter.lines ?? [], { types: "lines" });
 

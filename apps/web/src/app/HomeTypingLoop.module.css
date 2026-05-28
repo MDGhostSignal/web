@@ -24,6 +24,18 @@
   /* Inherits from .heroHeadline. */
 }
 
+/* Word wrapper — keeps a word's characters together so the browser
+   can't break mid-word on narrow viewports. Without this, each `.ch`
+   inline-block becomes its own line-break opportunity (CSS-Text spec:
+   inline-block boundaries are break opportunities), which is how the
+   homepage was splitting "world" into "wor / ld" on mobile. The
+   wrapper is itself inline-block so it flows like a token; spaces
+   render as standalone `.ch` siblings to provide the break points. */
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 /* Per-character entrance — fades from blurred + slightly-lifted into
    place. Duration intentionally longer than TYPE_MS (130 ms) so
    adjacent characters overlap: the newest one is still blurring in

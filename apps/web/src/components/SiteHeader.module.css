@@ -203,79 +203,20 @@
 }
 
 /* ============================================================
-   Tablet (769–991 px) — six nav links + a CTA pill don't fit
-   comfortably at desktop scale, so the row tightens and becomes
-   horizontally swipeable. Trackpad + touch scrolls it sideways.
-   ============================================================ */
-
-@media (max-width: 991px) and (min-width: 769px) {
-  .header {
-    height: calc(var(--gs-n-96, 96) * var(--gs-px));
-    min-height: calc(var(--gs-n-96, 96) * var(--gs-px));
-    padding-left: calc(var(--gs-n-16) * var(--gs-px));
-    padding-right: calc(var(--gs-n-16) * var(--gs-px));
-  }
-
-  .logoWrap {
-    flex: none;
-    width: calc(var(--gs-n-120, 120) * var(--gs-px));
-    height: calc(var(--gs-n-64) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
-  }
-
-  .navContainer {
-    flex: 1 1 auto;
-    min-width: 0;
-    column-gap: calc(var(--gs-n-12) * var(--gs-px));
-  }
-
-  .nav {
-    flex: 1 1 auto;
-    min-width: 0;
-    column-gap: calc(var(--gs-n-16) * var(--gs-px));
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    /* Hide scrollbar visually — touch / trackpad swipe still works. */
-    scrollbar-width: none;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .navLink {
-    flex: none;
-    height: calc(var(--gs-n-48) * var(--gs-px));
-    padding-block: calc(var(--gs-n-8) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-8) * var(--gs-px));
-    font-size: calc(var(--gs-font-size-base) * var(--gs-px));
-  }
-
-  .navLink::after {
-    inset-inline: calc(var(--gs-n-8) * var(--gs-px));
-    bottom: calc(var(--gs-n-8, 8) * var(--gs-px));
-  }
-
-  .navCta {
-    flex: none;
-    height: calc(var(--gs-n-40) * var(--gs-px));
-    padding-block: calc(var(--gs-n-8) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
-    font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
-  }
-}
-
-/* ============================================================
-   Phone (≤768 px) — dedicated mobile nav.
+   Phone + tablet portrait (≤991 px) — dedicated mobile nav.
 
    The desktop bottom-pill is hidden entirely. The header
    re-anchors to the top of the viewport (standard mobile
    convention) and shows only the logo + hamburger trigger.
    Tapping the trigger opens a full-viewport overlay with the
    full nav stack and the CTA pill at the bottom.
+
+   Breakpoint matches globals.css's 991 px rule that hides
+   .js-sh-main-links / .js-sh-cta — without aligning these,
+   tablet portrait (769–991 px) had no visible nav at all.
    ============================================================ */
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
   .headerRoot {
     /* Reanchor to top — hamburger menus belong where thumbs reach
        and where users expect to find a "menu" affordance. */
@@ -288,6 +229,16 @@
     min-height: calc(var(--gs-n-64) * var(--gs-px));
     padding-left: calc(var(--gs-n-16) * var(--gs-px));
     padding-right: calc(var(--gs-n-16) * var(--gs-px));
+    /* Force opaque white on mobile. Without !important the
+       `body.is-head-active .js-sh { background: transparent }` rule
+       in globals.css could leak from a stale state set during
+       desktop scroll (the runOut handler adds the class but only
+       runIn removes it, and runIn only fires on desktop scroll —
+       on touch viewports the class can persist across navigation if
+       cleanup races with the next page's mount). With a transparent
+       header bar the black hamburger bars are invisible against the
+       dark video/page below. */
+    background: #ffffff !important;
     /* Soft underline so the white bar separates from white page
        sections (homepage hero is the main white surface). */
     box-shadow: 0 1px 0 rgb(0 0 0 / 0.06);
@@ -332,7 +283,14 @@
   /* Hamburger trigger ------------------------------------------------ */
 
   .mobileTrigger {
-    display: inline-flex;
+    /* !important on the visibility props guards against any GSAP
+       state leaking from the desktop animate-in (which targets the
+       logo + nav links but could affect siblings via context resets)
+       or any page-level transform that might pop the button from its
+       expected stacking context. */
+    display: inline-flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
     flex-direction: column;
     justify-content: center;
     align-items: center;
