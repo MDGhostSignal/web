@@ -248,6 +248,7 @@ export function SiteHeader({
   }, [THRESHOLD_Y, animateIn, animateInDelay, contextRef, rootRef]);
 
   return (
+    <>
     <div
       ref={rootRef}
       className={`${styles.headerRoot} ${mobileOpen ? styles.headerRootOpen : ""}`}
@@ -322,31 +323,49 @@ export function SiteHeader({
         </div>
       </header>
 
-      <div
-        id="mobile-nav-overlay"
-        className={`${styles.mobileOverlay} ${mobileOpen ? styles.mobileOverlayOpen : ""}`}
-        aria-hidden={!mobileOpen}
-      >
-        <nav aria-label="Mobile" className={styles.mobileNav}>
-          {links.map((l) => {
-            const isCta = l.cta === true;
-            const className = isCta
-              ? styles.mobileNavCta
-              : styles.mobileNavLink;
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={className}
-                onClick={closeMobile}
-                tabIndex={mobileOpen ? 0 : -1}
-              >
-                {l.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
     </div>
+    {/* Mobile overlay rendered as a SIBLING of .headerRoot (not nested
+        inside it) so iOS Safari doesn't trip on position:fixed inside
+        position:fixed — a known historical quirk where the inner fixed
+        element gets sized to its content instead of the viewport,
+        showing as a small popup in the top portion of the screen
+        instead of a full-screen takeover. As a sibling it gets the
+        viewport as its containing block cleanly. */}
+    <div
+      id="mobile-nav-overlay"
+      className={`${styles.mobileOverlay} ${mobileOpen ? styles.mobileOverlayOpen : ""}`}
+      aria-hidden={!mobileOpen}
+    >
+      <button
+        type="button"
+        className={styles.mobileCloseBtn}
+        aria-label="Close menu"
+        onClick={closeMobile}
+        tabIndex={mobileOpen ? 0 : -1}
+      >
+        <span className={styles.mobileCloseBar} aria-hidden="true" />
+        <span className={styles.mobileCloseBar} aria-hidden="true" />
+      </button>
+      <nav aria-label="Mobile" className={styles.mobileNav}>
+        {links.map((l) => {
+          const isCta = l.cta === true;
+          const className = isCta
+            ? styles.mobileNavCta
+            : styles.mobileNavLink;
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={className}
+              onClick={closeMobile}
+              tabIndex={mobileOpen ? 0 : -1}
+            >
+              {l.label}
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+    </>
   );
 }

@@ -319,12 +319,8 @@ export default function WhatIsThisPage() {
       <SiteHeader links={navLinks} />
 
       {/* Starry night background — the feathered cloud overlay has been
-          removed so only the star layer shows through.
-          Desktop-only: two infinite CSS twinkle keyframes + a rAF scroll
-          listener that mutates two custom properties on every scroll
-          frame. Cheap individually but contributes to mobile scroll
-          jank when combined with everything else. */}
-      {sceneEnabled && <ParallaxBackground />}
+          removed so only the star layer shows through. */}
+      <ParallaxBackground />
 
       {/* Hero Section — mirrors /for-creators's hero: white-bg parent,
           video positioned inside with a 100 px inset on three sides,
@@ -357,11 +353,8 @@ export default function WhatIsThisPage() {
         </div>
         {/* Cherry blossom overlay — sits on top of the video AND the
             text, extending the video's falling-blossom motif onto the
-            whole hero for a layered 3D read. Desktop-only; the canvas
-            particle sim is heavy enough to chop scroll on mid-range
-            mobile devices, and the visual loss on phone is acceptable
-            (the underlying video already shows blossoms falling). */}
-        {sceneEnabled && <HeroBlossoms />}
+            whole hero for a layered 3D read. */}
+        <HeroBlossoms />
         {/* Headline + subtitle in normal flow over the video. */}
         <div ref={heroTextRef} className={styles.heroContent}>
             <h1 className={styles.heroHeadline}>
@@ -445,19 +438,12 @@ export default function WhatIsThisPage() {
            refracts the vertical color bars like light through water.
            The wrapping div is what GSAP fades in (in lockstep with the
            video's fade-out); BarsRipple just fills it. */}
-        {/* Desktop-only: BarsRipple is a canvas-based shallow-water
-            simulation. On hover-incapable devices it falls back to a
-            static image, but the wrapper still allocates the canvas
-            element and runs its IntersectionObserver. Skip entirely on
-            mobile while we hunt the freeze. */}
-        {sceneEnabled && (
-          <div ref={barsRef} className={styles.decorativeBars} aria-hidden="true">
-            <BarsRipple
-              src="/images/what-is-this/color-bars.png"
-              className={styles.decorativeBarsCanvas}
-            />
-          </div>
-        )}
+        <div ref={barsRef} className={styles.decorativeBars} aria-hidden="true">
+          <BarsRipple
+            src="/images/what-is-this/color-bars.png"
+            className={styles.decorativeBarsCanvas}
+          />
+        </div>
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>
@@ -643,16 +629,9 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
             </div>
             {/* Globe behind the headline */}
-            {/* Desktop-only: ScrollScenes is a ~700-LOC WebGL globe +
-                ring shader system. Even with pointer-events disabled
-                on the wrapper, the canvas mounts a useFrame loop on
-                IntersectionObserver entry — prime suspect for the
-                "freeze when scrolling below the hero" report. */}
-            {sceneEnabled && (
-              <div className={styles.finalGlobeWrapper}>
-                <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
-              </div>
-            )}
+            <div className={styles.finalGlobeWrapper}>
+              <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
+            </div>
           </Section>
 
           {/* Follow Your Signal CTA Section — splits visitors into the

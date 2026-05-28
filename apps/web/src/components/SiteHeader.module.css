@@ -19,6 +19,10 @@
   display: none;
 }
 
+.mobileCloseBtn {
+  display: none;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -336,18 +340,38 @@
     transform: translateY(calc((var(--gs-n-6, 6) + 2) * var(--gs-px) * -1)) rotate(-45deg);
   }
 
-  /* Overlay ---------------------------------------------------------- */
+  /* Overlay ---------------------------------------------------------- *
+   * Full-screen white sheet that opens on hamburger tap. Links are
+   * vertically + horizontally centered as a stack. The header bar
+   * stays visible on top (z-index hierarchy: .headerRoot=50,
+   * .mobileOverlay=40) so the hamburger-turned-X stays interactive
+   * as the close affordance — no separate close button needed.
+   * -------------------------------------------------------------- */
 
   .mobileOverlay {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Position + sizing belt-and-suspenders. Earlier the overlay was
+       nested inside .headerRoot (also position:fixed) and rendered as
+       a small popup in the top third of the screen on touch devices —
+       a Safari quirk where nested position:fixed gets sized to content
+       instead of the viewport. Moving it to a sibling of .headerRoot
+       (see SiteHeader.tsx) fixes the containing-block resolution, and
+       explicit width / height (with dvh fallback for mobile chrome)
+       guarantees full-viewport coverage even if `inset: 0` underflows. */
     position: fixed;
-    inset: 0;
-    z-index: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 60;
     background: #ffffff;
-    /* Push content below the 64px header bar. */
-    padding-top: calc(var(--gs-n-64) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-24) * var(--gs-px));
-    padding-bottom: calc(var(--gs-n-32) * var(--gs-px));
+    padding: calc(var(--gs-n-80) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
     opacity: 0;
     visibility: hidden;
     transform: translateY(calc(var(--gs-n-12) * var(--gs-px) * -1));
@@ -357,6 +381,51 @@
       visibility 0s linear 320ms;
     /* Allow scrolling if the link list ever exceeds the viewport. */
     overflow-y: auto;
+  }
+
+  /* Close button — an explicit X in the top-right corner of the overlay.
+     The header bar's hamburger sits BEHIND the overlay (overlay z:60 >
+     header z:50), so we can't rely on the hamburger-to-X transition as
+     the close affordance: this button is the close. Sized as a 44×44
+     touch target with two diagonal bars crossing to form an X. */
+  .mobileCloseBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: calc(var(--gs-n-16) * var(--gs-px));
+    right: calc(var(--gs-n-16) * var(--gs-px));
+    width: calc(var(--gs-n-44, 44) * var(--gs-px));
+    height: calc(var(--gs-n-44, 44) * var(--gs-px));
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    color: var(--gs-tw-black);
+    /* The two bars are absolutely positioned inside this button so they
+       can overlap at center to form the X. */
+    z-index: 1;
+  }
+
+  .mobileCloseBar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    width: calc(var(--gs-n-24) * var(--gs-px));
+    height: calc(var(--gs-px) * 2);
+    background: currentColor;
+    border-radius: calc(var(--gs-px) * 1);
+    transform-origin: center;
+  }
+
+  .mobileCloseBar:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .mobileCloseBar:nth-child(2) {
+    transform: translate(-50%, -50%) rotate(-45deg);
   }
 
   .mobileOverlayOpen {
@@ -372,41 +441,40 @@
   .mobileNav {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: calc(var(--gs-n-8) * var(--gs-px));
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--gs-n-20) * var(--gs-px));
     width: 100%;
-    margin-top: calc(var(--gs-n-32) * var(--gs-px));
+    max-width: calc(var(--gs-n-480, 480) * var(--gs-px));
+    /* margin-top: 0 — centering of the .mobileOverlay flex container
+       handles vertical positioning; no offset needed. */
   }
 
   .mobileNavLink {
-    display: flex;
-    align-items: center;
-    padding-block: calc(var(--gs-n-16) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-8) * var(--gs-px));
+    display: block;
+    padding: calc(var(--gs-n-12) * var(--gs-px)) calc(var(--gs-n-16) * var(--gs-px));
     font-family: var(--font-body);
     font-weight: var(--gs-font-weight-bold);
-    font-size: calc(var(--gs-font-size-2xl) * var(--gs-px));
-    line-height: 1.2;
+    font-size: calc(var(--gs-font-size-3xl) * var(--gs-px));
+    line-height: 1.15;
     color: var(--gs-tw-black);
     text-decoration: none;
     text-transform: none;
-    border-bottom: calc(var(--gs-px) * 1) solid rgb(0 0 0 / 0.08);
+    text-align: center;
     transition: opacity 200ms ease;
   }
 
-  .mobileNavLink:active {
-    opacity: 0.6;
+  .mobileNavLink:active,
+  .mobileNavLink:hover {
+    opacity: 0.55;
   }
 
   .mobileNavCta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    align-self: flex-start;
-    margin-top: calc(var(--gs-n-24) * var(--gs-px));
-    padding-block: calc(var(--gs-n-16) * var(--gs-px));
-    padding-inline: calc(var(--gs-n-32) * var(--gs-px));
+    margin-top: calc(var(--gs-n-16) * var(--gs-px));
+    padding: calc(var(--gs-n-16) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
     border-radius: calc(var(--gs-radius-full) * var(--gs-px));
     background: var(--gs-tw-black);
     color: var(--gs-tw-white);
