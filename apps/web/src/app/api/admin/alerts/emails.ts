@@ -1,11 +1,10 @@
 /**
  * Email helpers for the daily CRM alert digest.
  *
- * Mirrors the lightweight Resend pattern used by rq-submissions and
- * xq-submissions: pure HTML/text builders + a thin `sendDigest()` that
- * skips silently when env vars are missing (so dev environments don't
- * blow up). Each owner gets their own digest email; alerts whose
- * member has no owner go to a fallback inbox.
+ * Each owner gets their own digest email; alerts whose subject has no
+ * owner go to a fallback inbox. Two alert subject types are rendered:
+ *   - member-side  (contact_cold, marketplace_stall)  → /admin/contacts / /admin/marketplace
+ *   - task-side    (task_stale)                       → /admin/tasks
  */
 
 import { ALERT_KIND_LABELS, type AlertKind, type CrmAlert } from "@/lib/alerts";
@@ -18,6 +17,14 @@ export type DigestAlert = CrmAlert & {
     owner: string | null;
     phase: string;
     organization: string | null;
+  } | null;
+  task: {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    assigned_to: string | null;
+    created_by: string | null;
   } | null;
 };
 
@@ -33,8 +40,10 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function fullName(m: DigestAlert["member"]): string {
-  if (!m) return "Unknown member";
+function subjectLabel(a: DigestAlert): string {
+  if (a.task) return a.task.title || "Untitled task";
+  const m = a.member;
+  if (!m) return "Unknown";
   const n = [m.first_name, m.last_name].filter(Boolean).join(" ").trim();
   return n || m.organization || "Unnamed";
 }
@@ -47,34 +56,56 @@ function ageDescription(a: DigestAlert): string {
   if (a.kind === "marketplace_stall" && typeof r.days_in_phase === "number") {
     return `${r.days_in_phase} days in current phase`;
   }
+  if (a.kind === "task_stale" && typeof r.days_since_update === "number") {
+    return `${r.days_since_update} days untouched`;
+  }
   return "—";
 }
 
 function deepLink(a: DigestAlert): string {
-  return a.kind === "marketplace_stall"
-    ? `${SITE_ORIGIN}/admin/marketplace?view=pool`
-    : `${SITE_ORIGIN}/admin/contacts`;
+  if (a.kind === "marketplace_stall") return `${SITE_ORIGIN}/admin/marketplace?view=pool`;
+  if (a.kind === "task_stale") return `${SITE_ORIGIN}/admin/tasks`;
+  return `${SITE_ORIGIN}/admin/contacts`;
 }
 
-/** Look up `ALERT_EMAIL_<SLUG>` for the given owner name. Returns
- *  undefined if not set so the caller can decide on fallback. */
+/** Look up `ALERT_EMAIL_<SLUG>` for the given owner name. */
 export function ownerEmailFromEnv(owner: string): string | undefined {
   const slug = owner.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
   return process.env[`ALERT_EMAIL_${slug}`];
 }
 
-/** Fallback inbox for alerts whose member has no `owner` set. */
+/** Fallback inbox for alerts whose subject has no owner set. */
 export function fallbackEmail(): string {
   return process.env.ALERT_EMAIL_FALLBACK ?? "hello@ghostsignal.cloud";
 }
 
+/** Resolve the routing owner for any alert. Member alerts use
+ *  `member.owner`; task alerts use `task.assigned_to` and fall back to
+ *  `task.created_by` so created-but-unassigned tasks still reach
+ *  someone instead of the fallback inbox. */
+export function ownerForAlert(a: DigestAlert): string | null {
+  if (a.member) return a.member.owner ?? null;
+  if (a.task) return a.task.assigned_to ?? a.task.created_by ?? null;
+  return null;
+}
+
 function alertRowHtml(a: DigestAlert): string {
-  const name = escapeHtml(fullName(a.member));
+  const name = escapeHtml(subjectLabel(a));
   const kind = escapeHtml(ALERT_KIND_LABELS[a.kind as AlertKind]);
   const age = escapeHtml(ageDescription(a));
-  const phase = a.member?.phase ? escapeHtml(a.member.phase) : "";
   const link = deepLink(a);
-  const accent = a.kind === "contact_cold" ? "#c98a14" : "#c43a3a";
+  const accent =
+    a.kind === "contact_cold"
+      ? "#c98a14"
+      : a.kind === "marketplace_stall"
+        ? "#c43a3a"
+        : "#7752c9";
+  const sub =
+    a.kind === "task_stale" && a.task
+      ? `priority: ${escapeHtml(a.task.priority)} · status: ${escapeHtml(a.task.status)}`
+      : a.member?.phase
+        ? `phase: ${escapeHtml(a.member.phase)}`
+        : "";
   return `
     <tr>
       <td style="padding: 14px 20px; border-bottom: 1px solid #eee;">
@@ -83,7 +114,7 @@ function alertRowHtml(a: DigestAlert): string {
             <td>
               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: ${accent}; margin-bottom: 4px;">${kind}</div>
               <div style="font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px;">${name}</div>
-              <div style="font-size: 13px; color: #666;">${age}${phase ? ` · phase: ${phase}` : ""}</div>
+              <div style="font-size: 13px; color: #666;">${age}${sub ? ` · ${sub}` : ""}</div>
             </td>
             <td align="right" style="vertical-align: top;">
               <a href="${link}" style="display: inline-block; padding: 6px 14px; background: #fbad25; color: #1a1a1a; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600;">Open →</a>
@@ -95,12 +126,9 @@ function alertRowHtml(a: DigestAlert): string {
 }
 
 function alertRowText(a: DigestAlert): string {
-  const name = fullName(a.member);
-  const kind = ALERT_KIND_LABELS[a.kind as AlertKind];
-  return `  • [${kind}] ${name} — ${ageDescription(a)}\n    ${deepLink(a)}`;
+  return `  • [${ALERT_KIND_LABELS[a.kind as AlertKind]}] ${subjectLabel(a)} — ${ageDescription(a)}\n    ${deepLink(a)}`;
 }
 
-/** Build the HTML body for one owner's digest. */
 export function buildDigestHtml(opts: {
   recipient: string;
   ownerName: string;
@@ -109,6 +137,7 @@ export function buildDigestHtml(opts: {
   const { recipient, ownerName, alerts } = opts;
   const cold = alerts.filter((a) => a.kind === "contact_cold");
   const stalls = alerts.filter((a) => a.kind === "marketplace_stall");
+  const tasks = alerts.filter((a) => a.kind === "task_stale");
 
   const section = (title: string, rows: DigestAlert[]) => {
     if (rows.length === 0) return "";
@@ -134,11 +163,12 @@ export function buildDigestHtml(opts: {
     </tr>
     ${section("Contact cold", cold)}
     ${section("Marketplace stalled", stalls)}
+    ${section("Task untouched", tasks)}
     <tr>
       <td style="padding: 18px 20px 24px; text-align: center; font-size: 12px; color: #999;">
         <a href="${SITE_ORIGIN}/admin/alerts" style="color: #c98a14; text-decoration: none; font-weight: 600;">Manage all alerts in the dashboard →</a>
         <br/><br/>
-        Logging a comment or updating last-contact automatically clears the related alert.
+        Logging a comment, updating last-contact, or editing a task automatically clears the related alert.
       </td>
     </tr>
   </table>
@@ -154,6 +184,7 @@ export function buildDigestText(opts: {
   const { ownerName, alerts } = opts;
   const cold = alerts.filter((a) => a.kind === "contact_cold");
   const stalls = alerts.filter((a) => a.kind === "marketplace_stall");
+  const tasks = alerts.filter((a) => a.kind === "task_stale");
   const lines: string[] = [
     `GhostSignal CRM · ${alerts.length} alert(s) for ${ownerName}`,
     "",
@@ -168,13 +199,15 @@ export function buildDigestText(opts: {
     lines.push(...stalls.map(alertRowText));
     lines.push("");
   }
+  if (tasks.length > 0) {
+    lines.push(`Task untouched (${tasks.length}):`);
+    lines.push(...tasks.map(alertRowText));
+    lines.push("");
+  }
   lines.push(`Manage all: ${SITE_ORIGIN}/admin/alerts`);
   return lines.join("\n");
 }
 
-/** Sends a single digest via Resend. Returns send status — never
- *  throws (failures are logged so one owner's failure doesn't block
- *  the next). */
 export async function sendDigestEmail(opts: {
   to: string;
   ownerName: string;

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveOpenAlertsForTask } from "@/lib/alerts";
+
 const TABLE_NAME = "design_task_comments";
 
 interface CommentPayload {
@@ -142,6 +144,11 @@ export async function POST(request: NextRequest) {
     }
 
     const [comment] = await response.json();
+
+    // A fresh comment counts as activity — clear any open task_stale
+    // alert for the parent task. Fire-and-forget; never blocks the
+    // comment POST.
+    if (body.task_id) void resolveOpenAlertsForTask(body.task_id);
 
     return NextResponse.json({
       ok: true,

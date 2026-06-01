@@ -7,6 +7,7 @@ import {
   type DigestAlert,
   fallbackEmail,
   ownerEmailFromEnv,
+  ownerForAlert,
   sendDigestEmail,
 } from "../emails";
 
@@ -51,11 +52,15 @@ export async function POST(req: Request) {
     );
   }
 
-  // Pull open + non-snoozed alerts with the member columns the email
-  // template renders. Same PostgREST embed shape as /api/admin/alerts.
+  // Pull open + non-snoozed alerts. PostgREST embed pulls both the
+  // member-side and task-side subject columns the digest renders;
+  // exactly one of (member, task) is populated per row per the
+  // subject-check constraint.
   const nowIso = new Date().toISOString();
   const path =
-    "crm_alerts?select=*,member:members(id,first_name,last_name,owner,phase,organization)" +
+    "crm_alerts?select=*," +
+    "member:members(id,first_name,last_name,owner,phase,organization)," +
+    "task:design_tasks(id,title,status,priority,assigned_to,created_by)" +
     "&resolved_at=is.null" +
     `&or=(snoozed_until.is.null,snoozed_until.lt.${nowIso})` +
     "&order=triggered_at.desc";
@@ -78,10 +83,13 @@ export async function POST(req: Request) {
     });
   }
 
-  // Group by owner ("" = fallback bucket). Each owner gets one email.
+  // Group by owner ("" = fallback bucket). Member alerts route by
+  // member.owner; task alerts route by task.assigned_to (or
+  // task.created_by when unassigned). See `ownerForAlert` in
+  // ../emails.ts for the resolution rule.
   const byOwner = new Map<string, DigestAlert[]>();
   for (const a of alerts) {
-    const key = a.member?.owner ?? "";
+    const key = ownerForAlert(a) ?? "";
     const arr = byOwner.get(key) ?? [];
     arr.push(a);
     byOwner.set(key, arr);

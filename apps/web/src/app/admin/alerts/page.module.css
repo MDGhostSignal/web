@@ -70,6 +70,7 @@
 }
 .row.contact { border-left: 3px solid var(--admin-warn); }
 .row.stall { border-left: 3px solid var(--admin-destructive); }
+.row.task { border-left: 3px solid #7752c9; }
 
 .rowMain {
   display: flex;
@@ -85,6 +86,7 @@
 }
 .rowKind.contact { color: var(--admin-warn); }
 .rowKind.stall { color: var(--admin-destructive); }
+.rowKind.task { color: #7752c9; }
 .rowName {
   font-size: var(--admin-text-base);
   font-weight: 600;

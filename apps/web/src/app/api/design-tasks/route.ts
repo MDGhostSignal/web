@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { resolveOpenAlertsForTask } from "@/lib/alerts";
+
 const TABLE_NAME = "design_tasks";
 
 interface TaskPayload {
@@ -288,6 +290,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     const [task] = await response.json();
+
+    // Any PATCH counts as "addressing" the task — clear any open
+    // task_stale alert. The hourly sync will re-detect if it still
+    // applies. Fire-and-forget so the PATCH response stays fast.
+    if (body.id) void resolveOpenAlertsForTask(body.id);
 
     return NextResponse.json({
       ok: true,

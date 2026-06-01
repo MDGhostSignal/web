@@ -13,7 +13,7 @@ import { ALERT_KIND_LABELS, type AlertKind, type CrmAlert } from "@/lib/alerts";
 import { IconBell } from "./icons";
 import styles from "./AlertsBell.module.css";
 
-type AlertWithMember = CrmAlert & {
+type AlertWithSubject = CrmAlert & {
   member: {
     id: string;
     first_name: string | null;
@@ -22,6 +22,14 @@ type AlertWithMember = CrmAlert & {
     phase: string;
     organization: string | null;
   } | null;
+  task: {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    assigned_to: string | null;
+    created_by: string | null;
+  } | null;
 };
 
 /** Background poll cadence for the unread count badge. 60s is the
@@ -29,26 +37,37 @@ type AlertWithMember = CrmAlert & {
  *  founder doesn't sit on a stale badge for long. */
 const POLL_MS = 60_000;
 
-/** Best-link target per alert. Marketplace stalls always go to the
- *  pool. Contact-cold alerts route to the contacts list. */
-function alertHref(a: AlertWithMember): string {
+/** Best-link target per alert. */
+function alertHref(a: AlertWithSubject): string {
   if (a.kind === "marketplace_stall") return "/admin/marketplace?view=pool";
+  if (a.kind === "task_stale") return "/admin/tasks";
   return "/admin/contacts";
 }
 
-function fullName(m: AlertWithMember["member"]): string {
+function subjectLabel(a: AlertWithSubject): string {
+  if (a.task) return a.task.title || "Untitled task";
+  const m = a.member;
   if (!m) return "Unknown";
   const n = [m.first_name, m.last_name].filter(Boolean).join(" ").trim();
   return n || m.organization || "Unnamed";
 }
 
-function ageLabel(a: AlertWithMember): string {
+function subjectOwner(a: AlertWithSubject): string | null {
+  if (a.member) return a.member.owner;
+  if (a.task) return a.task.assigned_to ?? a.task.created_by ?? null;
+  return null;
+}
+
+function ageLabel(a: AlertWithSubject): string {
   const r = a.reason_json;
   if (a.kind === "contact_cold" && typeof r.days_since_last_contact === "number") {
     return `${r.days_since_last_contact}d cold`;
   }
   if (a.kind === "marketplace_stall" && typeof r.days_in_phase === "number") {
     return `${r.days_in_phase}d in phase`;
+  }
+  if (a.kind === "task_stale" && typeof r.days_since_update === "number") {
+    return `${r.days_since_update}d untouched`;
   }
   return "—";
 }
@@ -67,7 +86,8 @@ function ageLabel(a: AlertWithMember): string {
 export function AlertsBell() {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
-  const [alerts, setAlerts] = useState<AlertWithMember[] | null>(null);
+  const [alerts, setAlerts] = useState<AlertWithSubject[] | null>(null);
+
   const [busy, setBusy] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -90,7 +110,7 @@ export function AlertsBell() {
       if (!r.ok) return;
       const j = await r.json();
       if (Array.isArray(j.alerts)) {
-        setAlerts(j.alerts as AlertWithMember[]);
+        setAlerts(j.alerts as AlertWithSubject[]);
         setCount(j.alerts.length);
       }
     } finally {
@@ -229,13 +249,18 @@ function AlertRow({
   onSnooze,
   onNavigate,
 }: {
-  alert: AlertWithMember;
+  alert: AlertWithSubject;
   onResolve: () => void;
   onSnooze: () => void;
   onNavigate: () => void;
 }) {
   const kindClass =
-    alert.kind === "contact_cold" ? styles.contact : styles.stall;
+    alert.kind === "contact_cold"
+      ? styles.contact
+      : alert.kind === "marketplace_stall"
+        ? styles.stall
+        : styles.task;
+  const owner = subjectOwner(alert);
   return (
     <Link
       href={alertHref(alert)}
@@ -246,10 +271,10 @@ function AlertRow({
         <span className={`${styles.rowKind} ${kindClass}`}>
           {ALERT_KIND_LABELS[alert.kind as AlertKind]}
         </span>
-        <span className={styles.rowName}>{fullName(alert.member)}</span>
+        <span className={styles.rowName}>{subjectLabel(alert)}</span>
         <span className={styles.rowMeta}>
           <span>{ageLabel(alert)}</span>
-          {alert.member?.owner && <span>· {alert.member.owner}</span>}
+          {owner && <span>· {owner}</span>}
         </span>
       </div>
       <div

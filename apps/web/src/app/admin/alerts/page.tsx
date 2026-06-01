@@ -13,7 +13,7 @@ import { MEMBER_OWNERS, type MemberOwner } from "@/lib/members";
 
 import styles from "./page.module.css";
 
-type AlertWithMember = CrmAlert & {
+type AlertWithSubject = CrmAlert & {
   member: {
     id: string;
     first_name: string | null;
@@ -23,18 +23,34 @@ type AlertWithMember = CrmAlert & {
     phase: string;
     organization: string | null;
   } | null;
+  task: {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    assigned_to: string | null;
+    created_by: string | null;
+  } | null;
 };
 
 type OwnerFilter = "all" | MemberOwner | "unowned";
 type KindFilter = "all" | AlertKind;
 
-function fullName(m: AlertWithMember["member"]): string {
+function subjectLabel(a: AlertWithSubject): string {
+  if (a.task) return a.task.title || "Untitled task";
+  const m = a.member;
   if (!m) return "Unknown";
   const n = [m.first_name, m.last_name].filter(Boolean).join(" ").trim();
   return n || m.organization || "Unnamed";
 }
 
-function ageLabel(a: AlertWithMember): string {
+function subjectOwner(a: AlertWithSubject): string | null {
+  if (a.member) return a.member.owner;
+  if (a.task) return a.task.assigned_to ?? a.task.created_by ?? null;
+  return null;
+}
+
+function ageLabel(a: AlertWithSubject): string {
   const r = a.reason_json;
   if (a.kind === "contact_cold" && typeof r.days_since_last_contact === "number") {
     return `${r.days_since_last_contact} days cold`;
@@ -42,11 +58,15 @@ function ageLabel(a: AlertWithMember): string {
   if (a.kind === "marketplace_stall" && typeof r.days_in_phase === "number") {
     return `${r.days_in_phase} days in phase`;
   }
+  if (a.kind === "task_stale" && typeof r.days_since_update === "number") {
+    return `${r.days_since_update} days untouched`;
+  }
   return "—";
 }
 
-function alertHref(a: AlertWithMember): string {
+function alertHref(a: AlertWithSubject): string {
   if (a.kind === "marketplace_stall") return "/admin/marketplace?view=pool";
+  if (a.kind === "task_stale") return "/admin/tasks";
   return "/admin/contacts";
 }
 
@@ -57,7 +77,7 @@ function alertHref(a: AlertWithMember): string {
  * the sync cron via POST /api/admin/alerts/sync.
  */
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<AlertWithMember[] | null>(null);
+  const [alerts, setAlerts] = useState<AlertWithSubject[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
@@ -108,7 +128,7 @@ export default function AlertsPage() {
     return alerts.filter((a) => {
       if (kindFilter !== "all" && a.kind !== kindFilter) return false;
       if (ownerFilter !== "all") {
-        const o = a.member?.owner ?? null;
+        const o = subjectOwner(a);
         if (ownerFilter === "unowned") return o === null;
         if (o !== ownerFilter) return false;
       }
@@ -116,13 +136,14 @@ export default function AlertsPage() {
     });
   }, [alerts, kindFilter, ownerFilter]);
 
-  // Per-owner counts for the pill labels.
+  // Per-owner counts for the pill labels. Use the same owner-resolution
+  // rule as the digest so the count matches what gets emailed.
   const ownerCounts = useMemo(() => {
     const m = new Map<string, number>();
     m.set("all", alerts?.length ?? 0);
     let unowned = 0;
     for (const a of alerts ?? []) {
-      const o = a.member?.owner;
+      const o = subjectOwner(a);
       if (!o) {
         unowned += 1;
       } else {
@@ -175,6 +196,13 @@ export default function AlertsPage() {
             Marketplace stall
             <span className={styles.pillCount}>{kindCounts.get("marketplace_stall") ?? 0}</span>
           </button>
+          <button
+            className={`${styles.pill} ${kindFilter === "task_stale" ? styles.pillActive : ""}`}
+            onClick={() => setKindFilter("task_stale")}
+          >
+            Task untouched
+            <span className={styles.pillCount}>{kindCounts.get("task_stale") ?? 0}</span>
+          </button>
         </div>
         <button
           type="button"
@@ -222,23 +250,37 @@ export default function AlertsPage() {
         </div>
       ) : (
         <ul className={styles.list}>
-          {filtered.map((a) => (
+          {filtered.map((a) => {
+            const kindClass =
+              a.kind === "contact_cold"
+                ? styles.contact
+                : a.kind === "marketplace_stall"
+                  ? styles.stall
+                  : styles.task;
+            const owner = subjectOwner(a);
+            return (
             <li
               key={a.id}
-              className={`${styles.row} ${a.kind === "contact_cold" ? styles.contact : styles.stall}`}
+              className={`${styles.row} ${kindClass}`}
             >
               <div className={styles.rowMain}>
                 <span
-                  className={`${styles.rowKind} ${a.kind === "contact_cold" ? styles.contact : styles.stall}`}
+                  className={`${styles.rowKind} ${kindClass}`}
                 >
                   {ALERT_KIND_LABELS[a.kind as AlertKind]}
                 </span>
-                <span className={styles.rowName}>{fullName(a.member)}</span>
+                <span className={styles.rowName}>{subjectLabel(a)}</span>
                 <span className={styles.rowMeta}>
                   <span>{ageLabel(a)}</span>
-                  <span>· {a.member?.owner ?? "Unowned"}</span>
+                  <span>· {owner ?? "Unowned"}</span>
                   {a.member?.phase && <span>· {a.member.phase}</span>}
                   {a.member?.organization && <span>· {a.member.organization}</span>}
+                  {a.task && (
+                    <>
+                      <span>· {a.task.priority}</span>
+                      <span>· {a.task.status}</span>
+                    </>
+                  )}
                 </span>
                 {a.kind === "marketplace_stall" &&
                   a.reason_json.incomplete_step_keys && (
@@ -271,7 +313,8 @@ export default function AlertsPage() {
                 </button>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>

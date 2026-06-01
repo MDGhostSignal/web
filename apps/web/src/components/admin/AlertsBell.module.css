@@ -133,6 +133,7 @@
 }
 .rowKind.contact { color: var(--admin-warn); }
 .rowKind.stall { color: var(--admin-destructive); }
+.rowKind.task { color: #7752c9; }
 .rowName {
   font-size: var(--admin-text-sm);
   font-weight: 600;
