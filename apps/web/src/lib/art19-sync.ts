@@ -8,32 +8,41 @@
  *      full series record and upsert.
  *   4. For each series, walk /series/{id}/relationships/episodes →
  *      for each, fetch the full episode record and upsert.
- *   5. Patch the sync_runs row with finished_at + counts + status=ok,
+ *   5. Walk /campaign_series → keep records whose series_id is in our
+ *      synced show set → upsert. Fetch + upsert each distinct campaign.
+ *   6. Patch the sync_runs row with finished_at + counts + status=ok,
  *      or status=error + message if anything blew up.
  *
- * listen_count is captured at every level. The network/series/episode
- * records each carry their own lifetime IABv2.2 download total directly
- * from the ART19 API (no daily export required).
+ * listen_count is captured at every level (network, series, episode,
+ * campaign, campaign_series). All monetary fields are stored as numeric.
  *
  * Why scoped to a single network: see the docstring in art19.ts — the
  * credential has global platform read, but filter[network_id] is silently
  * ignored, so the only way to keep the sync GhostSignal-only is to walk
- * relationship endpoints starting from a known network ID.
+ * relationship endpoints from a known network ID and filter
+ * campaign_series records by the synced show set.
  */
 
 import {
   Art19Error,
   art19ConfigFromEnv,
+  getCampaign,
   getEpisode,
   getNetwork,
   getSeries,
+  listAllCampaignSeries,
   listEpisodeRefsForSeries,
   listSeriesRefsForNetwork,
 } from "./art19";
 import {
+  campaignRowFromResource,
+  campaignSeriesRowFromResource,
   episodeRowFromResource,
+  firstRelId,
   networkRowFromResource,
   showRowFromResource,
+  type Art19CampaignRow,
+  type Art19CampaignSeriesRow,
   type Art19EpisodeRow,
   type Art19NetworkRow,
   type Art19ShowRow,
@@ -45,11 +54,14 @@ export type Art19SyncResult = {
   showCount?: number;
   episodeCount?: number;
   totalListens?: number;
+  campaignCount?: number;
+  campaignSeriesCount?: number;
   durationMs: number;
   error?: string;
 };
 
 const EPISODE_UPSERT_CHUNK = 200;
+const CAMPAIGN_UPSERT_CHUNK = 100;
 
 /** Top-level entry point hit by the sync route + the GitHub Actions cron. */
 export async function runArt19Sync(): Promise<Art19SyncResult> {
@@ -106,6 +118,7 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
       });
       if (!r.ok) throw new Error(`Failed to upsert shows: ${r.detail}`);
     }
+    const showIds = new Set(showRows.map((s) => s.id));
 
     // --- Episodes --------------------------------------------------
     const episodeRows: Art19EpisodeRow[] = [];
@@ -117,7 +130,6 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
         if (row) episodeRows.push(row);
       }
     }
-
     for (let i = 0; i < episodeRows.length; i += EPISODE_UPSERT_CHUNK) {
       const chunk = episodeRows.slice(i, i + EPISODE_UPSERT_CHUNK);
       const r = await supabaseRest("art19_episodes?on_conflict=id", {
@@ -132,6 +144,57 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
       }
     }
 
+    // --- Campaigns + campaign_series -------------------------------
+    // Walk /campaign_series, keep only ones whose series_id we just
+    // synced, then fetch+upsert each distinct campaign.
+    const allCampaignSeries = await listAllCampaignSeries(cfg);
+    const ourCampaignSeries = allCampaignSeries.filter((cs) => {
+      const sid = firstRelId(cs, "series");
+      return sid !== null && showIds.has(sid);
+    });
+
+    const campaignSeriesRows: Art19CampaignSeriesRow[] = [];
+    const campaignIds = new Set<string>();
+    for (const cs of ourCampaignSeries) {
+      const campaignId = firstRelId(cs, "campaign");
+      const seriesId = firstRelId(cs, "series");
+      const row = campaignSeriesRowFromResource(cs, campaignId, seriesId);
+      if (row) {
+        campaignSeriesRows.push(row);
+        campaignIds.add(row.campaign_id);
+      }
+    }
+
+    const campaignRows: Art19CampaignRow[] = [];
+    for (const cid of campaignIds) {
+      const c = await getCampaign(cfg, cid);
+      campaignRows.push(campaignRowFromResource(c.data));
+    }
+
+    // Campaigns first (campaign_series FK references campaigns).
+    for (let i = 0; i < campaignRows.length; i += CAMPAIGN_UPSERT_CHUNK) {
+      const chunk = campaignRows.slice(i, i + CAMPAIGN_UPSERT_CHUNK);
+      const r = await supabaseRest("art19_campaigns?on_conflict=id", {
+        method: "POST",
+        body: JSON.stringify(chunk),
+        prefer: "resolution=merge-duplicates,return=minimal",
+      });
+      if (!r.ok) {
+        throw new Error(`Failed to upsert campaigns: ${r.detail}`);
+      }
+    }
+    for (let i = 0; i < campaignSeriesRows.length; i += CAMPAIGN_UPSERT_CHUNK) {
+      const chunk = campaignSeriesRows.slice(i, i + CAMPAIGN_UPSERT_CHUNK);
+      const r = await supabaseRest("art19_campaign_series?on_conflict=id", {
+        method: "POST",
+        body: JSON.stringify(chunk),
+        prefer: "resolution=merge-duplicates,return=minimal",
+      });
+      if (!r.ok) {
+        throw new Error(`Failed to upsert campaign_series: ${r.detail}`);
+      }
+    }
+
     const totalListens = networkRow.listen_count ?? 0;
 
     if (runId) {
@@ -143,6 +206,8 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
           show_count: showRows.length,
           episode_count: episodeRows.length,
           listen_row_count: 0,
+          campaign_count: campaignRows.length,
+          campaign_series_count: campaignSeriesRows.length,
         }),
       });
     }
@@ -152,6 +217,8 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
       showCount: showRows.length,
       episodeCount: episodeRows.length,
       totalListens,
+      campaignCount: campaignRows.length,
+      campaignSeriesCount: campaignSeriesRows.length,
       durationMs: Date.now() - started,
     };
   } catch (err) {

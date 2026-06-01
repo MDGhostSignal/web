@@ -113,6 +113,42 @@ export type Art19EpisodeAttrs = {
   updated_at?: string;
 };
 
+/* --- Ad-trafficking resources ----------------------------------- */
+
+export type Art19CampaignAttrs = {
+  name?: string;
+  campaign_type?: string;
+  ad_source?: "external" | "internal" | string;
+  status?: string;
+  default_cpm?: string;
+  current_spend?: string;
+  listen_count?: number;
+  maximum_impressions?: number | null;
+  fill_rate?: number;
+  active_campaign_series_count?: number;
+  advertisements_count?: number;
+  start_date?: string | null;
+  end_date?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type Art19CampaignSeriesAttrs = {
+  cpm?: string;
+  current_spend?: string;
+  listen_count?: number;
+  maximum_impressions?: number | null;
+  status?: string;
+  brand_approval_status?: string | null;
+  weight?: number | null;
+  api_enabled?: boolean;
+  live_reads_enabled?: boolean;
+  spots_enabled?: boolean;
+  rss_enabled?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
 /* =====================================================================
  * Cached row shapes (what we store in Supabase)
  * ===================================================================== */
@@ -171,7 +207,51 @@ export type Art19SyncRunRow = {
   show_count: number | null;
   episode_count: number | null;
   listen_row_count: number | null;
+  campaign_count: number | null;
+  campaign_series_count: number | null;
   error_message: string | null;
+};
+
+export type Art19CampaignRow = {
+  id: string;
+  name: string | null;
+  campaign_type: string | null;
+  ad_source: string | null;
+  status: string | null;
+  default_cpm: number | null;
+  current_spend: number | null;
+  listen_count: number | null;
+  maximum_impressions: number | null;
+  fill_rate: number | null;
+  active_campaign_series_count: number | null;
+  advertisements_count: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  art19_created_at: string | null;
+  art19_updated_at: string | null;
+  raw: unknown;
+  updated_at: string;
+};
+
+export type Art19CampaignSeriesRow = {
+  id: string;
+  campaign_id: string;
+  show_id: string;
+  cpm: number | null;
+  current_spend: number | null;
+  listen_count: number | null;
+  maximum_impressions: number | null;
+  status: string | null;
+  brand_approval_status: string | null;
+  weight: number | null;
+  api_enabled: boolean | null;
+  live_reads_enabled: boolean | null;
+  spots_enabled: boolean | null;
+  rss_enabled: boolean | null;
+  art19_created_at: string | null;
+  art19_updated_at: string | null;
+  raw: unknown;
+  updated_at: string;
 };
 
 /* =====================================================================
@@ -220,6 +300,70 @@ export function showRowFromResource(
     image_url: null,
     episode_count: res.attributes.released_episode_count ?? null,
     listen_count: res.attributes.listen_count ?? null,
+    art19_created_at: res.attributes.created_at ?? null,
+    art19_updated_at: res.attributes.updated_at ?? null,
+    raw: res,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+/** ART19 returns monetary fields as strings ("5.0", "0.0"). Parse to
+ *  number, treating empty / non-numeric input as null. */
+function parseMoney(v: string | undefined): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function campaignRowFromResource(
+  res: JsonApiResource<Art19CampaignAttrs>,
+): Art19CampaignRow {
+  return {
+    id: res.id,
+    name: res.attributes.name ?? null,
+    campaign_type: res.attributes.campaign_type ?? null,
+    ad_source: res.attributes.ad_source ?? null,
+    status: res.attributes.status ?? null,
+    default_cpm: parseMoney(res.attributes.default_cpm),
+    current_spend: parseMoney(res.attributes.current_spend),
+    listen_count: res.attributes.listen_count ?? null,
+    maximum_impressions: res.attributes.maximum_impressions ?? null,
+    fill_rate: res.attributes.fill_rate ?? null,
+    active_campaign_series_count:
+      res.attributes.active_campaign_series_count ?? null,
+    advertisements_count: res.attributes.advertisements_count ?? null,
+    start_date: res.attributes.start_date ?? null,
+    end_date: res.attributes.end_date ?? null,
+    art19_created_at: res.attributes.created_at ?? null,
+    art19_updated_at: res.attributes.updated_at ?? null,
+    raw: res,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export function campaignSeriesRowFromResource(
+  res: JsonApiResource<Art19CampaignSeriesAttrs>,
+  campaignId: string | null,
+  showId: string | null,
+): Art19CampaignSeriesRow | null {
+  const cid = campaignId ?? firstRelId(res, "campaign");
+  const sid = showId ?? firstRelId(res, "series");
+  if (!cid || !sid) return null;
+  return {
+    id: res.id,
+    campaign_id: cid,
+    show_id: sid,
+    cpm: parseMoney(res.attributes.cpm),
+    current_spend: parseMoney(res.attributes.current_spend),
+    listen_count: res.attributes.listen_count ?? null,
+    maximum_impressions: res.attributes.maximum_impressions ?? null,
+    status: res.attributes.status ?? null,
+    brand_approval_status: res.attributes.brand_approval_status ?? null,
+    weight: res.attributes.weight ?? null,
+    api_enabled: res.attributes.api_enabled ?? null,
+    live_reads_enabled: res.attributes.live_reads_enabled ?? null,
+    spots_enabled: res.attributes.spots_enabled ?? null,
+    rss_enabled: res.attributes.rss_enabled ?? null,
     art19_created_at: res.attributes.created_at ?? null,
     art19_updated_at: res.attributes.updated_at ?? null,
     raw: res,

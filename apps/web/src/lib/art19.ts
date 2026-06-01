@@ -28,17 +28,23 @@
  */
 
 import type {
+  Art19CampaignAttrs,
+  Art19CampaignSeriesAttrs,
   Art19EpisodeAttrs,
   Art19NetworkAttrs,
   Art19SeriesAttrs,
+  JsonApiList,
   JsonApiRef,
   JsonApiRefList,
+  JsonApiResource,
   JsonApiSingle,
 } from "./art19-types";
 
 const DEFAULT_BASE = "https://art19.com";
 const REL_PAGE_SIZE = 100;
 const MAX_REL_PAGES = 50;
+const CAMPAIGN_SERIES_PAGE_SIZE = 100;
+const MAX_CAMPAIGN_SERIES_PAGES = 100;
 
 export class Art19Error extends Error {
   public readonly status: number;
@@ -154,6 +160,36 @@ export async function listEpisodeRefsForSeries(
   seriesId: string,
 ): Promise<JsonApiRef[]> {
   return paginateRefs(cfg, `/series/${seriesId}/relationships/episodes`);
+}
+
+/** Walk `/campaign_series` end-to-end. Each record is a per-show,
+ *  per-campaign join carrying CPM, spend, and delivered impressions.
+ *
+ *  The credential's visibility is effectively scoped to records that
+ *  touch series under this account, so the orchestrator can iterate all
+ *  records and rely on the `series` relationship to filter — no need
+ *  for a `filter[series_id]` (which the API ignores anyway). */
+export async function listAllCampaignSeries(
+  cfg: Art19Config,
+): Promise<JsonApiResource<Art19CampaignSeriesAttrs>[]> {
+  const all: JsonApiResource<Art19CampaignSeriesAttrs>[] = [];
+  for (let page = 1; page <= MAX_CAMPAIGN_SERIES_PAGES; page++) {
+    const url = `/campaign_series?page=${page}&per_page=${CAMPAIGN_SERIES_PAGE_SIZE}`;
+    const body = await get<JsonApiList<Art19CampaignSeriesAttrs>>(cfg, url);
+    const data = body.data ?? [];
+    if (data.length === 0) break;
+    all.push(...data);
+    if (data.length < CAMPAIGN_SERIES_PAGE_SIZE) break;
+  }
+  return all;
+}
+
+/** Fetch a single campaign record (name, brand, CPM, spend, dates, etc.). */
+export async function getCampaign(
+  cfg: Art19Config,
+  id: string,
+): Promise<JsonApiSingle<Art19CampaignAttrs>> {
+  return get<JsonApiSingle<Art19CampaignAttrs>>(cfg, `/campaigns/${id}`);
 }
 
 /** Quick health/auth check. Returns the HTTP status so the sync route
