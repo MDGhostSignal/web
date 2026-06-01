@@ -33,6 +33,18 @@ type Show = {
   latest_episode_at: string | null;
 };
 
+type Listens = {
+  total: number;
+  hasData: boolean;
+  range: string;
+};
+
+function formatBigNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
   const ms = Date.now() - new Date(iso).getTime();
@@ -75,6 +87,7 @@ function formatDate(iso: string | null | undefined): string {
 export default function Art19Page() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [shows, setShows] = useState<Show[] | null>(null);
+  const [listens, setListens] = useState<Listens | null>(null);
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
@@ -84,12 +97,15 @@ export default function Art19Page() {
     setBusy(true);
     setError(null);
     try {
-      const [s, sh] = await Promise.all([
+      const [s, sh, l] = await Promise.all([
         fetch("/api/admin/art19/summary").then((r) => r.json()),
         fetch("/api/admin/art19/shows").then((r) => r.json()),
+        fetch("/api/admin/art19/listens?range=30d").then((r) => r.json()),
       ]);
       if (s.ok) setSummary(s);
       if (sh.ok) setShows(sh.shows ?? []);
+      if (l.ok)
+        setListens({ total: l.total, hasData: l.hasData, range: l.range });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
@@ -202,11 +218,17 @@ export default function Art19Page() {
               : "primary network"}
           </span>
         </div>
-        <div className={`${styles.kpi} ${styles.placeholder}`}>
+        <div
+          className={`${styles.kpi} ${listens?.hasData ? "" : styles.placeholder}`}
+        >
           <span className={styles.kpiLabel}>Listens · last 30d</span>
-          <span className={styles.kpiValue}>—</span>
+          <span className={styles.kpiValue}>
+            {listens?.hasData ? formatBigNumber(listens.total) : "—"}
+          </span>
           <span className={styles.kpiHint}>
-            pending ART19 metrics API access
+            {listens?.hasData
+              ? `${listens.total.toLocaleString()} total downloads`
+              : "pending ART19 metrics API access"}
           </span>
         </div>
       </div>

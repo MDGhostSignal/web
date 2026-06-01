@@ -56,6 +56,7 @@ export default function AdminHome() {
       showCount: number;
       episodeCount: number;
       lastSync: { started_at: string; status: string } | null;
+      listens30d: { total: number; hasData: boolean };
     }>
   >({ kind: "loading" });
 
@@ -141,27 +142,34 @@ export default function AdminHome() {
       }
     })();
 
-    // ART19: cached show + episode counts. Listen metrics not wired up
-    // yet (waiting on Support to confirm the analytics API surface) —
-    // the card renders episode count as the headline number for now.
+    // ART19: cached show + episode counts + last 30d listens. When
+    // the listens endpoint returns hasData=false (no rows in
+    // art19_listens_daily yet, e.g. before Support confirms the
+    // metrics API surface), the card renders episode count as the
+    // headline. Once data lands the headline auto-swaps to listens.
     (async () => {
       try {
-        const res = await fetch("/api/admin/art19/summary", {
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = (await res.json()) as {
+        const [sRes, lRes] = await Promise.all([
+          fetch("/api/admin/art19/summary", { cache: "no-store" }),
+          fetch("/api/admin/art19/listens?range=30d", { cache: "no-store" }),
+        ]);
+        if (!sRes.ok) throw new Error(`Summary HTTP ${sRes.status}`);
+        const sJson = (await sRes.json()) as {
           showCount: number;
           episodeCount: number;
           lastSync: { started_at: string; status: string } | null;
         };
+        const lJson = lRes.ok
+          ? ((await lRes.json()) as { total: number; hasData: boolean })
+          : { total: 0, hasData: false };
         if (!cancelled) {
           setArt19({
             kind: "ready",
             data: {
-              showCount: json.showCount,
-              episodeCount: json.episodeCount,
-              lastSync: json.lastSync,
+              showCount: sJson.showCount,
+              episodeCount: sJson.episodeCount,
+              lastSync: sJson.lastSync,
+              listens30d: { total: lJson.total, hasData: lJson.hasData },
             },
           });
         }
@@ -343,13 +351,19 @@ export default function AdminHome() {
                 : "ready"
           }
           errorMessage={art19.kind === "error" ? art19.message : undefined}
-          value={art19.kind === "ready" ? art19.data.episodeCount : 0}
+          value={
+            art19.kind === "ready"
+              ? art19.data.listens30d.hasData
+                ? formatArt19Listens(art19.data.listens30d.total)
+                : art19.data.episodeCount
+              : 0
+          }
           sub={
             art19.kind === "ready" ? (
               <>
-                {art19.data.episodeCount === 1 ? "episode" : "episodes"} across{" "}
-                {art19.data.showCount}{" "}
-                {art19.data.showCount === 1 ? "show" : "shows"}
+                {art19.data.listens30d.hasData
+                  ? "listens · last 30 days"
+                  : `${art19.data.episodeCount === 1 ? "episode" : "episodes"} across ${art19.data.showCount} ${art19.data.showCount === 1 ? "show" : "shows"}`}
                 {art19.data.lastSync?.started_at && (
                   <>
                     {" · "}
@@ -365,10 +379,14 @@ export default function AdminHome() {
             art19.kind === "ready" ? (
               <div className={styles.financeNet}>
                 <span className={styles.financeNetLabel}>
-                  Listens · last 30 days
+                  {art19.data.listens30d.hasData
+                    ? "Shows / episodes"
+                    : "Listens · last 30 days"}
                 </span>
                 <span className={styles.financeNetNeutral}>
-                  pending ART19 metrics access
+                  {art19.data.listens30d.hasData
+                    ? `${art19.data.showCount} shows · ${art19.data.episodeCount} episodes`
+                    : "pending ART19 metrics access"}
                 </span>
               </div>
             ) : null
@@ -421,6 +439,15 @@ export default function AdminHome() {
       </div>
     </div>
   );
+}
+
+/** Pretty-print large listen counts (1.2M / 845K / 230). Used by the
+ *  ART19 KPI card so a value of 1,234,567 renders as "1.2M" instead
+ *  of overflowing the card width. */
+function formatArt19Listens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
 }
 
 function formatDueTime(iso: string): string {

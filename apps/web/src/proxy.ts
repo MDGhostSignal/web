@@ -128,6 +128,7 @@ export const config = {
     "/api/admin/art19/summary",
     "/api/admin/art19/shows",
     "/api/admin/art19/episodes",
+    "/api/admin/art19/listens",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).
