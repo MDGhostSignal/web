@@ -2415,3 +2415,50 @@
     display: none;
   }
 }
+
+/* ── Contract renewal status pill ──────────────────────────────────────
+ * Rendered under the inline-fields row in MarketplaceMemberDetails when
+ * a contract_signed_at date is set. Tone driven by days-until-renewal:
+ *   ok      green dot, > 60 days out
+ *   warn    amber, 30–60 days
+ *   urgent  destructive, < 30 days (matches the alert threshold)
+ *   error   destructive solid, already expired
+ */
+.mmContractStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: var(--admin-radius-pill);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+  width: fit-content;
+}
+.mmContractStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--admin-text-muted);
+  flex-shrink: 0;
+}
+.mmContractStatus-ok { color: var(--admin-success); border-color: var(--admin-success); }
+.mmContractStatus-ok .mmContractStatusDot { background: var(--admin-success); }
+.mmContractStatus-warn { color: var(--admin-warn); border-color: var(--admin-warn); }
+.mmContractStatus-warn .mmContractStatusDot { background: var(--admin-warn); }
+.mmContractStatus-urgent {
+  color: var(--admin-destructive);
+  border-color: var(--admin-destructive);
+  background: rgba(196, 58, 58, 0.08);
+}
+.mmContractStatus-urgent .mmContractStatusDot { background: var(--admin-destructive); }
+.mmContractStatus-error {
+  color: var(--admin-bg);
+  background: var(--admin-destructive);
+  border-color: var(--admin-destructive);
+  font-weight: 700;
+}
+.mmContractStatus-error .mmContractStatusDot { background: var(--admin-bg); }

@@ -134,6 +134,7 @@
 .rowKind.contact { color: var(--admin-warn); }
 .rowKind.stall { color: var(--admin-destructive); }
 .rowKind.task { color: #7752c9; }
+.rowKind.contract { color: #1f8a8a; }
 .rowName {
   font-size: var(--admin-text-sm);
   font-weight: 600;

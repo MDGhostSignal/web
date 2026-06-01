@@ -259,6 +259,15 @@ export type Member = {
       POST /api/members/[id]/avatar; null when no image has been
       uploaded yet. See docs/CRM_MEMBERS_AVATAR_MIGRATION.sql. */
   avatar_url: string | null;
+  /** Date the membership contract was signed (YYYY-MM-DD). Drives
+      the contract_expiring alert via `contract_signed_at +
+      contract_term_months` → renewal date. Null = no contract on file
+      yet (e.g. pre-sign members). See
+      docs/CRM_MEMBERS_CONTRACT_FIELDS_MIGRATION.sql. */
+  contract_signed_at: string | null;
+  /** Length of the current contract in months. Defaults to 12 (the
+      standard annual agreement). Range 1–60 enforced server-side. */
+  contract_term_months: number;
 };
 
 /**

@@ -190,6 +190,22 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     out.xq_submission_id = null;
   }
 
+  // contract_signed_at: ISO date string (YYYY-MM-DD).
+  if (typeof input.contract_signed_at === "string") {
+    out.contract_signed_at = input.contract_signed_at;
+  } else if (input.contract_signed_at === null) {
+    out.contract_signed_at = null;
+  }
+
+  // contract_term_months: integer clamped to [1, 60] (matches the
+  // CHECK constraint in CRM_MEMBERS_CONTRACT_FIELDS_MIGRATION.sql).
+  if (typeof input.contract_term_months === "number") {
+    const n = Math.floor(input.contract_term_months);
+    if (Number.isFinite(n) && n >= 1 && n <= 60) {
+      out.contract_term_months = n;
+    }
+  }
+
   if (input.lifecycle_steps && typeof input.lifecycle_steps === "object") {
     out.lifecycle_steps = sanitizeLifecycleSteps(input.lifecycle_steps);
   }

@@ -117,6 +117,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       kindsToResolve.push("marketplace_stall");
     }
   }
+  // Updating the signed-at date is the "renewal logged" action —
+  // close the related expiring alert. The cron will reopen if the
+  // new dates still fall inside the renewal window.
+  if ("contract_signed_at" in payload || "contract_term_months" in payload) {
+    kindsToResolve.push("contract_expiring");
+  }
   if (kindsToResolve.length > 0) {
     void resolveOpenAlertsForMember(id, kindsToResolve);
   }

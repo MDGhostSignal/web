@@ -30,6 +30,7 @@ export const ALERT_KINDS = [
   "contact_cold",
   "marketplace_stall",
   "task_stale",
+  "contract_expiring",
 ] as const;
 export type AlertKind = (typeof ALERT_KINDS)[number];
 
@@ -37,6 +38,7 @@ export const ALERT_KIND_LABELS: Record<AlertKind, string> = {
   contact_cold: "Contact gone cold",
   marketplace_stall: "Marketplace stalled",
   task_stale: "Task untouched",
+  contract_expiring: "Contract renewal due",
 };
 
 /** Wire shape — mirrors the Supabase row. Exactly one of member_id /
@@ -67,19 +69,42 @@ export type AlertReason = {
   task_title?: string;
   task_priority?: "low" | "medium" | "high";
   task_status?: string;
+  // contract-side fields
+  contract_signed_at?: string;
+  contract_term_months?: number;
+  renewal_date?: string;
+  /** Negative when the contract has already expired. */
+  days_until_renewal?: number;
 };
 
 /** Threshold knobs — read from env so the user can tune without code
- *  changes. Defaults: 28d contacts, 30d marketplace, 14d tasks. */
+ *  changes. Defaults: 28d contacts, 30d marketplace, 14d tasks,
+ *  30d contract-expiring lead time. */
 export function getThresholds() {
   const contactDays = Number(process.env.ALERT_CONTACT_COLD_DAYS ?? 28);
   const stallDays = Number(process.env.ALERT_MARKETPLACE_STALL_DAYS ?? 30);
   const taskDays = Number(process.env.ALERT_TASK_STALE_DAYS ?? 14);
+  const contractDays = Number(process.env.ALERT_CONTRACT_EXPIRING_DAYS ?? 30);
   return {
     contactColdDays: Number.isFinite(contactDays) ? contactDays : 28,
     marketplaceStallDays: Number.isFinite(stallDays) ? stallDays : 30,
     taskStaleDays: Number.isFinite(taskDays) ? taskDays : 14,
+    contractExpiringDays: Number.isFinite(contractDays) ? contractDays : 30,
   };
+}
+
+/** Compute the renewal date for a contract. Uses Date.setMonth so
+ *  calendar boundaries (28/30/31-day months) are handled correctly
+ *  instead of approximating "1 month = 30 days". */
+export function computeRenewalDate(
+  signedAt: string,
+  termMonths: number,
+): Date | null {
+  const t = Date.parse(signedAt);
+  if (Number.isNaN(t)) return null;
+  const d = new Date(t);
+  d.setMonth(d.getMonth() + termMonths);
+  return d;
 }
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -145,7 +170,8 @@ export function detectAlertsForMember(
   member: Member,
 ): { kind: AlertKind; reason: AlertReason }[] {
   const out: { kind: AlertKind; reason: AlertReason }[] = [];
-  const { contactColdDays, marketplaceStallDays } = getThresholds();
+  const { contactColdDays, marketplaceStallDays, contractExpiringDays } =
+    getThresholds();
 
   if (member.phase !== "paused" && member.phase !== "churned") {
     const reference = member.last_contact_at ?? member.created_at;
@@ -176,6 +202,39 @@ export function detectAlertsForMember(
             days_in_phase: days,
             phase: member.phase,
             incomplete_step_keys: keys.slice(0, 5),
+          },
+        });
+      }
+    }
+  }
+
+  // contract_expiring — only for full members (became_member_at set OR
+  // phase is run) whose contract_signed_at + term is within the
+  // configured lead time. Negative `days_until_renewal` means already
+  // expired and the alert should be even more urgent.
+  if (
+    member.contract_signed_at &&
+    member.contract_term_months &&
+    (member.became_member_at || member.phase === "run") &&
+    member.phase !== "paused" &&
+    member.phase !== "churned"
+  ) {
+    const renewal = computeRenewalDate(
+      member.contract_signed_at,
+      member.contract_term_months,
+    );
+    if (renewal) {
+      const daysUntilRenewal = Math.floor(
+        (renewal.getTime() - Date.now()) / MS_PER_DAY,
+      );
+      if (daysUntilRenewal <= contractExpiringDays) {
+        out.push({
+          kind: "contract_expiring",
+          reason: {
+            contract_signed_at: member.contract_signed_at,
+            contract_term_months: member.contract_term_months,
+            renewal_date: renewal.toISOString().slice(0, 10),
+            days_until_renewal: daysUntilRenewal,
           },
         });
       }

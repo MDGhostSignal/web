@@ -61,12 +61,20 @@ function ageLabel(a: AlertWithSubject): string {
   if (a.kind === "task_stale" && typeof r.days_since_update === "number") {
     return `${r.days_since_update} days untouched`;
   }
+  if (a.kind === "contract_expiring" && typeof r.days_until_renewal === "number") {
+    if (r.days_until_renewal < 0) {
+      return `expired ${Math.abs(r.days_until_renewal)} days ago`;
+    }
+    if (r.days_until_renewal === 0) return "renews today";
+    return `renews in ${r.days_until_renewal} days`;
+  }
   return "—";
 }
 
 function alertHref(a: AlertWithSubject): string {
   if (a.kind === "marketplace_stall") return "/admin/marketplace?view=pool";
   if (a.kind === "task_stale") return "/admin/tasks";
+  if (a.kind === "contract_expiring") return "/admin/marketplace?view=pool";
   return "/admin/contacts";
 }
 
@@ -203,6 +211,13 @@ export default function AlertsPage() {
             Task untouched
             <span className={styles.pillCount}>{kindCounts.get("task_stale") ?? 0}</span>
           </button>
+          <button
+            className={`${styles.pill} ${kindFilter === "contract_expiring" ? styles.pillActive : ""}`}
+            onClick={() => setKindFilter("contract_expiring")}
+          >
+            Contract renewal
+            <span className={styles.pillCount}>{kindCounts.get("contract_expiring") ?? 0}</span>
+          </button>
         </div>
         <button
           type="button"
@@ -256,7 +271,9 @@ export default function AlertsPage() {
                 ? styles.contact
                 : a.kind === "marketplace_stall"
                   ? styles.stall
-                  : styles.task;
+                  : a.kind === "task_stale"
+                    ? styles.task
+                    : styles.contract;
             const owner = subjectOwner(a);
             return (
             <li

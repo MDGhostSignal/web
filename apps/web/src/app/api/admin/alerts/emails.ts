@@ -59,6 +59,12 @@ function ageDescription(a: DigestAlert): string {
   if (a.kind === "task_stale" && typeof r.days_since_update === "number") {
     return `${r.days_since_update} days untouched`;
   }
+  if (a.kind === "contract_expiring" && typeof r.days_until_renewal === "number") {
+    if (r.days_until_renewal < 0) {
+      return `contract expired ${Math.abs(r.days_until_renewal)} days ago · renews ${r.renewal_date ?? "—"}`;
+    }
+    return `renews in ${r.days_until_renewal} days · renewal date ${r.renewal_date ?? "—"}`;
+  }
   return "—";
 }
 
@@ -99,7 +105,9 @@ function alertRowHtml(a: DigestAlert): string {
       ? "#c98a14"
       : a.kind === "marketplace_stall"
         ? "#c43a3a"
-        : "#7752c9";
+        : a.kind === "task_stale"
+          ? "#7752c9"
+          : "#1f8a8a";
   const sub =
     a.kind === "task_stale" && a.task
       ? `priority: ${escapeHtml(a.task.priority)} · status: ${escapeHtml(a.task.status)}`
@@ -138,6 +146,7 @@ export function buildDigestHtml(opts: {
   const cold = alerts.filter((a) => a.kind === "contact_cold");
   const stalls = alerts.filter((a) => a.kind === "marketplace_stall");
   const tasks = alerts.filter((a) => a.kind === "task_stale");
+  const contracts = alerts.filter((a) => a.kind === "contract_expiring");
 
   const section = (title: string, rows: DigestAlert[]) => {
     if (rows.length === 0) return "";
@@ -161,6 +170,7 @@ export function buildDigestHtml(opts: {
         <p style="margin: 6px 0 0; font-size: 13px; color: #666;">Daily digest for <strong>${escapeHtml(ownerName)}</strong> (sent to ${escapeHtml(recipient)}).</p>
       </td>
     </tr>
+    ${section("Contract renewal due", contracts)}
     ${section("Contact cold", cold)}
     ${section("Marketplace stalled", stalls)}
     ${section("Task untouched", tasks)}
@@ -185,10 +195,16 @@ export function buildDigestText(opts: {
   const cold = alerts.filter((a) => a.kind === "contact_cold");
   const stalls = alerts.filter((a) => a.kind === "marketplace_stall");
   const tasks = alerts.filter((a) => a.kind === "task_stale");
+  const contracts = alerts.filter((a) => a.kind === "contract_expiring");
   const lines: string[] = [
     `GhostSignal CRM · ${alerts.length} alert(s) for ${ownerName}`,
     "",
   ];
+  if (contracts.length > 0) {
+    lines.push(`Contract renewal due (${contracts.length}):`);
+    lines.push(...contracts.map(alertRowText));
+    lines.push("");
+  }
   if (cold.length > 0) {
     lines.push(`Contact cold (${cold.length}):`);
     lines.push(...cold.map(alertRowText));

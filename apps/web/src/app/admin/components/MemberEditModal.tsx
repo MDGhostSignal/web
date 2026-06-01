@@ -56,6 +56,8 @@ type FormState = {
   owner: string;
   next_step: string;
   last_contact_at: string;
+  contract_signed_at: string;
+  contract_term_months: string;
   notes: string;
   tagsCsv: string;
   shipping_address_line1: string;
@@ -79,6 +81,8 @@ const EMPTY_FORM: FormState = {
   owner: "",
   next_step: "",
   last_contact_at: "",
+  contract_signed_at: "",
+  contract_term_months: "12",
   notes: "",
   tagsCsv: "",
   shipping_address_line1: "",
@@ -103,6 +107,13 @@ function memberToForm(m: Member): FormState {
     owner: m.owner ?? "",
     next_step: m.next_step ?? "",
     last_contact_at: m.last_contact_at ? m.last_contact_at.slice(0, 10) : "",
+    // Seed the contract sign date from lifecycle_steps.membership_signed
+    // when the explicit column is blank — helps backfill historical
+    // members who signed before the column existed.
+    contract_signed_at: m.contract_signed_at
+      ? m.contract_signed_at.slice(0, 10)
+      : (m.lifecycle_steps?.membership_signed?.completed_at ?? ""),
+    contract_term_months: String(m.contract_term_months ?? 12),
     notes: m.notes ?? "",
     tagsCsv: m.tags.join(", "),
     shipping_address_line1: m.shipping_address_line1 ?? "",
@@ -128,6 +139,11 @@ function formToPayload(f: FormState): MemberWritable {
     owner: f.owner.trim() || null,
     next_step: f.next_step.trim() || null,
     last_contact_at: f.last_contact_at ? f.last_contact_at : null,
+    contract_signed_at: f.contract_signed_at ? f.contract_signed_at : null,
+    contract_term_months: (() => {
+      const n = Number(f.contract_term_months);
+      return Number.isFinite(n) && n >= 1 && n <= 60 ? n : 12;
+    })(),
     notes: f.notes.trim() || null,
     tags: f.tagsCsv
       .split(",")
@@ -333,6 +349,32 @@ export function MemberEditModal({
               value={form.last_contact_at}
               onChange={(e) => up("last_contact_at", e.target.value)}
               disabled={isSaving}
+            />
+          </Field>
+
+          <Field label="Contract signed" htmlFor="contract_signed_at">
+            <input
+              id="contract_signed_at"
+              type="date"
+              className={styles.input}
+              value={form.contract_signed_at}
+              onChange={(e) => up("contract_signed_at", e.target.value)}
+              disabled={isSaving}
+            />
+          </Field>
+
+          <Field label="Contract term (months)" htmlFor="contract_term_months">
+            <input
+              id="contract_term_months"
+              type="number"
+              min={1}
+              max={60}
+              step={1}
+              className={styles.input}
+              value={form.contract_term_months}
+              onChange={(e) => up("contract_term_months", e.target.value)}
+              disabled={isSaving}
+              placeholder="12"
             />
           </Field>
         </div>

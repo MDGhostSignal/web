@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -360,6 +361,12 @@ function ContactCard({ member }: { member: Member }) {
 
 function PipelineCard({ member, onPatch }: Props) {
   const [draftOwner, setDraftOwner] = useDraftSync(member.owner ?? "");
+  const [draftContractSigned, setDraftContractSigned] = useDraftSync(
+    member.contract_signed_at ? member.contract_signed_at.slice(0, 10) : "",
+  );
+  const [draftContractTerm, setDraftContractTerm] = useDraftSync(
+    String(member.contract_term_months ?? 12),
+  );
   const [draftLastContact, setDraftLastContact] = useDraftSync(
     member.last_contact_at ? member.last_contact_at.slice(0, 10) : "",
   );
@@ -402,6 +409,75 @@ function PipelineCard({ member, onPatch }: Props) {
     if (next === current) return;
     void runSave({ last_contact_at: next === "" ? null : next });
   };
+
+  const handleContractSignedChange = (next: string) => {
+    setDraftContractSigned(next);
+    const current = member.contract_signed_at
+      ? member.contract_signed_at.slice(0, 10)
+      : "";
+    if (next === current) return;
+    void runSave({ contract_signed_at: next === "" ? null : next });
+  };
+
+  const handleContractTermBlur = () => {
+    const trimmed = draftContractTerm.trim();
+    const current = member.contract_term_months ?? 12;
+    if (trimmed === "") {
+      setDraftContractTerm(String(current));
+      return;
+    }
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || n < 1 || n > 60) {
+      setDraftContractTerm(String(current));
+      return;
+    }
+    const rounded = Math.floor(n);
+    if (rounded === current) return;
+    void runSave({ contract_term_months: rounded });
+  };
+
+  /** Capture wall-clock "now" once per panel-open via a lazy
+   *  useState initializer. Lazy initializers run exactly once on
+   *  mount and are allowed by react-hooks/purity (the rule targets
+   *  render-body impurities). The badge is fixed to that moment for
+   *  the panel's lifetime, which is acceptable — the daily sync cron
+   *  + the alert system handle the cross-midnight cases. */
+  const [nowMs] = useState<number>(() => Date.now());
+
+  /** Computed contract status (signed date + renewal date + days
+   *  remaining). Color codes: green > 60d, warn 30–60d, urgent < 30d,
+   *  error if expired. */
+  const contractStatus = useMemo<{
+    tone: "ok" | "warn" | "urgent" | "error";
+    label: string;
+  } | null>(() => {
+    if (!draftContractSigned || nowMs === 0) return null;
+    const signedTs = Date.parse(draftContractSigned);
+    if (Number.isNaN(signedTs)) return null;
+    const termN = Number(draftContractTerm);
+    const months = Number.isFinite(termN) && termN > 0 ? Math.floor(termN) : 12;
+    const renewal = new Date(signedTs);
+    renewal.setMonth(renewal.getMonth() + months);
+    const daysLeft = Math.floor(
+      (renewal.getTime() - nowMs) / (1000 * 60 * 60 * 24),
+    );
+    const renewalIso = renewal.toISOString().slice(0, 10);
+    const tone =
+      daysLeft < 0
+        ? "error"
+        : daysLeft <= 30
+          ? "urgent"
+          : daysLeft <= 60
+            ? "warn"
+            : "ok";
+    const label =
+      daysLeft < 0
+        ? `Expired ${Math.abs(daysLeft)}d ago · ${renewalIso}`
+        : daysLeft === 0
+          ? `Renews today · ${renewalIso}`
+          : `Renews ${renewalIso} · ${daysLeft}d left`;
+    return { tone, label };
+  }, [draftContractSigned, draftContractTerm, nowMs]);
 
   const handleCountBlur = () => {
     const trimmed = draftCount.trim();
@@ -511,7 +587,40 @@ function PipelineCard({ member, onPatch }: Props) {
             placeholder="What did they say last?"
           />
         </label>
+        <label className={styles.mmInlineField}>
+          <span className={styles.mmInlineLabel}>Contract signed</span>
+          <input
+            type="date"
+            className={styles.mmInlineInput}
+            value={draftContractSigned}
+            onChange={(e) => handleContractSignedChange(e.target.value)}
+          />
+        </label>
+        <label className={styles.mmInlineField}>
+          <span className={styles.mmInlineLabel}>Term (months)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={60}
+            step={1}
+            className={styles.mmInlineInput}
+            value={draftContractTerm}
+            onChange={(e) => setDraftContractTerm(e.target.value)}
+            onBlur={handleContractTermBlur}
+            placeholder="12"
+          />
+        </label>
       </div>
+
+      {contractStatus && (
+        <div
+          className={`${styles.mmContractStatus} ${styles[`mmContractStatus-${contractStatus.tone}`] ?? ""}`}
+        >
+          <span className={styles.mmContractStatusDot} aria-hidden="true" />
+          <span>{contractStatus.label}</span>
+        </div>
+      )}
 
       <div className={styles.mmNotesField}>
         <span className={styles.mmInlineLabel}>Notes</span>

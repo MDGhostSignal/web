@@ -60,6 +60,9 @@ export async function POST(req: Request) {
     "updated_at",
     "lifecycle_steps",
     "owner",
+    "became_member_at",
+    "contract_signed_at",
+    "contract_term_months",
   ].join(",");
   const memRes = await supabaseRest<Member[]>(
     `members?select=${memberCols}`,
