@@ -159,7 +159,77 @@ export async function upsertContractFromApi(
   await upsertSigners(contract.id, contract.signers ?? []);
 
   const persisted = Array.isArray(upsertRes.data) ? upsertRes.data[0] : upsertRes.data;
+
+  // Auto-fill the linked member's contract fields when the contract is
+  // signed and confirmed-linked to a member. Never clobbers manual
+  // overrides — only writes when the member's field is currently null
+  // (or default 12 for the term). The hourly alerts cron will then
+  // pick up the contract_expiring alert without anyone touching the UI.
+  if (persisted?.member_id && (status === "signed" || status === "completed")) {
+    await syncContractDatesToMember(persisted);
+  }
+
   return { ok: true, row: persisted };
+}
+
+/**
+ * Copy `contracts.signed_at` → `members.contract_signed_at` and (if
+ * `expires_at` is also present) compute the term in months between
+ * signed_at and expires_at and copy to `members.contract_term_months`.
+ *
+ * Respects manual overrides: skips fields the member already has set
+ * to a non-default value. Fire-and-forget at the call site — failure
+ * is logged but doesn't fail the parent contract upsert.
+ */
+async function syncContractDatesToMember(row: ContractRow): Promise<void> {
+  try {
+    if (!row.member_id || !row.signed_at) return;
+
+    const memberRes = await supabaseRest<
+      { contract_signed_at: string | null; contract_term_months: number }[]
+    >(
+      `members?id=eq.${row.member_id}&select=contract_signed_at,contract_term_months&limit=1`,
+    );
+    if (!memberRes.ok || !memberRes.data[0]) return;
+
+    const member = memberRes.data[0];
+    const patch: Record<string, string | number> = {};
+
+    // Only write the signed date when the member's slot is empty —
+    // respects manual entry (e.g. founder typed in a different date).
+    if (!member.contract_signed_at) {
+      patch.contract_signed_at = row.signed_at.slice(0, 10);
+    }
+
+    // Compute term in months from contract dates when both present.
+    // Only overwrite when the member's term is still at the default 12
+    // (signals it was never set manually).
+    if (row.expires_at && member.contract_term_months === 12) {
+      const signedDate = new Date(row.signed_at);
+      const expiresDate = new Date(row.expires_at);
+      if (
+        !Number.isNaN(signedDate.getTime()) &&
+        !Number.isNaN(expiresDate.getTime()) &&
+        expiresDate > signedDate
+      ) {
+        const months =
+          (expiresDate.getFullYear() - signedDate.getFullYear()) * 12 +
+          (expiresDate.getMonth() - signedDate.getMonth());
+        // Clamp to the CHECK constraint range [1, 60].
+        const clamped = Math.max(1, Math.min(60, months));
+        if (clamped !== 12) patch.contract_term_months = clamped;
+      }
+    }
+
+    if (Object.keys(patch).length === 0) return;
+
+    await supabaseRest(`members?id=eq.${row.member_id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  } catch (err) {
+    console.error("syncContractDatesToMember failed", err);
+  }
 }
 
 async function upsertSigners(
