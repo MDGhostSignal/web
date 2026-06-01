@@ -10,6 +10,7 @@ import { AdminShell } from "@/components/admin";
 import "@/components/admin/tokens.css";
 import {
   IconAlerts,
+  IconArt19,
   IconContracts,
   IconDashboard,
   IconFinance,
@@ -100,6 +101,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           ],
         },
         { href: "/admin/finance", label: "Finance", icon: <IconFinance /> },
+        { href: "/admin/art19", label: "ART19", icon: <IconArt19 /> },
         {
           href: "/admin/contracts",
           label: "Contracts",

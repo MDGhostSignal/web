@@ -51,6 +51,14 @@ export default function AdminHome() {
 
   const [leads, setLeads] = useState<LoadState<Member[]>>({ kind: "loading" });
 
+  const [art19, setArt19] = useState<
+    LoadState<{
+      showCount: number;
+      episodeCount: number;
+      lastSync: { started_at: string; status: string } | null;
+    }>
+  >({ kind: "loading" });
+
   useEffect(() => {
     let cancelled = false;
 
@@ -126,6 +134,40 @@ export default function AdminHome() {
       } catch (err) {
         if (!cancelled) {
           setLeads({
+            kind: "error",
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    })();
+
+    // ART19: cached show + episode counts. Listen metrics not wired up
+    // yet (waiting on Support to confirm the analytics API surface) —
+    // the card renders episode count as the headline number for now.
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/art19/summary", {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as {
+          showCount: number;
+          episodeCount: number;
+          lastSync: { started_at: string; status: string } | null;
+        };
+        if (!cancelled) {
+          setArt19({
+            kind: "ready",
+            data: {
+              showCount: json.showCount,
+              episodeCount: json.episodeCount,
+              lastSync: json.lastSync,
+            },
+          });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setArt19({
             kind: "error",
             message: err instanceof Error ? err.message : String(err),
           });
@@ -280,6 +322,55 @@ export default function AdminHome() {
                   </li>
                 )}
               </ul>
+            ) : null
+          }
+        />
+
+        {/* ART19 card — primary KPI here is episode count today; the
+            "Listens · last 30d" line is the headline metric the user
+            asked for, currently a placeholder until ART19 Support
+            confirms the metrics API surface (see
+            docs/ART19_INTEGRATION.md → Known gaps). Once that lands
+            we swap the value in without restructuring the card. */}
+        <HomeKpiCard
+          label="ART19 network"
+          href="/admin/art19"
+          state={
+            art19.kind === "loading"
+              ? "loading"
+              : art19.kind === "error"
+                ? "error"
+                : "ready"
+          }
+          errorMessage={art19.kind === "error" ? art19.message : undefined}
+          value={art19.kind === "ready" ? art19.data.episodeCount : 0}
+          sub={
+            art19.kind === "ready" ? (
+              <>
+                {art19.data.episodeCount === 1 ? "episode" : "episodes"} across{" "}
+                {art19.data.showCount}{" "}
+                {art19.data.showCount === 1 ? "show" : "shows"}
+                {art19.data.lastSync?.started_at && (
+                  <>
+                    {" · "}
+                    <span className={styles.cardSubDim}>
+                      synced {formatRelativeTimePast(art19.data.lastSync.started_at)}
+                    </span>
+                  </>
+                )}
+              </>
+            ) : null
+          }
+          body={
+            art19.kind === "ready" ? (
+              <div className={styles.financeNet}>
+                <span className={styles.financeNetLabel}>
+                  Listens · last 30 days
+                </span>
+                <span className={styles.financeNetNeutral}>
+                  pending ART19 metrics access
+                </span>
+              </div>
             ) : null
           }
         />

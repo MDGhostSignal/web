@@ -27,6 +27,18 @@ function base(props: Props) {
   };
 }
 
+/** ART19 — microphone with broadcast waves (podcast platform). */
+export function IconArt19(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0" />
+      <line x1="12" y1="18" x2="12" y2="21" />
+      <line x1="9" y1="21" x2="15" y2="21" />
+    </svg>
+  );
+}
+
 /** Bell — alert notifications (used in the AdminShell trail slot). */
 export function IconBell(props: Props) {
   return (

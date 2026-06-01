@@ -123,6 +123,11 @@ export const config = {
     "/api/admin/alerts",
     "/api/admin/alerts/count",
     "/api/admin/alerts/:id",
+    // ART19 read endpoints — /sync is allowlisted above; reads are
+    // cookie-gated so only signed-in admins can see show/episode data.
+    "/api/admin/art19/summary",
+    "/api/admin/art19/shows",
+    "/api/admin/art19/episodes",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).
