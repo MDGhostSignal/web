@@ -1,0 +1,59 @@
+# Daily CRM alert digest — one email per owner at 08:00 UTC.
+#
+# Sends every currently-open (non-snoozed) alert as a single grouped
+# email. Per-owner routing:
+#   • Mike    → ALERT_EMAIL_MIKE_SENSE       (env)
+#   • Jack    → ALERT_EMAIL_JACK_W_HARDING   (env)
+#   • Martin  → ALERT_EMAIL_MARTIN_DREXLER   (env)
+#   • Jeremy  → ALERT_EMAIL_JEREMY_REEVES    (env)
+#   • Unowned → ALERT_EMAIL_FALLBACK         (env, default hello@ghostsignal.cloud)
+#
+# Missing env vars fall back to the shared inbox so no alerts go to
+# /dev/null silently.
+#
+# Setup
+# ─────
+# Repo secrets (Settings → Secrets → Actions):
+#   - CRON_SECRET             — shared with mercury-sync + alerts-sync
+#   - CRM_ALERTS_DIGEST_URL   — full URL to production, e.g.
+#                               https://www.ghostsignal.cloud/api/admin/alerts/digest
+#
+# Vercel env vars (Settings → Environment Variables):
+#   - RESEND_API_KEY                  — required to send mail
+#   - RESEND_FROM                     — sender (e.g. noreply@ghostsignal.cloud)
+#   - ALERT_EMAIL_MIKE_SENSE          — Mike's email
+#   - ALERT_EMAIL_JACK_W_HARDING      — Jack's email
+#   - ALERT_EMAIL_MARTIN_DREXLER      — Martin's email (e.g. hello@martindrexler.com)
+#   - ALERT_EMAIL_JEREMY_REEVES       — Jeremy's email
+#   - ALERT_EMAIL_FALLBACK            — fallback inbox for unowned alerts
+#                                       (default hello@ghostsignal.cloud if unset)
+
+name: CRM alerts digest
+
+on:
+  schedule:
+    # Once per day at 08:00 UTC (≈ 09:00 CET morning).
+    - cron: "0 8 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: crm-alerts-digest
+  cancel-in-progress: true
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/admin/alerts/digest
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRM_ALERTS_DIGEST_URL: ${{ secrets.CRM_ALERTS_DIGEST_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$CRM_ALERTS_DIGEST_URL" ]; then
+            echo "::error::Missing CRON_SECRET or CRM_ALERTS_DIGEST_URL."
+            exit 1
+          fi
+          curl -fsS -i -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$CRM_ALERTS_DIGEST_URL"

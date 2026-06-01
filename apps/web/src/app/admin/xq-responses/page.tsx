@@ -33,7 +33,7 @@ function formatDate(dateString: string): string {
 }
 
 /**
- * /admin/xq-responses — Conviction Index submissions admin.
+ * /admin/xq-responses — Conviction Quotient submissions admin.
  *
  * Mirrors /admin/rq-responses in shape: DataTable with status filter +
  * search, expandable row → SubmissionDetail. Delete flow uses the
@@ -216,7 +216,7 @@ export default function XQResponsesPage() {
     <div>
       <PageHeader
         title="XQ Submissions"
-        subtitle="Conviction Index — strategic convictions and lived business values, scored archetype + four-bucket value blueprint per submission."
+        subtitle="Conviction Quotient — strategic convictions and lived business values, scored archetype + four-bucket value blueprint per submission."
         count={
           <Badge variant="accent">
             {filtered.length}{" "}

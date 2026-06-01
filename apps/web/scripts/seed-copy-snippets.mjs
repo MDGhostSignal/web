@@ -152,11 +152,11 @@ const SEEDS = [
 
   /* -------- Social hooks (ready-made post snippets) -------- */
   { text: "Dive into the Snow Drift: our newsletter exploring how values-based advertising turns static noise into clear signals of meaning.", kind: "social_hook", source: "social_media_posts.md", tags: ["instagram", "linkedin", "newsletter"] },
-  { text: "Build stronger partnerships with the Resonance Index. Assess mission convergence and content safety to ensure authentic endorsements.", kind: "social_hook", source: "social_media_posts.md", tags: ["instagram", "linkedin", "educational"] },
+  { text: "Build stronger partnerships with the Resonance Quotient. Assess mission convergence and content safety to ensure authentic endorsements.", kind: "social_hook", source: "social_media_posts.md", tags: ["instagram", "linkedin", "educational"] },
   { text: "A podcast creator partnered with a mission-aligned brand via GhostSignal — engagement up 40%, audience loyalty stronger than ever.", kind: "social_hook", source: "social_media_posts.md", tags: ["instagram", "linkedin", "story", "proof"] },
   { text: "What's your biggest challenge in finding value-aligned partners? A) Lack of options B) Misalignment risks C) Time to vet D) Other.", kind: "social_hook", source: "social_media_posts.md", tags: ["instagram", "poll", "engagement"] },
   { text: "Ever wondered why most ads feel like noise? At GhostSignal, we turn resonance into real impact.", kind: "social_hook", source: "improved_social_posts_pack.txt", tags: ["instagram", "reel", "hook"] },
-  { text: "Struggling with mismatched ads? Here's how GhostSignal's Resonance Index helps: 1) Mission alignment, 2) Authentic endorsements, 3) Higher engagement.", kind: "social_hook", source: "improved_social_posts_pack.txt", tags: ["instagram", "carousel", "tip"] },
+  { text: "Struggling with mismatched ads? Here's how GhostSignal's Resonance Quotient helps: 1) Mission alignment, 2) Authentic endorsements, 3) Higher engagement.", kind: "social_hook", source: "improved_social_posts_pack.txt", tags: ["instagram", "carousel", "tip"] },
   { text: "Is Your Advertising Static or Signal? Here's How to Tell", kind: "social_hook", source: "improved_social_posts_pack.txt", tags: ["linkedin", "headline"] },
   { text: "Ads Suck — Unless They're Soulful. Thread 🧵", kind: "social_hook", source: "improved_social_posts_pack.txt", tags: ["x", "thread"] },
   { text: "Most ads fail because they optimize reach, not meaning. We match brands + creators by worldview, then build campaigns that feel native.", kind: "social_hook", source: "ghost_signal_all_social_posts_pack.txt", tags: ["x", "linkedin", "hook"] },

@@ -1,5 +1,5 @@
 /**
- * RQ Index Scoring Logic
+ * RQ Quotient Scoring Logic
  */
 
 import { WORDS, DESCRIPTIONS } from "./constants";

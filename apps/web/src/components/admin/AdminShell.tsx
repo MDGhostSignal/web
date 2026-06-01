@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useState, type ReactNode } from "react";
 
 import { AdminSidebar, type AdminNavItem } from "./AdminSidebar";
+import { AlertsBell } from "./AlertsBell";
 import { IconHamburger } from "./icons";
 import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AdminShell.module.css";
@@ -33,6 +34,7 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
 
   const defaultTrail = (
     <>
+      <AlertsBell />
       <ThemeToggle />
       {onLogout ? (
         <button

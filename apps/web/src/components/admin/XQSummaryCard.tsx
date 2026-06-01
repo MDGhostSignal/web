@@ -101,7 +101,7 @@ export function XQSummaryCard({ submissionId }: Props) {
   if (state.kind === "loading" || state.kind === "idle") {
     return (
       <section className={styles.card} aria-label="XQ summary">
-        <div className={styles.tag}>XQ — Conviction Index</div>
+        <div className={styles.tag}>XQ — Conviction Quotient</div>
         <div className={styles.skeleton}>Loading dossier…</div>
       </section>
     );
@@ -110,7 +110,7 @@ export function XQSummaryCard({ submissionId }: Props) {
   if (state.kind === "error") {
     return (
       <section className={styles.card} aria-label="XQ summary">
-        <div className={styles.tag}>XQ — Conviction Index</div>
+        <div className={styles.tag}>XQ — Conviction Quotient</div>
         <div className={styles.error}>Couldn&apos;t load XQ: {state.message}</div>
       </section>
     );
@@ -130,7 +130,7 @@ export function XQSummaryCard({ submissionId }: Props) {
     <section className={styles.card} aria-label="XQ summary">
       <header className={styles.header}>
         <div>
-          <div className={styles.tag}>XQ — Conviction Index</div>
+          <div className={styles.tag}>XQ — Conviction Quotient</div>
           <h3 className={styles.name}>{d.xq_archetype_name ?? "—"}</h3>
           {d.xq_archetype_tagline && (
             <p className={styles.tagline}>

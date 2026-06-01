@@ -9,6 +9,7 @@ import { AdminShell } from "@/components/admin";
 // Leaf pages don't need to import this again.
 import "@/components/admin/tokens.css";
 import {
+  IconAlerts,
   IconContracts,
   IconDashboard,
   IconFinance,
@@ -104,6 +105,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           label: "Contracts",
           icon: <IconContracts />,
         },
+        { href: "/admin/alerts", label: "Alerts", icon: <IconAlerts /> },
       ]}
       onLogout={handleLogout}
     >

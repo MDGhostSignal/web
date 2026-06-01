@@ -1,4 +1,4 @@
-/* XQ Index — public quiz styles.
+/* XQ Quotient — public quiz styles.
  *
  * Borrows the RQ quiz's color palette + typography for visual parity
  * (per user direction "use the exact same styling as the RQ quiz")
@@ -219,9 +219,83 @@ html:has(.xq-page) {
 .xq-btn-ghost:hover { background: rgba(255, 255, 255, 0.04); color: var(--xq-text); }
 
 .xq-err {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 145, 145, 0.08);
+  border: 1px solid rgba(255, 145, 145, 0.45);
   color: var(--xq-nn);
-  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-top: 18px;
   font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.xq-err::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--xq-nn);
+  color: #081014;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --- Inline validation states ------------------------------------ */
+.xq-field.invalid label { color: var(--xq-nn); }
+.xq-field.invalid input,
+.xq-field.invalid select {
+  border-color: var(--xq-nn);
+  background: rgba(255, 145, 145, 0.04);
+}
+.xq-field.invalid input:focus,
+.xq-field.invalid select:focus {
+  outline-color: var(--xq-nn);
+}
+.xq-field-error {
+  font-size: 12.5px;
+  color: var(--xq-nn);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.xq-q-block.invalid {
+  border-color: var(--xq-nn);
+  background: linear-gradient(
+      0deg,
+      rgba(255, 145, 145, 0.04),
+      rgba(255, 145, 145, 0.04)
+    ),
+    var(--xq-card);
+}
+.xq-q-block-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--xq-nn);
+  margin: 12px 0 0;
+  font-weight: 500;
+}
+.xq-q-block-error::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: var(--xq-nn);
+  color: #081014;
+  font-weight: 700;
+  font-size: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* --- Intro screen ------------------------------------------------ */

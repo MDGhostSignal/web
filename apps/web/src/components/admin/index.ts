@@ -10,6 +10,10 @@
 
 export { AdminShell } from "./AdminShell";
 
+export { AlertsBell } from "./AlertsBell";
+
+export { StaleBadge, useAlertedMembers } from "./StaleBadge";
+
 export { AdminSidebar } from "./AdminSidebar";
 export type { AdminNavItem, AdminNavSubItem } from "./AdminSidebar";
 

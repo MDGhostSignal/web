@@ -10,6 +10,7 @@ import {
   EmptyState,
   Modal,
   SearchInput,
+  StaleBadge,
   typeVariant,
 } from "@/components/admin";
 import type { MarketplaceEntity } from "@/lib/marketplace-mocks";
@@ -478,9 +479,9 @@ export function PoolView({
                 )}
 
                 {/* 2b. XQ summary — surfaced when the member has a
-                       linked Conviction Index submission (set by the
-                       /xq-quiz POST's email-link best-effort). Renders
-                       nothing when not linked. */}
+                       linked Conviction Quotient submission (set by
+                       the /xq-quiz POST's email-link best-effort).
+                       Renders nothing when not linked. */}
                 {sourceMember && sourceMember.xq_submission_id && (
                   <XQSummaryCard submissionId={sourceMember.xq_submission_id} />
                 )}
@@ -768,6 +769,7 @@ function MarketplaceUrgentBanner({
                 onClick={() => onOpenMember(m.id)}
               >
                 <span className={styles.mmUrgentItemName}>{name}</span>
+                <StaleBadge memberId={m.id} />
                 {next && (
                   <Badge
                     variant={

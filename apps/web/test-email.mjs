@@ -41,7 +41,7 @@ const html = `
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Resonance Index</title>
+  <title>Your Resonance Quotient</title>
 </head>
 <body style="margin: 0; padding: 0; background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f5f5f5;">
@@ -141,7 +141,7 @@ async function sendTestEmail() {
     body: JSON.stringify({
       from: RESEND_FROM,
       to: [TEST_EMAIL],
-      subject: "Test: Your Resonance Index - Snowdrift Section Preview",
+      subject: "Test: Your Resonance Quotient - Snowdrift Section Preview",
       html,
     }),
   });

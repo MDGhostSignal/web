@@ -98,7 +98,7 @@ const STEPS: Step[] = [
     id: "contact",
     title: "How can we reach you?",
     fields: [
-      { type: "email", id: "EMAIL", label: "Email", required: true, placeholder: "name@company.com", helpText: "We'll send your RQ Index summary to this address." },
+      { type: "email", id: "EMAIL", label: "Email", required: true, placeholder: "name@company.com", helpText: "We'll send your RQ Quotient summary to this address." },
       { type: "text", id: "ROLE", label: "Role / Title", placeholder: "Your role" },
       { type: "text", id: "INDUSTRY", label: "Industry", placeholder: "Your industry" },
       { type: "text", id: "WEBSITE", label: "Website", placeholder: "https://…" },
@@ -602,7 +602,7 @@ export default function RQIndexPage() {
         await response.json();
         setSubmitStatus({
           type: "success",
-          message: "Your RQ Index has been emailed to you.",
+          message: "Your RQ Quotient has been emailed to you.",
         });
       } else {
         throw new Error("Submission failed");

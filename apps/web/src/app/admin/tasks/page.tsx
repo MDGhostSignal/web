@@ -358,10 +358,13 @@ export default function DesignTasksPage() {
   })();
 
   const filteredTasks = orderedTasks.filter((task) => {
-    // "All" excludes archived — archived tasks are only visible when the
-    // user explicitly selects the Archived filter.
+    // "All" excludes terminal statuses (completed + archived) — those
+    // tasks are only visible when the user explicitly picks that filter.
+    // Keeps the default overview focused on active work.
     if (filter === "all") {
-      if (task.status === "archived") return false;
+      if (task.status === "archived" || task.status === "completed") {
+        return false;
+      }
     } else if (task.status !== filter) {
       return false;
     }
@@ -372,7 +375,9 @@ export default function DesignTasksPage() {
   });
 
   const taskCounts = {
-    all: tasks.filter((t) => t.status !== "archived").length,
+    all: tasks.filter(
+      (t) => t.status !== "archived" && t.status !== "completed",
+    ).length,
     pending: tasks.filter((t) => t.status === "pending").length,
     in_progress: tasks.filter((t) => t.status === "in_progress").length,
     completed: tasks.filter((t) => t.status === "completed").length,

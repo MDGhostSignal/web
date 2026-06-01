@@ -1,12 +1,12 @@
 /**
- * RQ Index Constants
+ * RQ Quotient Constants
  * Word pools, descriptions, and scoring data
  */
 
 export const BRAND = {
   company: "GHOSTSignal",
   acronym: "RQ",
-  title: "Resonance Index",
+  title: "Resonance Quotient",
   subtitle: "Find your signal. Name your resonance.",
   cta: "Generate My RQ",
   accent: "#C7F9FF",

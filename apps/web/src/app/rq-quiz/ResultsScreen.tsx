@@ -240,7 +240,7 @@ export function ResultsScreen({
                 signal.
               </p>
               <p className="rq-name-description">
-                Each word corresponds to one axis of the Resonance Index—Values,
+                Each word corresponds to one axis of the Resonance Quotient—Values,
                 Authenticity, and Time Horizon—and reflects both your direction and
                 your strength on that axis. Taken together, they form your
                 &ldquo;call sign&rdquo;: a quick, intuitive way to understand how

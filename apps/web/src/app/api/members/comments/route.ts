@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { resolveOpenAlertsForMember } from "@/lib/alerts";
 import { MEMBER_OWNERS } from "@/lib/members";
 import { supabaseRest } from "@/lib/supabase-admin";
 
@@ -112,6 +113,13 @@ export async function POST(req: NextRequest) {
   }
 
   const created = Array.isArray(res.data) ? res.data[0] : res.data;
+
+  // A fresh comment is a real touchpoint — clear any open `contact_cold`
+  // alert for this member so the bell badge updates without waiting
+  // for the next hourly sync. Best-effort; failure is logged inside
+  // the helper and doesn't break the POST response.
+  void resolveOpenAlertsForMember(memberId, ["contact_cold"]);
+
   return NextResponse.json({ ok: true, comment: created });
 }
 

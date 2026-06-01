@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { sanitizePayload } from "../route";
+import { type AlertKind, resolveOpenAlertsForMember } from "@/lib/alerts";
 import { type Member, type MemberWritable } from "@/lib/members";
 import { supabaseRest } from "@/lib/supabase-admin";
 
@@ -98,6 +99,26 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       { ok: false, error: "Member not found." },
       { status: 404 },
     );
+  }
+
+  // Auto-resolve open alerts whose trigger this patch likely cleared.
+  // The hourly sync will re-detect anything that still applies.
+  //   - last_contact_at touched → contact_cold cleared
+  //   - lifecycle_steps touched → marketplace_stall cleared
+  //   - phase touched           → both cleared (rules probably differ)
+  const kindsToResolve: AlertKind[] = [];
+  if ("last_contact_at" in payload) kindsToResolve.push("contact_cold");
+  if ("lifecycle_steps" in payload) kindsToResolve.push("marketplace_stall");
+  if ("phase" in payload) {
+    if (!kindsToResolve.includes("contact_cold")) {
+      kindsToResolve.push("contact_cold");
+    }
+    if (!kindsToResolve.includes("marketplace_stall")) {
+      kindsToResolve.push("marketplace_stall");
+    }
+  }
+  if (kindsToResolve.length > 0) {
+    void resolveOpenAlertsForMember(id, kindsToResolve);
   }
 
   return NextResponse.json({ ok: true, member: updated });

@@ -900,7 +900,7 @@ function MembersTable({
           </div>
 
           {/* XQ summary — only when the contact has a linked Conviction
-              Index submission (set by /xq-quiz's email-link best-effort
+              Quotient submission (set by /xq-quiz's email-link best-effort
               after they complete the public quiz). */}
           {m.xq_submission_id && (
             <XQSummaryCard submissionId={m.xq_submission_id} />

@@ -27,6 +27,27 @@ function base(props: Props) {
   };
 }
 
+/** Bell — alert notifications (used in the AdminShell trail slot). */
+export function IconBell(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M18 16v-5a6 6 0 1 0-12 0v5l-1.5 2h15L18 16z" />
+      <path d="M10 20a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+
+/** Alerts — bell with a small dot, used for the sidebar tab. */
+export function IconAlerts(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M18 16v-5a6 6 0 1 0-12 0v5l-1.5 2h15L18 16z" />
+      <path d="M10 20a2 2 0 0 0 4 0" />
+      <circle cx="18" cy="6" r="2.4" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 /** Dashboard — 4-pane grid (rooms). */
 export function IconDashboard(props: Props) {
   return (

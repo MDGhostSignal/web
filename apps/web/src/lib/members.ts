@@ -241,7 +241,7 @@ export type Member = {
   tags: string[];
   lifecycle_steps: LifecycleSteps;
   rq_submission_id: string | null;
-  /** Pointer to the member's XQ Conviction Index submission, if they
+  /** Pointer to the member's XQ Conviction Quotient submission, if they
       have completed the XQ quiz. Set when the public XQ quiz POSTs
       with an email that matches this member. See docs/CRM_XQ_SUBMISSIONS_SCHEMA.sql. */
   xq_submission_id: string | null;

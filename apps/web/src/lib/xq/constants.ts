@@ -1,8 +1,8 @@
 /**
- * XQ Index Constants
+ * XQ Quotient Constants
  *
  * Question banks (Phase 1 archetype dilemmas + Phase 2 value diagnostic),
- * archetype definitions, and brand metadata for the Conviction Index
+ * archetype definitions, and brand metadata for the Conviction Quotient
  * (XQ) quiz. Sourced verbatim from Jeremy's XQ Draft (docs/XQ Draft.txt).
  *
  * The XQ is the free, top-of-funnel half of GhostSignal's matching
@@ -13,7 +13,7 @@
 export const BRAND = {
   company: "GHOSTSignal",
   acronym: "XQ",
-  title: "The Conviction Index",
+  title: "The Conviction Quotient",
   subtitle:
     "An Advanced Psychometric Audit of Strategic Convictions and Lived Business Values.",
   cta: "Generate My XQ",

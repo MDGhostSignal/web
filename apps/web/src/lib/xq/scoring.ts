@@ -1,5 +1,5 @@
 /**
- * XQ Index Scoring
+ * XQ Quotient Scoring
  *
  * Pure functions — no React, no I/O. Consumed by the public quiz UI
  * (`/xq-quiz`) and the API submission route (`/api/xq-submissions`).

@@ -1,0 +1,53 @@
+# CRM alerts detection — runs hourly, reconciles open alerts against
+# the live member set.
+#
+# Two alert kinds are reconciled:
+#   contact_cold       — last_contact_at older than 28 days
+#   marketplace_stall  — Sign/Onboard/Run member with open lifecycle
+#                        steps and phase_entered_at older than 30 days
+#
+# Idempotent: every run computes the desired open set and inserts /
+# resolves the delta. Auto-resolution also fires inline on member
+# comment / contact patches, so this cron is mostly a safety net that
+# catches edges (e.g. a comment was logged before the alert was first
+# detected, or a member's phase changed via a path we didn't hook).
+#
+# Setup
+# ─────
+# Two repo secrets are required (Settings → Secrets → Actions):
+#   - CRON_SECRET           — same value used by Mercury sync; the
+#                             alerts route validates the Bearer header
+#                             against this.
+#   - CRM_ALERTS_SYNC_URL   — full URL to production, e.g.
+#                             https://www.ghostsignal.cloud/api/admin/alerts/sync
+
+name: CRM alerts sync
+
+on:
+  schedule:
+    # Hourly. Detection is cheap; this keeps "stale by 1 day" never
+    # more than ~60 minutes off from reality.
+    - cron: "5 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: crm-alerts-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/admin/alerts/sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRM_ALERTS_SYNC_URL: ${{ secrets.CRM_ALERTS_SYNC_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$CRM_ALERTS_SYNC_URL" ]; then
+            echo "::error::Missing CRON_SECRET or CRM_ALERTS_SYNC_URL secret."
+            exit 1
+          fi
+          curl -fsS -i -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$CRM_ALERTS_SYNC_URL"

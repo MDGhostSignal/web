@@ -12,7 +12,7 @@ type Props = {
 export function IntroStep({ onBegin }: Props) {
   return (
     <section className="xq-intro">
-      <div className="xq-result-tag">The Conviction Index</div>
+      <div className="xq-result-tag">The Conviction Quotient</div>
       <h1>
         Welcome to the{" "}
         <span className="gs-brand">
@@ -20,7 +20,7 @@ export function IntroStep({ onBegin }: Props) {
           <span className="gs-brand-signal">Signal</span>
         </span>
         <br />
-        Conviction Index
+        Conviction Quotient
       </h1>
 
       <p className="xq-intro-sub">
@@ -29,7 +29,7 @@ export function IntroStep({ onBegin }: Props) {
       </p>
 
       <p className="xq-intro-summary">
-        The Conviction Index (XQ) is a three-phase diagnostic. Phase 1
+        The Conviction Quotient (XQ) is a three-phase diagnostic. Phase 1
         triangulates your operating archetype across continuity-vs-change,
         person-vs-system, and craft-vs-leverage. Phase 2 surfaces the 14
         core values shaping your decisions. Phase 3 stress-tests those
@@ -48,7 +48,7 @@ export function IntroStep({ onBegin }: Props) {
       </p>
 
       <button type="button" className="xq-btn" onClick={onBegin}>
-        Begin Conviction Index →
+        Begin Conviction Quotient →
       </button>
     </section>
   );

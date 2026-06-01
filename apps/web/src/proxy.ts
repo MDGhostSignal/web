@@ -43,6 +43,14 @@ const PUBLIC_SUBPATHS = [
   // X-Signature-SHA256 header. The route enforces HMAC verification
   // internally; no admin cookie, no CRON_SECRET.
   "/api/admin/contracts/webhook",
+  // CRM alerts sync runs hourly from GitHub Actions with the
+  // CRON_SECRET bearer. The route also accepts the admin cookie so the
+  // in-app "Refresh alerts now" button can hit it. Same pattern as
+  // /api/admin/finance/sync.
+  "/api/admin/alerts/sync",
+  // Daily alert digest cron — sends one grouped email per owner each
+  // morning. Same auth path: Bearer CRON_SECRET or admin cookie.
+  "/api/admin/alerts/digest",
 ];
 
 export async function proxy(req: NextRequest) {
@@ -105,6 +113,12 @@ export const config = {
     // Members lite-lookup (used by the contracts dashboard + the Phase C
     // composer to hydrate member labels / search-pick a counterparty).
     "/api/admin/members/:path*",
+    // CRM alerts — list / count / per-id snooze + resolve. /sync and
+    // /digest are allowlisted in PUBLIC_SUBPATHS so the GitHub Actions
+    // cron can hit them; everything else flows through the cookie gate.
+    "/api/admin/alerts",
+    "/api/admin/alerts/count",
+    "/api/admin/alerts/:id",
     // Gate the per-id DELETE but NOT the base /api/rq-submissions
     // endpoint (which the public quiz page POSTs to and needs to
     // reach pre-auth).

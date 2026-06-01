@@ -97,7 +97,7 @@ export async function sendUserSummaryEmail(
 
   const html = `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your GhostSignal Conviction Index</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your GhostSignal Conviction Quotient</title></head>
 <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
     <tr>
@@ -109,7 +109,7 @@ export async function sendUserSummaryEmail(
               <img src="https://web-nine-fawn-27.vercel.app/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
               <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.4;">
                 <span style="display: block;">Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span></span>
-                <span style="display: block;">Conviction Index</span>
+                <span style="display: block;">Conviction Quotient</span>
               </h1>
               <p style="margin: 12px 0 0; font-size: 15px; color: #666666;">
                 Hello ${escapeHtml(fullName)}, here's your complete XQ archetype dossier.
@@ -209,7 +209,7 @@ export async function sendUserSummaryEmail(
 
           <tr>
             <td align="center" style="padding: 16px 32px 32px; font-size: 12px; color: #999999;">
-              GhostSignal · The Conviction Index · XQ
+              GhostSignal · The Conviction Quotient · XQ
             </td>
           </tr>
 
@@ -262,7 +262,7 @@ export async function sendLeadNotificationEmail(
 
   const html = `<!DOCTYPE html><html><body style="font-family: -apple-system, sans-serif; color: #1a1a1a;">
     <h2 style="margin: 0 0 8px;">XQ lead captured</h2>
-    <p style="color: #666; margin: 0 0 16px;">Someone started the Conviction Index but hasn't completed it yet.</p>
+    <p style="color: #666; margin: 0 0 16px;">Someone started the Conviction Quotient but hasn't completed it yet.</p>
     <table cellspacing="0" cellpadding="4" style="font-size: 14px;">
       <tr><td style="color:#666;">Name</td><td><strong>${escapeHtml(fullName)}</strong></td></tr>
       <tr><td style="color:#666;">Email</td><td>${escapeHtml(basics.email ?? "—")}</td></tr>

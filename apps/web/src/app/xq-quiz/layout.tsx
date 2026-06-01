@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Conviction Index",
+  title: "Conviction Quotient",
   description:
-    "Take the GhostSignal Conviction Index — an advanced psychometric audit of the strategic convictions and lived business values driving your work.",
+    "Take the GhostSignal Conviction Quotient — an advanced psychometric audit of the strategic convictions and lived business values driving your work.",
 };
 
 /**

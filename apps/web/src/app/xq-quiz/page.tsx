@@ -45,7 +45,7 @@ type SubmitState =
   | { type: "error"; message: string };
 
 /**
- * /xq-quiz — public XQ Conviction Index quiz.
+ * /xq-quiz — public XQ Conviction Quotient quiz.
  *
  * State machine: intro → contact → phase1 → phase2 → phase3 → results.
  * Each stage is its own component (./IntroStep, ./ContactStep, etc.) —

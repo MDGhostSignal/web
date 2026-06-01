@@ -314,7 +314,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       The three-word name underneath your RQ score is shorthand for your signal.
                     </p>
                     <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #333333;">
-                      Each word corresponds to one axis of the Resonance Index—Values, Authenticity, and Time Horizon—and reflects both your direction and your strength on that axis. Taken together, they form your "call sign": a quick, intuitive way to understand how you interact in partnerships, how you communicate, and how you build.
+                      Each word corresponds to one axis of the Resonance Quotient—Values, Authenticity, and Time Horizon—and reflects both your direction and your strength on that axis. Taken together, they form your "call sign": a quick, intuitive way to understand how you interact in partnerships, how you communicate, and how you build.
                     </p>
                     <p style="margin: 20px 0 0; padding-top: 20px; border-top: 1px solid #e8e8e8; font-size: 18px; line-height: 1.4; color: #666666; font-style: italic; text-align: center;">
                       "It's not a label to live inside, but a way to recognize yourself—and to help others recognize you—at a glance."
@@ -529,7 +529,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
     "",
     "The three-word name underneath your RQ score is shorthand for your signal.",
     "",
-    "Each word corresponds to one axis of the Resonance Index—Values, Authenticity,",
+    "Each word corresponds to one axis of the Resonance Quotient—Values, Authenticity,",
     "and Time Horizon—and reflects both your direction and your strength on that axis.",
     "Taken together, they form your \"call sign\": a quick, intuitive way to understand",
     "how you interact in partnerships, how you communicate, and how you build.",
@@ -566,7 +566,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
     body: JSON.stringify({
       from: resendFrom,
       to: [userEmail],
-      subject: `Your Resonance Index: ${result.rq ?? "RQ Summary"}`,
+      subject: `Your Resonance Quotient: ${result.rq ?? "RQ Summary"}`,
       text,
       html,
     }),

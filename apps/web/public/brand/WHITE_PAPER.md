@@ -43,14 +43,14 @@ Entrance to membership is the beginning, not the end, of the discernment process
 
 Indiepod's 2025 survey of 558 creators reveals the pain: 85% earn $0 despite 41% calling sponsorships their most profitable stream, and only 9% say they create with the primary motivation as revenue.
 
-We recognize that not everyone creates in order to monetise, however, what if you could generate revenue without selling out? 72% of creators are burning out on mismatched growth, and we understand that partnering in public ways requires wisdom. To navigate this complexity, we have developed a proprietary, artisanal framework we call the “Resonance Index”.
+We recognize that not everyone creates in order to monetise, however, what if you could generate revenue without selling out? 72% of creators are burning out on mismatched growth, and we understand that partnering in public ways requires wisdom. To navigate this complexity, we have developed a proprietary, artisanal framework we call the “Resonance Quotient”.
 
 This is not an algorithm; it is a guided conversation. Its purpose is to create what C.S. Lewis described as the very basis of human connection:
 “Friendship is born at that moment when one person says to another, ‘What! You too? I thought I was the only one.’”
 
 Our framework is designed to facilitate that "What! You too?" moment between a brand, a creator, and ultimately, an audience. It is the bridge that connects the high standard of our Membership (Part 2) to the real-world flourishing of a partnership.
 
-### Resonance Index
+### Resonance Quotient
 This index helps us discern partnerships that feel natural, mission‑aligned, and life‑giving for creators, advertisers, and their communities. It is structured around the same three pillars as our membership standard, applying the general principles to the specifics of a potential match.
 
 **Values Compatibility**
@@ -72,7 +72,7 @@ This seven-part process is the practical heart of GHOSTSignal. It is how we tran
 This entire process is not merely a philosophical exercise. It is a strategic framework designed to deliver superior, measurable business outcomes by replacing low-value impressions with high-value trust. The financial and strategic benefits are immediate and tangible.
 
 ### For Brands and Advertisers: Immediate Campaign-Level Impact
-*   **Radical Efficiency of Spend:** By using our Resonance Index, particularly Audience Lifestyle Resonance, we connect you with highly-attuned micro-segments. This eliminates wasted ad spend, ensuring every dollar is focused on audiences predisposed to care about your message.
+*   **Radical Efficiency of Spend:** By using our Resonance Quotient, particularly Audience Lifestyle Resonance, we connect you with highly-attuned micro-segments. This eliminates wasted ad spend, ensuring every dollar is focused on audiences predisposed to care about your message.
 *   **De-Risked Investment:** Our rigorous vetting for Mission Convergence and Content Safety provides brand safety by default. We remove the risk of brand-damaging mismatches, protecting your reputation.
 *   **Higher Conversion Rates:** The emphasis on Partner Comfort and Tone and Aesthetic Fit means a trusted voice delivers ads with genuine enthusiasm. This transforms a standard ad-read into a credible endorsement, driving higher engagement and conversion.
 *   **Actionable Feedback Loops:** Because our partnerships are fundamentally relational over transactional, creators can provide qualitative feedback on ad performance that is impossible to glean from a programmatic dashboard.
@@ -80,7 +80,7 @@ This entire process is not merely a philosophical exercise. It is a strategic fr
 While the average podcast ad drives +44% more purchases than other media (Acast Pulse 2025), a values-aligned match turns that into lasting equity: 75% of listeners will pay more for brands that feel right (Edelman 2025), and high-trust circles compound faster than any programmatic buy (Acemoglu, high-trust equilibria). One campaign isn’t a spend — it’s an investment in a culture that keeps paying dividends.
 
 ### For Creators and Podcasters: Sustainable and Dignified Monetisation
-*   **Premium Revenue and Higher CPMs:** An engaged, value-aligned audience is exponentially more valuable to the right brand. Because we can prove deep resonance through our process, we negotiate premium rates that reflect the true quality of your community. Our framework – Resonance Index - ensures genuine fits that protect creative energy and deliver premium $35–50 CPMs."
+*   **Premium Revenue and Higher CPMs:** An engaged, value-aligned audience is exponentially more valuable to the right brand. Because we can prove deep resonance through our process, we negotiate premium rates that reflect the true quality of your community. Our framework – Resonance Quotient - ensures genuine fits that protect creative energy and deliver premium $35–50 CPMs."
 *   **Sustainable Livelihood without Selling Out:** Our model provides a path to financial stability that honours your creative voice. This resolves a central pain point for creators who care about the fidelity of their art.
 *   **Administrative Freedom:** We handle the complexities of contracts, negotiations, and reporting, freeing you from administrative burden to more creativity.
 *   **Fortified Audience Trust:** When your audience hears you partner with a brand that clearly shares their values, it strengthens trust. It validates their decision to be part of your community.

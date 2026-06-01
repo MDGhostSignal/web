@@ -14,6 +14,12 @@ type Props = {
 
 type BucketKey = "nonNegotiables" | "core" | "aspirational";
 
+const BUCKET_LABELS: Record<BucketKey, string> = {
+  nonNegotiables: "Stress Test 01 (Revenue Burn)",
+  core: "Stress Test 02 (Default Instinct)",
+  aspirational: "Stress Test 03 (Future Horizon)",
+};
+
 /**
  * Phase 3 — Operational Stratification Stress Test. Three checkbox
  * grids over the same pool of 14 selected values:
@@ -29,9 +35,14 @@ type BucketKey = "nonNegotiables" | "core" | "aspirational";
  * value not picked in any test into a fourth "background" bucket.
  * Same value can be ticked in multiple tests — the classifier resolves
  * the conflict by priority (non-negotiable > core > aspirational).
+ *
+ * Submit requires at least one selection in each stress test so users
+ * can't accidentally generate an all-background dossier by clicking
+ * straight through.
  */
 export function Phase3Step({ pool, initial, onComplete }: Props) {
   const [stress, setStress] = useState<XQStressInput>(initial);
+  const [missing, setMissing] = useState<Set<BucketKey>>(new Set());
 
   function toggle(bucket: BucketKey, value: string) {
     setStress((prev) => {
@@ -41,6 +52,34 @@ export function Phase3Step({ pool, initial, onComplete }: Props) {
         : [...prev[bucket], value];
       return { ...prev, [bucket]: next };
     });
+    if (missing.has(bucket)) {
+      setMissing((prev) => {
+        const next = new Set(prev);
+        next.delete(bucket);
+        return next;
+      });
+    }
+  }
+
+  function handleSubmit() {
+    const empty = new Set<BucketKey>();
+    if (stress.nonNegotiables.length === 0) empty.add("nonNegotiables");
+    if (stress.core.length === 0) empty.add("core");
+    if (stress.aspirational.length === 0) empty.add("aspirational");
+    if (empty.size > 0) {
+      setMissing(empty);
+      const firstBucket: BucketKey = empty.has("nonNegotiables")
+        ? "nonNegotiables"
+        : empty.has("core")
+          ? "core"
+          : "aspirational";
+      document
+        .getElementById(`xq-stress-${firstBucket}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setMissing(new Set());
+    onComplete(stress);
   }
 
   function renderTest(
@@ -51,8 +90,12 @@ export function Phase3Step({ pool, initial, onComplete }: Props) {
     tintClass: string,
   ) {
     const picked = stress[bucket];
+    const isMissing = missing.has(bucket);
     return (
-      <div className="xq-q-block">
+      <div
+        id={`xq-stress-${bucket}`}
+        className={`xq-q-block ${isMissing ? "invalid" : ""}`}
+      >
         <div
           className={`xq-q-tag ${tintClass === "" ? "" : `xq-q-tag-${tintClass}`}`}
           style={
@@ -89,6 +132,11 @@ export function Phase3Step({ pool, initial, onComplete }: Props) {
             );
           })}
         </div>
+        {isMissing && (
+          <p className="xq-q-block-error" role="alert">
+            Select at least one conviction for this stress test.
+          </p>
+        )}
       </div>
     );
   }
@@ -129,7 +177,15 @@ export function Phase3Step({ pool, initial, onComplete }: Props) {
         "asp",
       )}
 
-      <button type="button" className="xq-btn" onClick={() => onComplete(stress)}>
+      {missing.size > 0 && (
+        <div className="xq-err" role="alert">
+          {missing.size === 1
+            ? `${BUCKET_LABELS[[...missing][0]]} needs at least one selection — highlighted above.`
+            : `${missing.size} stress tests need at least one selection — highlighted above.`}
+        </div>
+      )}
+
+      <button type="button" className="xq-btn" onClick={handleSubmit}>
         Generate My Conviction Blueprint
       </button>
     </>
