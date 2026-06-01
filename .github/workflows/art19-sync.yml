@@ -1,0 +1,48 @@
+# ART19 → Supabase sync. Runs once per day at 04:00 UTC.
+#
+# ART19 listen / episode data doesn't change minute-to-minute — daily
+# is plenty. If we add metric pulls later that need fresher data,
+# bump to */6 or hourly. Episode/show metadata churns slowly enough
+# that daily is the right starting point.
+#
+# Setup
+# ─────
+# Repo secrets (Settings → Secrets and variables → Actions):
+#   - CRON_SECRET            — shared with Mercury + alerts crons
+#   - ART19_SYNC_URL         — production URL, e.g.
+#                              https://www.ghostsignal.cloud/api/admin/art19/sync
+#
+# Vercel env vars (Settings → Environment Variables):
+#   - ART19_API_TOKEN          — shared secret issued by ART19 Support
+#   - ART19_API_CREDENTIAL_ID  — paired UUID issued alongside the token
+#   - (existing) SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET
+
+name: ART19 sync
+
+on:
+  schedule:
+    # 04:00 UTC daily. Off-peak for both ART19 and our own infra.
+    - cron: "0 4 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: art19-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: POST /api/admin/art19/sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ART19_SYNC_URL: ${{ secrets.ART19_SYNC_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$ART19_SYNC_URL" ]; then
+            echo "::error::Missing CRON_SECRET or ART19_SYNC_URL secret."
+            exit 1
+          fi
+          curl -fsS -i -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$ART19_SYNC_URL"

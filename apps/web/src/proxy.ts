@@ -51,6 +51,10 @@ const PUBLIC_SUBPATHS = [
   // Daily alert digest cron — sends one grouped email per owner each
   // morning. Same auth path: Bearer CRON_SECRET or admin cookie.
   "/api/admin/alerts/digest",
+  // ART19 → Supabase sync — runs daily from GitHub Actions with the
+  // CRON_SECRET bearer. Route also accepts the admin cookie so the
+  // in-app "Refresh now" button (Phase B) can hit it.
+  "/api/admin/art19/sync",
 ];
 
 export async function proxy(req: NextRequest) {
