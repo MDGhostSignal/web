@@ -5,18 +5,22 @@
  * a paired header:
  *   Authorization: Token token="<shared-secret>", credential="<uuid>"
  *
- * Endpoints exposed on the public/external scope (confirmed via OpenAPI
- * inspection of https://art19.com/swagger_json/external/content.json):
- *   GET /series       — list shows
- *   GET /series/{id}
- *   GET /episodes     — list episodes
- *   GET /episodes/{id}
- *   GET /networks     — list networks (typically one for our account)
+ * Endpoints we actually call (the spec lists JSON:API page[size]
+ * pagination but the server rejects it — see art19.ts for the workaround):
  *   GET /networks/{id}
+ *   GET /networks/{id}/relationships/series       — returns refs
+ *   GET /series/{id}
+ *   GET /series/{id}/relationships/episodes       — returns refs
+ *   GET /episodes/{id}
  *
- * Listen/download metrics are NOT in the external or internal scopes.
- * They'll be wired into the schema (art19_listens_daily) once ART19
- * Support confirms which scope or export surfaces them.
+ * The credential issued by ART19 Support has global read across ART19's
+ * platform (filter[network_id] is silently ignored), so we never pull
+ * /series or /episodes unscoped — every walk starts from the configured
+ * ART19_NETWORK_ID and traverses relationship endpoints.
+ *
+ * listen_count is exposed directly on every level (network, series,
+ * episode) as a lifetime IABv2.2-certified download total. Episodes
+ * additionally expose downloads_first_24_hours.
  */
 
 /* =====================================================================
@@ -58,6 +62,13 @@ export type JsonApiSingle<TAttrs = Record<string, unknown>> = {
   included?: JsonApiResource[];
 };
 
+/** Relationship-link payload: just `{ id, type }` refs, no attributes. */
+export type JsonApiRefList = {
+  data: JsonApiRef[];
+  meta?: Record<string, unknown>;
+  links?: { next?: string; self?: string };
+};
+
 /* =====================================================================
  * Attribute shapes — only the fields we care about. ART19 returns more.
  * Everything else lives in the `raw` jsonb column for future use.
@@ -65,6 +76,12 @@ export type JsonApiSingle<TAttrs = Record<string, unknown>> = {
 
 export type Art19NetworkAttrs = {
   name?: string;
+  slug?: string;
+  status?: string;
+  listen_count?: number;
+  series_count?: number;
+  description?: string;
+  description_plain?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -72,22 +89,26 @@ export type Art19NetworkAttrs = {
 export type Art19SeriesAttrs = {
   title?: string;
   slug?: string;
+  status?: string;
+  listen_count?: number;
   description?: string;
-  image_url?: string;
-  episode_count?: number;
+  description_plain?: string;
+  released_episode_count?: number;
+  latest_feed_item_released_at?: string;
   created_at?: string;
   updated_at?: string;
 };
 
 export type Art19EpisodeAttrs = {
   title?: string;
-  slug?: string;
-  description?: string;
-  duration?: number;
-  published_at?: string;
   status?: string;
+  listen_count?: number;
+  downloads_first_24_hours?: number;
+  description?: string;
+  description_plain?: string;
+  released_at?: string;
   episode_number?: number;
-  season_number?: number;
+  rss_guid?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -99,6 +120,10 @@ export type Art19EpisodeAttrs = {
 export type Art19NetworkRow = {
   id: string;
   name: string | null;
+  slug: string | null;
+  status: string | null;
+  listen_count: number | null;
+  series_count: number | null;
   raw: unknown;
   updated_at: string;
 };
@@ -108,9 +133,11 @@ export type Art19ShowRow = {
   network_id: string | null;
   title: string;
   slug: string | null;
+  status: string | null;
   description: string | null;
   image_url: string | null;
   episode_count: number | null;
+  listen_count: number | null;
   art19_created_at: string | null;
   art19_updated_at: string | null;
   raw: unknown;
@@ -126,6 +153,8 @@ export type Art19EpisodeRow = {
   duration_seconds: number | null;
   published_at: string | null;
   status: string | null;
+  listen_count: number | null;
+  downloads_first_24_hours: number | null;
   episode_number: number | null;
   season_number: number | null;
   art19_created_at: string | null;
@@ -167,6 +196,10 @@ export function networkRowFromResource(
   return {
     id: res.id,
     name: res.attributes.name ?? null,
+    slug: res.attributes.slug ?? null,
+    status: res.attributes.status ?? null,
+    listen_count: res.attributes.listen_count ?? null,
+    series_count: res.attributes.series_count ?? null,
     raw: res,
     updated_at: new Date().toISOString(),
   };
@@ -181,9 +214,12 @@ export function showRowFromResource(
     network_id: networkId ?? firstRelId(res, "network"),
     title: res.attributes.title ?? "(untitled series)",
     slug: res.attributes.slug ?? null,
-    description: res.attributes.description ?? null,
-    image_url: res.attributes.image_url ?? null,
-    episode_count: res.attributes.episode_count ?? null,
+    status: res.attributes.status ?? null,
+    description:
+      res.attributes.description_plain ?? res.attributes.description ?? null,
+    image_url: null,
+    episode_count: res.attributes.released_episode_count ?? null,
+    listen_count: res.attributes.listen_count ?? null,
     art19_created_at: res.attributes.created_at ?? null,
     art19_updated_at: res.attributes.updated_at ?? null,
     raw: res,
@@ -196,18 +232,21 @@ export function episodeRowFromResource(
   showId: string | null,
 ): Art19EpisodeRow | null {
   const sid = showId ?? firstRelId(res, "series");
-  if (!sid) return null; // skip orphan episodes
+  if (!sid) return null;
   return {
     id: res.id,
     show_id: sid,
     title: res.attributes.title ?? "(untitled episode)",
-    slug: res.attributes.slug ?? null,
-    description: res.attributes.description ?? null,
-    duration_seconds: res.attributes.duration ?? null,
-    published_at: res.attributes.published_at ?? null,
+    slug: null,
+    description:
+      res.attributes.description_plain ?? res.attributes.description ?? null,
+    duration_seconds: null,
+    published_at: res.attributes.released_at ?? null,
     status: res.attributes.status ?? null,
+    listen_count: res.attributes.listen_count ?? null,
+    downloads_first_24_hours: res.attributes.downloads_first_24_hours ?? null,
     episode_number: res.attributes.episode_number ?? null,
-    season_number: res.attributes.season_number ?? null,
+    season_number: null,
     art19_created_at: res.attributes.created_at ?? null,
     art19_updated_at: res.attributes.updated_at ?? null,
     raw: res,

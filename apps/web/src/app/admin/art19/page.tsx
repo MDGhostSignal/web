@@ -18,8 +18,14 @@ type SyncRun = {
 type Summary = {
   showCount: number;
   episodeCount: number;
+  totalListens: number;
   lastSync: SyncRun | null;
-  networks: { id: string; name: string | null }[];
+  networks: {
+    id: string;
+    name: string | null;
+    listen_count: number | null;
+    series_count: number | null;
+  }[];
 };
 
 type Show = {
@@ -29,6 +35,7 @@ type Show = {
   description: string | null;
   image_url: string | null;
   episode_count: number | null;
+  listen_count: number | null;
   art19_updated_at: string | null;
   latest_episode_at: string | null;
 };
@@ -188,8 +195,9 @@ export default function Art19Page() {
         <div className={`${styles.banner} ${styles.bannerWarn}`}>
           <span className={styles.bannerStatus}>Not yet configured.</span>
           <span>
-            Set <code>ART19_API_TOKEN</code> + <code>ART19_API_CREDENTIAL_ID</code>{" "}
-            in Vercel, then click Refresh.
+            Set <code>ART19_API_TOKEN</code>,{" "}
+            <code>ART19_API_CREDENTIAL_ID</code>, and{" "}
+            <code>ART19_NETWORK_ID</code> in Vercel, then click Refresh.
           </span>
         </div>
       )}
@@ -218,6 +226,19 @@ export default function Art19Page() {
               : "primary network"}
           </span>
         </div>
+        <div className={styles.kpi}>
+          <span className={styles.kpiLabel}>Lifetime listens</span>
+          <span className={styles.kpiValue}>
+            {summary?.totalListens != null
+              ? formatBigNumber(summary.totalListens)
+              : "—"}
+          </span>
+          <span className={styles.kpiHint}>
+            {summary?.totalListens != null
+              ? `${summary.totalListens.toLocaleString()} IABv2.2 downloads — all-time`
+              : "loading…"}
+          </span>
+        </div>
         <div
           className={`${styles.kpi} ${listens?.hasData ? "" : styles.placeholder}`}
         >
@@ -227,8 +248,8 @@ export default function Art19Page() {
           </span>
           <span className={styles.kpiHint}>
             {listens?.hasData
-              ? `${listens.total.toLocaleString()} total downloads`
-              : "pending ART19 metrics API access"}
+              ? `${listens.total.toLocaleString()} downloads`
+              : "pending S3 daily-export setup"}
           </span>
         </div>
       </div>
@@ -276,6 +297,7 @@ export default function Art19Page() {
               <tr>
                 <th>Show</th>
                 <th className={styles.right}>Episodes</th>
+                <th className={styles.right}>Lifetime listens</th>
                 <th>Latest published</th>
                 <th>ART19 updated</th>
               </tr>
@@ -287,8 +309,11 @@ export default function Art19Page() {
                     <div className={styles.showTitle}>{s.title}</div>
                     {s.slug && <div className={styles.showSlug}>{s.slug}</div>}
                   </td>
+                  <td className={styles.right}>{s.episode_count ?? "—"}</td>
                   <td className={styles.right}>
-                    {s.episode_count ?? "—"}
+                    {s.listen_count != null
+                      ? s.listen_count.toLocaleString()
+                      : "—"}
                   </td>
                   <td>
                     {s.latest_episode_at ? (

@@ -3,29 +3,35 @@
  *
  * Idempotent end-to-end:
  *   1. Insert a row in `art19_sync_runs` with status=running.
- *   2. Pull networks, upsert into art19_network.
- *   3. Pull all series, upsert into art19_shows (each linked to its
- *      network when the relationship is present).
- *   4. Pull all episodes, upsert into art19_episodes (linked to its
- *      show via the JSON:API `series` relationship).
+ *   2. Fetch the configured network (ART19_NETWORK_ID) and upsert.
+ *   3. Walk /networks/{id}/relationships/series → for each, fetch the
+ *      full series record and upsert.
+ *   4. For each series, walk /series/{id}/relationships/episodes →
+ *      for each, fetch the full episode record and upsert.
  *   5. Patch the sync_runs row with finished_at + counts + status=ok,
  *      or status=error + message if anything blew up.
  *
- * Listen / download metrics are NOT pulled here yet — the ART19 public
- * API spec doesn't expose them. Once Support confirms the right scope
- * or export channel, a follow-up step will populate art19_listens_daily.
+ * listen_count is captured at every level. The network/series/episode
+ * records each carry their own lifetime IABv2.2 download total directly
+ * from the ART19 API (no daily export required).
+ *
+ * Why scoped to a single network: see the docstring in art19.ts — the
+ * credential has global platform read, but filter[network_id] is silently
+ * ignored, so the only way to keep the sync GhostSignal-only is to walk
+ * relationship endpoints starting from a known network ID.
  */
 
 import {
-  art19ConfigFromEnv,
   Art19Error,
-  listAllEpisodes,
-  listAllNetworks,
-  listAllSeries,
+  art19ConfigFromEnv,
+  getEpisode,
+  getNetwork,
+  getSeries,
+  listEpisodeRefsForSeries,
+  listSeriesRefsForNetwork,
 } from "./art19";
 import {
   episodeRowFromResource,
-  firstRelId,
   networkRowFromResource,
   showRowFromResource,
   type Art19EpisodeRow,
@@ -38,9 +44,12 @@ export type Art19SyncResult = {
   ok: boolean;
   showCount?: number;
   episodeCount?: number;
+  totalListens?: number;
   durationMs: number;
   error?: string;
 };
+
+const EPISODE_UPSERT_CHUNK = 200;
 
 /** Top-level entry point hit by the sync route + the GitHub Actions cron. */
 export async function runArt19Sync(): Promise<Art19SyncResult> {
@@ -53,8 +62,15 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
       error: "ART19 is not configured (ART19_API_TOKEN / ART19_API_CREDENTIAL_ID).",
     };
   }
+  if (!cfg.networkId) {
+    return {
+      ok: false,
+      durationMs: 0,
+      error:
+        "ART19 is not configured (ART19_NETWORK_ID missing — set this to the network UUID you want to sync).",
+    };
+  }
 
-  // Open a sync_runs row up front so a hard crash still leaves a trace.
   const runStart = await supabaseRest<{ id: string }[]>("art19_sync_runs", {
     method: "POST",
     body: JSON.stringify({ status: "running" }),
@@ -63,24 +79,25 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
   const runId = runStart.ok ? runStart.data?.[0]?.id ?? null : null;
 
   try {
-    // --- Networks ---------------------------------------------------
-    const networks = await listAllNetworks(cfg);
-    const networkRows: Art19NetworkRow[] = networks.map(networkRowFromResource);
-    if (networkRows.length > 0) {
+    // --- Network ----------------------------------------------------
+    const networkRes = await getNetwork(cfg, cfg.networkId);
+    const networkRow: Art19NetworkRow = networkRowFromResource(networkRes.data);
+    {
       const r = await supabaseRest("art19_network?on_conflict=id", {
         method: "POST",
-        body: JSON.stringify(networkRows),
+        body: JSON.stringify([networkRow]),
         prefer: "resolution=merge-duplicates,return=minimal",
       });
-      if (!r.ok) throw new Error(`Failed to upsert networks: ${r.detail}`);
+      if (!r.ok) throw new Error(`Failed to upsert network: ${r.detail}`);
     }
-    const primaryNetworkId = networkRows[0]?.id ?? null;
 
     // --- Series (shows) --------------------------------------------
-    const { series } = await listAllSeries(cfg);
-    const showRows: Art19ShowRow[] = series.map((s) =>
-      showRowFromResource(s, primaryNetworkId),
-    );
+    const seriesRefs = await listSeriesRefsForNetwork(cfg, cfg.networkId);
+    const showRows: Art19ShowRow[] = [];
+    for (const ref of seriesRefs) {
+      const s = await getSeries(cfg, ref.id);
+      showRows.push(showRowFromResource(s.data, networkRow.id));
+    }
     if (showRows.length > 0) {
       const r = await supabaseRest("art19_shows?on_conflict=id", {
         method: "POST",
@@ -91,21 +108,18 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
     }
 
     // --- Episodes --------------------------------------------------
-    // One sweep across the whole account. ART19 supports filter by
-    // series_id but a single /episodes pull (paginated) is fewer calls.
-    const { episodes } = await listAllEpisodes(cfg);
     const episodeRows: Art19EpisodeRow[] = [];
-    for (const e of episodes) {
-      const showId = firstRelId(e, "series");
-      const row = episodeRowFromResource(e, showId);
-      if (row) episodeRows.push(row);
+    for (const show of showRows) {
+      const epRefs = await listEpisodeRefsForSeries(cfg, show.id);
+      for (const ref of epRefs) {
+        const e = await getEpisode(cfg, ref.id);
+        const row = episodeRowFromResource(e.data, show.id);
+        if (row) episodeRows.push(row);
+      }
     }
 
-    // Batch upsert in chunks — Postgres has limits on payload size and
-    // upserting 5000+ rows in one POST can blow PostgREST's body cap.
-    const CHUNK = 200;
-    for (let i = 0; i < episodeRows.length; i += CHUNK) {
-      const chunk = episodeRows.slice(i, i + CHUNK);
+    for (let i = 0; i < episodeRows.length; i += EPISODE_UPSERT_CHUNK) {
+      const chunk = episodeRows.slice(i, i + EPISODE_UPSERT_CHUNK);
       const r = await supabaseRest("art19_episodes?on_conflict=id", {
         method: "POST",
         body: JSON.stringify(chunk),
@@ -118,12 +132,13 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
       }
     }
 
-    const finishedAt = new Date().toISOString();
+    const totalListens = networkRow.listen_count ?? 0;
+
     if (runId) {
       await supabaseRest(`art19_sync_runs?id=eq.${runId}`, {
         method: "PATCH",
         body: JSON.stringify({
-          finished_at: finishedAt,
+          finished_at: new Date().toISOString(),
           status: "ok",
           show_count: showRows.length,
           episode_count: episodeRows.length,
@@ -136,6 +151,7 @@ export async function runArt19Sync(): Promise<Art19SyncResult> {
       ok: true,
       showCount: showRows.length,
       episodeCount: episodeRows.length,
+      totalListens,
       durationMs: Date.now() - started,
     };
   } catch (err) {

@@ -58,3 +58,6 @@ assets/**
 .tmp-*
 nul
 
+# Vendor credentials dropped in the repo (never commit raw tokens)
+apps/web/ART19TOKEN.txt
+

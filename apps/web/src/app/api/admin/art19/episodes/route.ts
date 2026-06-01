@@ -14,6 +14,8 @@ type EpisodeRow = {
   status: string | null;
   episode_number: number | null;
   season_number: number | null;
+  listen_count: number | null;
+  downloads_first_24_hours: number | null;
 };
 
 /**
@@ -34,7 +36,7 @@ export async function GET(req: Request) {
   const filter = showId ? `&show_id=eq.${showId}` : "";
   const path =
     "art19_episodes" +
-    `?select=id,show_id,title,duration_seconds,published_at,status,episode_number,season_number` +
+    `?select=id,show_id,title,duration_seconds,published_at,status,episode_number,season_number,listen_count,downloads_first_24_hours` +
     `${filter}&order=published_at.desc.nullslast&limit=${limit}`;
 
   const res = await supabaseRest<EpisodeRow[]>(path);

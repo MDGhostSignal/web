@@ -12,6 +12,7 @@ type ShowRow = {
   description: string | null;
   image_url: string | null;
   episode_count: number | null;
+  listen_count: number | null;
   art19_updated_at: string | null;
 };
 
@@ -24,7 +25,7 @@ type ShowRow = {
  */
 export async function GET() {
   const showsRes = await supabaseRest<ShowRow[]>(
-    "art19_shows?select=id,title,slug,description,image_url,episode_count,art19_updated_at&order=art19_updated_at.desc.nullslast",
+    "art19_shows?select=id,title,slug,description,image_url,episode_count,listen_count,art19_updated_at&order=listen_count.desc.nullslast,art19_updated_at.desc.nullslast",
   );
   if (!showsRes.ok) {
     return NextResponse.json(
