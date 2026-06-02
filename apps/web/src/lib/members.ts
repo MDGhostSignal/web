@@ -268,6 +268,12 @@ export type Member = {
   /** Length of the current contract in months. Defaults to 12 (the
       standard annual agreement). Range 1–60 enforced server-side. */
   contract_term_months: number;
+  /** Manually-assigned 4-digit membership number (1..9999). Null until
+      the member is fully signed up (both `became_member_at` and
+      `contract_signed_at` set) and an admin has assigned the next
+      sequential value. Rendered on the welcome card as "№ NNNN".
+      See docs/CRM_MEMBERS_NUMBER_MIGRATION.sql. */
+  member_number: number | null;
 };
 
 /**

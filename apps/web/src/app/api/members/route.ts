@@ -206,6 +206,19 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     }
   }
 
+  // member_number: integer clamped to [1, 9999] (matches the CHECK
+  // constraint in CRM_MEMBERS_NUMBER_MIGRATION.sql). Null clears the
+  // assignment. Uniqueness is enforced at the DB level — the API
+  // surfaces a 502 if a duplicate write reaches Postgres.
+  if (typeof input.member_number === "number") {
+    const n = Math.floor(input.member_number);
+    if (Number.isFinite(n) && n >= 1 && n <= 9999) {
+      out.member_number = n;
+    }
+  } else if (input.member_number === null) {
+    out.member_number = null;
+  }
+
   if (input.lifecycle_steps && typeof input.lifecycle_steps === "object") {
     out.lifecycle_steps = sanitizeLifecycleSteps(input.lifecycle_steps);
   }

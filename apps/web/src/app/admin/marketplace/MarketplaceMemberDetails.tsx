@@ -82,6 +82,14 @@ function fullName(m: Member): string {
   return `${first} ${last}`.trim() || m.organization || "(unnamed)";
 }
 
+/** 4-digit zero-padded membership number (e.g. 55 → "0055"). Returns
+ *  null for unassigned members so the caller can skip rendering the
+ *  badge entirely rather than showing "0000". */
+function formatMemberNumber(n: number | null): string | null {
+  if (n === null || !Number.isFinite(n) || n < 1) return null;
+  return String(Math.floor(n)).padStart(4, "0");
+}
+
 /** Same phase → admin Badge variant mapping the leads page uses. Kept
  *  inline rather than imported because the leads file doesn't export
  *  it and the user wants leads code left untouched. */
@@ -188,6 +196,8 @@ function ContactCard({ member }: { member: Member }) {
     return Number.isNaN(d.getTime()) ? null : d.getFullYear();
   })();
 
+  const memberNumber = formatMemberNumber(member.member_number);
+
   return (
     <section className={styles.mmIdCard} aria-label="Member ID card">
       {/* Welcome card hero — black with diagonal multicolor stripes,
@@ -270,6 +280,23 @@ function ContactCard({ member }: { member: Member }) {
           alt="GhostSignal"
           className={styles.mmWelcomeCardWordmark}
         />
+
+        {/* Membership number — assigned manually only when the member is
+            fully signed up (became_member_at AND contract_signed_at both
+            set). Rendered as a four-digit zero-padded "Member № NNNN"
+            badge in the top-right corner, echoing the serial stamp on
+            the physical welcome card. Hidden entirely when unassigned. */}
+        {memberNumber && (
+          <div
+            className={styles.mmWelcomeCardNumber}
+            aria-label={`Membership number ${memberNumber}`}
+          >
+            <span className={styles.mmWelcomeCardNumberLabel}>Member №</span>
+            <span className={styles.mmWelcomeCardNumberValue}>
+              {memberNumber}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Sub-info row: type badge, role, organization, plus the avatar

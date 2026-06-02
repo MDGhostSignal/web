@@ -809,16 +809,50 @@
   background: #0a0a0b;
   color: #ffffff;
   isolation: isolate;
+  /* Physical-card drop shadow: tight contact shadow + soft ambient
+     lift, so the digital twin reads as something sitting just above
+     the page rather than flat artwork. Three layers: a hairline
+     contact line, a mid drop, and a wide ambient halo. */
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 10px 24px rgba(0, 0, 0, 0.28),
+    0 24px 56px rgba(0, 0, 0, 0.22);
+}
+
+/* Plastic-shine highlight — diagonal white sheen across the upper
+   portion of the card, simulating reflected light on a glossy
+   laminated surface. Sits above the stripes via z-index so it gleams
+   over the colored bands; pointer-events: none keeps it transparent
+   to clicks. mix-blend-mode screen brightens what's behind it without
+   tinting the underlying colors. */
+.mmWelcomeCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 26%,
+    rgba(255, 255, 255, 0.07) 36%,
+    rgba(255, 255, 255, 0.18) 42%,
+    rgba(255, 255, 255, 0.07) 48%,
+    transparent 58%
+  );
+  mix-blend-mode: screen;
+  border-radius: inherit;
 }
 
 /* Diagonal stripes layer — 135° gradient with five color bands
    spanning the right ~half of the diagonal. Matches the five-stripe
    pattern (orange / purple / teal / pink / yellow) on the physical
    welcome card. Pointer-events: none so clicks pass through to
-   anything above (currently only the avatar button is interactive). */
+   anything above (currently only the avatar button is interactive).
+   z-index 1 keeps it under the plastic-shine pseudo. */
 .mmWelcomeCardStripes {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
   background: linear-gradient(
     135deg,
@@ -983,6 +1017,42 @@
      Copied from /logo/PNG/ — clear-named gs-brandmark-hor-white.png so
      there's no ambiguity with the older brandmark-horizontal-white@4
      file (which rendered as a different mark). */
+}
+
+/* Membership number — top-right serial badge echoing the embossed
+   number on a physical credit / loyalty card. Monospace + tabular
+   numerics + wide letter-spacing so it reads as a card serial rather
+   than body text. Sits above the plastic-shine layer (z-index 3) so
+   the digits stay crisp against the colorful stripes underneath.
+   Hidden entirely by the consumer when member_number is null. */
+.mmWelcomeCardNumber {
+  position: absolute;
+  top: 8%;
+  right: 6%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.mmWelcomeCardNumberLabel {
+  font-size: 9px;
+  font-weight: var(--admin-weight-semibold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.mmWelcomeCardNumberValue {
+  font-family: ui-monospace, "SF Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 /* Sub-info row sits BELOW the welcome card and carries the editable
