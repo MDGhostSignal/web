@@ -126,8 +126,6 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   { key: "rq_completed", label: "RQ quiz completed", phase: "run", ownerRole: "Member" },
   { key: "xq_completed", label: "XQ quiz completed", phase: "run", ownerRole: "Member" },
   { key: "campaign_planning", label: "Campaign Planning + Execution", phase: "run", ownerRole: "Ops" },
-  { key: "upload_to_drive", label: "Upload to Drive", phase: "run", ownerRole: "Ops" },
-  { key: "label_calendar", label: "Label as Calendar", phase: "run", ownerRole: "Ops" },
 ] as const;
 
 /**
@@ -229,6 +227,12 @@ export type Member = {
   /** Free-text capture of the lead's most recent response, e.g.
       "Wants to revisit in Q3" or "Asked for case studies". */
   last_response: string | null;
+  /** Categorical traffic-light bucket for the most recent reply.
+      Drives the lifecycle stepper on /admin/contacts. NULL means
+      "no categorical reply recorded" — the contact may still have
+      free-text `last_response` content. See
+      docs/CRM_MEMBERS_RESPONSE_KIND_MIGRATION.sql. */
+  response_kind: "no" | "interested" | null;
   /** Number of outreach touches against this lead. Incremented manually
       by the founders as they reach out (call, email, DM, etc.). */
   contact_count: number | null;

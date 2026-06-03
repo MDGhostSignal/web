@@ -894,6 +894,10 @@
   left: 6%;
   width: 24%;
   aspect-ratio: 1;
+  /* z-index 3 puts the logo above the colored stripes (z 1) and the
+     plastic-shine pseudo (z 2), matching the number badge so all
+     foreground card content sits on a single legible layer. */
+  z-index: 3;
   padding: 0;
   cursor: pointer;
   overflow: hidden;
@@ -983,6 +987,10 @@
   top: 75%;
   left: 8%;
   right: 40%;
+  /* z-index 3 lifts the member name + "Member Since" above the stripes
+     and plastic-shine layers so the text reads cleanly against the
+     coloured-bar field rather than being striped through. */
+  z-index: 3;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
@@ -1012,6 +1020,9 @@
   right: 6%;
   width: 28%;
   height: auto;
+  /* z-index 3 — same foreground layer as the avatar / name / number,
+     above the stripes (1) and plastic shine (2). */
+  z-index: 3;
   object-fit: contain;
   /* Canonical GhostSignal horizontal brandmark, white-on-transparent.
      Copied from /logo/PNG/ — clear-named gs-brandmark-hor-white.png so

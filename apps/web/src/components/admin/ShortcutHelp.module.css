@@ -1,0 +1,191 @@
+/* =============================================================================
+   ShortcutHelp — `?` icon button in the topbar trail + anchored popover panel
+   listing every keyboard shortcut. Visual language mirrors the AlertsBell
+   surface (same trigger button shape, same panel framing) so the trail reads
+   as a coherent row of utility chips.
+   ============================================================================= */
+
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  transition:
+    color var(--admin-transition-base),
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.trigger:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border-color: var(--admin-border-strong);
+}
+
+.trigger[aria-expanded="true"] {
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+  border-color: rgba(251, 173, 37, 0.3);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.triggerIcon {
+  width: 18px;
+  height: 18px;
+}
+
+/* --- Popover panel --------------------------------------------------- */
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--admin-space-2));
+  right: 0;
+  width: 360px;
+  max-width: calc(100vw - var(--admin-space-6) * 2);
+  max-height: calc(100vh - var(--admin-topbar-height, 64px) - var(--admin-space-6));
+  overflow-y: auto;
+  padding: var(--admin-space-4);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  /* Same drop-shadow recipe AlertsBell uses so the two popovers feel
+     like siblings in the trail. */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.22),
+    0 16px 40px rgba(0, 0, 0, 0.28);
+  z-index: calc(var(--admin-z-header) + 2);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--admin-space-3);
+  margin-bottom: var(--admin-space-3);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+}
+
+.closeBtn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--admin-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-hover);
+}
+
+/* --- Sections + rows ------------------------------------------------- */
+
+.section {
+  margin-bottom: var(--admin-space-4);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  margin: 0 0 var(--admin-space-1);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+}
+
+.sectionHint {
+  margin: 0 0 var(--admin-space-3);
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+}
+
+.sectionHint .kbd {
+  margin: 0 2px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-1);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-2) 0;
+}
+
+.rowLabel {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-primary);
+}
+
+.rowKeys {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-1);
+  flex-shrink: 0;
+}
+
+.rowKeysGap {
+  font-size: var(--admin-text-xs);
+  color: var(--admin-text-muted);
+  margin: 0 2px;
+}
+
+/* --- <kbd> chip ------------------------------------------------------ */
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: var(--admin-font-mono);
+  font-size: 11px;
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-bottom-width: 2px;
+  border-radius: var(--admin-radius-sm);
+  text-transform: none;
+  line-height: 1;
+}

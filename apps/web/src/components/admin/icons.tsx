@@ -39,6 +39,18 @@ export function IconArt19(props: Props) {
   );
 }
 
+/** Question mark in a circle — used by the keyboard-shortcuts help
+ *  button in the AdminShell trail slot. */
+export function IconHelp(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 4" />
+      <line x1="12" y1="17" x2="12" y2="17.5" />
+    </svg>
+  );
+}
+
 /** Bell — alert notifications (used in the AdminShell trail slot). */
 export function IconBell(props: Props) {
   return (

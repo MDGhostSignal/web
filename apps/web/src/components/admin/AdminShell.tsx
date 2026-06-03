@@ -1,13 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState, type ReactNode } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { AdminSidebar, type AdminNavItem } from "./AdminSidebar";
 import { AlertsBell } from "./AlertsBell";
 import { IconHamburger } from "./icons";
+import { ShortcutHelp } from "./ShortcutHelp";
 import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AdminShell.module.css";
+
+/** localStorage key for the persistent sidebar-collapsed preference.
+ *  Hydrated once post-mount — first paint always renders expanded to
+ *  match SSR output, then snaps to the user's stored choice. */
+const SIDEBAR_COLLAPSED_KEY = "gs-admin-sidebar-collapsed";
 
 type Props = {
   /** Hierarchical sidebar nav. */
@@ -31,9 +43,68 @@ type Props = {
  */
 export function AdminShell({ nav, children, trail, onLogout }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Render-phase hydration of the collapsed preference from
+  // localStorage. Uses the same compare-and-set idiom as the local
+  // `useDraftSync` hook elsewhere in the codebase — avoids the
+  // `react-hooks/set-state-in-effect` rule that bans setState in an
+  // effect body. SSR pass skips the block (no `window`), client first
+  // render enters it once, flips `hydrated`, and conditionally bumps
+  // `collapsed`. A single-frame flash on hard nav is preferred over
+  // an SSR/CSR mismatch warning.
+  if (!hydrated && typeof window !== "undefined") {
+    setHydrated(true);
+    try {
+      const stored = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (stored === "true") setCollapsed(true);
+    } catch {
+      /* localStorage unavailable (private mode, etc) — silent default */
+    }
+  }
+
+  // Persist on change. Skipping the initial false write is fine; we
+  // only need to remember explicit user choices.
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  // Ctrl/Cmd + B — power-user toggle. Matches VS Code's binding so it
+  // feels native. Only fires when the focus isn't trapped in an
+  // editable field (the modifier alone rules out most accidents).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "b" && e.key !== "B") return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      // Don't hijack the browser's bold shortcut inside text inputs.
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      e.preventDefault();
+      toggleCollapsed();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggleCollapsed]);
 
   const defaultTrail = (
     <>
+      <ShortcutHelp />
       <AlertsBell />
       <ThemeToggle />
       {onLogout ? (
@@ -50,7 +121,10 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
   );
 
   return (
-    <div className={`${styles.shell} admin-root`}>
+    <div
+      className={`${styles.shell} admin-root`}
+      data-sidebar-collapsed={collapsed ? "true" : "false"}
+    >
       <header className={styles.topbar}>
         <button
           type="button"
@@ -98,6 +172,8 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
             nav={nav}
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
+            collapsed={collapsed}
+            onToggleCollapsed={toggleCollapsed}
           />
         </Suspense>
         {/* Mirror Suspense around the main content so any admin page

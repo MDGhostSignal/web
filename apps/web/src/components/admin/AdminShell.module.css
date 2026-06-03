@@ -11,12 +11,29 @@
   color: var(--admin-text-primary);
   font-family: var(--admin-font);
   /* Prevent horizontal scrollbars when a page (e.g. /admin/marketplace)
-     breaks out of the content box via 100vw + negative margin. */
-  overflow-x: hidden;
+     breaks out of the content box via 100vw + negative margin.
+
+     `clip` (not `hidden`) is critical here: `overflow-x: hidden` would
+     normalize `overflow-y` to `auto`, making `.shell` a scroll
+     container — which (a) competes with window scroll and (b) breaks
+     `position: sticky` on the topbar and the visual sync of the
+     `position: fixed` sidebar on tall pages. `clip` clips without
+     creating a scroll container. Safari 16+ / all evergreens. */
+  overflow-x: clip;
 
   /* Topbar height is referenced by the sidebar (which sits below it on
      desktop). Defining it here keeps the two surfaces in sync. */
   --admin-topbar-height: 64px;
+
+  /* Sidebar width — drives both the sidebar element's own width and
+     the content column's left margin (so they stay locked together
+     when the user collapses the sidebar). Flips to a narrower
+     icon-rail value when the shell carries `data-sidebar-collapsed`. */
+  --admin-sidebar-width: 256px;
+}
+
+.shell[data-sidebar-collapsed="true"] {
+  --admin-sidebar-width: 64px;
 }
 
 .topbar {
@@ -145,10 +162,19 @@
 
 @media (min-width: 769px) {
   .content {
-    /* Sidebar is fixed 256 px on the left; offset the content. The
-       margin lives on the content (not the wrapper) so the topbar
-       above keeps its full width. */
-    margin-left: 256px;
+    /* Sidebar width is fixed on the left; offset the content by the
+       same amount. The margin lives on the content (not the wrapper)
+       so the topbar above keeps its full width. Width is driven by
+       --admin-sidebar-width on `.shell` so collapsing the sidebar
+       reflows the content column in lockstep. */
+    margin-left: var(--admin-sidebar-width);
+    transition: margin-left 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: none;
   }
 }
 

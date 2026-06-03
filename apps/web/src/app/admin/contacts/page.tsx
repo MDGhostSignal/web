@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   Badge,
@@ -19,7 +19,6 @@ import {
 } from "@/components/admin";
 import {
   countCompleted,
-  daysSince,
   LIFECYCLE_STEPS,
   MEMBER_OWNERS,
   MEMBER_PHASE_LABELS,
@@ -35,10 +34,111 @@ import {
   type StepStatus,
 } from "@/lib/members";
 
+/** Returns the member's lifecycle_steps with `discernment` flipped to
+ *  "done" — the marker used by `deriveStatus()` to tell an explicitly-
+ *  triaged contact (state: discern) from a brand-new untouched row
+ *  (state: untouched). Preserves any prior completed_at so we don't
+ *  bump the date on re-clicks. */
+function withDiscernmentDone(current: Member): LifecycleSteps {
+  const today = new Date().toISOString().slice(0, 10);
+  const existing = current.lifecycle_steps?.discernment;
+  return {
+    ...(current.lifecycle_steps ?? {}),
+    discernment: {
+      status: "done",
+      completed_at: existing?.completed_at ?? today,
+    },
+  };
+}
+
 import { XQSummaryCard } from "@/components/admin/XQSummaryCard";
 
-import { ContactLifecycleStepper } from "./ContactLifecycleStepper";
+import {
+  ContactLifecycleStepper,
+  DERIVED_STATUSES,
+  DERIVED_STATUS_LABELS,
+  deriveStatus,
+  type DerivedStatus,
+} from "./ContactLifecycleStepper";
 import styles from "./contacts.module.css";
+
+/**
+ * Translate a clicked traffic-light status into the Member field
+ * updates that produce that derived status. The categorical signal
+ * lives in `response_kind`; the free-text `last_response` stays as-is
+ * so the founder can write context independently of the bucket.
+ *
+ * Backtracking semantics: clicking "Discern" or "Reached out" clears
+ * `response_kind` so the stepper doesn't keep displaying a downstream
+ * (more-advanced) state.
+ */
+function statusToPatch(
+  next: DerivedStatus,
+  current: Member,
+): MemberWritable {
+  const nowIso = new Date().toISOString();
+  // Every forward-of-untouched click marks the discernment step done
+  // so deriveStatus() flips out of "untouched". Cached once here so
+  // each branch can reuse it.
+  const lifecycleStepsWithDiscernment = withDiscernmentDone(current);
+
+  switch (next) {
+    case "untouched":
+      // Reserved for completeness — the stepper has no circle that
+      // maps to "untouched", so this branch is unreachable from the
+      // UI. If a future caller wires it up, clear the discernment
+      // marker (and downstream signals) to send the row back to the
+      // initial state.
+      return {
+        phase: "discern",
+        became_member_at: null,
+        last_contact_at: null,
+        response_kind: null,
+        lifecycle_steps: {
+          ...(current.lifecycle_steps ?? {}),
+          discernment: { status: "todo", completed_at: null },
+        },
+      };
+    case "discern":
+      return {
+        phase: "discern",
+        became_member_at: null,
+        response_kind: null,
+        lifecycle_steps: lifecycleStepsWithDiscernment,
+      };
+    case "reached-out":
+      return {
+        phase: "court",
+        became_member_at: null,
+        last_contact_at: current.last_contact_at ?? nowIso,
+        response_kind: null,
+        lifecycle_steps: lifecycleStepsWithDiscernment,
+      };
+    case "replied-no":
+      return {
+        phase: "court",
+        became_member_at: null,
+        last_contact_at: current.last_contact_at ?? nowIso,
+        response_kind: "no",
+        lifecycle_steps: lifecycleStepsWithDiscernment,
+      };
+    case "replied-interested":
+      return {
+        phase: "court",
+        became_member_at: null,
+        last_contact_at: current.last_contact_at ?? nowIso,
+        response_kind: "interested",
+        lifecycle_steps: lifecycleStepsWithDiscernment,
+      };
+    case "member":
+      return {
+        became_member_at: current.became_member_at ?? nowIso,
+        lifecycle_steps: lifecycleStepsWithDiscernment,
+      };
+    case "stopped":
+      return { phase: "paused" };
+  }
+}
 
 /* =====================================================================
  * Helpers
@@ -78,40 +178,6 @@ function fullName(m: Member): string {
   const first = m.first_name ?? "";
   const last = m.last_name ?? "";
   return `${first} ${last}`.trim() || "—";
-}
-
-/* =====================================================================
- * Urgency — which leads need attention right now?
- *
- * A lead is urgent when it's in an active pipeline phase (not paused,
- * churned, or run — the last is "already live in campaigns") AND
- * either:
- *   - has never been contacted (no `last_contact_at`), or
- *   - was last contacted at least URGENT_DAYS days ago.
- *
- * The banner at the top of /admin/leads surfaces these so a founder
- * walking into the page sees the most stale outreach first.
- * ===================================================================== */
-
-const URGENT_DAYS = 7;
-
-function isUrgent(m: Member): boolean {
-  if (m.phase === "paused" || m.phase === "churned" || m.phase === "run") {
-    return false;
-  }
-  const d = daysSince(m.last_contact_at);
-  if (d === null) return true; // never contacted + in an active phase
-  return d >= URGENT_DAYS;
-}
-
-/**
- * Higher number = more urgent. Never-contacted leads sort to the very
- * top via a sentinel value above any realistic days-since count. Then
- * by days-since-last-contact descending (oldest first).
- */
-function urgencyScore(m: Member): number {
-  const d = daysSince(m.last_contact_at);
-  return d === null ? Number.MAX_SAFE_INTEGER : d;
 }
 
 type FormState = {
@@ -223,7 +289,9 @@ export default function MembersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterPhase, setFilterPhase] = useState<MemberPhase | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<DerivedStatus | "all">(
+    "all",
+  );
   const [filterType, setFilterType] = useState<MemberType | "all">("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
 
@@ -455,7 +523,7 @@ export default function MembersPage() {
   }, [confirmDelete, expandedRow]);
 
   const filtered = members.filter((m) => {
-    if (filterPhase !== "all" && m.phase !== filterPhase) return false;
+    if (filterStatus !== "all" && deriveStatus(m) !== filterStatus) return false;
     if (filterType !== "all" && m.member_type !== filterType) return false;
     if (filterOwner !== "all" && (m.owner ?? "") !== filterOwner) return false;
     const q = searchTerm.trim().toLowerCase();
@@ -470,56 +538,6 @@ export default function MembersPage() {
     );
   });
 
-  // Urgent leads are computed from the unfiltered list so the banner
-  // is always visible regardless of the current search/filter state —
-  // the user might be slicing the pipeline by phase but still wants
-  // to see what needs immediate action across all phases.
-  const urgent = useMemo(
-    () =>
-      members
-        .filter(isUrgent)
-        .sort((a, b) => urgencyScore(b) - urgencyScore(a)),
-    [members],
-  );
-
-  // Clicking an urgent item opens that lead in the table. Filters are
-  // cleared first so the row is guaranteed to be visible after the
-  // expand — otherwise the user might click and see no apparent
-  // result because the lead was filtered out of the current view.
-  // After React commits the state update we scroll the row into view;
-  // the double rAF ensures we run after the row has been painted (the
-  // first rAF fires before paint, the second after), so getBoundingRect
-  // sees the freshly expanded layout. `scroll-margin-top` on the row
-  // (defined in the leads CSS module) offsets for the sticky admin
-  // topbar so the row doesn't land underneath it.
-  // "Resolved" on an urgent banner row — bump last_contact_at to now.
-  // Same `handleMemberPatch` path the inline editors use, so optimistic
-  // update + rollback applies. The urgent useMemo recomputes on the
-  // members state change, dropping the row.
-  const handleResolveUrgent = useCallback(
-    (id: string) => {
-      void handleMemberPatch(id, {
-        last_contact_at: new Date().toISOString(),
-      });
-    },
-    [handleMemberPatch],
-  );
-
-  const openLead = useCallback((id: string) => {
-    setSearchTerm("");
-    setFilterPhase("all");
-    setFilterType("all");
-    setFilterOwner("all");
-    setExpandedRow(id);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const row = document.querySelector<HTMLElement>(
-          `tr[data-row-id="${CSS.escape(id)}"]`,
-        );
-        row?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-  }, []);
 
   if (loading) {
     return <Loading message="Loading contacts…" />;
@@ -535,8 +553,8 @@ export default function MembersPage() {
         count={filtered.length}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        filterPhase={filterPhase}
-        setFilterPhase={setFilterPhase}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
         filterType={filterType}
         setFilterType={setFilterType}
         filterOwner={filterOwner}
@@ -557,12 +575,6 @@ export default function MembersPage() {
           </Button>
         </div>
       )}
-
-      <UrgentLeadsBanner
-        urgent={urgent}
-        onOpenLead={openLead}
-        onResolveLead={handleResolveUrgent}
-      />
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -617,8 +629,8 @@ type HeaderProps = {
   count: number;
   searchTerm: string;
   setSearchTerm: (v: string) => void;
-  filterPhase: MemberPhase | "all";
-  setFilterPhase: (v: MemberPhase | "all") => void;
+  filterStatus: DerivedStatus | "all";
+  setFilterStatus: (v: DerivedStatus | "all") => void;
   filterType: MemberType | "all";
   setFilterType: (v: MemberType | "all") => void;
   filterOwner: string;
@@ -630,8 +642,8 @@ function PageHeaderBlock({
   count,
   searchTerm,
   setSearchTerm,
-  filterPhase,
-  setFilterPhase,
+  filterStatus,
+  setFilterStatus,
   filterType,
   setFilterType,
   filterOwner,
@@ -660,18 +672,18 @@ function PageHeaderBlock({
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Phase</span>
+            <span className={styles.filterLabel}>Status</span>
             <select
               className={styles.filterSelect}
-              value={filterPhase}
+              value={filterStatus}
               onChange={(e) =>
-                setFilterPhase(e.target.value as MemberPhase | "all")
+                setFilterStatus(e.target.value as DerivedStatus | "all")
               }
             >
               <option value="all">All</option>
-              {MEMBER_PHASES.map((s) => (
+              {DERIVED_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {MEMBER_PHASE_LABELS[s]}
+                  {DERIVED_STATUS_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -745,6 +757,17 @@ function MembersTable({
       key: "name",
       header: "Name",
       variant: "nowrap",
+      // Sort by the displayed full name. Empty names ("—") sort to the
+      // bottom on asc so unnamed rows (org-only contacts) don't lead.
+      sort: (a, b) => {
+        const av = fullName(a);
+        const bv = fullName(b);
+        const aEmpty = av === "—";
+        const bEmpty = bv === "—";
+        if (aEmpty && !bEmpty) return 1;
+        if (bEmpty && !aEmpty) return -1;
+        return av.localeCompare(bv);
+      },
       cell: (m) => fullName(m),
     },
     {
@@ -768,6 +791,15 @@ function MembersTable({
       key: "organization",
       header: "Organization",
       variant: "truncate",
+      // Empty organizations sort to the bottom on asc — same pattern as
+      // the Owner column above.
+      sort: (a, b) => {
+        const av = a.organization ?? "";
+        const bv = b.organization ?? "";
+        if (av === "" && bv !== "") return 1;
+        if (bv === "" && av !== "") return -1;
+        return av.localeCompare(bv);
+      },
       cell: (m) => m.organization || "—",
     },
     {
@@ -835,12 +867,19 @@ function MembersTable({
       renderExpanded={(m) => (
         <div className={styles.detailsBlock}>
           {/* Lifecycle stepper — promoted to the top of the panel. Same
-              visual treatment as the marketplace pool stepper. Read-only
-              here; the underlying fields (phase, last_contact_at,
-              last_response, became_member_at) are edited via the
-              PipelineCard / "Has become a GhostSignal member" button
-              below, and the stepper reflects the derived state. */}
-          <ContactLifecycleStepper member={m} variant="full" />
+              visual treatment as the marketplace pool stepper. Circles
+              are clickable: each one PATCHes the underlying member
+              fields (phase, last_contact_at, last_response,
+              became_member_at) so the derived status lands on the
+              clicked step. The PipelineCard / "Has become a GhostSignal
+              member" button below remain available for finer control. */}
+          <ContactLifecycleStepper
+            member={m}
+            variant="full"
+            onSetStatus={(next) => {
+              void onMemberPatch(m.id, statusToPatch(next, m));
+            }}
+          />
 
           {/* Actions row — the primary "become a member" action plus
               Edit / Delete. Sits below the stepper now (the stepper is
@@ -1334,88 +1373,6 @@ function DeleteConfirmModal({
 /* =====================================================================
  * Lifecycle checklist — Jack's 12 checkpoints grouped by phase.
  * ===================================================================== */
-
-/* =====================================================================
- * Urgent leads banner — sits above the main table on /admin/leads.
- * Shows leads that need outreach attention right now (see isUrgent
- * above for the rule). Always rendered from the unfiltered member
- * list so the priority view is independent of the current search /
- * filter state. Clicking an item clears filters and expands the
- * matching row in the table below.
- * ===================================================================== */
-
-type UrgentBannerProps = {
-  urgent: Member[];
-  onOpenLead: (id: string) => void;
-  /** Marks the lead as resolved — internally just bumps
-      `last_contact_at` to now, which satisfies the urgency rule
-      (≥ URGENT_DAYS stale) so the row drops off the banner and
-      doubles as a record that outreach just happened. */
-  onResolveLead: (id: string) => void;
-};
-
-function UrgentLeadsBanner({
-  urgent,
-  onOpenLead,
-  onResolveLead,
-}: UrgentBannerProps) {
-  if (urgent.length === 0) return null;
-
-  return (
-    <section className={styles.urgentBanner} aria-label="Urgent contacts">
-      <header className={styles.urgentBannerHeader}>
-        <span className={styles.urgentBannerIcon} aria-hidden="true">
-          !
-        </span>
-        <h3 className={styles.urgentBannerTitle}>
-          {urgent.length}{" "}
-          {urgent.length === 1 ? "contact needs" : "contacts need"} urgent action
-        </h3>
-        <span className={styles.urgentBannerSub}>
-          No response in {URGENT_DAYS}+ days
-        </span>
-      </header>
-      <ul className={styles.urgentList}>
-        {urgent.map((m) => {
-          const d = daysSince(m.last_contact_at);
-          const stale =
-            d === null ? "Never contacted" : `${d}d since last contact`;
-          return (
-            // Two sibling buttons inside each <li> — the row-open
-            // target on the left, the resolve action on the right. A
-            // button nested inside another button is invalid HTML, so
-            // the split keeps the markup well-formed while letting
-            // both actions click independently.
-            <li key={m.id} className={styles.urgentItemRow}>
-              <button
-                type="button"
-                className={styles.urgentItem}
-                onClick={() => onOpenLead(m.id)}
-              >
-                <span className={styles.urgentItemName}>{fullName(m)}</span>
-                <Badge variant={phaseVariant(m.phase)}>
-                  {MEMBER_PHASE_LABELS[m.phase]}
-                </Badge>
-                <span className={styles.urgentItemStale}>{stale}</span>
-                <span className={styles.urgentItemMeta}>
-                  {m.owner ?? "—"}
-                </span>
-              </button>
-              <button
-                type="button"
-                className={styles.urgentResolveBtn}
-                onClick={() => onResolveLead(m.id)}
-                title="Mark this contact resolved — bumps Last contact to today, dropping it off the urgent list."
-              >
-                Resolved
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
 
 /* =====================================================================
  * Contact ID card + Pipeline card — top row of the expanded panel.

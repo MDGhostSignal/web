@@ -468,7 +468,9 @@ export default function DesignTasksPage() {
                       key={f.name}
                       onClick={() => setAssigneeFilter(f.name)}
                       className={`${styles.filterTab} ${assigneeFilter === f.name ? styles.filterTabActive : ""}`}
+                      data-assignee={f.name}
                     >
+                      <span className={styles.assigneeDot} aria-hidden="true" />
                       <span>{f.name.split(" ")[0]}</span>
                       <span className={styles.filterCount}>{count}</span>
                     </button>
@@ -511,6 +513,10 @@ export default function DesignTasksPage() {
                   ]
                     .filter(Boolean)
                     .join(" ")}
+                  /* CSS reads this to colour the top stripe + sidebar
+                     dot. Unassigned (null) yields no attribute → the
+                     transparent default leaves the stripe invisible. */
+                  data-assignee={task.assigned_to ?? undefined}
                   draggable
                   onDragStart={(e) => {
                     setDraggingId(task.id);

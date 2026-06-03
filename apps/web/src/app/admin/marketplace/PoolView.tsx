@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   Badge,
@@ -10,7 +10,6 @@ import {
   EmptyState,
   Modal,
   SearchInput,
-  StaleBadge,
   typeVariant,
 } from "@/components/admin";
 import type { MarketplaceEntity } from "@/lib/marketplace-mocks";
@@ -18,10 +17,6 @@ import type { Match } from "@/lib/marketplace-store";
 import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
 import type { RQResult } from "@/lib/rq/scoring";
 import {
-  daysSince,
-  LIFECYCLE_STEPS,
-  MARKETPLACE_LIFECYCLE_KEYS,
-  MEMBER_PHASE_LABELS,
   type LifecycleSteps,
   type Member,
   type MemberType,
@@ -112,48 +107,6 @@ function entityToMemberId(entityId: string): string | null {
 // array each render (which would re-fire downstream useMemos).
 const EMPTY_ENTITIES: readonly MarketplaceEntity[] = [];
 
-/* =====================================================================
- * Marketplace urgency — who in the pool needs attention right now?
- *
- * A real member is urgent when:
- *   - they're an active marketplace participant (graduated, and not
- *     paused / churned), AND
- *   - at least one applicable marketplace lifecycle step (Sign /
- *     Onboard / Run, skipping creator-only steps for brands) is still
- *     incomplete, AND
- *   - either no last contact recorded OR last contact ≥ URGENT_DAYS
- *     ago.
- *
- * Members with all steps done are no longer urgent regardless of
- * contact recency — there's nothing for the team to act on.
- * ===================================================================== */
-
-const URGENT_DAYS = 7;
-
-function nextPendingStep(m: Member) {
-  const stepKeys = new Set(MARKETPLACE_LIFECYCLE_KEYS);
-  return LIFECYCLE_STEPS.find((s) => {
-    if (!stepKeys.has(s.key)) return false;
-    if (s.creatorOnly && m.member_type !== "creator") return false;
-    return m.lifecycle_steps?.[s.key]?.status !== "done";
-  });
-}
-
-function isMemberUrgent(m: Member): boolean {
-  if (!m.became_member_at) return false;
-  if (m.phase === "paused" || m.phase === "churned") return false;
-  if (!nextPendingStep(m)) return false; // all steps done
-  const d = daysSince(m.last_contact_at);
-  return d === null || d >= URGENT_DAYS;
-}
-
-/** Sentinel-high for never-contacted so they sort to the top, then
- *  days-since-last-contact descending. */
-function memberUrgencyScore(m: Member): number {
-  const d = daysSince(m.last_contact_at);
-  return d === null ? Number.MAX_SAFE_INTEGER : d;
-}
-
 export function PoolView({
   matches,
   entities = EMPTY_ENTITIES,
@@ -217,51 +170,6 @@ export function PoolView({
       return true;
     });
   }, [entities, search, kindFilter, matchedFilter, pairingsById]);
-
-  // Urgent members — computed from the unfiltered `members` list so
-  // the banner is always visible regardless of pool filters. Mirrors
-  // the leads-page banner: founders should see what needs action up
-  // top no matter how they're slicing the rest of the view.
-  const urgentMembers = useMemo(() => {
-    if (!members) return [];
-    return [...members]
-      .filter(isMemberUrgent)
-      .sort((a, b) => memberUrgencyScore(b) - memberUrgencyScore(a));
-  }, [members]);
-
-  // Click an urgent row → clear filters so the underlying pool row is
-  // visible, expand it, scroll into view. Double-rAF ensures we measure
-  // after React commits + the browser paints.
-  const openMember = useCallback(
-    (memberId: string) => {
-      setSearch("");
-      setKindFilter("all");
-      setMatchedFilter("all");
-      setExpandedRow(`mem-${memberId}`);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const row = document.querySelector<HTMLElement>(
-            `tr[data-row-id="${CSS.escape(`mem-${memberId}`)}"]`,
-          );
-          row?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      });
-    },
-    [],
-  );
-
-  // "Resolved" → bump last_contact_at to now. Drops the row off the
-  // banner via the recomputed urgentMembers (since daysSince becomes
-  // 0). Same pattern leads page uses.
-  const resolveMember = useCallback(
-    (memberId: string) => {
-      if (!onMemberPatch) return;
-      void onMemberPatch(memberId, {
-        last_contact_at: new Date().toISOString(),
-      });
-    },
-    [onMemberPatch],
-  );
 
   const columns: Column<MarketplaceEntity>[] = [
     {
@@ -351,12 +259,6 @@ export function PoolView({
 
   return (
     <div className={styles.poolView}>
-      <MarketplaceUrgentBanner
-        urgent={urgentMembers}
-        onOpenMember={openMember}
-        onResolveMember={resolveMember}
-      />
-
       <div className={styles.poolToolbar}>
         <SearchInput
           value={search}
@@ -715,95 +617,6 @@ export function PoolView({
  * FilterChipGroup — reusable little segmented control. Extracted here
  * since the same shape appears in MatchBoard's tier filter too.
  * ===================================================================== */
-
-/* =====================================================================
- * MarketplaceUrgentBanner — top-of-pool priority list. Mirrors the
- * leads-page banner: red destructive-soft card, one row per urgent
- * member, click row to open in the table below, "Resolved" button
- * bumps last_contact_at to today. Renders nothing when no urgent
- * members.
- * ===================================================================== */
-
-type UrgentBannerProps = {
-  urgent: Member[];
-  onOpenMember: (memberId: string) => void;
-  onResolveMember: (memberId: string) => void;
-};
-
-function MarketplaceUrgentBanner({
-  urgent,
-  onOpenMember,
-  onResolveMember,
-}: UrgentBannerProps) {
-  if (urgent.length === 0) return null;
-
-  return (
-    <section className={styles.mmUrgentBanner} aria-label="Urgent members">
-      <header className={styles.mmUrgentHeader}>
-        <span className={styles.mmUrgentIcon} aria-hidden="true">
-          !
-        </span>
-        <h3 className={styles.mmUrgentTitle}>
-          {urgent.length}{" "}
-          {urgent.length === 1 ? "member needs" : "members need"} urgent action
-        </h3>
-        <span className={styles.mmUrgentSub}>
-          No contact in {URGENT_DAYS}+ days · onboarding still open
-        </span>
-      </header>
-      <ul className={styles.mmUrgentList}>
-        {urgent.map((m) => {
-          const d = daysSince(m.last_contact_at);
-          const stale =
-            d === null ? "Never contacted" : `${d}d since last contact`;
-          const next = nextPendingStep(m);
-          const name =
-            [m.first_name, m.last_name].filter(Boolean).join(" ").trim() ||
-            m.organization ||
-            "(unnamed)";
-          return (
-            <li key={m.id} className={styles.mmUrgentItemRow}>
-              <button
-                type="button"
-                className={styles.mmUrgentItem}
-                onClick={() => onOpenMember(m.id)}
-              >
-                <span className={styles.mmUrgentItemName}>{name}</span>
-                <StaleBadge memberId={m.id} />
-                {next && (
-                  <Badge
-                    variant={
-                      next.phase === "run"
-                        ? "success"
-                        : ("warn" as const)
-                    }
-                  >
-                    {MEMBER_PHASE_LABELS[next.phase]}
-                  </Badge>
-                )}
-                <span className={styles.mmUrgentItemNext}>
-                  {next ? `→ ${next.label}` : "All steps complete"}
-                </span>
-                <span className={styles.mmUrgentItemStale}>{stale}</span>
-                <span className={styles.mmUrgentItemMeta}>
-                  {m.owner ?? "—"}
-                </span>
-              </button>
-              <button
-                type="button"
-                className={styles.mmUrgentResolveBtn}
-                onClick={() => onResolveMember(m.id)}
-                title="Mark resolved — bumps Last contact to today, dropping it off the urgent list."
-              >
-                Resolved
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
 
 type FilterOption = { id: string; label: string };
 

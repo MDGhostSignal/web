@@ -159,6 +159,13 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
     if (MEMBER_PHASES.includes(v)) out.phase = v;
   }
 
+  // Traffic-light response bucket — enum-checked, NULL clears it.
+  if (input.response_kind === "no" || input.response_kind === "interested") {
+    out.response_kind = input.response_kind;
+  } else if (input.response_kind === null) {
+    out.response_kind = null;
+  }
+
   if (Array.isArray(input.tags)) {
     out.tags = input.tags
       .filter((t): t is string => typeof t === "string")

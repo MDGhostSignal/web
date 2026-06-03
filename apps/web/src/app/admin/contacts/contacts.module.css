@@ -1369,6 +1369,21 @@
     color 150ms ease;
 }
 
+.stepperFullCircleClickable {
+  cursor: pointer;
+  font: inherit;
+}
+
+.stepperFullCircleClickable:hover {
+  border-color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+
+.stepperFullCircleClickable:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
 .stepperFullCircleDone {
   background: var(--admin-accent);
   border-color: var(--admin-accent);
@@ -1381,6 +1396,89 @@
   color: var(--admin-accent);
   width: 36px;
   height: 36px;
+}
+
+/* =============================================================================
+   Traffic-light tints — applied via `data-tint` on each circle.
+   Override the default accent-based styling so each position carries
+   its own identity: gray (discern) → yellow (reached out) → red
+   (replied no) → green (replied interested).
+
+   Order: tint base → done variant → current variant. Specificity is
+   raised with `[data-tint]` so these win over the generic
+   `.stepperFullCircleDone` / `.stepperFullCircleCurrent` above.
+   ============================================================================= */
+
+/* ---- Neutral (Discern) — gray waiting state ----
+   Current = same fill as done + outer ring marking "you are here". */
+.stepperFullCircle[data-tint="neutral"].stepperFullCircleDone,
+.stepperFullCircle[data-tint="neutral"].stepperFullCircleCurrent {
+  background: var(--admin-text-muted);
+  border-color: var(--admin-text-muted);
+  color: var(--admin-bg);
+}
+.stepperFullCircle[data-tint="neutral"].stepperFullCircleCurrent {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Warn (Reached out) — yellow in-progress ---- */
+.stepperFullCircle[data-tint="warn"].stepperFullCircleDone,
+.stepperFullCircle[data-tint="warn"].stepperFullCircleCurrent {
+  background: var(--admin-warn);
+  border-color: var(--admin-warn);
+  color: var(--admin-bg);
+}
+.stepperFullCircle[data-tint="warn"].stepperFullCircleCurrent {
+  box-shadow: 0 0 0 3px var(--admin-warn-soft);
+}
+
+/* ---- Danger (Replied no) — red rejection ---- */
+.stepperFullCircle[data-tint="danger"].stepperFullCircleDone,
+.stepperFullCircle[data-tint="danger"].stepperFullCircleCurrent {
+  background: var(--admin-destructive);
+  border-color: var(--admin-destructive);
+  color: var(--admin-bg);
+}
+.stepperFullCircle[data-tint="danger"].stepperFullCircleCurrent {
+  box-shadow: 0 0 0 3px var(--admin-destructive-soft);
+}
+
+/* ---- Success (Replied interested) — green positive ---- */
+.stepperFullCircle[data-tint="success"].stepperFullCircleDone,
+.stepperFullCircle[data-tint="success"].stepperFullCircleCurrent {
+  background: var(--admin-success);
+  border-color: var(--admin-success);
+  color: var(--admin-bg);
+}
+.stepperFullCircle[data-tint="success"].stepperFullCircleCurrent {
+  box-shadow: 0 0 0 3px var(--admin-success-soft);
+}
+
+/* Idle (upcoming) state: faint tinted ring so the four-light pattern
+   is still scannable when the contact is only mid-way through. */
+.stepperFullCircle[data-tint="warn"]:not(.stepperFullCircleDone):not(.stepperFullCircleCurrent) {
+  border-color: var(--admin-warn-soft);
+}
+.stepperFullCircle[data-tint="danger"]:not(.stepperFullCircleDone):not(.stepperFullCircleCurrent) {
+  border-color: var(--admin-destructive-soft);
+}
+.stepperFullCircle[data-tint="success"]:not(.stepperFullCircleDone):not(.stepperFullCircleCurrent) {
+  border-color: var(--admin-success-soft);
+}
+
+/* Compact pip tints — mirror the same color identity in the row-level
+   stepper that lives in the table column. */
+.stepperCompactPip[data-tint="warn"].stepperCompactPipCurrent,
+.stepperCompactPip[data-tint="warn"].stepperCompactPipDone {
+  background: var(--admin-warn);
+}
+.stepperCompactPip[data-tint="danger"].stepperCompactPipCurrent,
+.stepperCompactPip[data-tint="danger"].stepperCompactPipDone {
+  background: var(--admin-destructive);
+}
+.stepperCompactPip[data-tint="success"].stepperCompactPipCurrent,
+.stepperCompactPip[data-tint="success"].stepperCompactPipDone {
+  background: var(--admin-success);
 }
 
 .stepperFullStepLabel {

@@ -11,6 +11,7 @@
 export { AdminShell } from "./AdminShell";
 
 export { AlertsBell } from "./AlertsBell";
+export { ShortcutHelp } from "./ShortcutHelp";
 
 export { StaleBadge, useAlertedMembers } from "./StaleBadge";
 

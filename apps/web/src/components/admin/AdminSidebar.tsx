@@ -30,6 +30,11 @@ type Props = {
   /** Mobile drawer open state. Ignored at ≥768 px (sidebar always visible). */
   open: boolean;
   onClose: () => void;
+  /** Desktop collapsed state (icon-rail mode). Ignored at ≤768 px
+   *  where the sidebar is a full-width drawer regardless. */
+  collapsed: boolean;
+  /** Toggle handler for the collapse/expand footer button. */
+  onToggleCollapsed: () => void;
 };
 
 /**
@@ -43,7 +48,13 @@ type Props = {
  * navigate into Marketing, Marketing expands; everywhere else it's
  * collapsed.
  */
-export function AdminSidebar({ nav, open, onClose }: Props) {
+export function AdminSidebar({
+  nav,
+  open,
+  onClose,
+  collapsed,
+  onToggleCollapsed,
+}: Props) {
   const pathname = usePathname() ?? "";
   const searchParams = useSearchParams();
   const searchParamsString = searchParams ? searchParams.toString() : "";
@@ -91,6 +102,7 @@ export function AdminSidebar({ nav, open, onClose }: Props) {
       <aside
         className={styles.sidebar}
         data-open={open ? "true" : "false"}
+        data-collapsed={collapsed ? "true" : "false"}
         aria-label="Admin sections"
       >
         <div className={styles.mobileHeader}>
@@ -105,6 +117,35 @@ export function AdminSidebar({ nav, open, onClose }: Props) {
           </button>
         </div>
 
+        {/* Desktop-only collapse/expand toggle, pinned to the top of
+            the sidebar above the nav list. Hidden on mobile (the drawer
+            has its own close button in the header). Keyboard shortcut:
+            Ctrl/Cmd + B. */}
+        <div className={styles.toggleBar}>
+          <button
+            type="button"
+            className={styles.collapseBtn}
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={
+              collapsed
+                ? "Expand sidebar (Ctrl/⌘+B)"
+                : "Collapse sidebar (Ctrl/⌘+B)"
+            }
+          >
+            <span
+              className={[
+                styles.collapseGlyph,
+                collapsed ? styles.collapseGlyphExpand : "",
+              ].join(" ")}
+              aria-hidden="true"
+            >
+              <IconChevron className={styles.iconSm} />
+            </span>
+            <span className={styles.collapseLabel}>Collapse</span>
+          </button>
+        </div>
+
         <nav className={styles.nav}>
           <ul className={styles.list}>
             {nav.map((item) => (
@@ -113,6 +154,7 @@ export function AdminSidebar({ nav, open, onClose }: Props) {
                 item={item}
                 pathname={pathname}
                 searchParams={searchParamsString}
+                collapsed={collapsed}
               />
             ))}
           </ul>
@@ -163,10 +205,12 @@ function NavRow({
   item,
   pathname,
   searchParams,
+  collapsed,
 }: {
   item: AdminNavItem;
   pathname: string;
   searchParams: string;
+  collapsed: boolean;
 }) {
   const currentSearch = new URLSearchParams(searchParams);
   const isExactActive = pathname === item.href;
@@ -213,6 +257,7 @@ function NavRow({
         aria-current={parentIsActive ? "page" : undefined}
         aria-expanded={item.children ? expanded : undefined}
         aria-controls={item.children ? groupId : undefined}
+        title={collapsed ? item.label : undefined}
       >
         <span className={styles.icon} aria-hidden="true">
           {item.icon}
