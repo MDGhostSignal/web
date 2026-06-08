@@ -19,8 +19,11 @@ src/components/rq/
 src/app/xq-quiz/
 
 # XQ Characters gallery: extends the --xq-* token namespace; review
-# surface for the 8 archetype illustrations + spectrum map.
+# surface for the 8 archetype illustrations + spectrum map. The v2
+# variant (xq-characters2) renders the same content with 3D-style
+# SVG illustrations.
 src/app/xq-characters/
+src/app/xq-characters2/
 src/components/xq/
 
 # Design-system showcase page: --ds-* tokens, internal tooling page

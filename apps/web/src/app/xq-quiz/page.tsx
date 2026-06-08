@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 
+import FogOverlay from "@/app/FogOverlay";
 import { BRAND, PHASE2_QUESTIONS } from "@/lib/xq/constants";
 import {
   computeXQ,
@@ -179,6 +180,20 @@ export default function XQQuizPage() {
 
   return (
     <div className="xq-page">
+      {/* Grok-inspired homepage hero scene from the very first website
+          drafts — large GHOSTSignal wordmark drifted behind the
+          FogOverlay (WebGL FBM-noise wisp shader). The wordmark sits
+          beneath the fog so the wisps drift IN FRONT of the text,
+          creating the dissolve-into-fog effect. */}
+      <div className="xq-wordmark-scene" aria-hidden="true">
+        <span className="xq-wordmark-text">
+          <span className="xq-wordmark-ghost">GHOST</span>
+          <span className="xq-wordmark-signal">Signal</span>
+        </span>
+      </div>
+      <div className="xq-fog-wrap" aria-hidden="true">
+        <FogOverlay />
+      </div>
       <div className="xq-container">
         {stage !== "intro" && stage !== "results" && (
           <>

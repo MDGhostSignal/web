@@ -50,6 +50,62 @@ html:has(.xq-page) {
   color: var(--xq-text);
   font-family: var(--xq-font);
   padding: 80px 24px 100px;
+  position: relative;
+  isolation: isolate;
+}
+
+/* GHOSTSignal wordmark backdrop — huge brand text fixed-centered in
+ * the viewport, sitting BEHIND the fog so the WebGL wisps drift in
+ * front. Recreates the Grok-style "wordmark emerging from rising
+ * fog" effect from the very first hero drafts. */
+.xq-wordmark-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.xq-wordmark-text {
+  font-family: var(--xq-font);
+  font-size: clamp(72px, 16vw, 220px);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.13);
+  text-shadow:
+    0 8px 32px rgba(159, 113, 175, 0.35),
+    0 0 80px rgba(159, 113, 175, 0.2);
+}
+
+.xq-wordmark-ghost {
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.xq-wordmark-signal {
+  font-weight: 200;
+  font-style: italic;
+}
+
+/* 3D mist/fog overlay — fixed to the viewport so it persists across
+ * scroll. Sits ABOVE the wordmark (z-index 1) so the WebGL wisps
+ * drift in front of the text and dissolve it into the mist.
+ * FogOverlay itself is position:absolute inside this wrapper. */
+.xq-fog-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.xq-container {
+  position: relative;
+  z-index: 2;
 }
 
 /* --- Back-home pill (mirrors .rq-back-home) ---------------------- */

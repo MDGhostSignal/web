@@ -10,6 +10,8 @@ import {
 import { CHARACTERS } from "@/lib/xq/characters";
 import type { XQResult } from "@/lib/xq/scoring";
 
+import { XQCharacter3D } from "@/components/xq/XQCharacter3D";
+
 type Props = {
   result: XQResult;
   /** Inline submit status — surfaces "sending…", "sent ✓", or error
@@ -18,6 +20,11 @@ type Props = {
     | { type: "idle" | "submitting" }
     | { type: "success"; message: string }
     | { type: "error"; message: string };
+  /** Which character renderer to use for the reveal portrait + map
+   *  thumbnails. Defaults to "line-art" (XQCharacter). The
+   *  /xq-characters2 preview passes "3d" to swap in XQCharacter3D.
+   *  String discriminator for RSC serializability. */
+  variant?: "line-art" | "3d";
 };
 
 const SECTION_DEFS = [
@@ -86,9 +93,14 @@ function toSpectrumPosition(
  * every tinted detail (hero gradient, taglines, bucket dots) picks up
  * the persona color so the result feels personalised.
  */
-export function ResultsScreen({ result, submitStatus }: Props) {
+export function ResultsScreen({
+  result,
+  submitStatus,
+  variant = "line-art",
+}: Props) {
   const identity = CHARACTERS[result.code];
   const position = toSpectrumPosition(result.details);
+  const CharacterRenderer = variant === "3d" ? XQCharacter3D : XQCharacter;
 
   return (
     <div
@@ -108,7 +120,7 @@ export function ResultsScreen({ result, submitStatus }: Props) {
         <div className="xq-reveal-portrait-frame">
           <div className="xq-reveal-glow" aria-hidden="true" />
           <div className="xq-reveal-portrait">
-            <XQCharacter code={result.code} />
+            <CharacterRenderer code={result.code} />
           </div>
         </div>
         <div className="xq-reveal-title">
@@ -142,7 +154,11 @@ export function ResultsScreen({ result, submitStatus }: Props) {
           </p>
         </div>
         <div className="xq-reveal-map-wrap">
-          <XQSpectrumMap position={position} highlight={result.code} />
+          <XQSpectrumMap
+            position={position}
+            highlight={result.code}
+            variant={variant}
+          />
         </div>
       </section>
 

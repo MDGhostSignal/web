@@ -841,6 +841,17 @@ function MembersTable({
       key: "last_contact",
       header: "Last contact",
       variant: "muted",
+      // Sort by ISO date string — same ordering as chronological since
+      // ISO is lexicographically sortable. Empty / null values sort to
+      // the bottom on asc (never-contacted rows park at the end) and
+      // to the top on desc (matching the Owner-column convention).
+      sort: (a, b) => {
+        const av = a.last_contact_at ?? "";
+        const bv = b.last_contact_at ?? "";
+        if (av === "" && bv !== "") return 1;
+        if (bv === "" && av !== "") return -1;
+        return av.localeCompare(bv);
+      },
       cell: (m) => (
         <span className={styles.date}>{formatDate(m.last_contact_at)}</span>
       ),
