@@ -2,8 +2,10 @@
 
 import { Fragment, useMemo, useState } from "react";
 
-import FogOverlay from "@/app/FogOverlay";
 import { BRAND, PHASE2_QUESTIONS } from "@/lib/xq/constants";
+
+import XQFog from "./XQFog";
+import XQFogParticles from "./XQFogParticles";
 import {
   computeXQ,
   extractValuesPool,
@@ -180,20 +182,19 @@ export default function XQQuizPage() {
 
   return (
     <div className="xq-page">
-      {/* Grok-inspired homepage hero scene from the very first website
-          drafts — large GHOSTSignal wordmark drifted behind the
-          FogOverlay (WebGL FBM-noise wisp shader). The wordmark sits
-          beneath the fog so the wisps drift IN FRONT of the text,
-          creating the dissolve-into-fog effect. */}
-      <div className="xq-wordmark-scene" aria-hidden="true">
-        <span className="xq-wordmark-text">
-          <span className="xq-wordmark-ghost">GHOST</span>
-          <span className="xq-wordmark-signal">Signal</span>
-        </span>
-      </div>
-      <div className="xq-fog-wrap" aria-hidden="true">
-        <FogOverlay />
-      </div>
+      {/* Fog + particles backdrop — ONLY on the intro stage. The XQ
+          wordmark is now an in-flow hero inside IntroStep, not a
+          fixed backdrop layer. */}
+      {stage === "intro" && (
+        <>
+          <div className="xq-fog-wrap" aria-hidden="true">
+            <XQFog />
+          </div>
+          <div className="xq-particles-wrap" aria-hidden="true">
+            <XQFogParticles />
+          </div>
+        </>
+      )}
       <div className="xq-container">
         {stage !== "intro" && stage !== "results" && (
           <>

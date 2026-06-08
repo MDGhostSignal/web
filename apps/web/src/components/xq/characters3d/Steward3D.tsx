@@ -9,7 +9,6 @@
 
 import {
   Frame3D,
-  GlowStar,
   Link,
   OrbitalHalo,
   Star,

@@ -12,16 +12,11 @@ type Props = {
 export function IntroStep({ onBegin }: Props) {
   return (
     <section className="xq-intro">
-      <div className="xq-result-tag">The Conviction Quotient</div>
-      <h1>
-        Welcome to the{" "}
-        <span className="gs-brand">
-          <span className="gs-brand-ghost">GHOST</span>
-          <span className="gs-brand-signal">Signal</span>
-        </span>
-        <br />
-        Conviction Quotient
+      {/* X and Q — hero headline, lit by the fog from the right side */}
+      <h1 className="xq-intro-hero" aria-label="The Conviction Quotient">
+        XQ
       </h1>
+      <div className="xq-intro-eyebrow">The Conviction Quotient</div>
 
       <p className="xq-intro-sub">
         An advanced psychometric audit of the strategic convictions and

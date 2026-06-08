@@ -7,9 +7,16 @@
  * cards, stress-test checkbox grids, archetype dossier with 4 value
  * buckets) get the layout they need. */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@400;600;700;800;900&display=swap');
 
 :root {
+  /* Hero XQ headline sizing — viewport-relative so the letters scale
+   * with the screen. Min/max keep the letters legibly huge on phones
+   * and capped on ultrawide. Letter-spacing tight so X and Q sit
+   * close together as a single hero glyph pair. */
+  --xq-hero-size: clamp(110px, 19vw, 320px);
+  --xq-hero-letter-spacing: -0.05em;
+
   /* XQ accent — brand purple, deliberately distinct from RQ's orange.
    * Convictions read as interior/reflective; purple matches that
    * register. The result-themed wrapper overrides this per-archetype. */
@@ -54,58 +61,97 @@ html:has(.xq-page) {
   isolation: isolate;
 }
 
-/* GHOSTSignal wordmark backdrop — huge brand text fixed-centered in
- * the viewport, sitting BEHIND the fog so the WebGL wisps drift in
- * front. Recreates the Grok-style "wordmark emerging from rising
- * fog" effect from the very first hero drafts. */
-.xq-wordmark-scene {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  user-select: none;
-}
-
-.xq-wordmark-text {
-  font-family: var(--xq-font);
-  font-size: clamp(72px, 16vw, 220px);
-  letter-spacing: -0.04em;
-  line-height: 1;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.13);
-  text-shadow:
-    0 8px 32px rgba(159, 113, 175, 0.35),
-    0 0 80px rgba(159, 113, 175, 0.2);
-}
-
-.xq-wordmark-ghost {
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.xq-wordmark-signal {
-  font-weight: 200;
+/* In-flow XQ hero heading inside IntroStep — replaces the previous
+ * fixed-position backdrop wordmark. Sits as the hero centerpiece;
+ * the eyebrow, intro copy, and CTA flow below it. Lit from the
+ * right (where the fog light source is): linear gradient fills the
+ * letters left-to-right dark→light, and drop-shadow filters cast a
+ * right-side highlight + left-side shadow for 3D form. */
+.xq-intro-hero {
+  font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--xq-hero-size);
+  font-weight: 900;
   font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: var(--xq-hero-letter-spacing);
+  line-height: 0.88;
+  /* Break out of the 860px content column so the viewport-relative
+   * size actually scales to the full viewport width. Centered via
+   * left:50% + translateX(-50%) trick. */
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  max-width: 100vw;
+  /* Pull the X/Q up so the hero sits high on the page */
+  margin: -80px 0 40px;
+  text-align: center;
+  overflow: visible;
+
+  /* Left-to-right brightness gradient — letters darker on the left
+   * side (away from the light source), brighter on the right. */
+  background: linear-gradient(
+    95deg,
+    rgba(150, 140, 175, 1) 0%,
+    rgba(195, 180, 220, 1) 35%,
+    rgba(235, 220, 250, 1) 70%,
+    rgba(255, 245, 255, 1) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+
+  /* Drop-shadow filters work on the gradient-clipped glyphs:
+   * left-side dark shadow (away from light) + right-side tinted
+   * highlight (toward light) + soft ambient glow underneath. */
+  filter:
+    drop-shadow(-4px 0 0 rgba(0, 0, 0, 0.78))
+    drop-shadow(-8px 0 10px rgba(0, 0, 0, 0.42))
+    drop-shadow(3px 0 0 rgba(220, 200, 250, 0.32))
+    drop-shadow(6px 0 6px rgba(180, 140, 220, 0.24))
+    drop-shadow(0 18px 36px rgba(120, 80, 180, 0.28));
 }
 
-/* 3D mist/fog overlay — fixed to the viewport so it persists across
- * scroll. Sits ABOVE the wordmark (z-index 1) so the WebGL wisps
- * drift in front of the text and dissolve it into the mist.
- * FogOverlay itself is position:absolute inside this wrapper. */
+.xq-intro-eyebrow {
+  font-family: var(--xq-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--xq-accent);
+  margin-bottom: 18px;
+  opacity: 0.85;
+}
+
+/* (Legacy .xq-wordmark-scene / .xq-wordmark-text rules removed —
+ * the wordmark now renders in-flow inside IntroStep via
+ * .xq-intro-hero, so those selectors no longer matched any markup.) */
+
+/* SimpleFog wrapper — fixed to the viewport so the interactive
+ * shader persists across quiz scroll. The canvas inside is itself
+ * `fixed inset-0` so this wrapper mostly carries z-index + cursor
+ * accessibility. pointer-events: auto so the cursor reaches the
+ * canvas for the mouse-driven fog emission. */
 .xq-fog-wrap {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+/* Particle overlay sits above the wordmark so wisps drift across
+ * the letter silhouettes. Non-interactive — mouse still reaches
+ * the fluid fog beneath. */
+.xq-particles-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
   pointer-events: none;
-  opacity: 0.75;
 }
 
 .xq-container {
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 /* --- Back-home pill (mirrors .rq-back-home) ---------------------- */
@@ -446,8 +492,13 @@ html:has(.xq-page) {
   text-align: center;
   max-width: 720px;
   margin: 60px auto 0;
+  /* Allow the XQ hero to break out of the 720px width */
+  overflow: visible;
 }
-.xq-intro h1 {
+/* Generic intro h1 — applies to old "Welcome" markup if present.
+ * EXCLUDES the new .xq-intro-hero variant so the hero size token
+ * isn't overridden by descendant specificity. */
+.xq-intro h1:not(.xq-intro-hero) {
   font-size: 38px;
   font-weight: 700;
   letter-spacing: -0.02em;
