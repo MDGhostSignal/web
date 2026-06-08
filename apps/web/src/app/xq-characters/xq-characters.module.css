@@ -1,0 +1,448 @@
+/* XQ Characters gallery — public review surface for the 8 archetype
+ * illustrations. Uses the same dark palette and Inter type as the
+ * /xq-quiz surface so the two pages feel like one product. Per-card
+ * accent comes through the --card-accent CSS variable set inline
+ * from the page component (one of the 8 brand-aligned hues).
+ *
+ * Scoped via CSS module — class names are local; raw px is allowed
+ * in this directory (see apps/web/.stylelintignore).
+ */
+
+.page {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, #14181c, #0b0f12 70%);
+  color: #ffffff;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 80px 24px 100px;
+}
+
+.backHome {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #bcbcbc;
+  font-family: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+
+.backHome:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.main {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ---------------- Page header ---------------- */
+
+.header {
+  text-align: center;
+  margin: 40px 0 72px;
+  padding: 0 16px;
+}
+
+.eyebrow {
+  font-family: "Inter", ui-monospace, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: #fbad25;
+  margin-bottom: 14px;
+}
+
+.title {
+  margin: 0 0 18px;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.lede {
+  max-width: 640px;
+  margin: 0 auto 28px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #bcbcbc;
+}
+
+.lede strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.headerLinks {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryCta {
+  display: inline-block;
+  padding: 12px 22px;
+  background: #fbad25;
+  color: #081014;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.primaryCta:hover {
+  filter: brightness(1.06);
+}
+
+.primaryCta:active {
+  transform: translateY(1px);
+}
+
+/* ---------------- Spectrum map section ---------------- */
+
+.mapSection {
+  margin-bottom: 80px;
+}
+
+.mapHeader {
+  margin: 0 auto 32px;
+  max-width: 760px;
+  text-align: center;
+}
+
+.mapWrap {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.025),
+    rgba(11, 15, 18, 0.4)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 24px;
+  /* overflow: visible so anchor hover drop-shadows aren't clipped at
+   * the map container edges. */
+  overflow: visible;
+}
+
+@media (max-width: 720px) {
+  .mapWrap {
+    padding: 12px;
+  }
+}
+
+/* ---------------- Quartet groups ---------------- */
+
+.group {
+  margin-bottom: 80px;
+}
+
+.groupHeader {
+  margin: 0 auto 32px;
+  max-width: 720px;
+  text-align: center;
+}
+
+.groupTag {
+  display: inline-block;
+  font-family: "Inter", ui-monospace, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: #bcbcbc;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.groupTitle {
+  margin: 0 0 10px;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.groupLede {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #bcbcbc;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 22px;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+/* ---------------- Archetype card ---------------- */
+
+.card {
+  --card-accent: #fbad25;
+  --card-accent-soft: rgba(251, 173, 37, 0.18);
+
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 22px;
+  padding: 24px;
+  background: linear-gradient(
+    135deg,
+    var(--card-accent-soft),
+    rgba(16, 23, 28, 0.4) 60%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  border: 1px solid var(--card-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card:hover::before {
+  opacity: 0.4;
+}
+
+@media (max-width: 540px) {
+  .card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+/* ---------------- Card illustration ---------------- */
+
+.cardIllustration {
+  width: 200px;
+  height: 240px;
+  background: radial-gradient(
+    circle at center,
+    var(--card-accent-soft),
+    rgba(11, 15, 18, 0.2) 70%
+  );
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  flex-shrink: 0;
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.cardIllustration:hover {
+  border-color: var(--card-accent);
+  transform: scale(1.02);
+}
+
+.previewHint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translate(-50%, 6px);
+  font-family: "Inter", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--card-accent);
+  opacity: 0;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.cardIllustration:hover .previewHint {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 540px) {
+  .cardIllustration {
+    width: 100%;
+    max-width: 240px;
+    margin: 0 auto;
+  }
+}
+
+/* ---------------- Card body ---------------- */
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.codeChip {
+  font-family: "Inter", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  color: var(--card-accent);
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--card-accent);
+  border-radius: 999px;
+}
+
+.accentDot {
+  width: 12px;
+  height: 12px;
+  background: var(--card-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--card-accent-soft);
+}
+
+.cardName {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.cardTagline {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--card-accent);
+  opacity: 0.9;
+}
+
+.axisChips {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  font-family: "Inter", ui-monospace, monospace;
+  letter-spacing: 0.6px;
+  align-self: flex-start;
+}
+
+@media (max-width: 540px) {
+  .axisChips {
+    align-self: center;
+  }
+}
+
+.axisChip {
+  color: #ffffff;
+}
+
+.axisDivider {
+  color: #6a7886;
+}
+
+.cardDesc {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #bcbcbc;
+}
+
+.propRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 3px solid var(--card-accent);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.propLabel {
+  font-family: "Inter", ui-monospace, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--card-accent);
+  opacity: 0.85;
+}
+
+.propValue {
+  font-size: 13.5px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.brief {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #8b97a3;
+  font-style: italic;
+}
+
+.briefLabel {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--card-accent);
+  opacity: 0.85;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+}
+
+/* ---------------- Footer ---------------- */
+
+.footer {
+  margin: 40px auto 0;
+  max-width: 720px;
+  text-align: center;
+}
+
+.footerNote {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6a7886;
+  font-style: italic;
+  line-height: 1.6;
+}

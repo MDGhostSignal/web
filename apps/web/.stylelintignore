@@ -18,6 +18,11 @@ src/components/rq/
 # system tuned to match the RQ quiz visual language.
 src/app/xq-quiz/
 
+# XQ Characters gallery: extends the --xq-* token namespace; review
+# surface for the 8 archetype illustrations + spectrum map.
+src/app/xq-characters/
+src/components/xq/
+
 # Design-system showcase page: --ds-* tokens, internal tooling page
 # that demonstrates the public token system without consuming it.
 src/app/design-system/

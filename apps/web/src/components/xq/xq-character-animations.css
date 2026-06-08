@@ -1,0 +1,298 @@
+/**
+ * XQ Character Animations — v2 (amplified).
+ *
+ * v1 amplitudes were too small to read at gallery thumbnail sizes
+ * (240×280 SVG rendered into 200×240 cards). v2 widens every
+ * keyframe range so the motion is visible without losing the slow,
+ * tasteful pacing. Parent-group opacity dampeners in the character
+ * SVG files were also removed in tandem.
+ *
+ * Honors prefers-reduced-motion at the bottom of the file.
+ */
+
+/* ============================================================
+ * STEWARD — flame dances inside the lantern.
+ * ============================================================ */
+
+/* Real candle flicker — opacity-heavy, vertical scaleY only (no lateral
+ * drift). Prime-spaced keyframes give the irregular cadence a real
+ * flame has, not a perfect sine wave. */
+@keyframes xq-steward-flame {
+  0%   { opacity: 1;    transform: scaleY(1);    }
+  7%   { opacity: 0.78; transform: scaleY(1.06); }
+  13%  { opacity: 0.95; transform: scaleY(0.96); }
+  21%  { opacity: 0.55; transform: scaleY(1.12); }
+  28%  { opacity: 0.9;  transform: scaleY(0.94); }
+  37%  { opacity: 0.45; transform: scaleY(1.15); }
+  46%  { opacity: 0.88; transform: scaleY(0.97); }
+  55%  { opacity: 1;    transform: scaleY(1.04); }
+  63%  { opacity: 0.6;  transform: scaleY(0.92); }
+  72%  { opacity: 0.92; transform: scaleY(1.08); }
+  80%  { opacity: 0.7;  transform: scaleY(1.01); }
+  90%  { opacity: 0.98; transform: scaleY(0.98); }
+  100% { opacity: 1;    transform: scaleY(1);    }
+}
+/* Glow oscillates on a slower, smoother rhythm so the core flicker
+ * reads as the "active" element while the halo breathes around it. */
+@keyframes xq-steward-flame-glow {
+  0%, 100% { opacity: 0.15; }
+  25%      { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+  75%      { opacity: 0.4; }
+}
+
+.xq-anim-steward-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  /* Slow flicker — 5.5s gives the candle a meditative cadence */
+  animation: xq-steward-flame 5.5s linear infinite;
+}
+.xq-anim-steward-flame-glow {
+  /* Halo breathes on a slower, offset cycle so it never syncs
+   * with the core flicker. Creates the perception of a soft
+   * radiance independent of the flame itself. */
+  animation: xq-steward-flame-glow 7s ease-in-out infinite;
+}
+
+/* ============================================================
+ * SHEPHERD — flock breathes with opacity + scale pulse on a stagger.
+ * ============================================================ */
+
+@keyframes xq-shepherd-flock {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1.3); }
+}
+
+.xq-anim-shepherd-dot {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-shepherd-flock 5.4s ease-in-out infinite;
+}
+.xq-anim-shepherd-dot[data-i="0"] { animation-delay: 0s; }
+.xq-anim-shepherd-dot[data-i="1"] { animation-delay: 0.45s; }
+.xq-anim-shepherd-dot[data-i="2"] { animation-delay: 0.9s; }
+.xq-anim-shepherd-dot[data-i="3"] { animation-delay: 1.35s; }
+.xq-anim-shepherd-dot[data-i="4"] { animation-delay: 1.8s; }
+.xq-anim-shepherd-dot[data-i="5"] { animation-delay: 2.25s; }
+
+/* ============================================================
+ * CONSERVATOR — compass hinge rocks ±5° (visible drafting motion).
+ * ============================================================ */
+
+@keyframes xq-conservator-compass {
+  0%, 100% { transform: translateX(-8px) rotate(-7deg); }
+  50%      { transform: translateX(8px) rotate(7deg); }
+}
+
+.xq-anim-conservator-compass {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: xq-conservator-compass 7s ease-in-out infinite;
+}
+
+/* ============================================================
+ * INSTITUTION BUILDER — blueprint scan, wider sweep + brighter peak.
+ * ============================================================ */
+
+@keyframes xq-institution-scan {
+  0%   { transform: translateX(-36px); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(36px); opacity: 0; }
+}
+
+/* Pulsing room markers — three dots that light up in sequence,
+ * suggesting the planner verifying each room on the blueprint. */
+@keyframes xq-institution-marker {
+  0%, 100% { opacity: 0;   transform: scale(0.6); }
+  20%      { opacity: 1;   transform: scale(1.2); }
+  60%      { opacity: 0;   transform: scale(0.6); }
+}
+
+/* Pillar capital breathe — slow opacity oscillation on the heavy
+ * top/bottom bars of each pillar. Stagger between pillars. */
+@keyframes xq-institution-capital {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+.xq-anim-institution-scan {
+  animation: xq-institution-scan 6.5s ease-in-out infinite;
+}
+
+.xq-anim-institution-marker {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-institution-marker 4.5s ease-in-out infinite;
+}
+.xq-anim-institution-marker[data-i="0"] { animation-delay: 0s; }
+.xq-anim-institution-marker[data-i="1"] { animation-delay: 1.5s; }
+.xq-anim-institution-marker[data-i="2"] { animation-delay: 3s; }
+
+.xq-anim-institution-capital {
+  animation: xq-institution-capital 5.5s ease-in-out infinite;
+}
+.xq-anim-institution-capital[data-i="0"] { animation-delay: 0s; }
+.xq-anim-institution-capital[data-i="1"] { animation-delay: 1.8s; }
+.xq-anim-institution-capital[data-i="2"] { animation-delay: 3.6s; }
+.xq-anim-institution-capital[data-i="3"] { animation-delay: 5.4s; }
+
+/* ============================================================
+ * ARTISAN REFORMER — brush strokes draw in fully, then fade.
+ * ============================================================ */
+
+@keyframes xq-artisan-stroke {
+  0%   { opacity: 0; stroke-dashoffset: 60; }
+  18%  { opacity: 1; stroke-dashoffset: 0; }
+  62%  { opacity: 1; stroke-dashoffset: 0; }
+  88%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.xq-anim-artisan-stroke {
+  stroke-dasharray: 60;
+  animation: xq-artisan-stroke 8s ease-in-out infinite;
+}
+.xq-anim-artisan-stroke[data-i="0"] { animation-delay: 0s; }
+.xq-anim-artisan-stroke[data-i="1"] { animation-delay: 1.4s; }
+.xq-anim-artisan-stroke[data-i="2"] { animation-delay: 2.8s; }
+
+/* ============================================================
+ * CATALYST — sparks drift outward with larger displacement.
+ * ============================================================ */
+
+@keyframes xq-catalyst-spark {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(20px, -14px); opacity: 0; }
+}
+@keyframes xq-catalyst-line {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+  50%      { opacity: 1;   transform: scaleX(1.2); }
+}
+
+.xq-anim-catalyst-spark {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-catalyst-spark 3.6s ease-out infinite;
+}
+.xq-anim-catalyst-spark[data-i="0"] { animation-delay: 0s; }
+.xq-anim-catalyst-spark[data-i="1"] { animation-delay: 0.45s; }
+.xq-anim-catalyst-spark[data-i="2"] { animation-delay: 0.9s; }
+.xq-anim-catalyst-spark[data-i="3"] { animation-delay: 1.35s; }
+.xq-anim-catalyst-spark[data-i="4"] { animation-delay: 1.8s; }
+
+.xq-anim-catalyst-line {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+  animation: xq-catalyst-line 3.6s ease-in-out infinite;
+}
+.xq-anim-catalyst-line[data-i="0"] { animation-delay: 0s; }
+.xq-anim-catalyst-line[data-i="1"] { animation-delay: 0.3s; }
+.xq-anim-catalyst-line[data-i="2"] { animation-delay: 0.6s; }
+.xq-anim-catalyst-line[data-i="3"] { animation-delay: 0.9s; }
+.xq-anim-catalyst-line[data-i="4"] { animation-delay: 1.2s; }
+
+/* ============================================================
+ * DESIGNER — curve draws in, holds, then resets. Already visible.
+ * ============================================================ */
+
+@keyframes xq-designer-curve {
+  0%   { stroke-dashoffset: 130; }
+  35%  { stroke-dashoffset: 0; }
+  75%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 130; }
+}
+
+/* Triangle ruler — visible drift + pivot as if being repositioned
+ * on the board. Different rhythm than the curve so the two
+ * animations read as separate actions, not a synced loop.
+ * Amplitudes bumped after first pass was invisible at gallery
+ * thumbnail size. */
+@keyframes xq-designer-triangle {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50%      { transform: translate(6px, -3px) rotate(-4deg); }
+}
+
+.xq-anim-designer-curve {
+  stroke-dasharray: 130;
+  animation: xq-designer-curve 9s ease-in-out infinite;
+}
+
+.xq-anim-designer-triangle {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-designer-triangle 7s ease-in-out infinite;
+}
+
+/* ============================================================
+ * ARCHITECT — nodes pulse with scale + opacity; origin breathes
+ * larger; outer ring expands further.
+ * ============================================================ */
+
+@keyframes xq-architect-node {
+  0%, 100% { opacity: 0.2; transform: scale(0.7); }
+  50%      { opacity: 1;   transform: scale(1.4); }
+}
+@keyframes xq-architect-origin {
+  0%, 100% { transform: scale(1);    opacity: 0.65; }
+  50%      { transform: scale(1.4);  opacity: 1; }
+}
+@keyframes xq-architect-origin-ring {
+  0%, 100% { opacity: 0.2; transform: scale(0.9); }
+  50%      { opacity: 0.9; transform: scale(1.6); }
+}
+
+.xq-anim-architect-node {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-architect-node 5.4s ease-in-out infinite;
+}
+.xq-anim-architect-node[data-i="0"] { animation-delay: 0s; }
+.xq-anim-architect-node[data-i="1"] { animation-delay: 0.6s; }
+.xq-anim-architect-node[data-i="2"] { animation-delay: 1.2s; }
+.xq-anim-architect-node[data-i="3"] { animation-delay: 1.8s; }
+.xq-anim-architect-node[data-i="4"] { animation-delay: 2.4s; }
+.xq-anim-architect-node[data-i="5"] { animation-delay: 3.0s; }
+.xq-anim-architect-node[data-i="6"] { animation-delay: 3.6s; }
+.xq-anim-architect-node[data-i="7"] { animation-delay: 4.2s; }
+.xq-anim-architect-node[data-i="8"] { animation-delay: 4.8s; }
+
+.xq-anim-architect-origin {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-architect-origin 4.4s ease-in-out infinite;
+}
+.xq-anim-architect-origin-ring {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: xq-architect-origin-ring 4.4s ease-in-out infinite;
+}
+
+/* ============================================================
+ * Reduced motion — kill every loop.
+ * ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .xq-anim-steward-flame,
+  .xq-anim-steward-flame-glow,
+  .xq-anim-shepherd-dot,
+  .xq-anim-conservator-compass,
+  .xq-anim-institution-scan,
+  .xq-anim-institution-marker,
+  .xq-anim-institution-capital,
+  .xq-anim-artisan-stroke,
+  .xq-anim-catalyst-spark,
+  .xq-anim-catalyst-line,
+  .xq-anim-designer-curve,
+  .xq-anim-designer-triangle,
+  .xq-anim-architect-node,
+  .xq-anim-architect-origin,
+  .xq-anim-architect-origin-ring {
+    animation: none;
+  }
+  .xq-anim-artisan-stroke,
+  .xq-anim-designer-curve {
+    stroke-dasharray: none;
+  }
+}

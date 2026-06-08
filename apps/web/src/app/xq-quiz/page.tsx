@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 import { BRAND, PHASE2_QUESTIONS } from "@/lib/xq/constants";
 import {
@@ -20,13 +20,24 @@ import { ResultsScreen } from "./ResultsScreen";
 import { EMPTY_BASICS, type Basics, type Stage } from "./types";
 import "./xq-quiz.css";
 
-const STAGE_PROGRESS: Record<Stage, number> = {
-  intro: 0,
-  contact: 12,
-  phase1: 33,
-  phase2: 60,
-  phase3: 85,
-  results: 100,
+/** Each step in the 3-phase triangulation journey. Pre-quiz stages
+ *  (intro, contact) render the stepper with no current node; results
+ *  marks every node done. */
+const STEPPER_PHASES = [
+  { num: 1, label: "Triangulation" },
+  { num: 2, label: "Diagnostic" },
+  { num: 3, label: "Stress Test" },
+] as const;
+
+/** Maps the active stage to the index of the in-progress phase
+ *  (0-based, or -1 for pre-quiz). */
+const STAGE_TO_PHASE_INDEX: Record<Stage, number> = {
+  intro: -1,
+  contact: -1,
+  phase1: 0,
+  phase2: 1,
+  phase3: 2,
+  results: 3, // past the end — every node renders as done
 };
 
 const STAGE_PHASE_LABEL: Record<Stage, string> = {
@@ -179,16 +190,40 @@ export default function XQQuizPage() {
               <div className="xq-phase-pill">{STAGE_PHASE_LABEL[stage]}</div>
             </div>
             <div
-              className="xq-progress"
+              className="xq-stepper"
               role="progressbar"
               aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={STAGE_PROGRESS[stage]}
+              aria-valuemax={STEPPER_PHASES.length}
+              aria-valuenow={Math.max(0, STAGE_TO_PHASE_INDEX[stage])}
+              aria-label="Conviction Quotient progress"
             >
-              <div
-                className="xq-progress-fill"
-                style={{ width: `${STAGE_PROGRESS[stage]}%` }}
-              />
+              {STEPPER_PHASES.map((p, i) => {
+                const active = STAGE_TO_PHASE_INDEX[stage];
+                const isDone = i < active;
+                const isCurrent = i === active;
+                const nodeClass = isDone
+                  ? "xq-stepper-node done"
+                  : isCurrent
+                    ? "xq-stepper-node current"
+                    : "xq-stepper-node";
+                return (
+                  <Fragment key={p.num}>
+                    <div className={nodeClass}>
+                      <div className="xq-stepper-dot">{p.num}</div>
+                      <div className="xq-stepper-label">{p.label}</div>
+                    </div>
+                    {i < STEPPER_PHASES.length - 1 && (
+                      <div
+                        className={
+                          i < active
+                            ? "xq-stepper-connector done"
+                            : "xq-stepper-connector"
+                        }
+                      />
+                    )}
+                  </Fragment>
+                );
+              })}
             </div>
           </>
         )}
