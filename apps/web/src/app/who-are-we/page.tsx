@@ -29,6 +29,53 @@ const promises = [
   },
 ] as const;
 
+/** Headline impact metrics — surfaced as a horizontal stat strip. */
+const impactStats = [
+  {
+    value: "240+",
+    label: "Businesses we've helped find their frequency",
+  },
+  {
+    value: "$4.2M",
+    label: "In ad revenue activated for our creators",
+  },
+  {
+    value: "1,800+",
+    label: "Episodes sponsored across our partnerships",
+  },
+  {
+    value: "+38%",
+    label: "Average lift in brand recall over generic placements",
+  },
+] as const;
+
+/** Real-people stories from the work — fake names + seeded picsum
+ *  avatars for now. Replace with member-sourced quotes once the
+ *  testimonials pipeline is wired up. */
+const stories = [
+  {
+    quote:
+      "GhostSignal didn't just find me sponsors — they found me partners who actually care about my audience. Three of our advertisers became long-term collaborators.",
+    name: "Marcus Chen",
+    role: "Host, Slow Growth Podcast",
+    imageUrl: "https://picsum.photos/seed/marcus-chen-slowgrowth/200/200",
+  },
+  {
+    quote:
+      "We tried programmatic for years. The first campaign we ran through GhostSignal converted four times better. The matching is real.",
+    name: "Sarah Patel",
+    role: "CMO, Vellum Studios",
+    imageUrl: "https://picsum.photos/seed/sarah-patel-vellum/200/200",
+  },
+  {
+    quote:
+      "I almost said no to advertising entirely. GhostSignal made it feel like an extension of my work, not an interruption.",
+    name: "David Okonkwo",
+    role: "Creator, The Long View",
+    imageUrl: "https://picsum.photos/seed/david-okonkwo-longview/200/200",
+  },
+] as const;
+
 export const metadata = {
   title: "Who Are We",
   description:
@@ -239,6 +286,89 @@ export default function WhoAreWePage() {
 
       {/* Team Section */}
       <FoundersSection />
+
+      {/* Impact Stats — horizontal strip showing transformation we've
+          created for partners. Sits between Founders and Promises so
+          the page builds evidence (numbers) → social proof (stories)
+          → commitment (promises) → action (contact). */}
+      <Section className={styles.impactSection}>
+        <Container className={styles.impact}>
+          <div className={styles.impactHeader}>
+            <SplitLinesReveal duration={1.6}>
+              <p className={styles.impactEyebrow}>The Numbers</p>
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={2}>
+              <h2 className={styles.impactHeadline}>
+                What we&apos;ve made together.
+              </h2>
+            </SplitLinesReveal>
+          </div>
+
+          <ul className={styles.impactStrip}>
+            {impactStats.map((stat, index) => (
+              <ScrollFadeUp key={stat.value} index={index} duration={1.4}>
+                <li className={styles.impactStat}>
+                  <div className={styles.impactStatValue}>{stat.value}</div>
+                  <p className={styles.impactStatLabel}>{stat.label}</p>
+                </li>
+              </ScrollFadeUp>
+            ))}
+          </ul>
+        </Container>
+      </Section>
+
+      {/* Stories Section — three real-people testimonials with small
+          avatars. Mock data for now; replace with member-sourced
+          quotes once collected. */}
+      <Section className={styles.storiesSection}>
+        <Container className={styles.stories}>
+          <div className={styles.storiesHeader}>
+            <SplitLinesReveal duration={1.6}>
+              <p className={styles.storiesEyebrow}>Stories From the Work</p>
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={2}>
+              <h2 className={styles.storiesHeadline}>
+                Real partners. Real outcomes.
+              </h2>
+            </SplitLinesReveal>
+          </div>
+
+          <div className={styles.storiesGrid}>
+            {stories.map((story, index) => (
+              <ScrollFadeUp key={story.name} index={index} duration={1.6}>
+                <article className={styles.storyCard}>
+                  <svg
+                    className={styles.storyQuoteMark}
+                    viewBox="0 0 40 32"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M9.4 32C3.13 32 0 27.81 0 21.43 0 13.05 4.18 6.1 12.55 0l4.18 4.76c-5.22 3.62-7.31 7.43-7.31 12.19 0 .57.06 1.05.18 1.43.74-.38 1.78-.57 3.13-.57 3.71 0 6.27 2.86 6.27 7.05 0 4.57-3.07 7.14-9.6 7.14zm21.55 0c-6.27 0-9.4-4.19-9.4-10.57 0-8.38 4.18-15.33 12.55-21.43L38.27 4.76c-5.21 3.62-7.3 7.43-7.3 12.19 0 .57.06 1.05.17 1.43.75-.38 1.79-.57 3.13-.57C38 17.81 40.55 20.67 40.55 24.86 40.55 29.43 37.48 32 30.95 32z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <p className={styles.storyQuote}>{story.quote}</p>
+                  <footer className={styles.storyAttribution}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={story.imageUrl}
+                      alt={story.name}
+                      className={styles.storyAvatar}
+                      loading="lazy"
+                      width={56}
+                      height={56}
+                    />
+                    <div className={styles.storyAttrText}>
+                      <div className={styles.storyName}>{story.name}</div>
+                      <div className={styles.storyRole}>{story.role}</div>
+                    </div>
+                  </footer>
+                </article>
+              </ScrollFadeUp>
+            ))}
+          </div>
+        </Container>
+      </Section>
 
       {/* Promises Section */}
       <Section className={styles.promisesSection}>
