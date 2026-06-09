@@ -174,18 +174,31 @@ function XQ3DWordmark() {
         </linearGradient>
       </defs>
       <g clipPath="url(#xq-shimmer-clip)">
+        {/* Diagonal chrome sweep. Band runs top-right → bottom-left
+         * (`\` orientation, 28° clockwise from vertical) and travels
+         * bottom-left → top-right via parallel x + y animations.
+         * x: -350 → 1100 over the same dur, y: 320 → -220 — slope
+         * matches the band rotation so the bright stripe stays
+         * perpendicular to its motion vector. */}
         <rect
           x="-200"
           y="-200"
           width="200"
           height="640"
           fill="url(#xq-shimmer-band)"
-          transform="rotate(18 -100 120)"
+          transform="rotate(28 -100 120)"
         >
           <animate
             attributeName="x"
-            from="-300"
-            to="940"
+            from="-350"
+            to="1100"
+            dur="4.2s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="y"
+            from="320"
+            to="-220"
             dur="4.2s"
             repeatCount="indefinite"
           />
