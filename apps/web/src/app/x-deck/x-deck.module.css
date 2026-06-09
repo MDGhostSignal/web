@@ -1,0 +1,673 @@
+/* /x-deck — trading-card-game matching preview surface.
+ *
+ * Builds on the --xq-* token namespace from src/app/xq-quiz/xq-quiz.css.
+ * A handful of page-local --xd-* tokens are declared at .page :root for
+ * card geometry. Stylelint-exempt; uses raw px freely. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+
+.page {
+  --xd-card-w: 360px;
+  --xd-card-h: 504px;
+  --xd-card-radius: 14px;
+  --xd-deck-perspective: 1600px;
+  --xd-bg: #0b0f12;
+  --xd-card-bg: #14181c;
+  --xd-card-bg-strong: #1a1f25;
+  --xd-line: rgba(255, 255, 255, 0.08);
+  --xd-line-strong: rgba(255, 255, 255, 0.18);
+  --xd-text: #f4f4f6;
+  --xd-muted: #9aa0a8;
+  --xd-accent: #9F71AF;
+  --xd-font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --xd-display: 'Geist', var(--xd-font);
+  --xd-mono: 'DM Mono', ui-monospace, monospace;
+
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      ellipse 1400px 700px at 50% -10%,
+      rgba(124, 88, 214, 0.18),
+      rgba(20, 24, 28, 0) 60%
+    ),
+    radial-gradient(ellipse at top, #14181c, #0b0f12 65%);
+  color: var(--xd-text);
+  font-family: var(--xd-font);
+  padding: 48px 24px 80px;
+  position: relative;
+  isolation: isolate;
+}
+
+/* --- Hero callout: "you are ___" mock ---------------------------- */
+.hero {
+  max-width: 980px;
+  margin: 0 auto 36px;
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.heroPortrait {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(124, 88, 214, 0.32), transparent 65%),
+    var(--xd-card-bg-strong);
+  border: 1px solid var(--xd-line);
+  overflow: hidden;
+  position: relative;
+}
+.heroPortrait :global(.xq-c3d-sway) {
+  width: 100%;
+  height: 100%;
+}
+.heroEyebrow {
+  font-family: var(--xd-mono);
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  margin: 0 0 8px;
+}
+.heroTitle {
+  font-family: var(--xd-display);
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 8px;
+}
+.heroAccentName {
+  color: var(--xd-accent);
+}
+.heroSub {
+  font-size: 14.5px;
+  color: var(--xd-muted);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 540px;
+}
+
+/* --- Deck stage -------------------------------------------------- */
+.deckSectionEyebrow {
+  font-family: var(--xd-mono);
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  text-align: center;
+  margin: 0 0 6px;
+}
+.deckSectionTitle {
+  font-family: var(--xd-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--xd-text);
+  text-align: center;
+  margin: 0 0 28px;
+}
+.deckStage {
+  position: relative;
+  height: calc(var(--xd-card-h) + 80px);
+  perspective: var(--xd-deck-perspective);
+  perspective-origin: 50% 50%;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.deckStageInner {
+  position: relative;
+  width: var(--xd-card-w);
+  height: var(--xd-card-h);
+  transform-style: preserve-3d;
+}
+
+/* --- Card frame -------------------------------------------------- */
+.card {
+  position: absolute;
+  inset: 0;
+  width: var(--xd-card-w);
+  height: var(--xd-card-h);
+  border-radius: var(--xd-card-radius);
+  background:
+    linear-gradient(155deg, var(--xd-card-bg-strong) 0%, var(--xd-card-bg) 60%, #0d1216 100%);
+  border: 1px solid var(--xd-line);
+  transition: transform 540ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 540ms ease, filter 540ms ease;
+  will-change: transform, opacity;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  /* Accent comes from the card's archetype via inline style */
+  --card-accent: var(--xd-accent);
+  --card-accent-soft: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.6),
+    0 2px 0 rgba(255, 255, 255, 0.025) inset;
+}
+.card::before {
+  /* Archetype-tinted accent border — gradient stroke via mask */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    155deg,
+    var(--card-accent) 0%,
+    rgba(255, 255, 255, 0.18) 35%,
+    var(--card-accent) 65%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+.card::after {
+  /* Holographic foil — diagonal moving gradient, very subtle on
+   * non-active cards, lifts on active card via .cardActive.
+   *
+   * Seamless loop trick: `background-size: 100% 100%` makes one
+   * gradient period span exactly one card width, and `background-
+   * repeat: repeat` tiles it. Animating from 0% to 100% shifts by
+   * exactly one period — the visual state at 100% is identical to
+   * 0% because the next tile begins where the first ended. Zero
+   * stutter at loop boundary. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(255, 255, 255, 0.07) 47%,
+      rgba(255, 255, 255, 0.14) 50%,
+      rgba(255, 255, 255, 0.07) 53%,
+      transparent 62%,
+      transparent 100%
+    );
+  background-size: 100% 100%;
+  background-repeat: repeat;
+  background-position: 0% 50%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 540ms ease;
+}
+.cardActive::after {
+  opacity: 0.9;
+  animation: foilSweep 7s linear infinite;
+}
+@keyframes foilSweep {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+/* --- Card internal layout ---------------------------------------- */
+.cardTopBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--xd-line);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+.cardArchetype {
+  font-family: var(--xd-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--card-accent);
+}
+.cardArchetypeCode {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  color: var(--xd-muted);
+  margin-left: 8px;
+  letter-spacing: 1px;
+}
+.cardNumber {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--xd-muted);
+}
+
+.cardPortrait {
+  position: relative;
+  height: 218px;
+  margin: 14px 14px 0;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 30% 25%, var(--card-accent-soft), transparent 60%),
+    linear-gradient(180deg, #0e1318 0%, #0a0d11 100%);
+  overflow: hidden;
+  border: 1px solid var(--xd-line);
+}
+.cardPortrait :global(.xq-c3d-sway) {
+  width: 100%;
+  height: 100%;
+}
+.cardPortraitImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* Tiny saturation boost so cards feel a bit more vivid; subtle
+   * accent-tinted overlay sits on top via .cardPortraitGlow */
+  filter: saturate(1.05) contrast(1.02);
+}
+.cardPortraitGlow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 60%,
+    var(--card-accent-soft),
+    transparent 65%
+  );
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+.cardIdentity {
+  padding: 12px 18px 4px;
+}
+.cardName {
+  font-family: var(--xd-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--xd-text);
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cardRoleLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--xd-muted);
+  white-space: nowrap;
+}
+.cardRoleText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cardMemberChip {
+  font-family: var(--xd-mono);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--xd-text);
+  border: 1px solid var(--xd-line);
+  flex-shrink: 0;
+}
+
+.cardPitch {
+  margin: 8px 18px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--xd-muted);
+  font-style: italic;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cardGaugeWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 18px 6px;
+  margin-top: auto;
+}
+.cardGauge {
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+  position: relative;
+}
+.cardGaugeRingBg {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+.cardGaugeRingFg {
+  stroke: var(--card-accent);
+  transition: stroke-dashoffset 1200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  filter: drop-shadow(0 0 6px var(--card-accent-soft));
+}
+.cardGaugeNumber {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--xd-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--xd-text);
+  letter-spacing: -0.02em;
+}
+.cardGaugeLabel {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  line-height: 1.3;
+  max-width: 110px;
+}
+.cardGaugeLabel strong {
+  display: block;
+  color: var(--xd-text);
+  font-weight: 600;
+}
+
+.cardFooter {
+  padding: 8px 18px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--xd-mono);
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  border-top: 1px solid var(--xd-line);
+}
+.cardRarityFounding {
+  color: #FBAD25;
+  letter-spacing: 1.6px;
+}
+.cardRarityFeatured {
+  color: #c3b4dc;
+  letter-spacing: 1.6px;
+}
+
+.cardInner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Hover micro-interaction on the active card ------------------ */
+.cardActive {
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--card-accent-soft),
+    0 0 40px var(--card-accent-soft);
+}
+.cardActive:hover {
+  filter: brightness(1.04);
+}
+
+/* --- Detail panel ------------------------------------------------ */
+.detail {
+  max-width: 920px;
+  margin: 28px auto 0;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.022);
+  border: 1px solid var(--xd-line);
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 32px;
+}
+.detailHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.detailEyebrow {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+}
+.detailName {
+  font-family: var(--xd-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 2px;
+  color: var(--xd-text);
+}
+.detailOrg {
+  font-size: 14px;
+  color: var(--xd-muted);
+  margin: 0 0 18px;
+}
+.detailBio {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--xd-muted);
+  margin: 0 0 22px;
+}
+.detailAxisBlock {
+  margin-bottom: 22px;
+}
+.detailAxisTitle {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  margin: 0 0 12px;
+}
+.axisRow {
+  display: grid;
+  grid-template-columns: 90px 1fr 90px;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--xd-muted);
+  margin-bottom: 10px;
+}
+.axisRow:last-child {
+  margin-bottom: 0;
+}
+.axisLabelLeft {
+  text-align: right;
+}
+.axisTrack {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: visible;
+}
+.axisTrackMid {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.axisDot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--card-accent);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px var(--card-accent-soft);
+}
+
+.detailValues {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+.valueBucket h4 {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+.valueChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.valueChip {
+  font-size: 12px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--xd-line);
+  color: var(--xd-text);
+}
+.valueChipShared {
+  background: var(--card-accent-soft);
+  border-color: var(--card-accent);
+  color: var(--xd-text);
+  position: relative;
+}
+.valueChipShared::before {
+  content: "◆";
+  margin-right: 4px;
+  color: var(--card-accent);
+  font-size: 10px;
+}
+
+.detailCta {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.detailCtaBtn {
+  appearance: none;
+  background: var(--card-accent);
+  color: #07090b;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-family: var(--xd-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: filter 200ms ease, transform 120ms ease;
+}
+.detailCtaBtn:hover { filter: brightness(1.08); }
+.detailCtaBtn:active { transform: translateY(1px); }
+.detailCtaBtnGhost {
+  appearance: none;
+  background: transparent;
+  color: var(--xd-muted);
+  border: 1px solid var(--xd-line);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: var(--xd-font);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+}
+.detailCtaBtnGhost:hover { color: var(--xd-text); background: rgba(255, 255, 255, 0.04); }
+
+/* --- Thumbnail rail --------------------------------------------- */
+.thumbRail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 16px auto 0;
+  flex-wrap: wrap;
+}
+.thumb {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--xd-line);
+  color: var(--xd-muted);
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 220ms ease;
+}
+.thumb:hover { color: var(--xd-text); border-color: var(--xd-line-strong); }
+.thumbActive {
+  color: var(--xd-text);
+  background: var(--card-accent-soft);
+  border-color: var(--card-accent);
+}
+
+/* --- Keyboard hint ---------------------------------------------- */
+.keyHint {
+  text-align: center;
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  opacity: 0.7;
+  margin-top: 26px;
+}
+.keyHint kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--xd-line);
+  border-radius: 4px;
+  margin: 0 4px;
+  font-family: inherit;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* --- Responsive: collapse to grid on narrow viewports ------------ */
+@media (max-width: 880px) {
+  .page {
+    --xd-card-w: 300px;
+    --xd-card-h: 420px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 16px;
+  }
+  .heroPortrait {
+    margin: 0 auto;
+  }
+  .detail {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 22px;
+  }
+}

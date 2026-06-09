@@ -26,6 +26,11 @@ src/app/xq-characters/
 src/app/xq-characters2/
 src/components/xq/
 
+# /x-deck — trading-card matching preview surface. Uses --xq-* plus
+# a few page-local card tokens (--xd-*). Standalone preview page for
+# iterating on the deck visual before wiring it to the XQ result flow.
+src/app/x-deck/
+
 # Design-system showcase page: --ds-* tokens, internal tooling page
 # that demonstrates the public token system without consuming it.
 src/app/design-system/
