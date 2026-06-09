@@ -14,7 +14,7 @@
    * with the screen. Min/max keep the letters legibly huge on phones
    * and capped on ultrawide. Letter-spacing tight so X and Q sit
    * close together as a single hero glyph pair. */
-  --xq-hero-size: clamp(110px, 19vw, 320px);
+  --xq-hero-size: clamp(72px, 12vw, 200px);
   --xq-hero-letter-spacing: -0.05em;
 
   /* XQ accent — brand purple, deliberately distinct from RQ's orange.
@@ -56,7 +56,7 @@ html:has(.xq-page) {
   background: var(--xq-bg-grad);
   color: var(--xq-text);
   font-family: var(--xq-font);
-  padding: 80px 24px 100px;
+  padding: 56px 24px 56px;
   position: relative;
   isolation: isolate;
 }
@@ -68,59 +68,58 @@ html:has(.xq-page) {
  * letters left-to-right dark→light, and drop-shadow filters cast a
  * right-side highlight + left-side shadow for 3D form. */
 .xq-intro-hero {
-  font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: var(--xq-hero-size);
-  font-weight: 900;
-  font-style: italic;
-  text-transform: uppercase;
-  letter-spacing: var(--xq-hero-letter-spacing);
-  line-height: 0.88;
-  /* Break out of the 860px content column so the viewport-relative
-   * size actually scales to the full viewport width. Centered via
-   * left:50% + translateX(-50%) trick. */
+  /* The hero now hosts an inline SVG (XQ3DWordmark) — all visual
+   * styling (depth slices, gradient, shadow) lives inside the SVG.
+   * The h1 itself just sizes + centers the SVG and breaks out of
+   * the 860px content column so the wordmark spans the viewport. */
   position: relative;
   left: 50%;
   transform: translateX(-50%);
   width: 100vw;
   max-width: 100vw;
-  /* Pull the X/Q up so the hero sits high on the page */
-  margin: -80px 0 40px;
+  margin: 0 0 28px;
   text-align: center;
   overflow: visible;
+  line-height: 1;
+}
 
-  /* Left-to-right brightness gradient — letters darker on the left
-   * side (away from the light source), brighter on the right. */
-  background: linear-gradient(
-    95deg,
-    rgba(150, 140, 175, 1) 0%,
-    rgba(195, 180, 220, 1) 35%,
-    rgba(235, 220, 250, 1) 70%,
-    rgba(255, 245, 255, 1) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+/* Inline SVG wordmark — height is the only sized property; width
+ * scales by the SVG's intrinsic aspect (preserveAspectRatio="meet"). */
+.xq-intro-hero-svg {
+  display: block;
+  margin: 0 auto;
+  height: var(--xq-hero-size);
+  width: auto;
+  overflow: visible;
+}
 
-  /* Drop-shadow filters work on the gradient-clipped glyphs:
-   * left-side dark shadow (away from light) + right-side tinted
-   * highlight (toward light) + soft ambient glow underneath. */
-  filter:
-    drop-shadow(-4px 0 0 rgba(0, 0, 0, 0.78))
-    drop-shadow(-8px 0 10px rgba(0, 0, 0, 0.42))
-    drop-shadow(3px 0 0 rgba(220, 200, 250, 0.32))
-    drop-shadow(6px 0 6px rgba(180, 140, 220, 0.24))
-    drop-shadow(0 18px 36px rgba(120, 80, 180, 0.28));
+/* Visually hidden — keeps "XQ" in the accessibility tree without
+ * doubling the visible wordmark. */
+.xq-intro-hero .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .xq-intro-eyebrow {
-  font-family: var(--xq-mono);
-  font-size: 11px;
+  font-family: 'Geist', var(--xq-font);
+  font-size: 17px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.4px;
+  letter-spacing: 3.2px;
   color: var(--xq-accent);
-  margin-bottom: 18px;
-  opacity: 0.85;
+  margin-bottom: 22px;
+  opacity: 0.96;
+  /* Subtle glow lifts it off the fog without fighting the wordmark */
+  text-shadow:
+    0 0 18px rgba(159, 113, 175, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.55);
 }
 
 /* (Legacy .xq-wordmark-scene / .xq-wordmark-text rules removed —
@@ -490,9 +489,9 @@ html:has(.xq-page) {
 /* --- Intro screen ------------------------------------------------ */
 .xq-intro {
   text-align: center;
-  max-width: 720px;
-  margin: 60px auto 0;
-  /* Allow the XQ hero to break out of the 720px width */
+  max-width: 920px;
+  margin: 0 auto;
+  /* Allow the XQ hero to break out of the 920px width */
   overflow: visible;
 }
 /* Generic intro h1 — applies to old "Welcome" markup if present.
@@ -505,17 +504,97 @@ html:has(.xq-page) {
   margin: 32px 0 14px;
   line-height: 1.15;
 }
+/* Subheadline beneath the eyebrow — bolder + lighter color than body
+ * copy so it reads as a structural heading, not prose. Geist for the
+ * display register; tighter letter-spacing and balanced line-breaks
+ * keep the two lines visually tidy. */
 .xq-intro-sub {
-  font-size: 15px;
+  font-family: 'Geist', var(--xq-font);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--xq-text);
+  line-height: 1.35;
+  max-width: 680px;
+  margin: 0 auto 36px;
+  text-wrap: balance;
+}
+/* One-line lead-in above the phase cards */
+.xq-intro-lede {
+  font-family: var(--xq-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
   color: var(--xq-muted);
-  line-height: 1.6;
-  margin: 0 0 32px;
+  margin: 0 0 20px;
+  opacity: 0.85;
+}
+/* Phase card grid — three columns on desktop, single column on
+ * mobile. Each card carries one diagnostic phase so the copy reads
+ * as scannable structure rather than a dense paragraph. */
+.xq-intro-phases {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 36px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  text-align: left;
+  max-width: 860px;
+}
+.xq-intro-phase {
+  position: relative;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--xq-line);
+  border-radius: 14px;
+  padding: 22px 22px 20px;
+  backdrop-filter: blur(4px);
+  transition: border-color 220ms ease, transform 220ms ease,
+    background 220ms ease;
+}
+.xq-intro-phase:hover {
+  border-color: rgba(159, 113, 175, 0.45);
+  background: rgba(159, 113, 175, 0.06);
+  transform: translateY(-2px);
+}
+.xq-intro-phase-num {
+  display: block;
+  font-family: var(--xq-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  color: var(--xq-accent);
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+.xq-intro-phase-label {
+  font-family: 'Geist', var(--xq-font);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--xq-text);
+  margin-bottom: 8px;
+}
+.xq-intro-phase-body {
+  font-size: 13px;
+  color: var(--xq-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+@media (max-width: 720px) {
+  .xq-intro-phases {
+    grid-template-columns: 1fr;
+    max-width: 460px;
+  }
+  .xq-intro-sub {
+    font-size: 17px;
+  }
 }
 .xq-intro-summary {
-  font-size: 14.5px;
+  font-size: 13.5px;
   color: var(--xq-muted);
-  line-height: 1.65;
-  margin: 0 auto 32px;
+  line-height: 1.6;
+  margin: 0 auto 28px;
   max-width: 600px;
 }
 

@@ -84,9 +84,11 @@ void main() {
   float n1 = fbm(vec2(p.x * 1.8 - uTime * 0.042, p.y * 2.3 + uTime * 0.020));
   float n2 = fbm(vec2(p.x * 3.1 + uTime * 0.031, p.y * 3.9 - uTime * 0.016));
 
-  // Leftward drift — fast enough that the fog visibly travels
-  // across the screen rather than piling up at the source.
-  vec2 baseFlow = vec2(-0.0028, -0.0003);
+  // Downward drift — slow vertical fall (~5s to traverse the
+  // viewport from the top emitter down to the CTA), with a faint
+  // leftward sway for organic motion. Slower drift + higher trail
+  // persistence below = fog stays visible for 2-3s before fading.
+  vec2 baseFlow = vec2(-0.0004, -0.0028);
 
   vec2 flow = baseFlow;
   flow += 0.0020 * vec2(n1 - 0.5, n2 - 0.5);
@@ -122,12 +124,16 @@ void main() {
   flow += tangent * maskEdge * 0.028;
   flow += tangent * maskEdge * 0.018 * sin(uTime * 0.4 + uv.x * 8.0 + uv.y * 6.0);
 
-  // Right-center emitter — wider Gaussian (1.8 vs 3.5) so the
-  // source spreads more broadly and fog accumulates as it drifts.
-  // Subtle breathing modulation prevents a fixed-valve look.
-  vec2 emitterCenter = vec2(0.85, 0.0);
-  float emitterDist = length(p - emitterCenter);
-  float rightCenterSource = exp(-emitterDist * emitterDist * 1.8);
+  // Top-center oval emitter — horizontal slit sitting behind the
+  // X and Q letters. Two-thirds of the viewport wide, one-sixth
+  // tall, anchored near the top so fog spills downward across
+  // the wordmark. Anisotropic Gaussian: normalize the offset by
+  // the oval's half-axes (uv space) so the falloff is elliptical.
+  vec2 emitterCenter = vec2(0.5, 0.86);
+  vec2 ovalHalf = vec2(2.0 / 5.0, 1.0 / 12.0);
+  vec2 ovalD = (uv - emitterCenter) / ovalHalf;
+  float ovalDist2 = dot(ovalD, ovalD);
+  float rightCenterSource = exp(-ovalDist2 * 2.4);
   rightCenterSource *= 0.85 + 0.15 * sin(uTime * 0.22);
 
   // Mouse interaction with swirling
@@ -185,12 +191,15 @@ void main() {
   // are voids the fog has to flow around rather than fill
   source *= 1.0 - maskC * 0.95;
 
-  // Trail persistence dropped 0.997 → 0.985 so fog decays in
-  // about half a second instead of accumulating indefinitely.
-  // This is what makes the drift visible — old fog clears, new
-  // fog appears at the source, you can see it travel.
-  vec3 trail = prev * 0.985 + vec3(source);
-  trail *= 0.998;
+  // Persistence + mortality combine to ~0.9988/frame, half-life
+  // ~9 seconds. Combined with the slow downward drift and the
+  // brighter fogCol below, this is what makes the spill remain
+  // visible all the way down to the CTA. Source clamps to 1.0
+  // regardless of persistence so the top look stays unchanged;
+  // higher persistence only affects how long fog persists OFF
+  // the emitter as it falls.
+  vec3 trail = prev * 0.999 + vec3(source);
+  trail *= 0.9998;
 
   gl_FragColor = vec4(clamp(trail, 0.0, 1.0), 1.0);
 }
@@ -325,40 +334,36 @@ void main() {
   // blue-black; fog body caps at ~10% brightness; letters are
   // pure white where the mask is opaque.
   vec3 bg     = vec3(0.020, 0.022, 0.030);
-  vec3 fogCol = vec3(0.10, 0.11, 0.13);
+  vec3 fogCol = vec3(0.16, 0.17, 0.21);
   vec3 letterCol = vec3(0.96, 0.96, 0.98);
 
   // Compose: background → fog → letters (in that depth order)
   vec3 col = mix(bg, fogCol, fog);
 
-  // Emitter light — a subtle cinematic light source at the right-
-  // center (matches where the UPDATE pass spawns fog). Tight
-  // Gaussian falloff so it stays a discrete glow, magnitude kept
-  // low so it never blows out. Slight blue-magenta tint for the
-  // cinematic cast.
-  vec2 emitterP = vec2(0.85, 0.0);
-  emitterP.x *= uResolution.x / max(uResolution.y, 1.0);
-  float emitterDist = length(p - emitterP);
-  float emitterLight = exp(-emitterDist * emitterDist * 4.0) * 0.16;
-  emitterLight *= 0.4 + 0.6 * fog;
+  // Emitter light — matches the UPDATE-pass oval (top-center,
+  // 2/3 wide × 1/6 tall, sitting behind XQ). Anisotropic falloff
+  // in uv space so the light spreads across the oval rather than
+  // peaking at a hot point. Magnitude dialed down hard so the
+  // formerly-bright white blow-out becomes a soft purple bloom.
+  vec2 emitterCenter = vec2(0.5, 0.86);
+  vec2 emitterHalf = vec2(2.0 / 5.0, 1.0 / 12.0);
+  vec2 emitterD = (uv - emitterCenter) / emitterHalf;
+  float emitterDist2 = dot(emitterD, emitterD);
+  float emitterLight = exp(-emitterDist2 * 2.4) * 0.012;
+  emitterLight *= 0.6 + 0.4 * fog;
   col += vec3(0.34, 0.28, 0.52) * emitterLight;
 
-  // Horizontal light cast — the previously-loved beam that travels
-  // ACROSS the screen from the right-center emitter. Two factors:
-  //   1. verticalBand = narrow horizontal band centered at p.y=0
-  //   2. rightFalloff = brightness gradient peaking at the right
-  //      and softly diminishing leftward
-  // Result: a horizontal sweep of light that illuminates mist as
-  // it drifts across the page. Vertical band is wider than a sharp
-  // beam so it spills naturally; horizontal falloff is gentle so
-  // the light reaches well into the left half.
-  float verticalBand = exp(-p.y * p.y * 1.8);
-  float rightFalloff = smoothstep(-1.10, 0.95, p.x);
-  float horizontalBeam = verticalBand * rightFalloff;
-  // Coupled to fog density so the light reads as scattered through
-  // mist rather than a glow drawn on top of black.
-  horizontalBeam *= 0.25 + 0.75 * fog;
-  col += vec3(0.30, 0.24, 0.46) * horizontalBeam * 0.18;
+  // Downward light cast — replaces the previous right-to-left
+  // horizontal beam. Now the oval at the top emits a soft wash
+  // that spills downward across the wordmark, illuminating fog
+  // as it drifts down. horizontalBand widens the spill across the
+  // oval's width; topFalloff lets brightness peak just below the
+  // emitter and decay toward the bottom of the viewport.
+  float horizontalBand = exp(-p.x * p.x * 0.9);
+  float topFalloff = smoothstep(-1.05, 0.85, uv.y);
+  float downwardBeam = horizontalBand * topFalloff;
+  downwardBeam *= 0.25 + 0.75 * fog;
+  col += vec3(0.30, 0.24, 0.46) * downwardBeam * 0.015;
 
   col = mix(col, letterCol, maskC);
 

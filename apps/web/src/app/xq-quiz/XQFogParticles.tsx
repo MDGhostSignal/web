@@ -6,9 +6,10 @@ import { useEffect, useRef } from "react";
  * XQFogParticles — Canvas2D particle overlay layered on top of the
  * WebGL fluid fog. Each particle is a soft radial gradient blob
  * (the "marshmallow mist droplet" reading you get on grok.com).
- * Particles spawn at the top-right and bottom-right corners, drift
- * diagonally with gravity + curl-noise jitter, fade in/out over
- * their lifetime, and grow slightly as they age.
+ * Particles spawn from a horizontal oval at top-center (matching
+ * the WebGL shader emitter), drift downward with curl-noise jitter
+ * + gravity, fade in/out over their lifetime, and grow slightly
+ * as they age.
  *
  * Sits between the fluid-fog WebGL canvas and the wordmark in the
  * stacking order so the wisps drift across the X/Q silhouette.
@@ -26,20 +27,22 @@ type Particle = {
 };
 
 function makeParticle(x: number, y: number): Particle {
-  // Single right-center emitter — particles drift leftward at a
-  // crawl. Initial speed dropped to ~40% of previous so the fog
-  // accumulates as it crosses the screen.
-  const angle = Math.PI + (Math.random() - 0.5) * 0.7;
+  // Top-center oval emitter — particles drift downward at a crawl,
+  // spilling across the X/Q wordmark. Angle aimed roughly downward
+  // (Math.PI / 2) with a wide spread so the spill fans out.
+  const angle = Math.PI / 2 + (Math.random() - 0.5) * 1.1;
   const speed = 0.12 + Math.random() * 0.28;
   return {
     x,
     y,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed * 0.3,
+    vx: Math.cos(angle) * speed * 0.4,
+    vy: Math.sin(angle) * speed,
     size: 24 + Math.random() * 56,
     life: 0,
-    // Even longer lifetime so slow particles still cross the page
-    maxLife: 700 + Math.random() * 400,
+    // Long lifetime so the spill reaches all the way down to just
+    // above the Begin CTA before fading out. Tuned together with
+    // the gravity above for ~5s viewport traversal.
+    maxLife: 1400 + Math.random() * 600,
     hueShift: Math.random(),
   };
 }
@@ -71,17 +74,19 @@ export default function XQFogParticles() {
       const W = window.innerWidth;
       const H = window.innerHeight;
 
-      // Single right-center emitter — origin around 88% across,
-      // vertically centered with ±18% spread. High spawn rate
-      // (~0.85) gives a continuous stream rather than scattered
-      // wisps.
+      // Top-center oval emitter — 2/3 of viewport width, 1/6 of
+      // viewport height, anchored at uv (0.5, 0.86) which sits
+      // behind the X/Q wordmark. Sampling: uniform x across the
+      // oval's width, narrow Gaussian-ish y so most particles
+      // spawn near the oval's vertical centerline.
       if (Math.random() < 0.85) {
-        particles.push(
-          makeParticle(
-            W * (0.84 + Math.random() * 0.10),
-            H * (0.42 + Math.random() * 0.18),
-          ),
-        );
+        const halfW = (W * 2) / 5; // 4/5 wide → halfW = 2W/5
+        const halfH = H / 12;      // 1/6 tall → halfH = H/12
+        const cx = W * 0.5;
+        const cy = H * (1 - 0.86); // uv y=0.86 in shader is top-leaning; DOM uses top-down
+        const dx = (Math.random() - 0.5) * 2 * halfW;
+        const dy = (Math.random() - 0.5) * 2 * halfH * 0.7;
+        particles.push(makeParticle(cx + dx, cy + dy));
       }
 
       // Cap the population so the canvas stays performant
@@ -99,15 +104,15 @@ export default function XQFogParticles() {
       p.vx += (Math.random() - 0.5) * jitter;
       p.vy += (Math.random() - 0.5) * jitter;
 
-      // Constant leftward push, halved so the fog drifts at a crawl.
-      p.vx -= 0.006;
+      // Mild gravity — the constant pull that carries the spill
+      // downward across the wordmark. Tuned for ~5s viewport
+      // traversal to match the shader fog's slower drift.
+      p.vy += 0.0035;
 
-      // Mild gravity, halved
-      p.vy += 0.003;
-
-      // Air damping
-      p.vx *= 0.99;
-      p.vy *= 0.99;
+      // Air damping — slightly looser so particles retain momentum
+      // and reach the bottom of the page before their life ends.
+      p.vx *= 0.992;
+      p.vy *= 0.992;
 
       p.x += p.vx;
       p.y += p.vy;
@@ -122,7 +127,7 @@ export default function XQFogParticles() {
     };
 
     const draw = (p: Particle, fade: number) => {
-      const opacity = fade * 0.35;
+      const opacity = fade * 0.22;
       if (opacity < 0.005) return;
 
       // Two color modes per particle: cool blue and warm magenta,
