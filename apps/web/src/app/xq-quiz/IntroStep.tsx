@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 type Props = {
   onBegin: () => void;
 };
@@ -18,7 +20,59 @@ const SLICE_STEP = 0.55; // viewBox units per slice along the depth axis
 const FONT_FAMILY =
   '"Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif';
 
+/** Mouse-tracked light position in SVG viewBox coords (0..800, 0..240).
+ *  Lerped each frame toward the actual pointer position so the
+ *  highlight glides rather than snaps. */
+function useTrackedLight(svgRef: React.RefObject<SVGSVGElement | null>) {
+  const targetRef = useRef({ x: 400, y: 80 });
+  const [pos, setPos] = useState({ x: 400, y: 80 });
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = svg.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      // Pointer in viewBox coords — SVG is preserveAspectRatio="meet"
+      // so x maps proportionally to 800 vbox units, y to 240.
+      const nx = (e.clientX - rect.left) / rect.width;
+      const ny = (e.clientY - rect.top) / rect.height;
+      targetRef.current = {
+        x: Math.max(-100, Math.min(900, nx * 800)),
+        y: Math.max(-50, Math.min(290, ny * 240)),
+      };
+    };
+
+    let raf = 0;
+    const tick = () => {
+      setPos((prev) => {
+        const tx = targetRef.current.x;
+        const ty = targetRef.current.y;
+        // Lerp factor 0.085 → glides at ~60fps, settles in ~0.5s
+        return {
+          x: prev.x + (tx - prev.x) * 0.085,
+          y: prev.y + (ty - prev.y) * 0.085,
+        };
+      });
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+
+    window.addEventListener("pointermove", onPointerMove);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.cancelAnimationFrame(raf);
+    };
+  }, [svgRef]);
+
+  return pos;
+}
+
 function XQ3DWordmark() {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const light = useTrackedLight(svgRef);
+
   const slices = Array.from({ length: SLICE_COUNT }, (_, i) => {
     // i=0 is the deepest slice (back), i=SLICE_COUNT-1 is closest to
     // the front face. Color ramps from a deep purple-black up to the
@@ -50,6 +104,7 @@ function XQ3DWordmark() {
 
   return (
     <svg
+      ref={svgRef}
       className="xq-intro-hero-svg"
       viewBox="0 0 800 240"
       preserveAspectRatio="xMidYMid meet"
@@ -78,6 +133,22 @@ function XQ3DWordmark() {
           <stop offset="50%" stopColor="rgba(255,255,255,0)" />
           <stop offset="100%" stopColor="rgba(255,255,255,0.55)" />
         </linearGradient>
+        {/* Mouse-tracked radial light — bright center at the cursor
+         * position (lerped), fading to transparent at ~220 vbox units.
+         * `gradientUnits="userSpaceOnUse"` so cx/cy are absolute
+         * viewBox coords matching the tracked light position. */}
+        <radialGradient
+          id="xq-mouse-light"
+          cx={light.x}
+          cy={light.y}
+          r="220"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="rgba(255,250,255,0.85)" />
+          <stop offset="25%" stopColor="rgba(255,245,255,0.40)" />
+          <stop offset="60%" stopColor="rgba(255,240,255,0.10)" />
+          <stop offset="100%" stopColor="rgba(255,240,255,0)" />
+        </radialGradient>
         {/* Soft drop shadow — blurred + offset toward bottom-left so
          * it reads as ambient occlusion rather than a hard cast.
          * Much softer than the previous black drop-shadow stack. */}
@@ -147,6 +218,46 @@ function XQ3DWordmark() {
         XQ
       </text>
 
+      {/* Mouse-tracked light — a bright radial glow filling the
+       * letter silhouettes wherever the cursor is. The cursor itself
+       * isn't visible as a light source on the page; this text layer
+       * just brightens the X/Q where the cursor hovers/passes over. */}
+      <text
+        x="400"
+        y="172"
+        textAnchor="middle"
+        fontSize="220"
+        fontFamily={FONT_FAMILY}
+        fontWeight={900}
+        fontStyle="italic"
+        letterSpacing="-10"
+        fill="url(#xq-mouse-light)"
+        style={{ mixBlendMode: "screen" }}
+      >
+        XQ
+      </text>
+
+      {/* GHOSTSignal lockup pinned to the lower-right corner of the
+       * Q, right-aligned so its final "L" lands at the same x as
+       * the Q's right edge. Lives inside the SVG so it scales with
+       * the wordmark and the geometric alignment stays exact. */}
+      <text
+        x="540"
+        y="208"
+        textAnchor="end"
+        fontFamily={FONT_FAMILY}
+        fontSize="13"
+        fill="#fff"
+        opacity="0.92"
+      >
+        <tspan fontWeight="800" letterSpacing="2.4">
+          GHOST
+        </tspan>
+        <tspan fontWeight="300" letterSpacing="0.6">
+          Signal
+        </tspan>
+      </text>
+
       {/* Chrome shimmer — a tall thin bright band sweeps diagonally
        * across the letter silhouettes on a loop. Clipped to the XQ
        * text shape via `clip-path` so it only appears on the form. */}
@@ -174,35 +285,33 @@ function XQ3DWordmark() {
         </linearGradient>
       </defs>
       <g clipPath="url(#xq-shimmer-clip)">
-        {/* Diagonal chrome sweep. Band runs top-right → bottom-left
-         * (`\` orientation, 28° clockwise from vertical) and travels
-         * bottom-left → top-right via parallel x + y animations.
-         * x: -350 → 1100 over the same dur, y: 320 → -220 — slope
-         * matches the band rotation so the bright stripe stays
-         * perpendicular to its motion vector. */}
-        <rect
-          x="-200"
-          y="-200"
-          width="200"
-          height="640"
-          fill="url(#xq-shimmer-band)"
-          transform="rotate(28 -100 120)"
-        >
-          <animate
-            attributeName="x"
-            from="-350"
-            to="1100"
+        {/* Diagonal chrome sweep — bottom-left of X → top-right of Q.
+         *
+         * Inner <rect> is centered at local (0,0) and rotated 28°
+         * about its own origin so the band orientation is `\`.
+         * Outer <g> translates the whole rotated unit along the
+         * diagonal motion vector. Previous version rotated around a
+         * fixed point (-100, 120) which swung the rect on a huge
+         * arc when x/y animated — band never crossed the visible
+         * letters. */}
+        <g>
+          <rect
+            x="-100"
+            y="-320"
+            width="200"
+            height="640"
+            fill="url(#xq-shimmer-band)"
+            transform="rotate(28)"
+          />
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            from="-100 500"
+            to="900 -200"
             dur="4.2s"
             repeatCount="indefinite"
           />
-          <animate
-            attributeName="y"
-            from="320"
-            to="-220"
-            dur="4.2s"
-            repeatCount="indefinite"
-          />
-        </rect>
+        </g>
       </g>
     </svg>
   );

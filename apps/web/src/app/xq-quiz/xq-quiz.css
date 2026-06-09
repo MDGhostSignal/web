@@ -138,6 +138,60 @@ html:has(.xq-page) {
   pointer-events: auto;
 }
 
+/* Constellation layer — three star-sign characters loosely scattered
+ * behind the intro scene. Above fog (z-index 1) because the fog
+ * canvas is fully opaque and would occlude anything truly behind it;
+ * at 6% opacity they read as background ambient art regardless.
+ * `mix-blend-mode: screen` makes the strokes brighten the underlying
+ * fog additively, so they glow rather than block. */
+.xq-constellations {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: screen;
+}
+.xq-constellation {
+  position: absolute;
+  width: 240px;
+  height: 280px;
+  opacity: 0.07;
+  filter: blur(0.4px);
+  /* Override the Frame3D inline maxWidth/maxHeight so transform:scale
+   * can grow the SVG within its container. */
+}
+.xq-constellation > svg {
+  max-width: none !important;
+  max-height: none !important;
+}
+.xq-constellation-shepherd {
+  top: 5%;
+  left: 4%;
+  transform: scale(1.35) rotate(-6deg);
+  transform-origin: top left;
+}
+.xq-constellation-architect {
+  top: 28%;
+  right: 4%;
+  transform: scale(1.55) rotate(8deg);
+  transform-origin: top right;
+}
+.xq-constellation-catalyst {
+  bottom: 6%;
+  left: 12%;
+  transform: scale(1.45) rotate(-4deg);
+  transform-origin: bottom left;
+}
+@media (max-width: 720px) {
+  .xq-constellation-shepherd { transform: scale(1) rotate(-6deg); }
+  .xq-constellation-architect {
+    transform: scale(1.1) rotate(8deg);
+    top: 38%;
+  }
+  .xq-constellation-catalyst { transform: scale(1.05) rotate(-4deg); }
+}
+
 /* Particle overlay sits above the wordmark so wisps drift across
  * the letter silhouettes. Non-interactive — mouse still reaches
  * the fluid fog beneath. */

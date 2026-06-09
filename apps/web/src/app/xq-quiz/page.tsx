@@ -4,6 +4,7 @@ import { Fragment, useMemo, useState } from "react";
 
 import { BRAND, PHASE2_QUESTIONS } from "@/lib/xq/constants";
 
+import XQConstellations from "./XQConstellations";
 import XQFog from "./XQFog";
 import XQFogParticles from "./XQFogParticles";
 import {
@@ -190,6 +191,7 @@ export default function XQQuizPage() {
           <div className="xq-fog-wrap" aria-hidden="true">
             <XQFog />
           </div>
+          <XQConstellations />
           <div className="xq-particles-wrap" aria-hidden="true">
             <XQFogParticles />
           </div>

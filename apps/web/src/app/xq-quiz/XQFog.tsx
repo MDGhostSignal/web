@@ -36,7 +36,6 @@ uniform float uTime;
 uniform vec2 uResolution;
 uniform vec2 uTexel;
 uniform sampler2D uPrevTrail;
-uniform sampler2D uTextMask;
 uniform vec2 uMouse;
 uniform vec2 uMouseVelocity;
 
@@ -84,45 +83,21 @@ void main() {
   float n1 = fbm(vec2(p.x * 1.8 - uTime * 0.042, p.y * 2.3 + uTime * 0.020));
   float n2 = fbm(vec2(p.x * 3.1 + uTime * 0.031, p.y * 3.9 - uTime * 0.016));
 
-  // Downward drift — slow vertical fall (~5s to traverse the
+  // Downward drift — very slow vertical fall (~12s to traverse the
   // viewport from the top emitter down to the CTA), with a faint
-  // leftward sway for organic motion. Slower drift + higher trail
-  // persistence below = fog stays visible for 2-3s before fading.
-  vec2 baseFlow = vec2(-0.0004, -0.0028);
+  // leftward sway for organic motion. Combined with the ambient
+  // column source below + higher trail persistence, this fills the
+  // whole page rather than only the top quarter.
+  vec2 baseFlow = vec2(-0.0003, -0.0014);
 
   vec2 flow = baseFlow;
   flow += 0.0020 * vec2(n1 - 0.5, n2 - 0.5);
 
-  // ============================================
-  // TEXT MASK INTERACTION — Grok-style letter avoidance
-  // The XQ wordmark is uploaded as a mask texture. Fog flows
-  // around the letter contours: gradient-based repulsion pushes
-  // flow vectors away from letter interiors, and the perpendicular
-  // (tangent) component induces swirl along the edges so the fog
-  // visibly curls around the letters instead of passing through.
-  // ============================================
-  vec2 mt = vec2(1.0 / 256.0); // text mask sampling delta
-  float maskC = texture2D(uTextMask, uv).r;
-  float maskR = texture2D(uTextMask, uv + vec2(mt.x, 0.0)).r;
-  float maskL = texture2D(uTextMask, uv - vec2(mt.x, 0.0)).r;
-  float maskU = texture2D(uTextMask, uv + vec2(0.0, mt.y)).r;
-  float maskD = texture2D(uTextMask, uv - vec2(0.0, mt.y)).r;
-  vec2 maskGrad = vec2(maskR - maskL, maskU - maskD);
-  float maskEdge = length(maskGrad);
-
-  // Repulsion: flow pushes outward from letter interior. Stronger
-  // than before so fog visibly diverts around the letter shapes.
-  flow += maskGrad * 0.034;
-
-  // Edge tangent swirl: perpendicular to gradient. Composed of a
-  // strong CONSTANT swirl (always circulating) plus a modulated
-  // sine component (varies the local direction over time so the
-  // swirl doesn't look mechanical). The constant component is what
-  // creates the visible "curling around letters" effect — fog
-  // always follows the contour, not just passes by.
-  vec2 tangent = vec2(-maskGrad.y, maskGrad.x);
-  flow += tangent * maskEdge * 0.028;
-  flow += tangent * maskEdge * 0.018 * sin(uTime * 0.4 + uv.x * 8.0 + uv.y * 6.0);
+  // (Text-mask interaction removed — used to create Grok-style
+  // letter-avoidance swirls around a phantom XQ at viewport center,
+  // but that was leaving ghost double-layered XQ shapes visible
+  // in the fog, especially after resize. The wordmark is now a
+  // foreground SVG, so the fog doesn't need to know about it.)
 
   // Top-center oval emitter — horizontal slit sitting behind the
   // X and Q letters. Two-thirds of the viewport wide, one-sixth
@@ -134,7 +109,9 @@ void main() {
   vec2 ovalD = (uv - emitterCenter) / ovalHalf;
   float ovalDist2 = dot(ovalD, ovalD);
   float rightCenterSource = exp(-ovalDist2 * 2.4);
-  rightCenterSource *= 0.85 + 0.15 * sin(uTime * 0.22);
+  // (Breathing sin modulation removed — read as a slow purple blink
+  // at the oval. Steady source feels cleaner against the new
+  // turquoise palette.)
 
   // Mouse interaction with swirling
   vec2 mouseP = uMouse * 2.0 - 1.0;
@@ -180,16 +157,22 @@ void main() {
   prev += texture2D(uPrevTrail, uvFlow + (d3 + d4) * 0.5).rgb * 0.035;
   prev += texture2D(uPrevTrail, uvFlow + (d4 + d1) * 0.5).rgb * 0.035;
 
-  // Source: emission ONLY from the right-center spot. The ambient
-  // drizzle was saturating the trail screen-wide; removed entirely.
-  // Source intensity dialed way down so even at equilibrium the
-  // trail value stays well under saturation.
+  // Source: emission from the top oval (strongest at the source)
+  // plus a faint ambient column distributed along the vertical
+  // extent of the page. The column is what makes the fog reach
+  // the bottom of the viewport — without it, diffusion + decay
+  // drain the top emission before it can fall all the way down.
   float source = rightCenterSource * (0.018 + 0.036 * n1);
   source += mouseInfluence * (0.025 + 0.050 * mouseSpeed) * rightCenterSource;
 
-  // Letter interior: heavily suppress fog generation so the letters
-  // are voids the fog has to flow around rather than fill
-  source *= 1.0 - maskC * 0.95;
+  // Ambient column — Gaussian horizontally (centered on the same
+  // x as the oval emitter), ramps from 0 at the top of the
+  // viewport down to full strength near the bottom. Intensity
+  // tuned so the trail equilibrium at the bottom is ~0.35 (visible
+  // but not saturated), while the top stays dominated by the oval.
+  float ambientX = exp(-pow((uv.x - 0.5) * 1.6, 2.0));
+  float ambientY = smoothstep(0.95, 0.0, uv.y);
+  source += ambientX * ambientY * 0.00045 * (0.7 + 0.3 * n2);
 
   // Persistence + mortality combine to ~0.9988/frame, half-life
   // ~9 seconds. Combined with the slow downward drift and the
@@ -217,7 +200,6 @@ uniform float uTime;
 uniform vec2 uResolution;
 uniform vec2 uTexel;
 uniform sampler2D uTrailTexture;
-uniform sampler2D uTextMask;
 uniform vec2 uMouse;
 uniform vec2 uMouseVelocity;
 
@@ -327,15 +309,16 @@ void main() {
   // above 1.0. Trail value 0..1 → fog value 0..1.
   float fog = clamp(trail * (0.55 + 0.45 * wispNoise), 0.0, 1.0);
 
-  // Letter mask — sample for the white-letter carve-out
-  float maskC = texture2D(uTextMask, vUv).r;
-
   // Color palette — fog does NOT emit light. Background is deep
-  // blue-black; fog body caps at ~10% brightness; letters are
-  // pure white where the mask is opaque.
-  vec3 bg     = vec3(0.020, 0.022, 0.030);
-  vec3 fogCol = vec3(0.16, 0.17, 0.21);
-  vec3 letterCol = vec3(0.96, 0.96, 0.98);
+  // blue-black; fog body caps at ~10% brightness.
+  // (Letter mask was previously sampled here to carve white XQ
+  // pixels into the fog canvas; that was a leftover from when the
+  // wordmark lived inside the fog. Now the wordmark is a foreground
+  // SVG, so the carve is removed — otherwise a massive white XQ
+  // appeared at viewport center whenever the canvas was resized
+  // after initial mount with width=0 had skipped the mask upload.)
+  vec3 bg     = vec3(0.020, 0.026, 0.034);
+  vec3 fogCol = vec3(0.12, 0.22, 0.28);
 
   // Compose: background → fog → letters (in that depth order)
   vec3 col = mix(bg, fogCol, fog);
@@ -351,7 +334,7 @@ void main() {
   float emitterDist2 = dot(emitterD, emitterD);
   float emitterLight = exp(-emitterDist2 * 2.4) * 0.012;
   emitterLight *= 0.6 + 0.4 * fog;
-  col += vec3(0.34, 0.28, 0.52) * emitterLight;
+  col += vec3(0.20, 0.42, 0.58) * emitterLight;
 
   // Downward light cast — replaces the previous right-to-left
   // horizontal beam. Now the oval at the top emits a soft wash
@@ -363,9 +346,37 @@ void main() {
   float topFalloff = smoothstep(-1.05, 0.85, uv.y);
   float downwardBeam = horizontalBand * topFalloff;
   downwardBeam *= 0.25 + 0.75 * fog;
-  col += vec3(0.30, 0.24, 0.46) * downwardBeam * 0.015;
+  col += vec3(0.16, 0.36, 0.50) * downwardBeam * 0.015;
 
-  col = mix(col, letterCol, maskC);
+  // ============================================
+  // Background starfield — single-pixel stars scattered across a
+  // dense grid (only ~2.5% of cells host a star). Each star has its
+  // own twinkle period (6-12s) and phase so they brighten and dim
+  // out of sync. Dimmed where fog is dense for occlusion.
+  // ============================================
+  {
+    vec2 starGrid = uv * 340.0;
+    vec2 starCell = floor(starGrid);
+    vec2 starLocal = fract(starGrid);
+    float starHash = hash(starCell);
+    if (starHash > 0.975) {
+      vec2 starPos = vec2(
+        hash(starCell + vec2(1.7, 5.1)),
+        hash(starCell + vec2(3.2, 7.4))
+      );
+      float starDist = distance(starLocal, starPos);
+      // Tight smoothstep → ~1-2px star at typical resolutions
+      float starDot = smoothstep(0.045, 0.0, starDist);
+      // Slow twinkle: each star has its own 6-12s period + phase
+      float period = 6.0 + 6.0 * hash(starCell + vec2(9.0, 2.0));
+      float twinkle = 0.35 + 0.65 *
+        (0.5 + 0.5 * sin(uTime * 6.2832 / period + starHash * 6.2832));
+      float starBrightness = starDot * twinkle * (0.55 + 0.45 * starHash);
+      // Fog occludes stars where it's dense
+      starBrightness *= 1.0 - fog * 0.55;
+      col += vec3(0.78, 0.82, 0.95) * starBrightness * 0.075;
+    }
+  }
 
   // Mouse cursor — very subtle local glow, max ~5% brightness
   vec2 mouseP = uMouse * 2.0 - 1.0;
@@ -483,7 +494,6 @@ export default function XQFog() {
       resolution: gl.getUniformLocation(updateProgram, "uResolution"),
       texel: gl.getUniformLocation(updateProgram, "uTexel"),
       prevTrail: gl.getUniformLocation(updateProgram, "uPrevTrail"),
-      textMask: gl.getUniformLocation(updateProgram, "uTextMask"),
       mouse: gl.getUniformLocation(updateProgram, "uMouse"),
       mouseVelocity: gl.getUniformLocation(updateProgram, "uMouseVelocity"),
     };
@@ -493,54 +503,8 @@ export default function XQFog() {
       resolution: gl.getUniformLocation(renderProgram, "uResolution"),
       texel: gl.getUniformLocation(renderProgram, "uTexel"),
       trail: gl.getUniformLocation(renderProgram, "uTrailTexture"),
-      textMask: gl.getUniformLocation(renderProgram, "uTextMask"),
       mouse: gl.getUniformLocation(renderProgram, "uMouse"),
       mouseVelocity: gl.getUniformLocation(renderProgram, "uMouseVelocity"),
-    };
-
-    // ============================================
-    // TEXT MASK TEXTURE — offscreen canvas rendering "XQ" italic
-    // bold, uploaded as a GL texture. The fog shaders sample it
-    // to deflect flow around letter edges and brighten contours
-    // where fog meets the letters.
-    // ============================================
-    const textCanvas = document.createElement("canvas");
-    const tctx = textCanvas.getContext("2d");
-
-    const textMaskTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, textMaskTexture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-    const renderTextMask = (vw: number, vh: number) => {
-      if (!tctx || !textMaskTexture) return;
-      const W = 1024;
-      const H = Math.max(64, Math.floor(W * (vh / Math.max(vw, 1))));
-      textCanvas.width = W;
-      textCanvas.height = H;
-      tctx.fillStyle = "#000";
-      tctx.fillRect(0, 0, W, H);
-      const fontPx = Math.floor(Math.min(W * 0.34, H * 0.78));
-      tctx.fillStyle = "#fff";
-      tctx.font = `italic 800 ${fontPx}px Inter, "Segoe UI", -apple-system, sans-serif`;
-      tctx.textAlign = "center";
-      tctx.textBaseline = "middle";
-      tctx.fillText("XQ", W / 2, H / 2);
-
-      gl.bindTexture(gl.TEXTURE_2D, textMaskTexture);
-      // Flip Y so the canvas top-down aligns with WebGL bottom-up UV
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        textCanvas,
-      );
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     };
 
     let trailRead: WebGLTexture | null = null;
@@ -560,7 +524,6 @@ export default function XQFog() {
     const allocateTrail = (width: number, height: number) => {
       if (trailRead) gl.deleteTexture(trailRead);
       if (trailWrite) gl.deleteTexture(trailWrite);
-      if (textMaskTexture) gl.deleteTexture(textMaskTexture);
       if (fbRead) gl.deleteFramebuffer(fbRead);
       if (fbWrite) gl.deleteFramebuffer(fbWrite);
 
@@ -591,7 +554,6 @@ export default function XQFog() {
 
       gl.viewport(0, 0, width, height);
       allocateTrail(width, height);
-      renderTextMask(width, height);
     };
 
     resize();
@@ -637,11 +599,6 @@ export default function XQFog() {
       gl.bindTexture(gl.TEXTURE_2D, trailRead);
       gl.uniform1i(updateUniforms.prevTrail, 0);
 
-      // Text mask bound to unit 1 for the UPDATE pass
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textMaskTexture);
-      gl.uniform1i(updateUniforms.textMask, 1);
-
       gl.uniform1f(updateUniforms.time, time);
       gl.uniform2f(updateUniforms.resolution, canvas.width, canvas.height);
       gl.uniform2f(updateUniforms.texel, texelX, texelY);
@@ -657,11 +614,6 @@ export default function XQFog() {
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, trailWrite);
       gl.uniform1i(renderUniforms.trail, 0);
-
-      // Text mask bound to unit 1 for the RENDER pass
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textMaskTexture);
-      gl.uniform1i(renderUniforms.textMask, 1);
 
       gl.uniform1f(renderUniforms.time, time);
       gl.uniform2f(renderUniforms.resolution, canvas.width, canvas.height);
@@ -698,7 +650,6 @@ export default function XQFog() {
 
       if (trailRead) gl.deleteTexture(trailRead);
       if (trailWrite) gl.deleteTexture(trailWrite);
-      if (textMaskTexture) gl.deleteTexture(textMaskTexture);
       if (fbRead) gl.deleteFramebuffer(fbRead);
       if (fbWrite) gl.deleteFramebuffer(fbWrite);
       gl.deleteBuffer(quad);

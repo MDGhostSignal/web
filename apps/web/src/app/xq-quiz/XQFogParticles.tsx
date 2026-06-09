@@ -41,8 +41,8 @@ function makeParticle(x: number, y: number): Particle {
     life: 0,
     // Long lifetime so the spill reaches all the way down to just
     // above the Begin CTA before fading out. Tuned together with
-    // the gravity above for ~5s viewport traversal.
-    maxLife: 1400 + Math.random() * 600,
+    // the gravity above for ~12s viewport traversal.
+    maxLife: 2400 + Math.random() * 1000,
     hueShift: Math.random(),
   };
 }
@@ -105,9 +105,9 @@ export default function XQFogParticles() {
       p.vy += (Math.random() - 0.5) * jitter;
 
       // Mild gravity — the constant pull that carries the spill
-      // downward across the wordmark. Tuned for ~5s viewport
+      // downward across the wordmark. Tuned for ~12s viewport
       // traversal to match the shader fog's slower drift.
-      p.vy += 0.0035;
+      p.vy += 0.0018;
 
       // Air damping — slightly looser so particles retain momentum
       // and reach the bottom of the page before their life ends.
@@ -130,16 +130,19 @@ export default function XQFogParticles() {
       const opacity = fade * 0.22;
       if (opacity < 0.005) return;
 
-      // Two color modes per particle: cool blue and warm magenta,
-      // chosen by hueShift. Matches the right-side cinematic tint.
-      const cool = p.hueShift < 0.5;
-      const inner = cool
-        ? `rgba(160, 180, 240, ${opacity * 0.65})`
-        : `rgba(200, 150, 230, ${opacity * 0.65})`;
-      const mid = cool
-        ? `rgba(120, 140, 210, ${opacity * 0.28})`
-        : `rgba(170, 110, 200, ${opacity * 0.28})`;
-      const outer = `rgba(60, 50, 110, 0)`;
+      // Particles tinted toward turquoise/cyan to match the shader
+      // fog palette. Slight per-particle variance via hueShift so
+      // the spill doesn't read as a single uniform color, but all
+      // variants stay in the cool blue-cyan range — no more warm
+      // magenta variant that read as purple blinks.
+      const warm = p.hueShift > 0.5;
+      const inner = warm
+        ? `rgba(150, 210, 230, ${opacity * 0.65})`
+        : `rgba(140, 190, 240, ${opacity * 0.65})`;
+      const mid = warm
+        ? `rgba(110, 170, 200, ${opacity * 0.28})`
+        : `rgba(100, 150, 210, ${opacity * 0.28})`;
+      const outer = `rgba(40, 80, 110, 0)`;
 
       const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
       grad.addColorStop(0, inner);
