@@ -221,6 +221,116 @@ All three gates green at session close:
   embedded deck are still no-ops carried over from the preview surface.
   Wire them when the marketplace introduction flow exists.
 
+## 5 · Marketplace RPG — Phases 0 & 1 (the big one)
+
+The admin marketplace map (`/admin/marketplace?view=map`, a Phaser
+top-down village with procedural canvas-painted sprites) is being
+replaced with a public **multi-user persistent browser RPG** at
+`/world`. Goal: 8-archetype users meet, chat, and discover each other
+in a shared world. Plan locked in `docs/MARKETPLACE_RPG_PLAN.md`.
+
+### Stack (locked after deep research)
+Phaser 3 (client) + Colyseus on Fly.io (authoritative game server,
+room-per-zone) + Supabase Postgres (persistence) + Supabase Realtime
+(chat + presence) + Tiled (level editor) + LibreSprite + LPC base
+(free CC-BY-SA). 32→64×64 pixel art on dark-navy world with
+brand-accent rim lights — Eastward lighting at Sea of Stars scale.
+
+### Phase 0a — old map removed (~280KB deleted)
+12 files dropped: PhaserMap.tsx, MatchMap.tsx, Minimap.tsx,
+MatchRibbon.tsx, sprites.ts, town-layout.ts, the entire `game/`
+directory (painter.ts 2925 L, scenes.ts, worldLayout.ts, store.ts),
+and two CSS modules. Sidebar's `?view=map` deep-link pruned.
+Marketplace page reduced to Pool + Match views.
+
+### Phase 0b — `/world` route + game-server workspace
+- New `apps/web/src/app/world/{page.tsx, WorldClient.tsx,
+  world.module.css}` — Next 16 server component + client Phaser host.
+- New `apps/game-server/` workspace (Node + tsx) running Colyseus
+  0.16.5 on ws://localhost:2567. Single `world` room, max 50 players.
+- Deps: `phaser@^3.90.0` (pinned away from 4 — v3 ecosystem still
+  the right call), `colyseus.js@^0.16.22`, `@colyseus/schema@^3` on
+  the web side. Removed leftover `grid-engine`. Server pulls
+  `colyseus@^0.16.5`, `@colyseus/ws-transport@^0.16.0`.
+
+### Phase 1 — MVP "two tabs see each other"
+Working as of session end.
+- 80×60 tile world (2560×1920 px), dot-grid backdrop, PLAZA · SPAWN
+  marker at world center.
+- Per-archetype colored circle avatars (halo + shadow + facing-eye +
+  display-name label, "YOU ·" prefix on own).
+- WASD / arrows movement with normalized diagonals, camera follow.
+- 10 Hz `move` broadcasts; remote players lerp to target at 12/sec.
+- Status HUD top-left: `Connected · session · archetype · players N`.
+
+### Schema-sync detour
+Initial plan was Colyseus delta sync via `@colyseus/schema`. Hit
+days-of-friction wall: `@type` decorators transform inconsistently
+between tsc (server) and Next.js/Turbopack/SWC (client), producing
+wire-protocol mismatches ("Cannot read properties of undefined
+(reading 'onAdd')", "field not defined / definition mismatch").
+Tried client-side schema mirror with `experimentalDecorators` +
+`useDefineForClassFields: false` in `tsconfig.json` — got partway
+(field slot created) but never fully hydrated.
+
+**Pivoted to manual JSON broadcast at 10 Hz.** Server keeps a plain
+`Map<sessionId, PlayerData>`, broadcasts `{ players: [...] }` on a
+`setInterval` and immediately on join. Bandwidth at scale: 50 players
+× ~80 bytes × 10 Hz = ~40 KB/s per client — trivial. Phase 3 can
+revisit schema sync if/when Next + SWC stabilises decorator support.
+
+## Files touched (Marketplace RPG)
+
+### New
+- `docs/MARKETPLACE_RPG_PLAN.md` — master plan.
+- `apps/web/src/app/world/page.tsx` · `WorldClient.tsx` ·
+  `world.module.css` — public `/world` route.
+- `apps/game-server/package.json` · `tsconfig.json` · `.gitignore`
+  — Colyseus workspace.
+- `apps/game-server/src/index.ts` — server bootstrap.
+- `apps/game-server/src/rooms/WorldRoom.ts` — WorldRoom (manual
+  broadcast variant).
+
+### Modified
+- `apps/web/src/app/admin/marketplace/page.tsx` — view switcher
+  reduced to Pool + Match.
+- `apps/web/src/app/admin/layout.tsx` — sidebar Map link removed.
+- `apps/web/.stylelintignore` — `src/app/world/` added.
+- `apps/web/package.json` + `package-lock.json` — phaser /
+  colyseus.js / @colyseus/schema added, grid-engine removed.
+
+### Deleted (Phase 0a)
+- `apps/web/src/app/admin/marketplace/PhaserMap.tsx` ·
+  `MatchMap.tsx` · `Minimap.tsx` · `MatchRibbon.tsx` ·
+  `sprites.ts` · `town-layout.ts`
+- `apps/web/src/app/admin/marketplace/phaser-map.module.css` ·
+  `map.module.css`
+- `apps/web/src/app/admin/marketplace/game/` — `painter.ts` (2925 L)
+  · `scenes.ts` · `worldLayout.ts` · `store.ts`
+
+## Validation (RPG section)
+- `npm run typecheck` (web) — clean.
+- `npm run lint` (web) — clean (2 react-hooks warnings on inline
+  Phaser class declaration, non-blocking).
+- `npm run typecheck` (game-server) — clean.
+- Both tabs at `localhost:3000/world` see each other walking around;
+  movement is responsive; presence reconciles cleanly on close.
+
+## Next-step thread for the next session
+- **Design pass** — replace placeholder colored circles with LPC
+  64×64 sprites for the 8 archetypes (4-direction walk + idle +
+  talk). LibreSprite as editor, LPC base from OpenGameArt
+  (CC-BY-SA; `/world/credits` page becomes mandatory).
+- **Tilemap** — first Tiled map (Plaza zone) with ground / decor /
+  collision / spawn-marker layers.
+- **HUD layer** — DOM React presence + chat input + nearby rail,
+  styled with new `--world-*` tokens.
+- **Auth** — Supabase JWT through Colyseus `onAuth`, route gated to
+  authed users with completed XQ. Reads `world_profiles` table.
+- **Schema sync revisit** — try `@colyseus/schema` again only if /
+  when Next + SWC decorator transform stabilises, OR move shared
+  schema to a pre-built TS package both apps consume.
+
 ## Memory check
 
 Per `feedback_proactive_admin_memory.md` — the X-Deck → XQ-results
@@ -228,5 +338,6 @@ integration is the moment the trading-card pattern landed in production
 (the 2026-06-09 log explicitly flagged this as the trigger for a
 proactive memory update). Updated `project_rq_xq_ecosystem.md` with a
 new "X-Deck — the matching payoff surface" subsection noting the
-funnel termination + mock-candidate-for-now status. No new admin
-memory needed; the work is public-surface.
+funnel termination + mock-candidate-for-now status. New project memory
+`project_marketplace_rpg.md` + reference memory `reference_rpg_stack.md`
+written for the RPG work (indexed in MEMORY.md).

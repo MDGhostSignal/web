@@ -1,0 +1,23 @@
+/* /world — full-viewport canvas host for the marketplace RPG.
+ *
+ * Stylelint excluded (admin-style raw px) — the world tree is its own
+ * surface with its own --world-* tokens. Public-site tokens (--gs-*)
+ * don't fit a fullscreen game viewport.
+ */
+
+.worldRoot {
+  position: fixed;
+  inset: 0;
+  background: #0b0f12;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.canvasHost {
+  width: 100%;
+  height: 100%;
+}
+
+.canvasHost canvas {
+  display: block;
+}

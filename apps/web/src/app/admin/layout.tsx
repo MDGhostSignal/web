@@ -71,7 +71,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               isDefault: true,
             },
             { href: "/admin/marketplace?view=match", label: "Match" },
-            { href: "/admin/marketplace?view=map", label: "Map" },
           ],
         },
         {

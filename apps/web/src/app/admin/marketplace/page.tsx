@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -10,7 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { Button, Loading, Modal, PageHeader } from "@/components/admin";
+import { Button, Modal, PageHeader } from "@/components/admin";
 import { IconInfo } from "@/components/admin/icons";
 import {
   MOCK_BRANDS,
@@ -39,23 +38,14 @@ import styles from "./marketplace.module.css";
 const EMPTY_MATCHES: Match[] = [];
 const getServerSnapshot = (): Match[] => EMPTY_MATCHES;
 
-// Map view is now a Phaser-powered Zelda-style world. Code-split via
-// dynamic + ssr:false because Phaser references `window` at module
-// load. The R3F isometric scene (./MatchMap) is preserved on disk for
-// reference but no longer mounted.
-const MatchMap = dynamic(() => import("./PhaserMap"), {
-  ssr: false,
-  loading: () => (
-    <div className={styles.mapLoading}>
-      <Loading message="Loading the world…" />
-    </div>
-  ),
-});
+// The Zelda-style world that used to live at ?view=map has been moved
+// to the public /world route as a multiplayer experience (Phaser +
+// Colyseus). See docs/MARKETPLACE_RPG_PLAN.md for the new surface.
 
-type ViewMode = "pool" | "match" | "map";
+type ViewMode = "pool" | "match";
 
 function viewFromParam(raw: string | null): ViewMode {
-  if (raw === "match" || raw === "map") return raw;
+  if (raw === "match") return "match";
   return "pool";
 }
 
@@ -280,10 +270,8 @@ export default function MarketplacePage() {
             onMemberPatch={handleMemberPatch}
             onCreateMember={handleCreateMember}
           />
-        ) : view === "match" ? (
-          <MatchBoard matches={matches} />
         ) : (
-          <MatchMap matches={confirmed} />
+          <MatchBoard matches={matches} />
         )}
       </main>
 
