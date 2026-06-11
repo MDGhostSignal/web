@@ -89,7 +89,12 @@ export default function XQCharacters2Page() {
           </p>
         </div>
         <div className={styles.mapWrap}>
-          <XQSpectrumMap variant="3d" />
+          {/* No variant — use the spectrum map's "mark" default. The
+              big 3D illustrations above already showcase the 3D
+              register; the map serves as a directory and reads
+              best with the simplified logo-like marks at the small
+              ringed-circle size. */}
+          <XQSpectrumMap />
         </div>
       </section>
 
