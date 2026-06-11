@@ -35,6 +35,7 @@ import { ARCHETYPES, type ArchetypeCode } from "@/lib/xq/constants";
 
 import { XQCharacter } from "./XQCharacter";
 import { XQCharacter3D } from "./XQCharacter3D";
+import { XQCharacterMark } from "./XQCharacterMark";
 import "./xq-spectrum-map.css";
 
 /** Normalised position on each axis, in the range [-1, +1].
@@ -58,11 +59,15 @@ type Props = {
   /** Compact mode shrinks character thumbnails. */
   compact?: boolean;
   /** Which character renderer to use for the anchor thumbnails.
-   *  Defaults to "line-art" (XQCharacter). Pass "3d" for XQCharacter3D.
+   *  Defaults to "mark" (XQCharacterMark) — simplified logo-like
+   *  silhouettes designed for these small ringed circles, where the
+   *  more detailed line-art / 3D variants read as thin jittery noise.
+   *  Pass "line-art" or "3d" on surfaces with room to breathe (the
+   *  dedicated /xq-characters and /xq-characters2 galleries).
    *  String discriminator (rather than a component ref) so this prop
    *  is RSC-serializable when the map is rendered from a server
    *  component like /xq-characters2/page.tsx. */
-  variant?: "line-art" | "3d";
+  variant?: "mark" | "line-art" | "3d";
 };
 
 /* ====================================================================
@@ -128,13 +133,18 @@ export function XQSpectrumMap({
   position,
   highlight,
   compact,
-  variant = "line-art",
+  variant = "mark",
 }: Props) {
   const userPoint = position ? projectUser(position) : null;
   const neighbourSet = new Set(highlight ? getNeighbors(highlight) : []);
   const charSize = compact ? 56 : 76;
   const [hoveredCode, setHoveredCode] = useState<ArchetypeCode | null>(null);
-  const CharacterRenderer = variant === "3d" ? XQCharacter3D : XQCharacter;
+  const CharacterRenderer =
+    variant === "3d"
+      ? XQCharacter3D
+      : variant === "line-art"
+        ? XQCharacter
+        : XQCharacterMark;
 
   return (
     <svg

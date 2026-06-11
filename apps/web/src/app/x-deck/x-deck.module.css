@@ -6,7 +6,12 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
 
-.page {
+/* Token block — shared by the standalone /x-deck page and the embedded
+ * XDeckSection rendered inside the XQ results screen. Both selectors
+ * declare the same tokens so the rest of the module's rules cascade
+ * correctly in either host. */
+.page,
+.section {
   --xd-card-w: 360px;
   --xd-card-h: 504px;
   --xd-card-radius: 14px;
@@ -22,7 +27,9 @@
   --xd-font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --xd-display: 'Geist', var(--xd-font);
   --xd-mono: 'DM Mono', ui-monospace, monospace;
+}
 
+.page {
   min-height: 100vh;
   background:
     radial-gradient(
@@ -34,6 +41,19 @@
   color: var(--xd-text);
   font-family: var(--xd-font);
   padding: 48px 24px 80px;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Embedded mode: lives inside the xq-quiz results container, which is
+ * width-capped at 860px. The deck stage needs to break out of that cap
+ * to show ±2 peeking cards comfortably. We pull negative side margins
+ * back to viewport edges, and the inner stage centers within. */
+.section {
+  color: var(--xd-text);
+  font-family: var(--xd-font);
+  margin: 48px calc(50% - 50vw) 12px;
+  padding: 0 24px;
   position: relative;
   isolation: isolate;
 }
@@ -653,7 +673,8 @@
 
 /* --- Responsive: collapse to grid on narrow viewports ------------ */
 @media (max-width: 880px) {
-  .page {
+  .page,
+  .section {
     --xd-card-w: 300px;
     --xd-card-h: 420px;
   }

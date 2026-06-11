@@ -293,7 +293,11 @@ export default function XQQuizPage() {
         )}
 
         {stage === "results" && result && (
-          <ResultsScreen result={result} submitStatus={submit} />
+          <ResultsScreen
+            result={result}
+            submitStatus={submit}
+            basics={basics}
+          />
         )}
       </div>
     </div>

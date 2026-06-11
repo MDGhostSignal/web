@@ -9,8 +9,14 @@ import {
 } from "@/components/xq/XQSpectrumMap";
 import { CHARACTERS } from "@/lib/xq/characters";
 import type { XQResult } from "@/lib/xq/scoring";
+import { MOCK_CANDIDATES } from "@/lib/match/fixtures";
+import { viewerProfileFromXQ } from "@/lib/match/viewer-from-xq";
 
 import { XQCharacter3D } from "@/components/xq/XQCharacter3D";
+import { XDeckSection } from "@/app/x-deck/XDeckSection";
+
+import type { Basics } from "./types";
+import { EMPTY_BASICS } from "./types";
 
 type Props = {
   result: XQResult;
@@ -25,6 +31,11 @@ type Props = {
    *  /xq-characters2 preview passes "3d" to swap in XQCharacter3D.
    *  String discriminator for RSC serializability. */
   variant?: "line-art" | "3d";
+  /** Contact-step basics — drive the viewer profile we hand to the
+   *  embedded X-Deck so the matched cards key off the user's real
+   *  org/name. Optional so the /xq-characters2 preview can render
+   *  the results screen without a full quiz flow. */
+  basics?: Basics;
 };
 
 const SECTION_DEFS = [
@@ -97,10 +108,12 @@ export function ResultsScreen({
   result,
   submitStatus,
   variant = "line-art",
+  basics = EMPTY_BASICS,
 }: Props) {
   const identity = CHARACTERS[result.code];
   const position = toSpectrumPosition(result.details);
   const CharacterRenderer = variant === "3d" ? XQCharacter3D : XQCharacter;
+  const viewer = viewerProfileFromXQ(result, basics);
 
   return (
     <div
@@ -154,13 +167,27 @@ export function ResultsScreen({
           </p>
         </div>
         <div className="xq-reveal-map-wrap">
+          {/* No variant passed — the spectrum map's small ringed
+              circles look best with the simplified "mark" renderer,
+              regardless of which renderer the big hero portrait uses
+              above. ResultsScreen's `variant` prop drives only the
+              hero portrait. */}
           <XQSpectrumMap
             position={position}
             highlight={result.code}
-            variant={variant}
           />
         </div>
       </section>
+
+      {/* === Matched deck — X-Deck embedded as the rewarding payoff
+           once the user has seen their persona + spectrum position.
+           Mock candidates for now; the matching algo will source
+           real members once the API lands. === */}
+      <XDeckSection
+        viewer={viewer}
+        candidates={MOCK_CANDIDATES}
+        eyebrow="Your matched deck"
+      />
 
       {/* === Bucket dossier === */}
       <h2 className="xq-result-section-title">
