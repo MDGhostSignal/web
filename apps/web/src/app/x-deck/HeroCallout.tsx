@@ -2,7 +2,7 @@
 
 import { CHARACTERS } from "@/lib/xq/characters";
 import { ARCHETYPES } from "@/lib/xq/constants";
-import { XQCharacter3D } from "@/components/xq/XQCharacter3D";
+import { XQCharacterMark } from "@/components/xq/XQCharacterMark";
 import type { ViewerProfile } from "@/lib/match/types";
 
 import styles from "./x-deck.module.css";
@@ -23,10 +23,12 @@ export function HeroCallout({ viewer }: Props) {
         className={styles.heroPortrait}
         style={{ ["--xd-accent" as string]: identity.accent }}
       >
-        {/* No avatar uploaded yet — the 3D archetype character stands
-         *  in for the viewer's visual identity. Card portraits below
-         *  use real images. */}
-        <XQCharacter3D code={viewer.archetype} />
+        {/* No avatar uploaded yet — the archetype mark stands in
+         *  for the viewer's visual identity. The mark is the same
+         *  logo-like silhouette the spectrum map uses, so the
+         *  viewer's identity reads consistently across the surface.
+         *  Card portraits below use real images. */}
+        <XQCharacterMark code={viewer.archetype} />
       </div>
       <div>
         <p className={styles.heroEyebrow}>

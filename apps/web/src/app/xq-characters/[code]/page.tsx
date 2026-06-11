@@ -46,7 +46,11 @@ export default function XQArchetypePreviewPage() {
   return (
     <div style={{ maxWidth: 860, margin: "0 auto" }}>
       <PreviewBanner code={code} />
-      <ResultsScreen result={result} submitStatus={{ type: "idle" }} />
+      <ResultsScreen
+        result={result}
+        submitStatus={{ type: "idle" }}
+        variant="line-art"
+      />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { MOCK_CANDIDATES } from "@/lib/match/fixtures";
 import { viewerProfileFromXQ } from "@/lib/match/viewer-from-xq";
 
 import { XQCharacter3D } from "@/components/xq/XQCharacter3D";
+import { XQCharacterMark } from "@/components/xq/XQCharacterMark";
 import { XDeckSection } from "@/app/x-deck/XDeckSection";
 
 import type { Basics } from "./types";
@@ -26,11 +27,13 @@ type Props = {
     | { type: "idle" | "submitting" }
     | { type: "success"; message: string }
     | { type: "error"; message: string };
-  /** Which character renderer to use for the reveal portrait + map
-   *  thumbnails. Defaults to "line-art" (XQCharacter). The
-   *  /xq-characters2 preview passes "3d" to swap in XQCharacter3D.
+  /** Which character renderer to use for the persona reveal portrait.
+   *  Defaults to "mark" (XQCharacterMark) — the simplified logo-like
+   *  silhouette, which is what production uses. The /xq-characters
+   *  preview pins "line-art" and /xq-characters2 pins "3d" so each
+   *  gallery can sanity-check its own variant.
    *  String discriminator for RSC serializability. */
-  variant?: "line-art" | "3d";
+  variant?: "mark" | "line-art" | "3d";
   /** Contact-step basics — drive the viewer profile we hand to the
    *  embedded X-Deck so the matched cards key off the user's real
    *  org/name. Optional so the /xq-characters2 preview can render
@@ -107,12 +110,17 @@ function toSpectrumPosition(
 export function ResultsScreen({
   result,
   submitStatus,
-  variant = "line-art",
+  variant = "mark",
   basics = EMPTY_BASICS,
 }: Props) {
   const identity = CHARACTERS[result.code];
   const position = toSpectrumPosition(result.details);
-  const CharacterRenderer = variant === "3d" ? XQCharacter3D : XQCharacter;
+  const CharacterRenderer =
+    variant === "3d"
+      ? XQCharacter3D
+      : variant === "line-art"
+        ? XQCharacter
+        : XQCharacterMark;
   const viewer = viewerProfileFromXQ(result, basics);
 
   return (
