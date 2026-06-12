@@ -61,3 +61,10 @@ nul
 # Vendor credentials dropped in the repo (never commit raw tokens)
 apps/web/ART19TOKEN.txt
 
+# Private CRM exports — Nimble contacts are private security info.
+# These hold PII (names, emails, phones, owners) for external
+# contacts and must never be committed to the repo.
+nimble_*.csv
+**/nimble_*.csv
+docs/nimble_*
+
