@@ -20,7 +20,10 @@ import { WorldRoom } from "./rooms/WorldRoom.js";
  */
 const PORT = Number(process.env.PORT ?? 2567);
 
+// Colyseus 0.16 ships CORS built-in (echoes Origin, sets Allow-Methods
+// + Vary). No custom CORS layer needed here.
 const httpServer = createServer();
+
 const gameServer = new Server({
   transport: new WebSocketTransport({ server: httpServer }),
 });

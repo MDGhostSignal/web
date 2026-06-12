@@ -69,6 +69,24 @@ export class WorldRoom extends Room {
       if (typeof payload.moving === "boolean") player.moving = payload.moving;
     });
 
+    // Chat — author broadcasts a short message; every client gets it
+    // and renders a transient speech bubble above the speaker's avatar.
+    // Phase 3 persists to Supabase world_chat for room history.
+    this.onMessage("chat", (client, payload: { body?: unknown }) => {
+      const player = this.players.get(client.sessionId);
+      if (!player) return;
+      const raw = typeof payload?.body === "string" ? payload.body : "";
+      const body = raw.trim().slice(0, 200);
+      if (!body) return;
+      this.broadcast("chat", {
+        sessionId: client.sessionId,
+        displayName: player.displayName,
+        archetype: player.archetype,
+        body,
+        at: Date.now(),
+      });
+    });
+
     // 10 Hz broadcast of the full player snapshot. Cheap at our scale.
     this.tickHandle = setInterval(() => {
       this.broadcast("state", {

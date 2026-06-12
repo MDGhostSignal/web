@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Client, Room } from "colyseus.js";
 
 import styles from "./world.module.css";
@@ -20,8 +20,12 @@ import styles from "./world.module.css";
  * × 10 Hz. Phase 3 can swap back to schema if we ever need it.
  */
 
+// Default to 127.0.0.1 (not "localhost") in dev — some browser
+// extensions (notably MetaMask) hook fetch/WebSocket on the literal
+// string "localhost" but ignore the numeric loopback. Override via
+// NEXT_PUBLIC_GAME_SERVER_URL once a real prod server is deployed.
 const SERVER_URL =
-  process.env.NEXT_PUBLIC_GAME_SERVER_URL ?? "ws://localhost:2567";
+  process.env.NEXT_PUBLIC_GAME_SERVER_URL ?? "ws://127.0.0.1:2567";
 
 const ARCHETYPE_COLOR: Record<string, number> = {
   "C-P-C": 0xfbad25,
@@ -32,6 +36,22 @@ const ARCHETYPE_COLOR: Record<string, number> = {
   "X-P-L": 0xfa7b3f,
   "X-S-C": 0x4dc9ae,
   "X-S-L": 0x7c58d6,
+};
+
+/** Head-shape mark per archetype — mirrors the XQCharacterMark system
+ *  used on the spectrum map and persona reveal. Floated above each
+ *  avatar so users can read someone's archetype from across the
+ *  plaza, even when the body tint is muddied by skin underlay. */
+type MarkShape = "circle" | "oval" | "square" | "round-rect" | "diamond" | "triangle" | "hexagon" | "pentagon";
+const ARCHETYPE_SHAPE: Record<string, MarkShape> = {
+  "C-P-C": "circle",       // Steward
+  "C-P-L": "oval",         // Shepherd
+  "C-S-C": "square",       // Conservator
+  "C-S-L": "round-rect",   // InstBuilder
+  "X-P-C": "diamond",      // Artisan
+  "X-P-L": "triangle",     // Catalyst
+  "X-S-C": "hexagon",      // Designer
+  "X-S-L": "pentagon",     // Architect
 };
 
 const TILE = 32;
@@ -70,9 +90,21 @@ type ServerPlayer = {
 
 type StateMessage = { players: ServerPlayer[] };
 
+type ChatMessage = {
+  sessionId: string;
+  displayName: string;
+  archetype: string;
+  body: string;
+  at: number;
+};
+
 export default function WorldClient() {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<unknown>(null);
+  /** Set inside the Phaser scene's create(). The HUD's chat form calls
+   *  this on submit. */
+  const sendChatRef = useRef<((body: string) => void) | null>(null);
+  const [chatDraft, setChatDraft] = useState("");
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -114,35 +146,72 @@ export default function WorldClient() {
           super("world");
         }
 
+        preload() {
+          // LPC universal walk-cycle: 9 frames × 4 directions, 64×64
+          // each. Rows are up / left / down / right (LPC standard).
+          this.load.spritesheet("lpc-walk", "/world/sprites/body-male/walk.png", {
+            frameWidth: 64,
+            frameHeight: 64,
+          });
+          // ArMM1998 Zelda-like overworld atlas (CC0). The whole atlas
+          // ships as one PNG; we define named sub-frames at scene
+          // create time so we can iterate coords in JS without
+          // re-extracting individual PNGs.
+          this.load.image("armm", "/world/sprites/pipoya/overworld-armm.png");
+          // SNES Harvest Moon village map — used as a background
+          // landmark while we iterate on the world art direction.
+          this.load.image(
+            "hm-village",
+            "/world/sprites/SNES - Harvest Moon - Backgrounds - Village (Summer).png",
+          );
+          // Harvest Moon chicken sheet — mature + baby chick poses.
+          this.load.image(
+            "hm-chickens",
+            "/world/sprites/SNES - Harvest Moon - Animals - Chicken.png",
+          );
+        }
+
         create() {
-          this.cameras.main.setBackgroundColor("#0b0f12");
+          this.cameras.main.setBackgroundColor("#1f2a1a");
 
           const worldW = WORLD_W_TILES * TILE;
           const worldH = WORLD_H_TILES * TILE;
 
-          const ground = this.add.rectangle(
-            worldW / 2,
-            worldH / 2,
-            worldW,
-            worldH,
-            0x141921,
-            1,
-          );
-          ground.setDepth(-10);
+          // Bake procedural pixel-art tile textures once at scene init.
+          // Each is a 32×32 PNG-ish pixel grid drawn via Phaser Graphics
+          // → generateTexture, which we then tile across the world.
+          // SNES-era restricted palette: 4 grass shades, 3 stone shades.
+          this.bakeTileTextures();
 
-          const g = this.add.graphics();
-          g.fillStyle(0x2a313a, 1);
-          for (let x = 0; x <= WORLD_W_TILES; x++) {
-            for (let y = 0; y <= WORLD_H_TILES; y++) {
-              g.fillCircle(x * TILE, y * TILE, 1.5);
-            }
+          // Register named sub-frames on the ArMM1998 atlas so we can
+          // reference them as `add.image(x, y, "armm", "house-a")`.
+          // All coords from the 640×576 source; tuned visually against
+          // the grid overlay. Easy to iterate here without re-cropping.
+          this.registerArmmFrames();
+
+          // Tile the entire world with grass — pixel-perfect repeat.
+          this.add
+            .tileSprite(0, 0, worldW, worldH, "tile-grass")
+            .setOrigin(0, 0)
+            .setDepth(-10);
+
+          // Subtle dirt patches scattered across the grass for variation
+          // so the tile repetition isn't loud.
+          const patchG = this.add.graphics();
+          patchG.fillStyle(0x4a5a32, 0.5);
+          for (let i = 0; i < 80; i++) {
+            const px = Math.floor(Math.random() * WORLD_W_TILES) * TILE;
+            const py = Math.floor(Math.random() * WORLD_H_TILES) * TILE;
+            patchG.fillRect(px + 2, py + 2, 28, 28);
           }
-          g.lineStyle(2, 0x3a414b, 1);
-          g.strokeRect(0, 0, worldW, worldH);
+          patchG.setDepth(-9);
+          patchG.setAlpha(0.35);
 
+          // Plaza spawn marker — minimal, just a soft ring + label so
+          // the user has an anchor. Landmarks will be added one-by-one.
           this.add
             .circle(worldW / 2, worldH / 2, 64, 0x7c58d6, 0)
-            .setStrokeStyle(2, 0x7c58d6, 0.45)
+            .setStrokeStyle(2, 0x7c58d6, 0.4)
             .setDepth(-5);
           this.add
             .text(worldW / 2, worldH / 2 + 84, "PLAZA · SPAWN", {
@@ -154,8 +223,119 @@ export default function WorldClient() {
             .setOrigin(0.5)
             .setDepth(-5);
 
+          // === ONE-AT-A-TIME SPRITE PLACEMENT ===
+          // Stripped to bare ground + plaza spawn. Adding ArMM landmark
+          // sprites one at a time, verifying each looks right before
+          // moving to the next.
+          // Test #1: basic peaked-roof house, top-right of world.
+          const houseA = this.add.image(worldW - 200, 200, "armm", "house-a");
+          houseA.setOrigin(0.5, 0.85);
+          houseA.setScale(3.0);
+          houseA.setDepth(-4);
+
+          // Test #2: stone fountain — placed to the left of the house
+          // so we can compare them side-by-side without overlap.
+          const fountain = this.add.image(worldW - 460, 240, "armm", "fountain-a");
+          fountain.setOrigin(0.5, 0.85);
+          fountain.setScale(3.0);
+          fountain.setDepth(-4);
+
+          // Test #3 — bush
+          const bush = this.add.image(worldW - 720, 240, "armm", "bush");
+          bush.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+          // Test #4 — statue
+          const statue = this.add.image(worldW - 200, 460, "armm", "statue");
+          statue.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+          // Test #5 — stone gate
+          const gate = this.add.image(worldW - 460, 480, "armm", "stone-gate");
+          gate.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+          // Test #6 — banner
+          const banner = this.add.image(worldW - 720, 480, "armm", "banner-blue");
+          banner.setOrigin(0.5, 0.95).setScale(3.0).setDepth(-4);
+
+          // Third row of test sprites
+          // Test #7 — small cottage
+          const cottage = this.add.image(worldW - 720, 720, "armm", "cottage-small");
+          cottage.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+          // Test #8 — gray silo / tower
+          const silo = this.add.image(worldW - 460, 720, "armm", "silo");
+          silo.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+          // Test #9 — cone-roof yurt
+          const yurt = this.add.image(worldW - 240, 720, "armm", "yurt");
+          yurt.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+          // Test #10 — market stall
+          const stall = this.add.image(worldW - 460, 950, "armm", "market-stall");
+          stall.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
+
+          // === User-supplied SNES Harvest Moon assets ===
+          // Village summer background — placed center-left of the
+          // world as a candidate background for the final scene.
+          // 768×1024 native, scaled 3× so it's properly imposing.
+          const village = this.add.image(700, 700, "hm-village");
+          village.setOrigin(0.5, 0.5);
+          village.setScale(3.0);
+          village.setDepth(-9); // behind almost everything
+
+          // Mature hen + baby chick, placed beneath the house in the
+          // top-right so they're visible alongside the other tests.
+          const hen = this.add.image(worldW - 300, 360, "hm-chickens", "hen");
+          hen.setOrigin(0.5, 0.9).setScale(4.0).setDepth(-3);
+          // Subtle peck bob — gentle Y oscillation
+          this.tweens.add({
+            targets: hen,
+            y: { from: 360, to: 354 },
+            duration: 900,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+          const chick = this.add.image(worldW - 340, 380, "hm-chickens", "chick");
+          chick.setOrigin(0.5, 0.9).setScale(4.0).setDepth(-3);
+          this.tweens.add({
+            targets: chick,
+            y: { from: 380, to: 376 },
+            duration: 700,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+
+          // Soft world-border vignette so the camera bounds don't read
+          // as a hard wall — a dark frame around the playable area.
+          const vG = this.add.graphics();
+          vG.lineStyle(8, 0x0b0f12, 0.7);
+          vG.strokeRect(-4, -4, worldW + 8, worldH + 8);
+          vG.setDepth(-8);
+
           this.cameras.main.setBounds(0, 0, worldW, worldH);
           this.cameras.main.centerOn(worldW / 2, worldH / 2);
+
+          // LPC walk animations — 9 frames per direction, 10 fps.
+          // Row layout: 0=up, 1=left, 2=down, 3=right (9 frames each).
+          const rows: Array<["up" | "left" | "down" | "right", number]> = [
+            ["up", 0],
+            ["left", 1],
+            ["down", 2],
+            ["right", 3],
+          ];
+          for (const [dir, row] of rows) {
+            const startFrame = row * 9 + 1; // skip frame 0 (idle pose)
+            this.anims.create({
+              key: `walk-${dir}`,
+              frames: this.anims.generateFrameNumbers("lpc-walk", {
+                start: startFrame,
+                end: startFrame + 7,
+              }),
+              frameRate: 10,
+              repeat: -1,
+            });
+            this.anims.create({
+              key: `idle-${dir}`,
+              frames: [{ key: "lpc-walk", frame: row * 9 }],
+              frameRate: 1,
+              repeat: 0,
+            });
+          }
 
           this.statusText = this.add
             .text(16, 14, "Connecting…", {
@@ -196,20 +376,39 @@ export default function WorldClient() {
           this.client = new Client(SERVER_URL);
           try {
             const archetype = pickArchetype();
-            this.room = await this.client.joinOrCreate("world", {
-              archetype,
-              displayName: `Guest-${Math.floor(Math.random() * 9999)
-                .toString()
-                .padStart(4, "0")}`,
-            });
-            this.ownSessionId = this.room.sessionId;
+            // 8s timeout race surfaces a stuck WebSocket upgrade as an
+            // error in the HUD instead of an infinite "Connecting…".
+            const room = await Promise.race([
+              this.client.joinOrCreate("world", {
+                archetype,
+                displayName: `Guest-${Math.floor(Math.random() * 9999)
+                  .toString()
+                  .padStart(4, "0")}`,
+              }),
+              new Promise<never>((_, reject) =>
+                setTimeout(
+                  () =>
+                    reject(
+                      new Error(
+                        "joinOrCreate timeout — WebSocket upgrade blocked",
+                      ),
+                    ),
+                  8000,
+                ),
+              ),
+            ]);
+            const joined = room as Room;
+            this.room = joined;
+            this.ownSessionId = joined.sessionId;
             this.ownArchetype = archetype;
             this.statusText.setText(
-              `Connected · ${this.ownSessionId.slice(0, 6)} · ${archetype} · waiting…`,
+              `Connected · ${joined.sessionId.slice(0, 6)} · ${archetype} · waiting…`,
             );
-
-            this.room.onMessage("state", (msg: StateMessage) => {
+            joined.onMessage("state", (msg: StateMessage) => {
               this.applySnapshot(msg.players);
+            });
+            joined.onMessage("chat", (msg: ChatMessage) => {
+              this.spawnBubble(msg);
             });
           } catch (err) {
             console.error("[WorldScene] join failed", err);
@@ -233,6 +432,7 @@ export default function WorldClient() {
               this.applyFacing(
                 this.avatars.get(player.sessionId)!,
                 player.facing,
+                player.moving,
               );
             }
           }
@@ -250,17 +450,38 @@ export default function WorldClient() {
 
         spawnAvatar(player: ServerPlayer) {
           const color = ARCHETYPE_COLOR[player.archetype] ?? 0xffffff;
+          const isOwn = player.sessionId === this.ownSessionId;
           const container = this.add.container(player.x * TILE, player.y * TILE);
 
-          const halo = this.add.circle(0, 0, 28, color, 0.18);
-          const shadow = this.add.ellipse(0, 22, 36, 10, 0x000000, 0.45);
-          const body = this.add.circle(0, 0, 18, color, 1);
-          body.setStrokeStyle(3, 0xffffff, 0.7);
-          const eye = this.add.circle(0, 7, 3.5, 0xffffff, 0.95);
-          const isOwn = player.sessionId === this.ownSessionId;
+          // Halo behind, drop shadow exactly under the feet, LPC sprite
+          // lifted so its feet line up with the shadow.
+          // LPC frames put the feet at y=56 inside a 64-tall cell. With
+          // the sprite center at y=-24 (and origin 0.5/0.5), the feet
+          // land at container y=0 — same point the server reports as
+          // the tile position. Shadow sits there too.
+          //
+          // Halo center sits at the character's belly height and the
+          // radius is big enough to fully encompass the head AND the
+          // shadow, so the character reads as a single glowing figure.
+          const SPRITE_Y = -24;
+          const halo = this.add.ellipse(0, -22, 56, 76, color, 0.22);
+          const shadow = this.add.ellipse(0, 2, 36, 10, 0x000000, 0.5);
+
+          const sprite = this.add.sprite(0, SPRITE_Y, "lpc-walk", 18);
+          sprite.setOrigin(0.5, 0.5);
+          sprite.setTint(color);
+          const glow = this.add.sprite(0, SPRITE_Y, "lpc-walk", 18);
+          glow.setOrigin(0.5, 0.5);
+          glow.setTintFill(color);
+          glow.setAlpha(0.32);
+          glow.setBlendMode(Phaser.BlendModes.ADD);
+          // YOU avatars get a brighter ring and bolder label.
+          if (isOwn) {
+            halo.setFillStyle(color, 0.32);
+          }
           const label = this.add.text(
             0,
-            -34,
+            -76,
             isOwn ? `YOU · ${player.displayName}` : player.displayName,
             {
               fontFamily: "Inter, sans-serif",
@@ -273,11 +494,45 @@ export default function WorldClient() {
           );
           label.setOrigin(0.5, 1);
 
-          container.add([halo, shadow, body, eye, label]);
+          // Archetype identity badge — sits just over the head, inside
+          // the halo glow so it reads as part of the character rather
+          // than something floating above. The YOU/name label sits
+          // above the badge.
+          const badge = this.buildBadge(player.archetype, color);
+          badge.setPosition(0, -42);
+
+          // Order: halo (back), shadow (under feet), sprite, glow
+          // overlay, label, badge (front). The glow must sit
+          // immediately above the sprite for the ADD blend to
+          // multiply against the body, not the label or badge.
+          container.add([halo, shadow, sprite, glow, label, badge]);
           container.setDepth(10);
           this.avatars.set(player.sessionId, container);
           this.targets.set(player.sessionId, { x: player.x, y: player.y });
-          this.applyFacing(container, player.facing);
+          container.setData("facing", player.facing);
+          container.setData("moving", player.moving);
+          this.applyFacing(container, player.facing, player.moving);
+
+          // Halo pulse — gentle alpha breathing on all avatars.
+          this.tweens.add({
+            targets: halo,
+            alpha: { from: isOwn ? 0.28 : 0.18, to: isOwn ? 0.45 : 0.32 },
+            duration: 1800,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+          // Subtle sprite Y-bob when idle gives the world a heartbeat.
+          // We tween the sprite + glow overlay together so they stay
+          // in lockstep visually.
+          this.tweens.add({
+            targets: [sprite, glow],
+            y: { from: SPRITE_Y, to: SPRITE_Y - 2 },
+            duration: 1400,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
 
           if (isOwn) {
             this.cameras.main.centerOn(player.x * TILE, player.y * TILE);
@@ -286,18 +541,33 @@ export default function WorldClient() {
           }
         }
 
+        /** Set the sprite + glow overlay to the correct walk/idle
+         *  animation for the given facing direction. Both sprites
+         *  share the same animation key so frames stay in sync. */
         applyFacing(
           container: Phaser.GameObjects.Container,
           facing: string,
+          moving: boolean,
         ) {
-          // Container children order: [halo, shadow, body, eye, label]
-          const eye = container.list[3] as Phaser.GameObjects.Arc | undefined;
-          if (!eye) return;
-          const off = 7;
-          if (facing === "down") eye.setPosition(0, off);
-          else if (facing === "up") eye.setPosition(0, -off);
-          else if (facing === "left") eye.setPosition(-off, 0);
-          else if (facing === "right") eye.setPosition(off, 0);
+          // Container children: [halo, shadow, sprite, glow, label, badge]
+          const sprite = container.list[2] as
+            | Phaser.GameObjects.Sprite
+            | undefined;
+          const glow = container.list[3] as
+            | Phaser.GameObjects.Sprite
+            | undefined;
+          if (!sprite || !glow) return;
+          const dir =
+            facing === "up" || facing === "left" || facing === "right"
+              ? facing
+              : "down";
+          const key = `${moving ? "walk" : "idle"}-${dir}`;
+          if (sprite.anims.currentAnim?.key !== key) {
+            sprite.anims.play(key, true);
+            glow.anims.play(key, true);
+          }
+          container.setData("facing", dir);
+          container.setData("moving", moving);
         }
 
         update(_time: number, deltaMs: number) {
@@ -335,8 +605,12 @@ export default function WorldClient() {
             if (ownAvatar) {
               ownAvatar.x = this.ownPos.x * TILE;
               ownAvatar.y = this.ownPos.y * TILE;
-              this.applyFacing(ownAvatar, this.ownFacing);
+              this.applyFacing(ownAvatar, this.ownFacing, true);
             }
+          } else {
+            // Stopped moving — switch own avatar to idle in current facing.
+            const ownAvatar = this.avatars.get(this.ownSessionId);
+            if (ownAvatar) this.applyFacing(ownAvatar, this.ownFacing, false);
           }
 
           const now = performance.now();
@@ -361,6 +635,587 @@ export default function WorldClient() {
           });
         }
 
+        /** Define named frames on the loaded ArMM1998 atlas so
+         *  add.image(x, y, "armm", "name") works. Coords measured from
+         *  the 640×576 source overlay grid; tweak in this single
+         *  table to re-aim a sprite. CC0 — ArMM1998 via OpenGameArt.
+         *  https://opengameart.org/content/zelda-like-tilesets-and-sprites */
+        registerArmmFrames() {
+          const t = this.textures.get("armm");
+          // Coords measured from a native-resolution 16-px grid overlay
+          // of the 640×576 atlas. Easy to nudge in this table without
+          // touching anything else. CC0 — ArMM1998.
+          const frames: Array<[string, number, number, number, number]> = [
+            // === BUILDINGS (top row) ===
+            // VERIFIED via extract-and-view, one at a time.
+            ["house-a",         96,   0,  80, 80], // peaked roof + cross window + door
+            ["cottage-small", 212,  84,  32, 56], // small peaked cottage
+            ["fountain-a",     336, 136,  64, 56], // stone fountain bowl + spout
+            ["bush",            80, 256,  32, 32], // round green canopy (this atlas has no full tree)
+            ["statue",         128, 492,  40, 60], // gray stone person on pedestal
+            ["stone-gate",      56, 488,  80, 88], // arched stone gate w/ wooden doors
+            ["banner-blue",    144, 464,  28, 48], // blue flag on wooden pole
+            ["silo",             0, 336,  56, 120], // big round stone silo / tank
+            ["yurt",            60, 352,  40, 96], // cone-roofed dwelling
+            ["market-stall",   320, 368,  64, 72], // blue+white awning + wood counter
+          ];
+          for (const [name, x, y, w, h] of frames) {
+            t.add(name, 0, x, y, w, h);
+          }
+
+          // Harvest Moon chicken sheet — 312×46, two rows of small
+          // sprites. Mature chickens with red combs in the left half,
+          // baby chicks (yellow) on the right.
+          const chickT = this.textures.get("hm-chickens");
+          // Each chicken cell is ~16×23 (sheet is 46 tall = 2 rows).
+          chickT.add("hen", 0, 0, 0, 16, 23);
+          chickT.add("hen-walk1", 0, 16, 0, 16, 23);
+          chickT.add("hen-walk2", 0, 32, 0, 16, 23);
+          chickT.add("chick", 0, 240, 0, 16, 23);
+          chickT.add("chick-walk", 0, 256, 0, 16, 23);
+        }
+
+        /** Generate the procedural pixel-art tile textures once and
+         *  register them with Phaser's texture manager. Called from
+         *  create() before any rendering. The textures are intentionally
+         *  chunky (32×32 pixels, restricted palette) for the SNES-era
+         *  ALttP aesthetic. */
+        bakeTileTextures() {
+          // === Grass tile (32×32) ===
+          // 4-color palette: base, mid, light, dark.
+          const grassG = this.make.graphics({ x: 0, y: 0 }, false);
+          grassG.fillStyle(0x3e5a26, 1); // base
+          grassG.fillRect(0, 0, 32, 32);
+          // Mid-tone variation — 8×8 patches at fixed pseudo-random spots
+          grassG.fillStyle(0x4d6e2e, 1);
+          const midSpots = [[2, 4], [14, 2], [22, 12], [6, 18], [24, 24]];
+          for (const [x, y] of midSpots) grassG.fillRect(x, y, 6, 4);
+          // Light blade pixels — single 1×2 pixels for grass-blade feel.
+          grassG.fillStyle(0x8aa66a, 1);
+          const bladeSpots = [
+            [3, 2], [11, 6], [17, 4], [25, 8], [29, 14],
+            [5, 14], [13, 18], [21, 20], [7, 24], [19, 28],
+            [27, 27],
+          ];
+          for (const [x, y] of bladeSpots) grassG.fillRect(x, y, 1, 2);
+          // Dark shadow pixels — sparse, give depth.
+          grassG.fillStyle(0x2a3f1a, 1);
+          const darkSpots = [[8, 10], [18, 22], [27, 4]];
+          for (const [x, y] of darkSpots) grassG.fillRect(x, y, 2, 2);
+          grassG.generateTexture("tile-grass", 32, 32);
+          grassG.destroy();
+
+          // === Stone path tile (32×32) ===
+          // 4 irregular flagstones with dark mortar between.
+          const stoneG = this.make.graphics({ x: 0, y: 0 }, false);
+          stoneG.fillStyle(0x3a3530, 1); // mortar base
+          stoneG.fillRect(0, 0, 32, 32);
+          // Flagstone 1 — top-left
+          stoneG.fillStyle(0x8c8478, 1);
+          stoneG.fillRect(1, 1, 14, 14);
+          stoneG.fillStyle(0x6b6358, 1); // shadow edge
+          stoneG.fillRect(1, 13, 14, 2);
+          stoneG.fillRect(13, 1, 2, 14);
+          stoneG.fillStyle(0xa39b8c, 1); // highlight
+          stoneG.fillRect(1, 1, 14, 1);
+          stoneG.fillRect(1, 1, 1, 14);
+          // Flagstone 2 — top-right
+          stoneG.fillStyle(0x807868, 1);
+          stoneG.fillRect(17, 1, 14, 14);
+          stoneG.fillStyle(0x605848, 1);
+          stoneG.fillRect(17, 13, 14, 2);
+          stoneG.fillRect(29, 1, 2, 14);
+          stoneG.fillStyle(0x988e7e, 1);
+          stoneG.fillRect(17, 1, 14, 1);
+          stoneG.fillRect(17, 1, 1, 14);
+          // Flagstone 3 — bottom-left
+          stoneG.fillStyle(0x887e6e, 1);
+          stoneG.fillRect(1, 17, 14, 14);
+          stoneG.fillStyle(0x685e4e, 1);
+          stoneG.fillRect(1, 29, 14, 2);
+          stoneG.fillRect(13, 17, 2, 14);
+          stoneG.fillStyle(0xa0958a, 1);
+          stoneG.fillRect(1, 17, 14, 1);
+          stoneG.fillRect(1, 17, 1, 14);
+          // Flagstone 4 — bottom-right
+          stoneG.fillStyle(0x847a6c, 1);
+          stoneG.fillRect(17, 17, 14, 14);
+          stoneG.fillStyle(0x645a4c, 1);
+          stoneG.fillRect(17, 29, 14, 2);
+          stoneG.fillRect(29, 17, 2, 14);
+          stoneG.fillStyle(0x9c918c, 1);
+          stoneG.fillRect(17, 17, 14, 1);
+          stoneG.fillRect(17, 17, 1, 14);
+          stoneG.generateTexture("tile-stone", 32, 32);
+          stoneG.destroy();
+
+          // === Cottage sprite (40×44) ===
+          // Pitched roof + wood walls + door + window — classic JRPG
+          // village cottage. Wall + roof colors are mid-tone so we can
+          // tint per-zone if needed.
+          const cottageG = this.make.graphics({ x: 0, y: 0 }, false);
+          // Roof base
+          cottageG.fillStyle(0x5a2e22, 1);
+          cottageG.fillTriangle(0, 22, 20, 2, 40, 22);
+          // Roof highlight
+          cottageG.fillStyle(0x7a3e2e, 1);
+          cottageG.fillTriangle(2, 20, 20, 4, 22, 20);
+          // Roof shadow line
+          cottageG.fillStyle(0x3a1e16, 1);
+          cottageG.fillRect(0, 22, 40, 2);
+          // Walls
+          cottageG.fillStyle(0xb89a72, 1);
+          cottageG.fillRect(4, 24, 32, 20);
+          // Wall shading right side
+          cottageG.fillStyle(0x8c7456, 1);
+          cottageG.fillRect(30, 24, 6, 20);
+          // Wall outline
+          cottageG.fillStyle(0x40362a, 1);
+          cottageG.fillRect(4, 43, 32, 1);
+          cottageG.fillRect(4, 24, 1, 20);
+          cottageG.fillRect(35, 24, 1, 20);
+          // Door
+          cottageG.fillStyle(0x40362a, 1);
+          cottageG.fillRect(16, 30, 8, 14);
+          cottageG.fillStyle(0x6a5642, 1);
+          cottageG.fillRect(17, 31, 6, 12);
+          // Door knob
+          cottageG.fillStyle(0xe6c060, 1);
+          cottageG.fillRect(21, 37, 1, 1);
+          // Window
+          cottageG.fillStyle(0x40362a, 1);
+          cottageG.fillRect(7, 28, 6, 6);
+          cottageG.fillStyle(0xa8c8e0, 1);
+          cottageG.fillRect(8, 29, 4, 4);
+          cottageG.fillStyle(0x40362a, 1);
+          cottageG.fillRect(27, 28, 6, 6);
+          cottageG.fillStyle(0xa8c8e0, 1);
+          cottageG.fillRect(28, 29, 4, 4);
+          // Window light spot
+          cottageG.fillStyle(0xfff4c8, 1);
+          cottageG.fillRect(9, 30, 1, 1);
+          cottageG.fillRect(29, 30, 1, 1);
+          cottageG.generateTexture("tile-cottage", 40, 44);
+          cottageG.destroy();
+
+          // === Banner sprite (24×64) ===
+          // Stone plinth + tall pole + flag rectangle. Flag is plain
+          // white so we can per-banner tint to the zone accent color.
+          const bannerG = this.make.graphics({ x: 0, y: 0 }, false);
+          // Plinth (stone)
+          bannerG.fillStyle(0x6b6358, 1);
+          bannerG.fillRect(4, 54, 16, 10);
+          bannerG.fillStyle(0x8c8478, 1);
+          bannerG.fillRect(4, 54, 16, 2);
+          bannerG.fillStyle(0x4a4338, 1);
+          bannerG.fillRect(4, 62, 16, 2);
+          // Pole
+          bannerG.fillStyle(0x40362a, 1);
+          bannerG.fillRect(11, 8, 2, 48);
+          // Flag (white — caller tints per zone)
+          bannerG.fillStyle(0xffffff, 1);
+          bannerG.fillRect(13, 10, 10, 18);
+          // Flag shadow / fold
+          bannerG.fillStyle(0xcccccc, 1);
+          bannerG.fillRect(13, 26, 10, 2);
+          // Pole top finial
+          bannerG.fillStyle(0xe6c060, 1);
+          bannerG.fillRect(11, 6, 2, 2);
+          bannerG.generateTexture("tile-banner", 24, 64);
+          bannerG.destroy();
+
+          // === Tree sprite (48×56) ===
+          // Chunky bushy canopy + brown trunk. Built once, placed many
+          // times. Two color shells for that "shaded volume" feel.
+          const treeG = this.make.graphics({ x: 0, y: 0 }, false);
+          // Trunk
+          treeG.fillStyle(0x4a2e1a, 1);
+          treeG.fillRect(20, 38, 8, 14);
+          treeG.fillStyle(0x301d0e, 1);
+          treeG.fillRect(20, 50, 8, 2);
+          // Canopy — outer (darkest)
+          treeG.fillStyle(0x1f3a18, 1);
+          treeG.fillCircle(24, 22, 22);
+          // Canopy — mid
+          treeG.fillStyle(0x2f5a24, 1);
+          treeG.fillCircle(24, 22, 19);
+          // Canopy — light spot
+          treeG.fillStyle(0x4a7a36, 1);
+          treeG.fillCircle(20, 18, 12);
+          // Highlight blob top-left
+          treeG.fillStyle(0x6a9a48, 1);
+          treeG.fillCircle(18, 14, 5);
+          treeG.generateTexture("tile-tree", 48, 56);
+          treeG.destroy();
+        }
+
+        /** Stone-paved path between two world points. Rendered as a
+         *  tileSprite of the stone-tile texture for the proper "Zelda
+         *  flagstone path" feel — no flat colored rectangles. */
+        buildPath(x1: number, y1: number, x2: number, y2: number) {
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const len = Math.hypot(dx, dy);
+          const cx = (x1 + x2) / 2;
+          const cy = (y1 + y2) / 2;
+          const angle = Math.atan2(dy, dx);
+          const path = this.add.tileSprite(cx, cy, len, 64, "tile-stone");
+          path.setRotation(angle);
+          path.setDepth(-9);
+        }
+
+        /** Build a themed sub-zone with: a circular floor of distinct
+         *  ground color, a landmark cluster of primitive shapes
+         *  matching the zone's identity, a wordmark, and a soft glow.
+         *  Zones differ visually so the user navigates by landmark,
+         *  not by reading text. */
+        buildZone(opts: {
+          x: number;
+          y: number;
+          label: string;
+          color: number;
+          ground: number;
+          kind: "atelier" | "pavilion" | "grove" | "forum";
+        }) {
+          const { x, y, label, color, ground, kind } = opts;
+
+          // Distinct floor tint per zone — warm for brands, cool for
+          // ateliers, green for grove, dusk-pink for forum.
+          this.add
+            .circle(x, y, 170, ground, 0.92)
+            .setStrokeStyle(1, color, 0.35)
+            .setDepth(-8);
+
+          // Inner accent ring + soft glow disc.
+          this.add
+            .circle(x, y, 170, color, 0)
+            .setStrokeStyle(1, color, 0.18)
+            .setDepth(-7);
+          this.add.circle(x, y, 130, color, 0.06).setDepth(-7);
+
+          // === Zone-specific landmark ===
+          if (kind === "atelier") {
+            // 4 ArMM1998 houses arranged as a creator workshop district.
+            // 2 big houses flanking + 2 small cottages — classic
+            // Zelda-village layout. Scaled 3× source so each building
+            // is properly imposing next to a 60-px-tall character.
+            const buildings: Array<[number, number, string, number]> = [
+              [-110, -50, "house-a",       3.0],
+              [110,  -50, "house-b",       3.0],
+              [-100,  90, "cottage-small", 2.5],
+              [100,   90, "cottage-small", 2.5],
+            ];
+            for (const [ox, oy, frame, scale] of buildings) {
+              const b = this.add.image(x + ox, y + oy, "armm", frame);
+              b.setOrigin(0.5, 0.85);
+              b.setScale(scale);
+              b.setDepth(-6 + oy * 0.0001);
+            }
+          } else if (kind === "pavilion") {
+            // Brand Pavilions: 2 detailed houses + market stall + a
+            // formation of blue banners. SNES-fair-style square.
+            const houseL = this.add.image(x - 110, y - 50, "armm", "house-a");
+            houseL.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-6);
+            const houseR = this.add.image(x + 110, y - 50, "armm", "house-b");
+            houseR.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-6);
+            // Market stall centered
+            const stall = this.add.image(x, y + 50, "armm", "market-stall");
+            stall.setOrigin(0.5, 0.85).setScale(2.5).setDepth(-5);
+            // 5 banner poles flanking
+            const bannerXs = [-180, -100, 0, 100, 180];
+            for (const bx of bannerXs) {
+              const banner = this.add.image(x + bx, y + 130, "armm", "banner-blue");
+              banner.setOrigin(0.5, 0.95).setScale(2.0).setDepth(-4);
+              banner.setTint(color);
+              this.tweens.add({
+                targets: banner,
+                x: { from: x + bx - 1, to: x + bx + 1 },
+                duration: 1500 + Math.random() * 400,
+                ease: "Sine.inOut",
+                yoyo: true,
+                repeat: -1,
+              });
+            }
+          } else if (kind === "grove") {
+            // Round green canopy trees in the Zelda-overworld style,
+            // clustered + understory bushes + a boulder + log for
+            // natural-feel decor.
+            const layout: Array<[number, number, string, number]> = [
+              [   0,  -90, "tree-round", 2.8],
+              [ -90,  -50, "tree-round", 2.4],
+              [  90,  -50, "tree-round", 2.4],
+              [-110,   20, "tree-round", 2.2],
+              [ 110,   20, "tree-round", 2.2],
+              [ -50,   80, "tree-round", 2.0],
+              [  50,   80, "tree-round", 2.0],
+            ];
+            for (const [ox, oy, frame, scale] of layout) {
+              const t = this.add.image(x + ox, y + oy, "armm", frame);
+              t.setOrigin(0.5, 0.85);
+              t.setScale(scale);
+              t.setDepth(-5 + oy * 0.0001);
+            }
+            // Bushes scattered as understory
+            const bushes: Array<[number, number, string]> = [
+              [ -70, 120, "bush-a"], [ 70, 120, "bush-b"],
+              [-140,  80, "bush-b"], [140,  80, "bush-a"],
+              [   0, 140, "bush-a"], [-30, -30, "bush-b"],
+            ];
+            for (const [ox, oy, frame] of bushes) {
+              const b = this.add.image(x + ox, y + oy, "armm", frame);
+              b.setOrigin(0.5, 0.7);
+              b.setScale(2.2);
+              b.setDepth(-4);
+            }
+            // A boulder + log as ground props
+            const boulder = this.add.image(x + 30, y - 10, "armm", "boulder");
+            boulder.setOrigin(0.5, 0.85).setScale(2.0).setDepth(-4);
+            const log = this.add.image(x - 60, y + 50, "armm", "log");
+            log.setOrigin(0.5, 0.85).setScale(2.0).setDepth(-4);
+          } else if (kind === "forum") {
+            // Forum: a stone gate + 4 cone-roofed towers around a
+            // central statue. Reads as a civic square with monuments.
+            const statue = this.add.image(x, y, "armm", "statue");
+            statue.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-5);
+            const gate = this.add.image(x, y - 110, "armm", "stone-gate");
+            gate.setOrigin(0.5, 0.85).setScale(2.5).setDepth(-6);
+            // 4 small towers at compass points
+            for (const [ox, oy] of [[-130, -30], [130, -30], [-130, 100], [130, 100]]) {
+              const tower = this.add.image(x + ox, y + oy, "armm", "tower-cone");
+              tower.setOrigin(0.5, 0.85).setScale(2.0).setDepth(-6);
+            }
+          }
+
+          // Wordmark below the zone — mono uppercase, accent color.
+          this.add
+            .text(x, y + 190, label, {
+              fontFamily: "Inter, ui-monospace, monospace",
+              fontSize: "12px",
+              fontStyle: "700",
+              color: hex(color),
+            })
+            .setOrigin(0.5)
+            .setDepth(-3);
+        }
+
+        /** Build a small archetype badge (~14px) in the right
+         *  head-shape for the given code, in the accent color. Returns
+         *  a container with a soft glow + the shape outline + small
+         *  inner dot, so the badge reads as a logo not a noise dot. */
+        buildBadge(code: string, color: number): Phaser.GameObjects.Container {
+          const c = this.add.container(0, 0);
+          const shape = ARCHETYPE_SHAPE[code] ?? "circle";
+
+          // Soft circular glow behind every badge regardless of shape.
+          const glow = this.add.circle(0, 0, 12, color, 0.32);
+          c.add(glow);
+
+          const g = this.add.graphics();
+          g.lineStyle(2, color, 1);
+          g.fillStyle(0x0b0f12, 0.92);
+          const r = 7;
+          if (shape === "circle") {
+            g.fillCircle(0, 0, r);
+            g.strokeCircle(0, 0, r);
+          } else if (shape === "oval") {
+            g.fillEllipse(0, 0, r * 2.2, r * 1.6);
+            g.strokeEllipse(0, 0, r * 2.2, r * 1.6);
+          } else if (shape === "square") {
+            g.fillRect(-r, -r, r * 2, r * 2);
+            g.strokeRect(-r, -r, r * 2, r * 2);
+          } else if (shape === "round-rect") {
+            g.fillRoundedRect(-r * 1.1, -r * 0.9, r * 2.2, r * 1.8, 3);
+            g.strokeRoundedRect(-r * 1.1, -r * 0.9, r * 2.2, r * 1.8, 3);
+          } else if (shape === "diamond") {
+            const d = r * 1.15;
+            const pts = [0, -d, d, 0, 0, d, -d, 0];
+            g.fillPoints(pairs(pts), true);
+            g.strokePoints(pairs(pts), true);
+          } else if (shape === "triangle") {
+            const d = r * 1.15;
+            const pts = [0, -d, d, d * 0.85, -d, d * 0.85];
+            g.fillPoints(pairs(pts), true);
+            g.strokePoints(pairs(pts), true);
+          } else if (shape === "hexagon") {
+            const pts: number[] = [];
+            for (let i = 0; i < 6; i++) {
+              const a = (Math.PI / 3) * i - Math.PI / 2;
+              pts.push(Math.cos(a) * r, Math.sin(a) * r);
+            }
+            g.fillPoints(pairs(pts), true);
+            g.strokePoints(pairs(pts), true);
+          } else if (shape === "pentagon") {
+            const pts: number[] = [];
+            for (let i = 0; i < 5; i++) {
+              const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+              pts.push(Math.cos(a) * r, Math.sin(a) * r);
+            }
+            g.fillPoints(pairs(pts), true);
+            g.strokePoints(pairs(pts), true);
+          }
+          c.add(g);
+
+          // Inner dot — the "face anchor" from the mark system.
+          c.add(this.add.circle(0, 0, 1.8, color, 1));
+
+          return c;
+        }
+
+        /** Compose the central Plaza — concentric paved pad, fountain
+         *  rim with pulsing water, four corner light pillars, and a
+         *  quiet "PLAZA · GHOSTSIGNAL" wordmark inscribed on the
+         *  outer ring. All drawn with Phaser primitives — no tileset
+         *  yet. Phase 3 swaps these for proper LPC tiles. */
+        buildPlaza(cx: number, cy: number) {
+          const accent = 0x7c58d6;
+
+          // 1) Outer paved disc — large, very soft.
+          this.add
+            .circle(cx, cy, 220, 0x1f2632, 0.85)
+            .setStrokeStyle(1, 0x3a414b, 0.5)
+            .setDepth(-9);
+          // 2) Concentric ring at ~160 with archetype-violet hairline.
+          this.add
+            .circle(cx, cy, 160, accent, 0)
+            .setStrokeStyle(1, accent, 0.32)
+            .setDepth(-8);
+          // 3) Inner stone pad.
+          this.add
+            .circle(cx, cy, 120, 0x252c39, 0.9)
+            .setStrokeStyle(1, accent, 0.18)
+            .setDepth(-7);
+
+          // 4) Compass-direction paving slabs radiating out.
+          const slab = (angleRad: number) => {
+            const dist = 180;
+            const px = cx + Math.cos(angleRad) * dist;
+            const py = cy + Math.sin(angleRad) * dist;
+            const slabShape = this.add.rectangle(px, py, 56, 28, 0x1f2632, 0.75);
+            slabShape.setStrokeStyle(1, accent, 0.18);
+            slabShape.setRotation(angleRad + Math.PI / 2);
+            slabShape.setDepth(-8);
+          };
+          slab(0);
+          slab(Math.PI / 2);
+          slab(Math.PI);
+          slab(-Math.PI / 2);
+
+          // 5) Real ArMM1998 stone fountain as the plaza centerpiece.
+          const fountain = this.add.image(cx, cy, "armm", "fountain-a");
+          fountain.setOrigin(0.5, 0.65);
+          fountain.setScale(3.0);
+          fountain.setDepth(-5);
+          // Subtle accent-tinted underlay so the fountain glows in
+          // the plaza accent color.
+          this.add.ellipse(cx, cy + 12, 180, 36, accent, 0.18).setDepth(-7);
+
+          // 6) Four GhostSignal banner poles at the compass tips.
+          for (const [ox, oy] of [[200, 0], [-200, 0], [0, 200], [0, -200]]) {
+            const banner = this.add.image(cx + ox, cy + oy, "armm", "banner-blue");
+            banner.setOrigin(0.5, 0.95).setScale(2.2).setDepth(-4);
+            banner.setTint(accent);
+            this.tweens.add({
+              targets: banner,
+              x: { from: cx + ox - 1, to: cx + ox + 1 },
+              duration: 1600 + Math.random() * 400,
+              ease: "Sine.inOut",
+              yoyo: true,
+              repeat: -1,
+            });
+          }
+
+          // 7) Wordmark inscribed below the plaza.
+          this.add
+            .text(cx, cy + 246, "PLAZA · GHOSTSIGNAL", {
+              fontFamily: "Inter, ui-monospace, monospace",
+              fontSize: "11px",
+              color: "#a78bd9",
+              fontStyle: "600",
+            })
+            .setOrigin(0.5)
+            .setDepth(-3);
+        }
+
+        /** Public send entry the React HUD calls when the user submits
+         *  a chat message. No-op if not connected yet. */
+        sendChat(body: string) {
+          this.room?.send("chat", { body });
+        }
+
+        /** Spawn a speech bubble above the speaker's avatar. Word-wraps,
+         *  accent-tinted by archetype, drifts up + fades over 4 s. */
+        spawnBubble(msg: ChatMessage) {
+          const avatar = this.avatars.get(msg.sessionId);
+          if (!avatar) return;
+          const color = ARCHETYPE_COLOR[msg.archetype] ?? 0xffffff;
+
+          // Build the bubble at the avatar's current world position.
+          // Phaser layers float as their own GameObjects (NOT children
+          // of the avatar container) so the bubble can drift up freely
+          // without being dragged by the avatar's idle bob.
+          const px = avatar.x;
+          const py = avatar.y - 96;
+
+          const bubble = this.add.container(px, py);
+          bubble.setDepth(50);
+
+          const text = this.add
+            .text(0, 0, msg.body, {
+              fontFamily: "Inter, sans-serif",
+              fontSize: "12px",
+              color: "#0b0f12",
+              wordWrap: { width: 200 },
+              align: "center",
+              padding: { x: 0, y: 0 },
+            })
+            .setOrigin(0.5, 0.5);
+
+          const w = Math.max(40, text.width + 20);
+          const h = text.height + 12;
+          const bg = this.add.graphics();
+          bg.fillStyle(0xf6f4ff, 0.96);
+          bg.lineStyle(2, color, 1);
+          bg.fillRoundedRect(-w / 2, -h / 2, w, h, 10);
+          bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 10);
+          // Tail pointing down at the avatar's head.
+          bg.fillStyle(0xf6f4ff, 0.96);
+          bg.lineStyle(2, color, 1);
+          bg.beginPath();
+          bg.moveTo(-6, h / 2);
+          bg.lineTo(0, h / 2 + 8);
+          bg.lineTo(6, h / 2);
+          bg.closePath();
+          bg.fillPath();
+          bg.strokePath();
+
+          bubble.add([bg, text]);
+
+          // Animate: float up + fade out over 4 s.
+          this.tweens.add({
+            targets: bubble,
+            y: py - 28,
+            alpha: { from: 1, to: 0 },
+            duration: 4000,
+            ease: "Sine.out",
+            onComplete: () => bubble.destroy(),
+          });
+
+          // While the bubble lives, follow the avatar horizontally so
+          // it doesn't lag behind a walking speaker.
+          const follow = this.time.addEvent({
+            delay: 16,
+            loop: true,
+            callback: () => {
+              if (!bubble.active) {
+                follow.remove();
+                return;
+              }
+              const a = this.avatars.get(msg.sessionId);
+              if (a) bubble.x = a.x;
+            },
+          });
+        }
+
         shutdown() {
           this.room?.leave();
           this.room = null;
@@ -382,6 +1237,12 @@ export default function WorldClient() {
         scene: [WorldScene],
       });
       gameRef.current = game;
+      // Expose the scene's chat sender to React. The scene exists once
+      // the game has booted its first frame.
+      sendChatRef.current = (body: string) => {
+        const scene = game.scene.getScene("world") as WorldScene | null;
+        scene?.sendChat(body);
+      };
 
       cleanup = () => {
         const scene = game.scene.getScene("world") as WorldScene | null;
@@ -397,13 +1258,53 @@ export default function WorldClient() {
     };
   }, []);
 
+  function submitChat(e: React.FormEvent) {
+    e.preventDefault();
+    const body = chatDraft.trim();
+    if (!body) return;
+    sendChatRef.current?.(body);
+    setChatDraft("");
+  }
+
   return (
     <main className={styles.worldRoot}>
       <div ref={hostRef} className={styles.canvasHost} aria-label="GhostSignal world canvas" />
+      <form
+        className={styles.chatForm}
+        onSubmit={submitChat}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <input
+          type="text"
+          className={styles.chatInput}
+          value={chatDraft}
+          onChange={(e) => setChatDraft(e.target.value.slice(0, 200))}
+          placeholder="Press Enter to speak…"
+          aria-label="Speak to the world"
+          maxLength={200}
+        />
+      </form>
     </main>
   );
 }
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
+}
+
+/** Phaser's Graphics fillPoints / strokePoints want an array of
+ *  {x, y} objects. We carry the badge vertices as a flat number list
+ *  for readability and convert here. */
+function pairs(flat: number[]): Phaser.Types.Math.Vector2Like[] {
+  const out: Phaser.Types.Math.Vector2Like[] = [];
+  for (let i = 0; i < flat.length; i += 2) {
+    out.push({ x: flat[i], y: flat[i + 1] });
+  }
+  return out;
+}
+
+/** Convert a Phaser color int (e.g. 0xfbad25) to a CSS hex string
+ *  (e.g. "#fbad25") for use in Text fill colors. */
+function hex(color: number): string {
+  return "#" + color.toString(16).padStart(6, "0");
 }

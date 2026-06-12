@@ -21,3 +21,40 @@
 .canvasHost canvas {
   display: block;
 }
+
+/* Chat input pinned bottom-center. Sits above the canvas but doesn't
+ * steal keyboard focus by default — user clicks it to speak.
+ * When focused, Phaser's WASD input will fight ours; we live with that
+ * for now (focusing the input means you stopped walking anyway). */
+.chatForm {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: min(520px, 92vw);
+}
+
+.chatInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(11, 15, 18, 0.78);
+  color: #f4f4f6;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  border-radius: 22px;
+  outline: none;
+  backdrop-filter: blur(8px);
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.chatInput::placeholder {
+  color: rgba(244, 244, 246, 0.45);
+}
+
+.chatInput:focus {
+  border-color: rgba(124, 88, 214, 0.7);
+  background: rgba(11, 15, 18, 0.92);
+}
