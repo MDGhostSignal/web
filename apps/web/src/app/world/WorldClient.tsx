@@ -63,6 +63,40 @@ const VILLAGE_SCALE = 3;
 const SPEED = 6;
 const SEND_INTERVAL_MS = 100;
 
+// === Church interior ===
+// Church.png is 240×465 px native; at 3× display scale that's
+// 720×1395 px. We render it as its own "room" with its own camera +
+// movement bounds. The interior lives at the SAME world-space block
+// that the church facade occupies in the village so a player coming
+// out of the door reappears where they entered.
+const CHURCH_INTERIOR_SCALE = 3;
+const CHURCH_INTERIOR_W = 240 * CHURCH_INTERIOR_SCALE; // 720
+const CHURCH_INTERIOR_H = 465 * CHURCH_INTERIOR_SCALE; // 1395
+// Interior is anchored top-center to mirror the church column on the
+// village map. Interior origin in world coords:
+const CHURCH_INTERIOR_X = (WORLD_W_TILES * TILE) / 2 - CHURCH_INTERIOR_W / 2;
+const CHURCH_INTERIOR_Y = 0;
+// Door trigger on the village map — where the player must stand to
+// enter the church. Native (768×1024) door center ~ (355, 150);
+// trigger sits ON the door itself at native (355, 140) — slightly
+// above where the painted door reads visually, since the avatar's
+// origin point (feet) needs to be at this y for the prompt to fire.
+// Multiply by VILLAGE_SCALE for world coords.
+const CHURCH_DOOR_X = 355 * VILLAGE_SCALE; // 1065
+const CHURCH_DOOR_Y = 140 * VILLAGE_SCALE; // 420
+const CHURCH_DOOR_RADIUS = 56;
+// Inside-the-church spawn — just above the bottom door, on the red
+// carpet. Interior PNG native door ~(120, 445); at 3× = (360, 1335).
+const CHURCH_INTERIOR_SPAWN_X = CHURCH_INTERIOR_X + 120 * CHURCH_INTERIOR_SCALE; // door-center, interior-local
+const CHURCH_INTERIOR_SPAWN_Y = CHURCH_INTERIOR_Y + 425 * CHURCH_INTERIOR_SCALE; // a few px above the bottom edge
+// Exit trigger inside the church — decoupled from the spawn so we
+// can place it on the painted door tile itself. Sits ~30 px (PNG
+// native) below the spawn so the player has to walk down to leave
+// rather than triggering it immediately on entry.
+const CHURCH_INTERIOR_EXIT_X = CHURCH_INTERIOR_SPAWN_X;
+const CHURCH_INTERIOR_EXIT_Y = CHURCH_INTERIOR_Y + 455 * CHURCH_INTERIOR_SCALE;
+const CHURCH_EXIT_RADIUS = 72;
+
 const ARCHETYPE_CODES = [
   "C-P-C",
   "C-P-L",
@@ -139,13 +173,28 @@ type ChatMessage = {
   at: number;
 };
 
+/** A keypress-triggered action the player can take right now —
+ *  surfaced by the Phaser scene whenever the player stands inside a
+ *  trigger zone (church door, future shop doors, etc.). Consumed by
+ *  the React HUD to render the on-screen action button. */
+type WorldAction = { kind: "enter-church" | "exit-church"; label: string } | null;
+
+/** Which "room" the local player is currently rendered in. Other
+ *  rooms get added later (shops, atelier, council hall) and use the
+ *  same single-Phaser-scene location pattern. */
+type WorldLocation = "village" | "church-interior";
+
 export default function WorldClient() {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<unknown>(null);
   /** Set inside the Phaser scene's create(). The HUD's chat form calls
    *  this on submit. */
   const sendChatRef = useRef<((body: string) => void) | null>(null);
+  /** Set inside the Phaser scene's create(). The HUD's action button
+   *  calls this when clicked; the scene resolves it to enter/exit. */
+  const triggerActionRef = useRef<(() => void) | null>(null);
   const [chatDraft, setChatDraft] = useState("");
+  const [action, setAction] = useState<WorldAction>(null);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -174,6 +223,30 @@ export default function WorldClient() {
         /** Ambient chicken NPCs — client-only state, no server sync. */
         chickens: Chicken[] = [];
 
+        // === Church interior state ===
+        /** Which room the local player is in. Drives backdrop swap,
+         *  camera + movement bounds, and who's visible. */
+        location: WorldLocation = "village";
+        /** Village backdrop — hidden while the player is in an
+         *  interior. */
+        villageBg: Phaser.GameObjects.Image | null = null;
+        /** The interior backdrop image — created at scene start,
+         *  hidden until the player enters the church. */
+        churchInteriorBg: Phaser.GameObjects.Image | null = null;
+        /** Floating "Press E" prompt above the local avatar — shown
+         *  whenever an action is available. */
+        pressPrompt: Phaser.GameObjects.Text | null = null;
+        /** Whatever action is currently available to the player. The
+         *  scene re-evaluates this every frame in `update()` and
+         *  forwards it to the React HUD via `onAction`. */
+        currentAction: WorldAction = null;
+        /** React HUD callback for action prompt changes. Set by the
+         *  parent component after the scene boots. */
+        onAction: (next: WorldAction) => void = () => {};
+        /** Village-tile position to restore when the player exits the
+         *  church. Captured at the moment of entry. */
+        villageReturnTile = { x: 0, y: 0 };
+
         keys!: {
           up: Phaser.Input.Keyboard.Key;
           down: Phaser.Input.Keyboard.Key;
@@ -183,6 +256,7 @@ export default function WorldClient() {
           a: Phaser.Input.Keyboard.Key;
           s: Phaser.Input.Keyboard.Key;
           d: Phaser.Input.Keyboard.Key;
+          e: Phaser.Input.Keyboard.Key;
         };
 
         constructor() {
@@ -212,6 +286,13 @@ export default function WorldClient() {
             "hm-chickens",
             "/world/sprites/SNES - Harvest Moon - Animals - Chicken.png",
           );
+          // Church interior background — entered via the door on the
+          // village map. 240×465 native; rendered at 3× to match the
+          // village's display scale.
+          this.load.image(
+            "hm-church-interior",
+            "/world/sprites/SNES - Harvest Moon - Backgrounds - Church.png",
+          );
         }
 
         create() {
@@ -232,6 +313,7 @@ export default function WorldClient() {
           village.setOrigin(0, 0);
           village.setScale(VILLAGE_SCALE);
           village.setDepth(-10);
+          this.villageBg = village;
 
           // === Harvest Moon chickens ===
           // Mature hen + baby chick near the world spawn point. Each
@@ -331,7 +413,44 @@ export default function WorldClient() {
             a: kb.addKey(Phaser.Input.Keyboard.KeyCodes.A),
             s: kb.addKey(Phaser.Input.Keyboard.KeyCodes.S),
             d: kb.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+            e: kb.addKey(Phaser.Input.Keyboard.KeyCodes.E),
           };
+          // Single-shot E handler (keyDown event, not held). The
+          // per-frame check in update() can't use .isDown alone —
+          // that'd re-trigger on every frame the player holds E.
+          this.keys.e.on("down", () => this.tryAction());
+
+          // === Church interior backdrop ===
+          // Created hidden; flipped on by enterChurch(). Lives at the
+          // same world-space block as the church facade on the
+          // village painting so the camera shift feels like a real
+          // pan into the building.
+          this.churchInteriorBg = this.add.image(
+            CHURCH_INTERIOR_X,
+            CHURCH_INTERIOR_Y,
+            "hm-church-interior",
+          );
+          this.churchInteriorBg.setOrigin(0, 0);
+          this.churchInteriorBg.setScale(CHURCH_INTERIOR_SCALE);
+          this.churchInteriorBg.setDepth(-10);
+          this.churchInteriorBg.setVisible(false);
+
+          // Floating "Press E" prompt that hovers above the local
+          // avatar whenever an action is in range. Camera-space; we
+          // move it manually each frame in updatePrompt().
+          this.pressPrompt = this.add
+            .text(0, 0, "Press E", {
+              fontFamily: "Inter, ui-monospace, monospace",
+              fontSize: "12px",
+              color: "#ffffff",
+              backgroundColor: "rgba(11, 15, 18, 0.82)",
+              padding: { x: 8, y: 4 },
+              stroke: "#0b0f12",
+              strokeThickness: 2,
+            })
+            .setOrigin(0.5, 1)
+            .setDepth(1000)
+            .setVisible(false);
 
           this.connect();
         }
@@ -539,8 +658,8 @@ export default function WorldClient() {
           const dt = deltaMs / 1000;
 
           // Ambient chickens — proximity-scared, run-away, resettle.
-          // Runs every frame regardless of network state.
-          this.updateChickens(dt);
+          // Only roam in the village; hidden + frozen indoors.
+          if (this.location === "village") this.updateChickens(dt);
 
           // Local input → predicted position
           let vx = 0;
@@ -550,19 +669,23 @@ export default function WorldClient() {
           if (this.keys.up.isDown || this.keys.w.isDown) vy -= 1;
           if (this.keys.down.isDown || this.keys.s.isDown) vy += 1;
           const moving = vx !== 0 || vy !== 0;
+          // Per-location movement bounds (tile coords). Interior
+          // bounds keep the player inside the church PNG with a
+          // small wall buffer; village uses the full world.
+          const bounds = this.movementBoundsTiles();
           if (moving) {
             const len = Math.hypot(vx, vy);
             vx /= len;
             vy /= len;
             this.ownPos.x = clamp(
               this.ownPos.x + vx * SPEED * dt,
-              0,
-              WORLD_W_TILES,
+              bounds.minX,
+              bounds.maxX,
             );
             this.ownPos.y = clamp(
               this.ownPos.y + vy * SPEED * dt,
-              0,
-              WORLD_H_TILES,
+              bounds.minY,
+              bounds.maxY,
             );
             if (Math.abs(vx) > Math.abs(vy)) {
               this.ownFacing = vx > 0 ? "right" : "left";
@@ -601,6 +724,174 @@ export default function WorldClient() {
             avatar.x += (tx - avatar.x) * Math.min(1, dt * 12);
             avatar.y += (ty - avatar.y) * Math.min(1, dt * 12);
           });
+
+          // Action prompts (E to enter / exit). Re-evaluated every
+          // frame so they pop on/off as the player walks in and out
+          // of trigger zones.
+          this.updateActionPrompt();
+        }
+
+        /** Per-location player-clamp rectangle in TILE coordinates.
+         *  Interior bounds keep the player inside the church PNG
+         *  with a small wall buffer; village uses the full world. */
+        movementBoundsTiles(): { minX: number; minY: number; maxX: number; maxY: number } {
+          if (this.location === "church-interior") {
+            const margin = 32; // px wall buffer
+            return {
+              minX: (CHURCH_INTERIOR_X + margin) / TILE,
+              minY: (CHURCH_INTERIOR_Y + margin) / TILE,
+              maxX: (CHURCH_INTERIOR_X + CHURCH_INTERIOR_W - margin) / TILE,
+              maxY: (CHURCH_INTERIOR_Y + CHURCH_INTERIOR_H - margin) / TILE,
+            };
+          }
+          return { minX: 0, minY: 0, maxX: WORLD_W_TILES, maxY: WORLD_H_TILES };
+        }
+
+        /** Check every trigger zone in the current room. If the local
+         *  player is inside one, expose a `WorldAction` so the React
+         *  HUD can render a button and `tryAction()` knows what to do
+         *  on E. Also positions the floating "Press E" prompt above
+         *  the player's head. */
+        updateActionPrompt() {
+          const px = this.ownPos.x * TILE;
+          const py = this.ownPos.y * TILE;
+          let next: WorldAction = null;
+
+          if (this.location === "village") {
+            // Church door — circle around the trigger point so the
+            // player can be sloppy by a tile or two.
+            const dx = px - CHURCH_DOOR_X;
+            const dy = py - CHURCH_DOOR_Y;
+            if (Math.hypot(dx, dy) < CHURCH_DOOR_RADIUS) {
+              next = { kind: "enter-church", label: "Enter Church" };
+            }
+          } else if (this.location === "church-interior") {
+            // Stand on (or near) the painted bottom-door tile to
+            // leave. The exit trigger is decoupled from the spawn
+            // so entering doesn't immediately re-fire it.
+            const dx = px - CHURCH_INTERIOR_EXIT_X;
+            const dy = py - CHURCH_INTERIOR_EXIT_Y;
+            if (Math.hypot(dx, dy) < CHURCH_EXIT_RADIUS) {
+              next = { kind: "exit-church", label: "Leave Church" };
+            }
+          }
+
+          // Floating "Press E" above the player. Position on the
+          // local avatar each frame so it tracks during movement.
+          if (this.pressPrompt && this.ownSessionId) {
+            const ownAvatar = this.avatars.get(this.ownSessionId);
+            if (next && ownAvatar) {
+              this.pressPrompt.setText(`Press E — ${next.label}`);
+              this.pressPrompt.setPosition(ownAvatar.x, ownAvatar.y - 90);
+              this.pressPrompt.setVisible(true);
+            } else {
+              this.pressPrompt.setVisible(false);
+            }
+          }
+
+          // Only push to React when the prompt actually changed —
+          // avoids re-rendering the HUD every frame.
+          if (
+            (this.currentAction?.kind ?? null) !== (next?.kind ?? null)
+          ) {
+            this.currentAction = next;
+            this.onAction(next);
+          }
+        }
+
+        /** Resolve whatever action is currently in range. Fired by
+         *  the E key OR the on-screen button. Silently no-ops if
+         *  nothing's available. */
+        tryAction() {
+          const a = this.currentAction;
+          if (!a) return;
+          if (a.kind === "enter-church") this.enterChurch();
+          else if (a.kind === "exit-church") this.exitChurch();
+        }
+
+        /** Swap to the church-interior "room": hide village +
+         *  chickens + other-player avatars, show interior backdrop,
+         *  teleport local avatar to interior spawn, re-bound the
+         *  camera. Single-player visual for now — other clients in
+         *  the village will see this player at the interior coords,
+         *  which puts them somewhere up near the top of the village
+         *  painting. Acceptable for MVP. */
+        enterChurch() {
+          if (this.location === "church-interior") return;
+          this.location = "church-interior";
+
+          // Save where we were so we can put the player back outside
+          // the door on exit.
+          this.villageReturnTile = { x: this.ownPos.x, y: this.ownPos.y };
+
+          // Hide the village + chickens.
+          this.villageBg?.setVisible(false);
+          for (const ch of this.chickens) ch.sprite.setVisible(false);
+          // Hide everyone else (single-player interior MVP).
+          this.avatars.forEach((avatar, sessionId) => {
+            if (sessionId !== this.ownSessionId) avatar.setVisible(false);
+          });
+          this.churchInteriorBg?.setVisible(true);
+
+          // Teleport local player to inside-the-door spawn.
+          this.ownPos = {
+            x: CHURCH_INTERIOR_SPAWN_X / TILE,
+            y: CHURCH_INTERIOR_SPAWN_Y / TILE,
+          };
+          this.ownFacing = "up"; // face the altar
+          const ownAvatar = this.avatars.get(this.ownSessionId!);
+          if (ownAvatar) {
+            ownAvatar.x = CHURCH_INTERIOR_SPAWN_X;
+            ownAvatar.y = CHURCH_INTERIOR_SPAWN_Y;
+            this.applyFacing(ownAvatar, this.ownFacing, false);
+          }
+
+          // Camera bounded to interior + framed on the spawn.
+          this.cameras.main.setBounds(
+            CHURCH_INTERIOR_X,
+            CHURCH_INTERIOR_Y,
+            CHURCH_INTERIOR_W,
+            CHURCH_INTERIOR_H,
+          );
+          this.cameras.main.centerOn(
+            CHURCH_INTERIOR_SPAWN_X,
+            CHURCH_INTERIOR_SPAWN_Y,
+          );
+
+          this.hintText.setText("WASD / arrows to move · E to leave");
+        }
+
+        /** Reverse `enterChurch`: hide interior, show village +
+         *  chickens + other avatars, drop the player back on the
+         *  doorstep where they entered. */
+        exitChurch() {
+          if (this.location === "village") return;
+          this.location = "village";
+
+          this.churchInteriorBg?.setVisible(false);
+          // Re-show village + chickens + everyone else.
+          this.villageBg?.setVisible(true);
+          for (const ch of this.chickens) ch.sprite.setVisible(true);
+          this.avatars.forEach((avatar) => avatar.setVisible(true));
+
+          // Put player back exactly where they entered (just outside
+          // the door).
+          this.ownPos = { ...this.villageReturnTile };
+          this.ownFacing = "down";
+          const ownAvatar = this.avatars.get(this.ownSessionId!);
+          if (ownAvatar) {
+            ownAvatar.x = this.ownPos.x * TILE;
+            ownAvatar.y = this.ownPos.y * TILE;
+            this.applyFacing(ownAvatar, this.ownFacing, false);
+          }
+
+          // Camera bounded to full world again.
+          const worldW = WORLD_W_TILES * TILE;
+          const worldH = WORLD_H_TILES * TILE;
+          this.cameras.main.setBounds(0, 0, worldW, worldH);
+          this.cameras.main.centerOn(this.ownPos.x * TILE, this.ownPos.y * TILE);
+
+          this.hintText.setText("WASD / arrows to move");
         }
 
         /** Define named frames on the loaded ArMM1998 atlas so
@@ -1328,6 +1619,22 @@ export default function WorldClient() {
         const scene = game.scene.getScene("world") as WorldScene | null;
         scene?.sendChat(body);
       };
+      // The action button + "Press E" prompt are driven by the
+      // scene's per-frame trigger check. We poll for the scene to
+      // exist (it doesn't until Phaser's first boot tick), then wire
+      // both ends: scene → React via onAction, React → scene via
+      // triggerActionRef.
+      const wireAction = () => {
+        const scene = game.scene.getScene("world") as WorldScene | null;
+        if (!scene) {
+          // Scene not booted yet — try again next tick.
+          setTimeout(wireAction, 30);
+          return;
+        }
+        scene.onAction = (next) => setAction(next);
+        triggerActionRef.current = () => scene.tryAction();
+      };
+      wireAction();
 
       cleanup = () => {
         const scene = game.scene.getScene("world") as WorldScene | null;
@@ -1354,6 +1661,17 @@ export default function WorldClient() {
   return (
     <main className={styles.worldRoot}>
       <div ref={hostRef} className={styles.canvasHost} aria-label="GhostSignal world canvas" />
+      {action && (
+        <button
+          type="button"
+          className={styles.actionButton}
+          onClick={() => triggerActionRef.current?.()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <span className={styles.actionKey}>E</span>
+          <span className={styles.actionLabel}>{action.label}</span>
+        </button>
+      )}
       <form
         className={styles.chatForm}
         onSubmit={submitChat}

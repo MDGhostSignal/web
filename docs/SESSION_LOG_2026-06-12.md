@@ -288,3 +288,128 @@ nothing references it from code.
   contact PII export — 261 rows). Not committed; left untracked
   pending explicit decision on whether it should live in this
   repo or a private/internal store.
+
+---
+
+## Addendum 2 — church entry / exit interaction
+
+The Church.png interior sprite that landed earlier was sitting in
+the asset folder unused. Wired it up as the first interactive
+building in the village.
+
+### A · Trigger + prompt loop
+
+Added a `WorldLocation = "village" | "church-interior"` state to
+`MainScene`. Per-frame `updateActionPrompt()` checks whether the
+local player overlaps a trigger zone in the current room and, if
+so, exposes a `WorldAction` to React. The React HUD renders a
+top-center pill button (`E` keycap + label) and the Phaser scene
+floats a matching "Press E — Enter Church" text above the avatar
+so both mouse and keyboard users see the same affordance.
+
+Trigger zones are circular (radius check, sloppy by a tile or two)
+and live in one constant block at the top of the file so they can
+be nudged without hunting through the scene code:
+
+| Constant                  | Final value (PNG-native → world) |
+|---------------------------|----------------------------------|
+| `CHURCH_DOOR_X`           | 355 → 1065                       |
+| `CHURCH_DOOR_Y`           | 140 → 420 (nudged up after test) |
+| `CHURCH_DOOR_RADIUS`      | 56                               |
+| `CHURCH_INTERIOR_EXIT_Y`  | 455 → 1365 (nudged down after test) |
+| `CHURCH_EXIT_RADIUS`      | 72                               |
+
+Two iterations of trigger placement: village door was originally at
+native y=170 (on the grass step below the door), nudged to y=140
+(on the painted door itself) after user walked over and the prompt
+didn't fire. Interior exit started coupled to the spawn at PNG-local
+y=425 (mid-carpet) and was decoupled to its own constant at y=455
+(on the painted bottom-door tile) so entering the church doesn't
+immediately re-trigger the exit.
+
+### B · Single-shot E key + per-location movement bounds
+
+E uses `keyDown` event instead of `.isDown` polling — held-key
+repeat would re-fire `tryAction()` every frame and bounce the
+player in and out of the church. Movement clamp is now
+`movementBoundsTiles()` returning the active room's rect:
+
+- **village**: `(0, 0)` → `(WORLD_W_TILES, WORLD_H_TILES)`
+- **church-interior**: church-interior rect with a 32-px wall
+  buffer so the player can't walk into the stone walls.
+
+The clamp swap means existing `clamp(...)` calls in `update()` use
+the right rect automatically based on `this.location`.
+
+### C · enter / exit semantics
+
+`enterChurch()`:
+- Captures `villageReturnTile` so exit puts the player back where
+  they entered, not the interior spawn's mirror coord on the
+  village map.
+- Hides `villageBg`, all chickens, and every non-local avatar
+  (single-player interior MVP — see "Known limit" below).
+- Shows `churchInteriorBg`.
+- Teleports the local avatar to `CHURCH_INTERIOR_SPAWN_*`
+  (PNG-local 120, 425 → world 360, 1275 — just inside the door,
+  on the red carpet).
+- Sets `cameras.main.setBounds()` to the interior rect and
+  `centerOn` the spawn so the camera frames the altar.
+- Updates the bottom-left hint text to "WASD / arrows to move · E
+  to leave".
+
+`exitChurch()` reverses all of the above and restores camera bounds
+to the full world.
+
+### D · Refs and explicit handles
+
+Stored explicit `villageBg` and `churchInteriorBg` refs on the
+scene rather than iterating `children.list` and probing
+`obj.texture.key` — the children list is typed `GameObject[]` and
+`setVisible()` isn't on the base type, so the visibility swap
+either needed casts everywhere or explicit refs. Refs won; they're
+also faster (no O(n) walk every entry/exit).
+
+### E · React HUD wiring
+
+- Added `triggerActionRef` (mirrors `sendChatRef` pattern) so the
+  pill button can call into the scene.
+- `wireAction()` polls `game.scene.getScene("world")` every 30 ms
+  until the scene boots (it doesn't exist on the first React
+  render tick), then wires `scene.onAction = setAction` in one
+  direction and `triggerActionRef = scene.tryAction` in the other.
+- `WorldAction` is `null` outside any trigger zone — the button
+  unmounts entirely rather than going to a disabled state, which
+  is closer to the SNES-RPG affordance the village is going for.
+
+### F · CSS — `.actionButton`
+
+Top-center fixed pill with a 28×28 archetype-purple "E" keycap, a
+soft pulsing ring (`@keyframes actionPulse` — 1.6 s, ease-in-out,
+infinite), and a hover state that lifts the purple tint. Uses raw
+px to match the rest of `world.module.css` (this surface has its
+own `--world-*` token scope and is stylelint-excluded).
+
+## Files touched (addendum 2)
+
+### Modified
+- `apps/web/src/app/world/WorldClient.tsx` — location state,
+  Church.png preload, trigger zones, action-prompt loop,
+  `enterChurch` / `exitChurch`, per-location movement bounds,
+  React HUD wiring.
+- `apps/web/src/app/world/world.module.css` — `.actionButton`,
+  `.actionKey`, `.actionLabel`, `actionPulse` keyframes.
+
+## Known limits
+
+- **Interior is single-player visual.** The server still receives
+  the local player's position while they're inside the church
+  (whatever interior tile coord they're on). Other clients in the
+  village will see this player at those coords, which puts them
+  somewhere in the upper-middle grass band of the village
+  painting. Acceptable for MVP; a real fix is a separate Colyseus
+  sub-room scoped to the building.
+- **No collision with church walls.** The player is clamped to a
+  32-px buffer rect inside the interior PNG, which works for the
+  rectangular interior but won't generalise to non-rectangular
+  rooms. Phase 3 should introduce a real tilemap collision layer.
