@@ -413,3 +413,132 @@ own `--world-*` token scope and is stylelint-excluded).
   32-px buffer rect inside the interior PNG, which works for the
   rectangular interior but won't generalise to non-rectangular
   rooms. Phase 3 should introduce a real tilemap collision layer.
+
+---
+
+## Addendum 3 — horse NPC + multi-directional walk
+
+User dropped five new Harvest Moon animal sheets into
+`apps/web/public/world/sprites/`: `Cow`, `Golden Chicken`, `Horse`,
+`Kero _ Dog`, and `Small Animals`. Started with the **horse** —
+one wandering instance in the grass plot in front of the village
+barn, fully animated off the source sheet.
+
+### A · Alpha-scan workflow for HM sprite sheets
+
+The chickens earlier (committed 2026-06-12 morning) had us guess
+"312 ÷ 13 cols = 24-wide cells" by eye. That was lucky. The horse
+sheet (344×224) looked like 8 columns × 6 rows but `344 ÷ 8 = 43`
+gave us cell crops that bled the *next* horse's head into the
+right edge of each frame — visible as a flickering clip during
+walks.
+
+Built a one-shot Node script that scans the PNG's alpha channel:
+- For each row band: which y-rows have ANY opaque pixel?
+- For each column within a band: which x-cols have any opaque
+  pixel?
+- Print runs of "horse" vs "gap" with widths.
+
+Output for the horse sheet:
+
+```
+Vertical bands:
+  y=0..25  (h=26)   ← row 1, walking down
+  y=38..67 (h=30)   ← row 2, walking up
+  y=79..105 (h=27)  ← row 3, side view (walk + gallop)
+  y=121..143 (h=23) ← row 4, side rest + alert
+  y=161..183 (h=23) ← row 5, baby front/back
+  y=201..223 (h=23) ← row 6, baby side
+```
+
+All six bands sit on a uniform **40-px X-pitch** — the right
+24 px of the sheet is unused padding, which is why dividing the
+full width by the visible column count gave the wrong pitch.
+
+Per-row heights vary (28 / 32 / 30 / 25 / 25 / 25); cells are
+registered with origin `(0.5, 0.9)` so the horse's feet land at
+the same screen position regardless of which row is showing — no
+vertical hop when the facing changes.
+
+The script lives only in shell history for now; if we add more
+HM NPCs (cow, kero/dog) it should move into
+`apps/web/scripts/scan-sprite-sheet.mjs` so future sessions don't
+have to re-derive it.
+
+### B · Animations from the full sheet
+
+Five animations registered, all named `horse-*`:
+
+| Key                  | Source        | Frames              | FPS  |
+|----------------------|---------------|---------------------|------|
+| `horse-walk-down`    | Row 1 (d0-d7) | 8                   | 6    |
+| `horse-walk-up`      | Row 2 (u0-u7) | 8                   | 6    |
+| `horse-walk-side`    | Row 3 (s1-s4) | 4                   | 6    |
+| `horse-gallop-side`  | Row 3 (s5-s7) | 4 (5,6,7,6 loop)    | 10   |
+| `horse-alert`        | Row 4 (r3-r4) | 2                   | 2.5  |
+
+Side view faces LEFT natively; right uses `setFlipX(true)`.
+Idle frames per facing: `horse-d0` / `horse-u0` / `horse-s0`
+(`flipX` for right). Baby horse frames (row 5-6) are registered
+elsewhere as `horse-r*` placeholders — not used yet; reserved for
+a future foal companion NPC.
+
+### C · State machine
+
+`HorseState = "idle" | "walk" | "gallop" | "alert"`
+
+Idle bouts (3-7 s) end with `pickHorseNextState`:
+
+- **75%** walk — random target within `wanderRadius = 110 px` of
+  home, speed 40 px/s, facing snaps each frame to whichever axis
+  dominates (`|vx| >= |vy|` → side, else up/down)
+- **15%** alert — head-turn animation for 1.8-3 s
+- **10%** gallop — side-view only (no up/down gallop frames in
+  source), 2.6× walk speed, horizontally-biased target so the
+  side animation fits the motion
+
+Bob tween only runs during idle (otherwise it fights the
+movement's manual y-update). Facing freezes at whatever the
+horse last ended in, so when it stops after walking up it stays
+back-to-camera, not auto-snapped to side view.
+
+### D · Cell-pitch bug (the actual fix request)
+
+User reported "as soon as it moves, the sprite is clipping and
+moving around." Cause: cells were registered at 43-px pitch when
+the true pitch is 40. Each cell included the leading edge of the
+next horse, which flickered into view as the walk animation
+swapped frames. Fixed by re-deriving the pitch via alpha-scan and
+tightening cell height too (was 37, content is 27 so 30 is plenty).
+
+## Files touched (addendum 3)
+
+### Modified
+- `apps/web/src/app/world/WorldClient.tsx` — Horse type +
+  facing, frame registration for rows 1-4, five horse animations,
+  4-state FSM with directional walks, gallops, and alert pose.
+
+### New (assets)
+- `apps/web/public/world/sprites/SNES - Harvest Moon - Animals - Horse.png`
+- `apps/web/public/world/sprites/SNES - Harvest Moon - Animals - Cow.png`
+- `apps/web/public/world/sprites/SNES - Harvest Moon - Animals - Golden Chicken.png`
+- `apps/web/public/world/sprites/SNES - Harvest Moon - Animals - Kero _ Dog.png`
+- `apps/web/public/world/sprites/SNES - Harvest Moon - Animals - Small Animals.png`
+
+Horse.png is wired up; the other four are landed for future
+animal NPCs (cow in pasture, dog by the barn, etc.).
+
+## Closeout
+
+Three substantive features shipped today on top of the
+morning's Phase 2 polish:
+
+1. Village-fit world bounds + chicken FSM (commit `35b65c7`).
+2. Church interactive entry / exit + action HUD (commit `c72d227`).
+3. Multi-directional animated horse NPC with full state machine
+   (this commit).
+
+Plus the Nimble CSV privacy fix (`dde6ccd`) — that's the policy
+takeaway worth flagging in tomorrow's context: CRM exports stay
+out of the repo, gitignored, and saved in
+`feedback_private_data_nimble.md` for future sessions to honour.

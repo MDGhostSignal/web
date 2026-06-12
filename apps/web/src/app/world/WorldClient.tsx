@@ -165,6 +165,37 @@ type Chicken = {
   homeY: number;
 };
 
+/** Wandering horse NPC — single instance for now, lives in the
+ *  grass plot in front of the village barn. State machine drives the
+ *  full sprite sheet: idle in 4 cardinal facings, multi-directional
+ *  walk (down/up/side), occasional gallop bursts, and a "look at the
+ *  camera" alert pose. No proximity reaction; horses are placid. */
+type HorseState = "idle" | "walk" | "gallop" | "alert";
+type HorseFacing = "down" | "up" | "left" | "right";
+type Horse = {
+  sprite: Phaser.GameObjects.Sprite;
+  state: HorseState;
+  /** Cardinal facing direction. Drives idle frame + walk animation. */
+  facing: HorseFacing;
+  /** ms left until the horse transitions out of its current state. */
+  timer: number;
+  /** Velocity in world px/sec while moving (walk OR gallop). */
+  vx: number;
+  vy: number;
+  /** World target we're heading toward while moving. */
+  targetX: number;
+  targetY: number;
+  /** Anchor we drift back to so the horse doesn't roam across the
+   *  whole map over time. */
+  homeX: number;
+  homeY: number;
+  /** Movement speed in world px/sec. Walk = ~40, gallop = ~100. */
+  speed: number;
+  /** Idle bob tween. Paused during movement so the manual y-update
+   *  isn't fought by the tween. */
+  bob: Phaser.Tweens.Tween | null;
+};
+
 type ChatMessage = {
   sessionId: string;
   displayName: string;
@@ -222,6 +253,8 @@ export default function WorldClient() {
         hintText!: Phaser.GameObjects.Text;
         /** Ambient chicken NPCs — client-only state, no server sync. */
         chickens: Chicken[] = [];
+        /** Ambient horse NPC(s) — same client-only pattern as chickens. */
+        horses: Horse[] = [];
 
         // === Church interior state ===
         /** Which room the local player is in. Drives backdrop swap,
@@ -286,6 +319,15 @@ export default function WorldClient() {
             "hm-chickens",
             "/world/sprites/SNES - Harvest Moon - Animals - Chicken.png",
           );
+          // Harvest Moon horse sheet — 344×224, rows of front / back /
+          // side / baby poses. We use row 3 (side view) for the
+          // wandering horse: 8 cells at 43-px pitch, native cell
+          // ~43×37 starting at y=78. Frame 0 is idle; 1–4 are the
+          // walk cycle; 5–7 are gallop poses we don't use yet.
+          this.load.image(
+            "hm-horse",
+            "/world/sprites/SNES - Harvest Moon - Animals - Horse.png",
+          );
           // Church interior background — entered via the door on the
           // village map. 240×465 native; rendered at 3× to match the
           // village's display scale.
@@ -343,6 +385,80 @@ export default function WorldClient() {
               speed: 140,
               bobAmp: 3,
               bobMs: 700,
+            }),
+          );
+
+          // === Horse animations — one per facing + gallop + alert ===
+          // 6 fps for walk reads as a slow plodding stroll matched to
+          // the 40 px/s movement speed. Down + up walks have 8 frames
+          // each (full sheet rows); side has the 4 dedicated walk
+          // frames (1-4 of row 3, 0 is idle, 5-7 are gallop).
+          this.anims.create({
+            key: "horse-walk-down",
+            frames: Array.from({ length: 8 }, (_, i) => ({
+              key: "hm-horse",
+              frame: `horse-d${i}`,
+            })),
+            frameRate: 6,
+            repeat: -1,
+          });
+          this.anims.create({
+            key: "horse-walk-up",
+            frames: Array.from({ length: 8 }, (_, i) => ({
+              key: "hm-horse",
+              frame: `horse-u${i}`,
+            })),
+            frameRate: 6,
+            repeat: -1,
+          });
+          this.anims.create({
+            key: "horse-walk-side",
+            frames: [
+              { key: "hm-horse", frame: "horse-s1" },
+              { key: "hm-horse", frame: "horse-s2" },
+              { key: "hm-horse", frame: "horse-s3" },
+              { key: "hm-horse", frame: "horse-s4" },
+            ],
+            frameRate: 6,
+            repeat: -1,
+          });
+          // Gallop — only side view exists for this. Faster fps + 3
+          // distinct stride frames + back to first for a tight loop.
+          this.anims.create({
+            key: "horse-gallop-side",
+            frames: [
+              { key: "hm-horse", frame: "horse-s5" },
+              { key: "hm-horse", frame: "horse-s6" },
+              { key: "hm-horse", frame: "horse-s7" },
+              { key: "hm-horse", frame: "horse-s6" },
+            ],
+            frameRate: 10,
+            repeat: -1,
+          });
+          // Alert / "looking at you" — slow 2-frame bob between the
+          // two head-turn poses from row 4. Played briefly during
+          // idle as a sign-of-life touch.
+          this.anims.create({
+            key: "horse-alert",
+            frames: [
+              { key: "hm-horse", frame: "horse-r3" },
+              { key: "hm-horse", frame: "horse-r4" },
+            ],
+            frameRate: 2.5,
+            repeat: -1,
+          });
+
+          // === Wandering horse ===
+          // Lives in the grass plot in front of the village barn
+          // (native village ~620, 570 → world ~1860, 1710). One
+          // instance; idles most of the time, takes a short stroll
+          // every few seconds, then settles again.
+          this.horses.push(
+            this.spawnHorse({
+              x: 1860,
+              y: 1710,
+              speed: 40, // px/sec — placid stroll
+              wanderRadius: 110,
             }),
           );
 
@@ -659,7 +775,10 @@ export default function WorldClient() {
 
           // Ambient chickens — proximity-scared, run-away, resettle.
           // Only roam in the village; hidden + frozen indoors.
-          if (this.location === "village") this.updateChickens(dt);
+          if (this.location === "village") {
+            this.updateChickens(dt);
+            this.updateHorses(dt);
+          }
 
           // Local input → predicted position
           let vx = 0;
@@ -824,9 +943,10 @@ export default function WorldClient() {
           // the door on exit.
           this.villageReturnTile = { x: this.ownPos.x, y: this.ownPos.y };
 
-          // Hide the village + chickens.
+          // Hide the village + chickens + horses.
           this.villageBg?.setVisible(false);
           for (const ch of this.chickens) ch.sprite.setVisible(false);
+          for (const horse of this.horses) horse.sprite.setVisible(false);
           // Hide everyone else (single-player interior MVP).
           this.avatars.forEach((avatar, sessionId) => {
             if (sessionId !== this.ownSessionId) avatar.setVisible(false);
@@ -869,9 +989,10 @@ export default function WorldClient() {
           this.location = "village";
 
           this.churchInteriorBg?.setVisible(false);
-          // Re-show village + chickens + everyone else.
+          // Re-show village + chickens + horses + everyone else.
           this.villageBg?.setVisible(true);
           for (const ch of this.chickens) ch.sprite.setVisible(true);
+          for (const horse of this.horses) horse.sprite.setVisible(true);
           this.avatars.forEach((avatar) => avatar.setVisible(true));
 
           // Put player back exactly where they entered (just outside
@@ -970,6 +1091,243 @@ export default function WorldClient() {
           ch.sprite.setFrame(ch.idleFrame);
         }
 
+        /** Create a horse NPC at (x, y). Side-view sprite faces LEFT
+         *  natively; we flipX it when facing right. Spawns idle with
+         *  a slow Y-bob so it feels alive at rest. */
+        spawnHorse(opts: {
+          x: number;
+          y: number;
+          speed: number;
+          wanderRadius: number;
+        }): Horse {
+          const sprite = this.add.sprite(opts.x, opts.y, "hm-horse", "horse-s0");
+          sprite.setOrigin(0.5, 0.9);
+          sprite.setScale(VILLAGE_SCALE);
+          sprite.setDepth(-3);
+          const horse: Horse = {
+            sprite,
+            state: "idle",
+            facing: "left",
+            // Wait a beat after spawn before the first stroll so the
+            // page doesn't load with the horse already mid-action.
+            timer: 2500 + Math.random() * 2000,
+            vx: 0,
+            vy: 0,
+            targetX: opts.x,
+            targetY: opts.y,
+            homeX: opts.x,
+            homeY: opts.y,
+            speed: opts.speed,
+            bob: null,
+          };
+          this.startHorseBob(horse);
+          // Stash radius on the object so updateHorses can read it
+          // without widening the Horse type for one number.
+          sprite.setData("wanderRadius", opts.wanderRadius);
+          return horse;
+        }
+
+        /** Start (or restart) the idle Y-bob — gentler than the
+         *  chickens' bob (horses are heavier). */
+        startHorseBob(horse: Horse) {
+          horse.bob?.stop();
+          const baseY = horse.sprite.y;
+          horse.bob = this.tweens.add({
+            targets: horse.sprite,
+            y: { from: baseY, to: baseY - 2 },
+            duration: 1500,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+        }
+
+        /** Convert a velocity vector to the closest cardinal facing.
+         *  Diagonals snap to whichever axis dominates — keeps the
+         *  walk animation cleanly tied to one row of the sheet
+         *  rather than constantly flickering between two. */
+        horseFacingFromVelocity(vx: number, vy: number): HorseFacing {
+          if (Math.abs(vx) >= Math.abs(vy)) {
+            return vx >= 0 ? "right" : "left";
+          }
+          return vy >= 0 ? "down" : "up";
+        }
+
+        /** Set the idle frame + flip that matches the horse's current
+         *  facing so it freezes naturally when it stops. */
+        applyHorseIdleFrame(horse: Horse) {
+          switch (horse.facing) {
+            case "down":
+              horse.sprite.setFrame("horse-d0");
+              horse.sprite.setFlipX(false);
+              break;
+            case "up":
+              horse.sprite.setFrame("horse-u0");
+              horse.sprite.setFlipX(false);
+              break;
+            case "right":
+              horse.sprite.setFrame("horse-s0");
+              horse.sprite.setFlipX(true);
+              break;
+            case "left":
+            default:
+              horse.sprite.setFrame("horse-s0");
+              horse.sprite.setFlipX(false);
+              break;
+          }
+        }
+
+        /** Play the walk / gallop animation that matches the current
+         *  facing + state, and handle the side-view flipX. */
+        applyHorseMovingAnim(horse: Horse) {
+          const isGallop = horse.state === "gallop";
+          switch (horse.facing) {
+            case "down":
+              horse.sprite.setFlipX(false);
+              horse.sprite.anims.play(
+                isGallop ? "horse-walk-down" : "horse-walk-down",
+                true,
+              );
+              break;
+            case "up":
+              horse.sprite.setFlipX(false);
+              horse.sprite.anims.play(
+                isGallop ? "horse-walk-up" : "horse-walk-up",
+                true,
+              );
+              break;
+            case "right":
+              horse.sprite.setFlipX(true);
+              horse.sprite.anims.play(
+                isGallop ? "horse-gallop-side" : "horse-walk-side",
+                true,
+              );
+              break;
+            case "left":
+            default:
+              horse.sprite.setFlipX(false);
+              horse.sprite.anims.play(
+                isGallop ? "horse-gallop-side" : "horse-walk-side",
+                true,
+              );
+              break;
+          }
+        }
+
+        /** After an idle bout, choose what to do next. Rolls match a
+         *  real horse's day: stand around most of the time, walk a
+         *  bit, occasionally look up alert, rarely burst into a short
+         *  gallop. */
+        pickHorseNextState(horse: Horse) {
+          const roll = Math.random();
+          const radius = (horse.sprite.getData("wanderRadius") as number) ?? 100;
+          horse.bob?.stop();
+          horse.bob = null;
+
+          if (roll < 0.1) {
+            // Alert pose — turn head, look at viewer for a beat.
+            horse.state = "alert";
+            horse.timer = 1800 + Math.random() * 1200;
+            horse.sprite.setFlipX(false);
+            horse.sprite.anims.play("horse-alert", true);
+            return;
+          }
+
+          if (roll < 0.15) {
+            // Short gallop — farther target, faster speed. Side view
+            // only (we don't have gallop frames for down/up), so
+            // bias the target horizontally so the side anim fits.
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            horse.targetX = horse.homeX + dir * (radius * 0.9);
+            horse.targetY = horse.homeY + (Math.random() - 0.5) * 40;
+            const dx = horse.targetX - horse.sprite.x;
+            const dy = horse.targetY - horse.sprite.y;
+            const d = Math.max(0.001, Math.hypot(dx, dy));
+            const gallopSpeed = horse.speed * 2.6;
+            horse.vx = (dx / d) * gallopSpeed;
+            horse.vy = (dy / d) * gallopSpeed;
+            horse.facing = dir > 0 ? "right" : "left";
+            horse.state = "gallop";
+            horse.timer = 1500 + Math.random() * 1000;
+            this.applyHorseMovingAnim(horse);
+            return;
+          }
+
+          // Otherwise walk to a random spot near home. Pick the
+          // cardinal facing that matches the velocity vector.
+          const r = 30 + Math.random() * radius;
+          const a = Math.random() * Math.PI * 2;
+          horse.targetX = horse.homeX + Math.cos(a) * r;
+          horse.targetY = horse.homeY + Math.sin(a) * r;
+          const dx = horse.targetX - horse.sprite.x;
+          const dy = horse.targetY - horse.sprite.y;
+          const d = Math.max(0.001, Math.hypot(dx, dy));
+          horse.vx = (dx / d) * horse.speed;
+          horse.vy = (dy / d) * horse.speed;
+          horse.facing = this.horseFacingFromVelocity(horse.vx, horse.vy);
+          horse.state = "walk";
+          // Hard cap on walk duration so we always come back to idle
+          // even if the target becomes unreachable.
+          horse.timer = 6000;
+          this.applyHorseMovingAnim(horse);
+        }
+
+        /** Per-frame horse update. Four states drive the loop —
+         *  idle → walk / gallop / alert → idle again. Walks pick
+         *  their direction from the velocity vector so the right
+         *  row of the sheet plays as the horse turns. */
+        updateHorses(dt: number) {
+          for (const horse of this.horses) {
+            if (horse.state === "idle") {
+              horse.timer -= dt * 1000;
+              if (horse.timer <= 0) this.pickHorseNextState(horse);
+              continue;
+            }
+
+            if (horse.state === "alert") {
+              horse.timer -= dt * 1000;
+              if (horse.timer <= 0) {
+                horse.state = "idle";
+                horse.sprite.anims.stop();
+                this.applyHorseIdleFrame(horse);
+                horse.timer = 3000 + Math.random() * 4000;
+                this.startHorseBob(horse);
+              }
+              continue;
+            }
+
+            // walk or gallop — same movement code, different anims
+            // and speeds (already baked into vx/vy + anim selection).
+            horse.sprite.x += horse.vx * dt;
+            horse.sprite.y += horse.vy * dt;
+            horse.timer -= dt * 1000;
+
+            // Re-evaluate facing every frame so turn-as-you-walk
+            // animates cleanly. Only switch the played anim when
+            // the facing actually changes (prevents per-frame
+            // anims.play() resets that'd freeze on frame 0).
+            const newFacing = this.horseFacingFromVelocity(horse.vx, horse.vy);
+            if (newFacing !== horse.facing) {
+              horse.facing = newFacing;
+              this.applyHorseMovingAnim(horse);
+            }
+
+            const dx = horse.targetX - horse.sprite.x;
+            const dy = horse.targetY - horse.sprite.y;
+            const remaining = Math.hypot(dx, dy);
+            if (remaining < 4 || horse.timer <= 0) {
+              horse.state = "idle";
+              horse.vx = 0;
+              horse.vy = 0;
+              horse.sprite.anims.stop();
+              this.applyHorseIdleFrame(horse);
+              // Gallops earn a longer rest afterwards.
+              horse.timer = 4000 + Math.random() * 5000;
+              this.startHorseBob(horse);
+            }
+          }
+        }
+
         /** Per-frame chicken update — proximity detection, scared
          *  running, wander to new home, idle. Called from update(). */
         updateChickens(dt: number) {
@@ -1049,6 +1407,36 @@ export default function WorldClient() {
           t.add("hen-walk2", 0, 48, 0, 24, 23);
           t.add("chick", 0, 240, 0, 24, 23);
           t.add("chick-walk", 0, 264, 0, 24, 23);
+
+          // Horse sheet — 344×224. Alpha-scan revealed all six row
+          // bands sit on a uniform 40-px X-pitch (the right 24 px is
+          // padding), but each row has its own native top + height.
+          // Cell heights are chosen so the horse's FEET land at
+          // sprite-origin (0.5, 0.9) consistently across rows — when
+          // the horse turns from down → side → up, its hooves don't
+          // jump vertically.
+          //
+          // Frame keys:
+          //   horse-d0..d7 — walking-DOWN cycle (toward camera)
+          //   horse-u0..u7 — walking-UP cycle (away from camera)
+          //   horse-s0     — side idle
+          //   horse-s1..s4 — side walk cycle
+          //   horse-s5..s7 — side gallop cycle (faster, longer stride)
+          //   horse-r0..r4 — extra side poses; r3..r4 = head-turn
+          //                  "looking at viewer" alert pose
+          const h = this.textures.get("hm-horse");
+          // Row 1 — facing camera (walks down). y=0..25 content; cell
+          // h=28 to land feet at the origin anchor.
+          for (let i = 0; i < 8; i++) h.add(`horse-d${i}`, 0, i * 40, 0, 40, 28);
+          // Row 2 — back to camera (walks up). y=38..67 content.
+          for (let i = 0; i < 8; i++) h.add(`horse-u${i}`, 0, i * 40, 38, 40, 32);
+          // Row 3 — side view (walks left natively, flipX for right).
+          // y=78..107 content. 8 cells: s0 idle, s1-s4 walk, s5-s7 gallop.
+          for (let i = 0; i < 8; i++) h.add(`horse-s${i}`, 0, i * 40, 78, 40, 30);
+          // Row 4 — additional side poses. r0..r2 are subtle idle
+          // variations; r3..r4 are the "head turned to look at you"
+          // alert frames. 5 cells. y=120..143 content.
+          for (let i = 0; i < 5; i++) h.add(`horse-r${i}`, 0, i * 40, 120, 40, 25);
         }
 
         /** Generate the procedural pixel-art tile textures once and
