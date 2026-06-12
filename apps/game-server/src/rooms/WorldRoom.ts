@@ -51,9 +51,10 @@ const ARCHETYPE_CODES = new Set([
 export class WorldRoom extends Room {
   maxClients = 50;
 
-  /** Soft world bounds in tiles. Phase 2 replaces with Tiled map. */
-  private readonly WORLD_W = 80;
-  private readonly WORLD_H = 60;
+  /** Soft world bounds in tiles. Matched to the Harvest Moon village
+   *  map (768 × 1024 px) at 3× display scale → 72 × 96 tiles. */
+  private readonly WORLD_W = 72;
+  private readonly WORLD_H = 96;
   private readonly BROADCAST_HZ = 10;
 
   private players = new Map<string, PlayerData>();

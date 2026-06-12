@@ -55,8 +55,11 @@ const ARCHETYPE_SHAPE: Record<string, MarkShape> = {
 };
 
 const TILE = 32;
-const WORLD_W_TILES = 80;
-const WORLD_H_TILES = 60;
+// World sized to match the Harvest Moon village background at 3×
+// native scale (768 × 1024 × 3 = 2304 × 3072 px → 72 × 96 tiles).
+const WORLD_W_TILES = 72;
+const WORLD_H_TILES = 96;
+const VILLAGE_SCALE = 3;
 const SPEED = 6;
 const SEND_INTERVAL_MS = 100;
 
@@ -89,6 +92,44 @@ type ServerPlayer = {
 };
 
 type StateMessage = { players: ServerPlayer[] };
+
+/** Client-only ambient NPC — a chicken that idles in place, gets
+ *  scared when a player walks close, runs for a few seconds, finds a
+ *  new spot to settle, and idles again. No server sync; each client
+ *  animates its own chickens. */
+type ChickenState = "idle" | "scared" | "wander";
+type Chicken = {
+  sprite: Phaser.GameObjects.Image;
+  state: ChickenState;
+  /** ms left until the chicken transitions out of its current state. */
+  timer: number;
+  /** Velocity in tiles/sec for x,y while running. */
+  vx: number;
+  vy: number;
+  /** Target world position we're heading toward in wander. */
+  targetX: number;
+  targetY: number;
+  /** Idle bob tween — paused while moving so manual y updates aren't
+   *  fought by the tween. */
+  bob: Phaser.Tweens.Tween | null;
+  /** Walk-frame cycle event — created while moving, destroyed at rest. */
+  walkCycle: Phaser.Time.TimerEvent | null;
+  /** Frame index into the chicken's walk-anim frame list. */
+  walkIndex: number;
+  /** Frame keys to cycle through when running. Hen and chick use
+   *  different keys — passed in at construction. */
+  walkFrames: string[];
+  idleFrame: string;
+  /** Detection radius — how close a player has to be to spook this
+   *  chicken. Bigger for the hen, smaller for the chick. */
+  triggerRadius: number;
+  /** Running speed in world pixels per second. */
+  speed: number;
+  /** Anchor we wander back to after being scared, so chickens don't
+   *  walk halfway across the map over time. */
+  homeX: number;
+  homeY: number;
+};
 
 type ChatMessage = {
   sessionId: string;
@@ -130,6 +171,8 @@ export default function WorldClient() {
 
         statusText!: Phaser.GameObjects.Text;
         hintText!: Phaser.GameObjects.Text;
+        /** Ambient chicken NPCs — client-only state, no server sync. */
+        chickens: Chicken[] = [];
 
         keys!: {
           up: Phaser.Input.Keyboard.Key;
@@ -172,133 +215,54 @@ export default function WorldClient() {
         }
 
         create() {
-          this.cameras.main.setBackgroundColor("#1f2a1a");
+          this.cameras.main.setBackgroundColor("#0b0f12");
 
           const worldW = WORLD_W_TILES * TILE;
           const worldH = WORLD_H_TILES * TILE;
 
-          // Bake procedural pixel-art tile textures once at scene init.
-          // Each is a 32×32 PNG-ish pixel grid drawn via Phaser Graphics
-          // → generateTexture, which we then tile across the world.
-          // SNES-era restricted palette: 4 grass shades, 3 stone shades.
-          this.bakeTileTextures();
+          // Register chicken-sheet frames (mature hen + baby chick).
+          this.registerHarvestMoonFrames();
 
-          // Register named sub-frames on the ArMM1998 atlas so we can
-          // reference them as `add.image(x, y, "armm", "house-a")`.
-          // All coords from the 640×576 source; tuned visually against
-          // the grid overlay. Easy to iterate here without re-cropping.
-          this.registerArmmFrames();
+          // === Harvest Moon village background ===
+          // Filled to the exact world bounds — no cropping. The world
+          // dimensions (72 × 96 tiles = 2304 × 3072 px) are 3 × the
+          // native map size (768 × 1024 px), so the map fits perfectly
+          // pixel-aligned at scale 3.
+          const village = this.add.image(0, 0, "hm-village");
+          village.setOrigin(0, 0);
+          village.setScale(VILLAGE_SCALE);
+          village.setDepth(-10);
 
-          // Tile the entire world with grass — pixel-perfect repeat.
-          this.add
-            .tileSprite(0, 0, worldW, worldH, "tile-grass")
-            .setOrigin(0, 0)
-            .setDepth(-10);
-
-          // Subtle dirt patches scattered across the grass for variation
-          // so the tile repetition isn't loud.
-          const patchG = this.add.graphics();
-          patchG.fillStyle(0x4a5a32, 0.5);
-          for (let i = 0; i < 80; i++) {
-            const px = Math.floor(Math.random() * WORLD_W_TILES) * TILE;
-            const py = Math.floor(Math.random() * WORLD_H_TILES) * TILE;
-            patchG.fillRect(px + 2, py + 2, 28, 28);
-          }
-          patchG.setDepth(-9);
-          patchG.setAlpha(0.35);
-
-          // Plaza spawn marker — minimal, just a soft ring + label so
-          // the user has an anchor. Landmarks will be added one-by-one.
-          this.add
-            .circle(worldW / 2, worldH / 2, 64, 0x7c58d6, 0)
-            .setStrokeStyle(2, 0x7c58d6, 0.4)
-            .setDepth(-5);
-          this.add
-            .text(worldW / 2, worldH / 2 + 84, "PLAZA · SPAWN", {
-              fontFamily: "Inter, ui-monospace, monospace",
-              fontSize: "11px",
-              color: "#7c58d6",
-              fontStyle: "600",
-            })
-            .setOrigin(0.5)
-            .setDepth(-5);
-
-          // === ONE-AT-A-TIME SPRITE PLACEMENT ===
-          // Stripped to bare ground + plaza spawn. Adding ArMM landmark
-          // sprites one at a time, verifying each looks right before
-          // moving to the next.
-          // Test #1: basic peaked-roof house, top-right of world.
-          const houseA = this.add.image(worldW - 200, 200, "armm", "house-a");
-          houseA.setOrigin(0.5, 0.85);
-          houseA.setScale(3.0);
-          houseA.setDepth(-4);
-
-          // Test #2: stone fountain — placed to the left of the house
-          // so we can compare them side-by-side without overlap.
-          const fountain = this.add.image(worldW - 460, 240, "armm", "fountain-a");
-          fountain.setOrigin(0.5, 0.85);
-          fountain.setScale(3.0);
-          fountain.setDepth(-4);
-
-          // Test #3 — bush
-          const bush = this.add.image(worldW - 720, 240, "armm", "bush");
-          bush.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-          // Test #4 — statue
-          const statue = this.add.image(worldW - 200, 460, "armm", "statue");
-          statue.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-          // Test #5 — stone gate
-          const gate = this.add.image(worldW - 460, 480, "armm", "stone-gate");
-          gate.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-          // Test #6 — banner
-          const banner = this.add.image(worldW - 720, 480, "armm", "banner-blue");
-          banner.setOrigin(0.5, 0.95).setScale(3.0).setDepth(-4);
-
-          // Third row of test sprites
-          // Test #7 — small cottage
-          const cottage = this.add.image(worldW - 720, 720, "armm", "cottage-small");
-          cottage.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-          // Test #8 — gray silo / tower
-          const silo = this.add.image(worldW - 460, 720, "armm", "silo");
-          silo.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-          // Test #9 — cone-roof yurt
-          const yurt = this.add.image(worldW - 240, 720, "armm", "yurt");
-          yurt.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-          // Test #10 — market stall
-          const stall = this.add.image(worldW - 460, 950, "armm", "market-stall");
-          stall.setOrigin(0.5, 0.85).setScale(3.0).setDepth(-4);
-
-          // === User-supplied SNES Harvest Moon assets ===
-          // Village summer background — placed center-left of the
-          // world as a candidate background for the final scene.
-          // 768×1024 native, scaled 3× so it's properly imposing.
-          const village = this.add.image(700, 700, "hm-village");
-          village.setOrigin(0.5, 0.5);
-          village.setScale(3.0);
-          village.setDepth(-9); // behind almost everything
-
-          // Mature hen + baby chick, placed beneath the house in the
-          // top-right so they're visible alongside the other tests.
-          const hen = this.add.image(worldW - 300, 360, "hm-chickens", "hen");
-          hen.setOrigin(0.5, 0.9).setScale(4.0).setDepth(-3);
-          // Subtle peck bob — gentle Y oscillation
-          this.tweens.add({
-            targets: hen,
-            y: { from: 360, to: 354 },
-            duration: 900,
-            ease: "Sine.inOut",
-            yoyo: true,
-            repeat: -1,
-          });
-          const chick = this.add.image(worldW - 340, 380, "hm-chickens", "chick");
-          chick.setOrigin(0.5, 0.9).setScale(4.0).setDepth(-3);
-          this.tweens.add({
-            targets: chick,
-            y: { from: 380, to: 376 },
-            duration: 700,
-            ease: "Sine.inOut",
-            yoyo: true,
-            repeat: -1,
-          });
+          // === Harvest Moon chickens ===
+          // Mature hen + baby chick near the world spawn point. Each
+          // runs its own idle → scared → wander state machine
+          // (see updateChickens) so they react when a player gets close.
+          const spawnX = worldW / 2;
+          const spawnY = worldH / 2;
+          this.chickens.push(
+            this.spawnChicken({
+              x: spawnX + 96,
+              y: spawnY + 60,
+              idleFrame: "hen",
+              walkFrames: ["hen-walk1", "hen-walk2"],
+              triggerRadius: 110,
+              speed: 180,
+              bobAmp: 4,
+              bobMs: 900,
+            }),
+          );
+          this.chickens.push(
+            this.spawnChicken({
+              x: spawnX + 56,
+              y: spawnY + 88,
+              idleFrame: "chick",
+              walkFrames: ["chick", "chick-walk"],
+              triggerRadius: 80,
+              speed: 140,
+              bobAmp: 3,
+              bobMs: 700,
+            }),
+          );
 
           // Soft world-border vignette so the camera bounds don't read
           // as a hard wall — a dark frame around the playable area.
@@ -574,6 +538,10 @@ export default function WorldClient() {
           if (!this.room || !this.ownSessionId) return;
           const dt = deltaMs / 1000;
 
+          // Ambient chickens — proximity-scared, run-away, resettle.
+          // Runs every frame regardless of network state.
+          this.updateChickens(dt);
+
           // Local input → predicted position
           let vx = 0;
           let vy = 0;
@@ -640,39 +608,156 @@ export default function WorldClient() {
          *  the 640×576 source overlay grid; tweak in this single
          *  table to re-aim a sprite. CC0 — ArMM1998 via OpenGameArt.
          *  https://opengameart.org/content/zelda-like-tilesets-and-sprites */
-        registerArmmFrames() {
-          const t = this.textures.get("armm");
-          // Coords measured from a native-resolution 16-px grid overlay
-          // of the 640×576 atlas. Easy to nudge in this table without
-          // touching anything else. CC0 — ArMM1998.
-          const frames: Array<[string, number, number, number, number]> = [
-            // === BUILDINGS (top row) ===
-            // VERIFIED via extract-and-view, one at a time.
-            ["house-a",         96,   0,  80, 80], // peaked roof + cross window + door
-            ["cottage-small", 212,  84,  32, 56], // small peaked cottage
-            ["fountain-a",     336, 136,  64, 56], // stone fountain bowl + spout
-            ["bush",            80, 256,  32, 32], // round green canopy (this atlas has no full tree)
-            ["statue",         128, 492,  40, 60], // gray stone person on pedestal
-            ["stone-gate",      56, 488,  80, 88], // arched stone gate w/ wooden doors
-            ["banner-blue",    144, 464,  28, 48], // blue flag on wooden pole
-            ["silo",             0, 336,  56, 120], // big round stone silo / tank
-            ["yurt",            60, 352,  40, 96], // cone-roofed dwelling
-            ["market-stall",   320, 368,  64, 72], // blue+white awning + wood counter
-          ];
-          for (const [name, x, y, w, h] of frames) {
-            t.add(name, 0, x, y, w, h);
-          }
+        /** Create a chicken NPC at (x, y) and wire up its idle bob.
+         *  Returned object holds all per-chicken state for the
+         *  updateChickens loop. */
+        spawnChicken(opts: {
+          x: number;
+          y: number;
+          idleFrame: string;
+          walkFrames: string[];
+          triggerRadius: number;
+          speed: number;
+          bobAmp: number;
+          bobMs: number;
+        }): Chicken {
+          const sprite = this.add.image(opts.x, opts.y, "hm-chickens", opts.idleFrame);
+          sprite.setOrigin(0.5, 0.9);
+          sprite.setScale(VILLAGE_SCALE);
+          sprite.setDepth(-3);
+          const ch: Chicken = {
+            sprite,
+            state: "idle",
+            timer: 0,
+            vx: 0,
+            vy: 0,
+            targetX: opts.x,
+            targetY: opts.y,
+            bob: null,
+            walkCycle: null,
+            walkIndex: 0,
+            walkFrames: opts.walkFrames,
+            idleFrame: opts.idleFrame,
+            triggerRadius: opts.triggerRadius,
+            speed: opts.speed,
+            homeX: opts.x,
+            homeY: opts.y,
+          };
+          this.startChickenBob(ch, opts.bobAmp, opts.bobMs);
+          return ch;
+        }
 
-          // Harvest Moon chicken sheet — 312×46, two rows of small
-          // sprites. Mature chickens with red combs in the left half,
-          // baby chicks (yellow) on the right.
-          const chickT = this.textures.get("hm-chickens");
-          // Each chicken cell is ~16×23 (sheet is 46 tall = 2 rows).
-          chickT.add("hen", 0, 0, 0, 16, 23);
-          chickT.add("hen-walk1", 0, 16, 0, 16, 23);
-          chickT.add("hen-walk2", 0, 32, 0, 16, 23);
-          chickT.add("chick", 0, 240, 0, 16, 23);
-          chickT.add("chick-walk", 0, 256, 0, 16, 23);
+        /** Start (or restart) the idle Y-bob on a chicken. */
+        startChickenBob(ch: Chicken, amp = 4, durationMs = 900) {
+          ch.bob?.stop();
+          const baseY = ch.sprite.y;
+          ch.bob = this.tweens.add({
+            targets: ch.sprite,
+            y: { from: baseY, to: baseY - amp },
+            duration: durationMs,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+        }
+
+        /** Switch to the "running" pose while moving. We use a single
+         *  static frame — the Harvest Moon sheet's nominal "walk"
+         *  frames are actually different pose snapshots, not a clean
+         *  cycle, so swapping them produces visible flicker. The
+         *  chicken's apparent motion comes from its world position
+         *  changing each frame; the sprite stays one pose. */
+        startChickenWalk(ch: Chicken) {
+          ch.walkCycle?.remove();
+          ch.walkCycle = null;
+          ch.sprite.setFrame(ch.walkFrames[0]);
+        }
+
+        stopChickenWalk(ch: Chicken) {
+          ch.walkCycle?.remove();
+          ch.walkCycle = null;
+          ch.sprite.setFrame(ch.idleFrame);
+        }
+
+        /** Per-frame chicken update — proximity detection, scared
+         *  running, wander to new home, idle. Called from update(). */
+        updateChickens(dt: number) {
+          for (const ch of this.chickens) {
+            if (ch.state === "idle") {
+              // Look for any nearby player. If close enough, panic.
+              for (const avatar of this.avatars.values()) {
+                const dx = avatar.x - ch.sprite.x;
+                const dy = avatar.y - ch.sprite.y;
+                if (Math.hypot(dx, dy) < ch.triggerRadius) {
+                  // Run AWAY from the player (perpendicular bias so we
+                  // don't head straight into a wall).
+                  const len = Math.max(0.001, Math.hypot(dx, dy));
+                  ch.vx = (-dx / len) * ch.speed;
+                  ch.vy = (-dy / len) * ch.speed;
+                  ch.state = "scared";
+                  ch.timer = 1800 + Math.random() * 1400; // 1.8–3.2 s
+                  ch.bob?.stop();
+                  ch.bob = null;
+                  this.startChickenWalk(ch);
+                  break;
+                }
+              }
+            } else if (ch.state === "scared") {
+              ch.sprite.x += ch.vx * dt;
+              ch.sprite.y += ch.vy * dt;
+              // Mirror sprite by horizontal velocity for a tiny bit of
+              // directional flair.
+              ch.sprite.setFlipX(ch.vx < 0);
+              ch.timer -= dt * 1000;
+              if (ch.timer <= 0) {
+                // Pick a new resting spot — somewhere near home base.
+                const r = 60 + Math.random() * 100;
+                const a = Math.random() * Math.PI * 2;
+                ch.targetX = ch.homeX + Math.cos(a) * r;
+                ch.targetY = ch.homeY + Math.sin(a) * r;
+                ch.state = "wander";
+                ch.timer = 4000; // hard cap so we don't loop forever
+              }
+            } else if (ch.state === "wander") {
+              const dx = ch.targetX - ch.sprite.x;
+              const dy = ch.targetY - ch.sprite.y;
+              const d = Math.hypot(dx, dy);
+              if (d < 4 || ch.timer <= 0) {
+                ch.state = "idle";
+                ch.vx = 0;
+                ch.vy = 0;
+                ch.sprite.setFlipX(false);
+                this.stopChickenWalk(ch);
+                // Resume the idle bob at the new resting position.
+                this.startChickenBob(ch, ch.idleFrame === "chick" ? 3 : 4,
+                  ch.idleFrame === "chick" ? 700 : 900);
+              } else {
+                const slowerSpeed = ch.speed * 0.55;
+                ch.sprite.x += (dx / d) * slowerSpeed * dt;
+                ch.sprite.y += (dy / d) * slowerSpeed * dt;
+                ch.sprite.setFlipX(dx < 0);
+                ch.timer -= dt * 1000;
+              }
+            }
+          }
+        }
+
+        /** Register named sub-frames on the Harvest Moon chicken sheet
+         *  so we can place specific poses via add.image(x, y, "hm-chickens",
+         *  "hen") without re-cropping PNGs.
+         *
+         *  Sheet is 312×46, two 23-px rows of ~16×23 cells. Mature hens
+         *  (white with red combs) on the left; baby chicks (yellow) on
+         *  the right. */
+        registerHarvestMoonFrames() {
+          const t = this.textures.get("hm-chickens");
+          // Sheet is 312×46 — that's 13 columns × 2 rows of 24×23
+          // cells (NOT 16-wide, an easy mistake from the eye).
+          t.add("hen", 0, 0, 0, 24, 23);
+          t.add("hen-walk1", 0, 24, 0, 24, 23);
+          t.add("hen-walk2", 0, 48, 0, 24, 23);
+          t.add("chick", 0, 240, 0, 24, 23);
+          t.add("chick-walk", 0, 264, 0, 24, 23);
         }
 
         /** Generate the procedural pixel-art tile textures once and

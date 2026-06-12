@@ -168,3 +168,123 @@ No new memory entries warranted. The RPG project memory + RPG stack
 reference written 2026-06-11 still hold. The "verify after deploy"
 discipline doesn't trigger since this work was dev-only — no prod
 deploy yet.
+
+---
+
+## Addendum — chicken AI + village-fit world
+
+Continued the same day after the log above was written. Two
+follow-on edits to the world that change its identity from "test
+grid with sprites scattered around" to "single coherent village
+scene with living NPCs."
+
+### A · World sized to fit the village background exactly
+
+The Harvest Moon village PNG is 768 × 1024 px. At the 3× display
+scale we settled on, that's 2304 × 3072 px → 72 × 96 tiles (32-px
+tile size). The old soft world bounds were 80 × 60 — wider, much
+shorter — which left the map cropped at top/bottom and gave dead
+green margin on the sides.
+
+Changed in two places, no constants file yet — both ends must agree
+or the server clamps players to a different rectangle than the
+client renders.
+
+- `apps/game-server/src/rooms/WorldRoom.ts` —
+  `WORLD_W` 80 → 72, `WORLD_H` 60 → 96.
+- `apps/web/src/app/world/WorldClient.tsx` —
+  `WORLD_W_TILES` 80 → 72, `WORLD_H_TILES` 60 → 96.
+  Added `VILLAGE_SCALE = 3` so future tweaks live in one place.
+
+Village now blits at `(0, 0)` with origin `(0, 0)` and `scale = 3`,
+filling the world bounds pixel-aligned with no cropping. Procedural
+grass tile, dirt patch graphics, plaza ring + label, and all 10
+ArMM landmark sprites — gone. The village painting is the world.
+
+### B · Chicken NPC state machine
+
+Replaced the static hen+chick (idle-bob only) with a proper
+proximity-reactive NPC. Each chicken is a tiny FSM:
+
+```
+idle ──(player within trigger radius)──▶ scared
+scared ──(timer 1.8–3.2s expires)──▶ wander
+wander ──(reach target or 4s cap)──▶ idle
+```
+
+- **idle** — Sine.inOut Y-bob tween; checks all known avatar
+  positions each frame for nearest-neighbour distance.
+- **scared** — velocity vector pointing away from the player that
+  spooked it; runs at hen-speed 180 px/s or chick-speed 140 px/s
+  for 1.8–3.2 s random duration. `setFlipX` mirrors the sprite by
+  horizontal velocity.
+- **wander** — picks a random spot 60–160 px from its home anchor,
+  walks there at 55% speed, snaps back to idle on arrival. Hard
+  4 s cap so a stuck chicken can't loop forever.
+
+Hen has a 110-px trigger radius, chick 80-px (smaller scaredy-baby
+vibe). Each keeps its own `homeX/homeY` anchor so they don't drift
+across the map over time — wander always re-targets near home.
+
+Walk animation: turned out the Harvest Moon chicken-sheet "walk"
+frames are pose snapshots, not a clean cycle — swapping between
+them at any reasonable speed produced visible flicker. Now using a
+single static "running pose" frame while moving; the apparent
+motion comes from world-position change each tick, not frame
+swapping.
+
+### C · Chicken sprite-sheet frame correction
+
+The chicken sheet is 312 × 46 px. Yesterday's `registerArmmFrames`
+guessed 16 × 23 cells (sheet is "two rows of small sprites").
+Re-measured: it's actually 13 columns × 2 rows of **24 × 23**
+cells. Fixed in `registerHarvestMoonFrames`:
+
+- `hen` at (0, 0), `hen-walk1` at (24, 0), `hen-walk2` at (48, 0).
+- `chick` at (0, 240), `chick-walk` at (24, 240).
+
+Y-coords for chicks unchanged from yesterday (they're on row 2
+of the sheet starting at y=240); only the cell widths were off.
+
+### D · Function rename
+
+`registerArmmFrames()` deleted (all 10 ArMM landmark sprites
+removed with the procedural tile pass). Replaced by
+`registerHarvestMoonFrames()`. The ArMM atlas PNG is still on
+disk under `apps/web/public/world/sprites/pipoya/` for reference
+in case we want to bring landmarks back in a later phase, but
+nothing references it from code.
+
+## Files touched (addendum)
+
+### Modified
+- `apps/game-server/src/rooms/WorldRoom.ts` — world bounds
+  72 × 96.
+- `apps/web/src/app/world/WorldClient.tsx` — village-fit world,
+  procedural/ArMM scene torn down, chicken FSM, frame coord fix.
+
+### New (uncommitted assets surfaced this session)
+- `apps/web/public/world/sprites/SNES - Harvest Moon - Backgrounds - Church.png`
+  — held aside; not wired in yet.
+- `apps/web/public/assets.manifest.json` — generated asset index.
+- `apps/web/public/images/home/*.{mp4,webm}` — raw + webm
+  variants for `blackcloud2`, `city`, `cloud`, `cloudblack`,
+  `country`, `twoclouds` (matches the existing optimized/webm
+  pattern for hero clips).
+- `apps/web/public/images/what-is-this/garden4.mp4` — raw
+  original alongside existing `garden4-optimized.mp4` + `.webm`.
+- `logo/SVG/ghostsiggnal-admin-white-4c.svg` — admin lockup.
+
+## Open / next-step notes (carried)
+
+- **Church.png** sitting in `world/sprites/` but unused — decide
+  whether it becomes a landmark in the village painting or gets
+  removed.
+- **Walk animation flicker**: punted to a single static running
+  pose. Real fix is a hand-cycled walk frame pair on the same
+  sprite anchor, but the source sheet doesn't have one cleanly —
+  would need re-drawn frames or a different chicken sprite.
+- **Held back from commit**: `docs/nimble_contacts.csv` (CRM
+  contact PII export — 261 rows). Not committed; left untracked
+  pending explicit decision on whether it should live in this
+  repo or a private/internal store.
