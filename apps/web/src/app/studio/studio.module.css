@@ -221,10 +221,40 @@
 .dashHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 24px;
   padding: 18px 32px;
   background: #ffffff;
   border-bottom: 1px solid #e6e8ee;
+}
+
+.headerNav {
+  display: flex;
+  gap: 4px;
+  margin-left: 12px;
+  margin-right: auto;
+}
+
+.headerNavTab {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a5e66;
+  text-decoration: none;
+  transition: all 160ms ease;
+}
+
+.headerNavTab:hover {
+  background: #f4f4f6;
+  color: #2a2e35;
+}
+
+.headerNavTabActive {
+  background: rgba(124, 88, 214, 0.1);
+  color: #7c58d6;
+  border-color: rgba(124, 88, 214, 0.2);
 }
 
 .dashHeaderBrand {

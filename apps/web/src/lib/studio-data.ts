@@ -111,6 +111,141 @@ export async function loadBrandCampaignsData(
   return { campaigns: [] };
 }
 
+/* ============================================================
+ * Marketplace browse
+ * ============================================================
+ *
+ * The marketplace is cross-side: a logged-in creator browses brands;
+ * a logged-in brand browses creators. Cards show the company/show
+ * identity plus a primary contact's XQ archetype (used to compute
+ * a rough match score against the viewer's own archetype).
+ *
+ * Mike's per-side field spec (budget, ad type, CPM, slot count for
+ * creators; copy outline, match thresholds for brands) needs columns
+ * we haven't added yet. They'll arrive in a follow-up chunk; the
+ * card UI is laid out with placeholders so adding them is a CSS-free
+ * data drop. */
+
+export type MarketplaceBrand = {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  logoUrl: string | null;
+  website: string | null;
+  /** Primary contact's XQ archetype, when known. */
+  contactArchetype: string | null;
+  matchScore: number | null;
+};
+
+export type MarketplaceCreator = {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  avatarUrl: string | null;
+  /** ART19 show stats, when the creator's art19_show_id is linked. */
+  showTitle: string | null;
+  showListenCount: number | null;
+  showEpisodeCount: number | null;
+  contactArchetype: string | null;
+  matchScore: number | null;
+};
+
+type BrandRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  logo_url: string | null;
+  website: string | null;
+  members: Array<{ xq_archetype: string | null }>;
+};
+
+type CreatorRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  avatar_url: string | null;
+  art19_shows: {
+    title: string | null;
+    listen_count: number | null;
+    episode_count: number | null;
+  } | null;
+  members: Array<{ xq_archetype: string | null }>;
+};
+
+/** Count of XQ axes the two archetypes share (0-3). Returns null
+ *  when either side is missing an archetype. */
+function archetypeAxisMatch(a: string | null, b: string | null): number | null {
+  if (!a || !b) return null;
+  const [a1, a2, a3] = a.split("-");
+  const [b1, b2, b3] = b.split("-");
+  return (a1 === b1 ? 1 : 0) + (a2 === b2 ? 1 : 0) + (a3 === b3 ? 1 : 0);
+}
+
+/** Pick the first non-null archetype from the embedded members list. */
+function firstArchetype(rows: Array<{ xq_archetype: string | null }>): string | null {
+  return rows.find((r) => r.xq_archetype !== null)?.xq_archetype ?? null;
+}
+
+export async function loadMarketplaceBrands(
+  viewerArchetype: string | null,
+): Promise<MarketplaceBrand[]> {
+  const res = await supabaseRest<BrandRow[]>(
+    "brands?" +
+      "select=id,name,slug,description,logo_url,website,members(xq_archetype)&" +
+      "order=name.asc",
+  );
+  if (!res.ok || !res.data) return [];
+  return res.data.map((b) => {
+    const contactArchetype = firstArchetype(b.members ?? []);
+    return {
+      id: b.id,
+      name: b.name,
+      slug: b.slug,
+      description: b.description,
+      logoUrl: b.logo_url,
+      website: b.website,
+      contactArchetype,
+      matchScore: archetypeAxisMatch(viewerArchetype, contactArchetype),
+    };
+  });
+}
+
+export async function loadMarketplaceCreators(
+  viewerArchetype: string | null,
+): Promise<MarketplaceCreator[]> {
+  const res = await supabaseRest<CreatorRow[]>(
+    "creators?" +
+      "select=id,name,slug,description,avatar_url,art19_shows(title,listen_count,episode_count),members(xq_archetype)&" +
+      "order=name.asc",
+  );
+  if (!res.ok || !res.data) return [];
+  return res.data.map((c) => {
+    const contactArchetype = firstArchetype(c.members ?? []);
+    return {
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+      avatarUrl: c.avatar_url,
+      showTitle: c.art19_shows?.title ?? null,
+      showListenCount:
+        c.art19_shows?.listen_count != null
+          ? Number(c.art19_shows.listen_count)
+          : null,
+      showEpisodeCount:
+        c.art19_shows?.episode_count != null
+          ? Number(c.art19_shows.episode_count)
+          : null,
+      contactArchetype,
+      matchScore: archetypeAxisMatch(viewerArchetype, contactArchetype),
+    };
+  });
+}
+
 /** Format helpers — used by the Studio dashboard. */
 export function formatListens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;

@@ -13,7 +13,7 @@ import {
 } from "@/lib/studio-data";
 
 import styles from "./studio.module.css";
-import { SignOutButton } from "./SignOutButton";
+import { StudioHeader } from "./StudioHeader";
 
 /** Studio dashboard — landing page after login. Data is scoped to
  *  the logged-in member's brand_id or creator_id so they only see
@@ -36,13 +36,7 @@ export default async function StudioDashboardPage() {
 
   return (
     <>
-      <header className={styles.dashHeader}>
-        <div className={styles.dashHeaderBrand}>
-          <span className={styles.brandName}>GhostSignal</span>
-          <span className={styles.brandTag}>Studio</span>
-        </div>
-        <SignOutButton />
-      </header>
+      <StudioHeader activeTab="dashboard" />
       <main className={styles.dashMain}>
         <h1 className={styles.dashWelcome}>
           Welcome, {member.firstName ?? member.displayName}.
