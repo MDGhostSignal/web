@@ -583,18 +583,18 @@ html:has(.xq-page) {
   margin: 0 0 20px;
   opacity: 0.85;
 }
-/* Phase card grid — three columns on desktop, single column on
- * mobile. Each card carries one diagnostic phase so the copy reads
- * as scannable structure rather than a dense paragraph. */
+/* XQ + RQ side-by-side cards — two-column desktop, single column on
+ * mobile. Each card carries one of the two assessments so the
+ * relationship reads as paired surfaces rather than dense copy. */
 .xq-intro-phases {
   list-style: none;
   padding: 0;
   margin: 0 auto 36px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
   text-align: left;
-  max-width: 860px;
+  max-width: 760px;
 }
 .xq-intro-phase {
   position: relative;
@@ -610,6 +610,25 @@ html:has(.xq-page) {
   border-color: rgba(159, 113, 175, 0.45);
   background: rgba(159, 113, 175, 0.06);
   transform: translateY(-2px);
+}
+/* In-card 3D wordmark slot. Constrains the inline SVG (which is sized
+ * to its 800×240 viewBox) so the hero treatment shrinks into the card
+ * header without dominating the body copy. The SVG itself scales by
+ * preserveAspectRatio, so we just clip its container height. */
+.xq-intro-phase-mark {
+  position: relative;
+  width: 100%;
+  height: 88px;
+  margin: -4px 0 12px;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.xq-intro-phase-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .xq-intro-phase-num {
   display: block;

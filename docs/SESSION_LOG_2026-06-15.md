@@ -345,3 +345,153 @@ No new memory entries warranted. The RPG project memory + RPG stack
 reference still hold. Today's work didn't introduce new conventions
 that future sessions need to know — pixel-mask collision and the
 building registry are self-evident from the code.
+
+---
+
+# Addendum — afternoon session
+
+Same day, second commit batch. Mix of world polish, CRM rebranding,
+UX bug fixes, the new CPM tool, RQ wordmark, and horse mounting.
+
+## A · World polish
+
+- **Spawn moved twice**: first attempt put spawn in front of the
+  church door (top of the map). User clarified the village meeting
+  place is the plaza fountain → final spawn at tile (36, 51), three
+  tiles south of the fountain. Server + client agree.
+- **Chickens** relocated to in front of the church.
+- **Dog** relocated to in front of the Tiny Home.
+- **Stable cow herd**: 2 → 7 cows in the fenced pasture.
+- **Cow proximity-flee FSM**: ambles away when player approaches.
+- **Animal blocking**: player can no longer walk through chickens,
+  horses, cows, or dogs. Mounted horse exempt.
+- **Dog FSM full pass**: split the sprite sheet per user's per-row
+  description. Directional walks (down / up / side), idle variants
+  (stand / sit / scratch / bark / jump / sleep) picked by weighted
+  dice, and a proximity-flee state at 130 px/s.
+- **Head badge sizing**: oversized → halved → moved 12 px closer to
+  the torso. Final r=12, glow=20, y=-48.
+
+## B · Multi-exit interiors
+
+- `BuildingInterior.exit` (single) → `exits: DoorTrigger[]` (array).
+- Town Hall: 3 bottom-row exits. Inn / Smith / General Store gain a
+  top-room fallback exit.
+
+## C · UX bug fixes
+
+### Chat input was eating E / O / W / A / S / D / M / R / T / C
+Root cause: Phaser's `addKey(KeyCode)` defaults to
+`enableCapture = true`, which calls `preventDefault()` on those keys
+at the window level — silently stealing them from focused inputs.
+Fix: pass `false` as the second arg to every `addKey` call. Kept
+the `keyboard.enabled` toggle so action handlers don't double-fire.
+
+### Enter from world → focuses chat; Enter in chat → blurs
+Added a window-level keydown listener in the React layer (bypasses
+Phaser entirely). Submit handler blurs the input unconditionally.
+
+## D · CRM — ART19 → Campaigns (label-only)
+
+Sidebar, page H1, keyboard chord label all read "Campaigns" now.
+Route `/admin/art19` + the `ART19_API_TOKEN` env var unchanged.
+
+## E · Signal Fidelity CPM Calculator
+
+New subpage at `/admin/art19/cpm` per Jack's spec.
+- **Inputs**: industry benchmark, XQ/RQ match %, ad length
+  (sliders), pre/mid/post-roll, host vs. spot (segmented).
+- **Output**: LED-display CPM estimate with +/-15% confidence range
+  and a "signal chain" breakdown.
+- **Aesthetic**: retro audio-console — dark brushed-graphite
+  chassis, amber LEDs, chrome slider thumbs, Courier monospace,
+  faux-CRT glow.
+- **All formula constants in one block at the top of page.tsx** so
+  Jack can replace placeholders with real numbers.
+- Launcher card on the Campaigns dashboard links to the tool.
+
+## F · XQ quiz intro rewrite (Jeremy's copy)
+
+Replaced the Conviction Quotient framing with the Decode Your
+Signal / XQ + RQ pairing copy. 3-phase grid -> 2 cards (XQ + RQ).
+CTA: "Take the XQ - it's free ->".
+
+## G · RQ wordmark + shared 3D wordmark module
+
+- Extracted XQ3DWordmark + useTrackedLight out of IntroStep into
+  `Wordmarks3D.tsx`.
+- Added RQ3DWordmark — same depth-stack technique but tuned for
+  80s action-movie title vibes: retrowave magenta -> cyan front
+  gradient, neon-pink afterimage drop shadow, horizontal scanline
+  overlay, cyan-tinted mouse light, horizontal sweep band (XQ's was
+  diagonal). GhostSignal lockup matches XQ exactly.
+- IntroStep cards now render the actual XQ + RQ wordmarks inside
+  the phase headers (was just small "XQ" / "RQ" text).
+
+## H · Horse mounting
+
+- Walk within 70 px of a horse -> "Press E - Mount Horse" prompt.
+- Mounting freezes the horse's FSM (`timer = Infinity`) so the
+  player drives both the rider avatar and the horse position.
+- **Movement speed 2x** while mounted (per the spec).
+- Rider sprite shifts -26 px on Y so feet rest on the saddle.
+- Horse uses its existing directional walk anims based on velocity.
+- E again -> dismount. Horse gets a fresh idle timer + bob, returns
+  to AI control.
+- `isInAnyAnimal` exempts the mounted horse.
+
+## I · Game-server deployment files (deploy itself blocked on Martin)
+
+- `apps/game-server/Dockerfile` — two-stage build.
+- `apps/game-server/fly.toml` — shared-cpu-1x, 256 MB, iad, health
+  check on `/healthz`.
+- `apps/game-server/.dockerignore` + `apps/game-server/DEPLOY.md`.
+- `index.ts` responds 200 OK on `/healthz` and binds to `0.0.0.0`.
+
+## J · Memories captured for future work
+
+- `project_marketplace_dashboard.md` — Mike's brand/creator field
+  spec captured. Baseball-trading-card UI concept. Wait-to-greenlight.
+- `project_world_character_card.md` — RPG inventory + walk-up
+  player interaction + match read. Wait-to-greenlight.
+
+## Files touched (afternoon)
+
+### New
+- `apps/web/src/app/admin/art19/cpm/page.tsx`
+- `apps/web/src/app/admin/art19/cpm/page.module.css`
+- `apps/web/src/app/xq-quiz/Wordmarks3D.tsx`
+- `apps/game-server/Dockerfile`, `.dockerignore`, `fly.toml`,
+  `DEPLOY.md`
+
+### Modified
+- `apps/web/src/app/world/WorldClient.tsx` — spawn move, animal
+  positions/FSMs, animal-blocking, head-badge sizing, chat-key fix,
+  Enter-to-focus, horse mounting.
+- `apps/web/src/app/xq-quiz/IntroStep.tsx` — Jeremy's new copy,
+  wordmark imports, cards use XQ/RQ wordmarks instead of text.
+- `apps/web/src/app/xq-quiz/xq-quiz.css` — phase grid 3->2 cols,
+  in-card wordmark slot.
+- `apps/web/src/app/admin/layout.tsx`, `art19/page.tsx`,
+  `art19/page.module.css`, `components/admin/ShortcutHelp.tsx` —
+  ART19 -> Campaigns label, CPM launcher card.
+- `apps/game-server/src/index.ts` — `/healthz` + `0.0.0.0` bind.
+- `apps/game-server/src/rooms/WorldRoom.ts` — spawn (36, 51).
+
+## Validation
+
+- `npm run typecheck` (web) — clean throughout.
+- `npm run typecheck` (game-server) — clean.
+
+## Open / next-step notes
+
+- **Deploy game server** (task #13): blocked on Martin to run
+  `fly launch + fly deploy` (DEPLOY.md walks through it).
+- **World character card / player interaction** (task #15): biggest
+  pending feature; idea-stage, multi-commit work.
+- **Marketplace self-serve portal** (task #16): also idea-stage.
+- **SEO copy** for the public site: recommended title + description
+  in chat; user hasn't decided whether to apply via Squarespace or
+  via `apps/web/src/app/layout.tsx`.
+- **CPM tool numbers**: placeholder multipliers; replace once Jack
+  delivers the real formula.

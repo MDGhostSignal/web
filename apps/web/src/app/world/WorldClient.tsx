@@ -150,10 +150,20 @@ type Chicken = {
 /** Wandering dog NPC. Roams in a small radius around its home
  *  anchor, pauses, picks a new spot, repeats. No proximity reaction;
  *  the dog is friendly. */
-type DogState = "idle" | "walking";
+type DogState = "idle" | "walking" | "scared";
+/** What the dog is doing during an idle bout — affects which anim
+ *  plays + how long the bout lasts. Picked by weighted random when
+ *  entering the idle state. */
+type DogIdleAction = "stand" | "sit" | "scratch" | "bark" | "jump" | "sleep";
+type DogFacing = "down" | "up" | "left" | "right";
 type Dog = {
-  sprite: Phaser.GameObjects.Image;
+  sprite: Phaser.GameObjects.Sprite;
   state: DogState;
+  /** Active idle behavior (meaningful only while state === "idle"). */
+  idleAction: DogIdleAction;
+  /** Last walk-facing — used to detect direction change mid-walk so
+   *  we can swap to the right anim without flickering on frame 0. */
+  facing: DogFacing;
   timer: number;
   vx: number;
   vy: number;
@@ -226,6 +236,8 @@ type ChatMessage = {
 type WorldAction =
   | { kind: "enter-building"; buildingId: string; label: string }
   | { kind: "exit-building"; label: string }
+  | { kind: "mount-horse"; label: string }
+  | { kind: "dismount-horse"; label: string }
   | null;
 
 /** Which "room" the local player is currently rendered in. Village +
@@ -277,7 +289,12 @@ export default function WorldClient() {
         avatars = new Map<string, Phaser.GameObjects.Container>();
         targets = new Map<string, { x: number; y: number }>();
         ownSessionId: string | null = null;
-        ownPos = { x: WORLD_W_TILES / 2, y: WORLD_H_TILES / 2 };
+        // Spawn just south of the plaza fountain — the village's
+        // meeting place at the center of the map. World center is
+        // tile (36, 48); the fountain sits there. Spawn at (36, 51)
+        // drops the player ~3 tiles below it, facing the rest of
+        // the plaza.
+        ownPos = { x: 36, y: 51 };
         ownFacing: "down" | "up" | "left" | "right" = "down";
         ownArchetype = "X-S-L";
         lastSendAt = 0;
@@ -288,6 +305,11 @@ export default function WorldClient() {
         chickens: Chicken[] = [];
         /** Ambient horse NPC(s) — same client-only pattern as chickens. */
         horses: Horse[] = [];
+        /** Horse the local player is currently riding. null when on
+         *  foot. While mounted, the player's avatar tracks the
+         *  horse position + movement is 2× speed and the horse's
+         *  own FSM pauses. */
+        mountedHorse: Horse | null = null;
         /** Grazing cows — proximity-flee FSM. */
         cows: Cow[] = [];
         /** Wandering dogs — short walk + pause FSM. */
@@ -520,12 +542,13 @@ export default function WorldClient() {
           // Mature hen + baby chick near the world spawn point. Each
           // runs its own idle → scared → wander state machine
           // (see updateChickens) so they react when a player gets close.
-          const spawnX = worldW / 2;
-          const spawnY = worldH / 2;
+          // Chickens are now positioned in front of the church (door
+          // at native 368, 140 → world 1104, 420). Player spawn is
+          // here too, so they're the first NPCs you see.
           this.chickens.push(
             this.spawnChicken({
-              x: spawnX + 96,
-              y: spawnY + 60,
+              x: 1070,
+              y: 540,
               idleFrame: "hen",
               walkFrames: ["hen-walk1", "hen-walk2"],
               triggerRadius: 110,
@@ -536,8 +559,8 @@ export default function WorldClient() {
           );
           this.chickens.push(
             this.spawnChicken({
-              x: spawnX + 56,
-              y: spawnY + 88,
+              x: 1130,
+              y: 570,
               idleFrame: "chick",
               walkFrames: ["chick", "chick-walk"],
               triggerRadius: 80,
@@ -629,15 +652,90 @@ export default function WorldClient() {
           // door at native ~600, 875 → world 1800, 2625). Anchors
           // sit in the open grass south + west of the building; the
           // spawn nudger will move them out of any blocker.
+          // 7 cows in the fenced pasture around the Stable (bottom-
+          // right of the village, door at native 600, 875 → world
+          // 1800, 2625). nudgeToFree moves any that land inside a
+          // fence or the building.
           this.spawnCow(1700, 2700);
           this.spawnCow(1880, 2760);
+          this.spawnCow(1740, 2780);
+          this.spawnCow(1820, 2820);
+          this.spawnCow(1680, 2680);
+          this.spawnCow(1940, 2710);
+          this.spawnCow(1860, 2880);
 
-          // Register a single dog frame — band 0 cell 0.
-          this.textures.get("hm-dog").add("dog-idle", 0, 0, 0, 30, 22);
-          // One dog by the Town Hall doorstep (top-left, door at
-          // native ~152, 142 → world 456, 426). Just south of the
-          // door so the player can see them as they approach.
-          this.spawnDog(480, 490);
+          // Dog sheet — 413 × 141, 5 rows. Cells per row vary in
+          // pitch (row 1 = 26-px, others = 30-px). User-mapped poses:
+          //   Row 0 (y=0,  h=24): cells 0-5 jump-play, 6-13 stand-idle
+          //   Row 1 (y=30, h=22, 26-px pitch): 0 bark, 1-2 scratch,
+          //     3-4 pee (skip), 5-7 walk-down, 8-13 face-left-idle
+          //   Row 2 (y=59, h=24): 0-1 sit-idle, 2-3 sound, 4 sit-bone
+          //   Row 3 (y=88, h=24): 0-3 walk-up, 11-13 jump-back (skip)
+          //   Row 4 (y=119,h=22): 0-2 roll, 6-9 sleep
+          const dogTex = this.textures.get("hm-dog");
+          const dadd = (name: string, x: number, y: number, w = 30, h = 24) =>
+            dogTex.add(name, 0, x, y, w, h);
+
+          // Walk cycles (one per cardinal facing).
+          dadd("dog-walk-down-0", 130, 30, 26, 22);
+          dadd("dog-walk-down-1", 156, 30, 26, 22);
+          dadd("dog-walk-down-2", 182, 30, 26, 22);
+          dadd("dog-walk-up-0", 0, 88);
+          dadd("dog-walk-up-1", 30, 88);
+          dadd("dog-walk-up-2", 60, 88);
+          dadd("dog-walk-up-3", 90, 88);
+          // Side-view cycle from row 1 "facing left, looking around"
+          // cells (8-11). Faces LEFT natively; flipX for right.
+          dadd("dog-walk-side-0", 208, 30, 26, 22);
+          dadd("dog-walk-side-1", 234, 30, 26, 22);
+          dadd("dog-walk-side-2", 260, 30, 26, 22);
+          dadd("dog-walk-side-3", 286, 30, 26, 22);
+
+          // Stand-idle (front view) — slow bob through 8 frames.
+          for (let i = 0; i < 8; i++) dadd(`dog-stand-${i}`, 180 + i * 30, 0);
+          // Sit-idle — 2 frames cycled slowly.
+          dadd("dog-sit-0", 0, 59);
+          dadd("dog-sit-1", 30, 59);
+          // Scratch — 2 frames brisk.
+          dadd("dog-scratch-0", 26, 30, 26, 22);
+          dadd("dog-scratch-1", 52, 30, 26, 22);
+          // Bark — single frame held for a beat.
+          dadd("dog-bark", 0, 30, 26, 22);
+          // Jump-play — 6 frames quick.
+          for (let i = 0; i < 6; i++) dadd(`dog-jump-${i}`, i * 30, 0);
+          // Sleep — 4 frames very slow.
+          for (let i = 0; i < 4; i++) dadd(`dog-sleep-${i}`, 180 + i * 30, 119, 30, 22);
+          // Static fallback idle = first stand frame.
+          dadd("dog-idle", 180, 0);
+
+          const dogAnim = (
+            key: string,
+            frames: string[],
+            frameRate: number,
+            repeat = -1,
+          ) =>
+            this.anims.create({
+              key,
+              frames: frames.map((f) => ({ key: "hm-dog", frame: f })),
+              frameRate,
+              repeat,
+            });
+          dogAnim("dog-walk-down", ["dog-walk-down-0", "dog-walk-down-1", "dog-walk-down-2"], 6);
+          dogAnim("dog-walk-up", ["dog-walk-up-0", "dog-walk-up-1", "dog-walk-up-2", "dog-walk-up-3"], 6);
+          dogAnim("dog-walk-side", ["dog-walk-side-0", "dog-walk-side-1", "dog-walk-side-2", "dog-walk-side-3"], 6);
+          dogAnim(
+            "dog-stand",
+            ["dog-stand-0", "dog-stand-1", "dog-stand-2", "dog-stand-3", "dog-stand-4", "dog-stand-5", "dog-stand-6", "dog-stand-7"],
+            3,
+          );
+          dogAnim("dog-sit", ["dog-sit-0", "dog-sit-1"], 1.5);
+          dogAnim("dog-scratch", ["dog-scratch-0", "dog-scratch-1"], 6);
+          dogAnim("dog-jump", ["dog-jump-0", "dog-jump-1", "dog-jump-2", "dog-jump-3", "dog-jump-4", "dog-jump-5"], 8);
+          dogAnim("dog-sleep", ["dog-sleep-0", "dog-sleep-1", "dog-sleep-2", "dog-sleep-3"], 1.5);
+          // Dog in front of the Tiny Home (top-right, door at native
+          // 600, 219 → world 1800, 657). Just south of the door so
+          // the player can see them as they approach.
+          this.spawnDog(1820, 730);
 
           // Soft world-border vignette so the camera bounds don't read
           // as a hard wall — a dark frame around the playable area.
@@ -941,7 +1039,7 @@ export default function WorldClient() {
           }
           const label = this.add.text(
             0,
-            -76,
+            -78,
             isOwn ? `YOU · ${player.displayName}` : player.displayName,
             {
               fontFamily: "Inter, sans-serif",
@@ -954,12 +1052,13 @@ export default function WorldClient() {
           );
           label.setOrigin(0.5, 1);
 
-          // Archetype identity badge — sits just over the head, inside
-          // the halo glow so it reads as part of the character rather
-          // than something floating above. The YOU/name label sits
-          // above the badge.
+          // Archetype identity badge — oversized so the archetype
+          // logo reads as the character's head. Sits just above the
+          // LPC sprite (whose top edge is around y=-56) so the badge
+          // visually replaces the body's actual head. The YOU/name
+          // label sits above the badge.
           const badge = this.buildBadge(player.archetype, color);
-          badge.setPosition(0, -42);
+          badge.setPosition(0, -48);
 
           // Order: halo (back), shadow (under feet), sprite, glow
           // overlay, label, badge (front). The glow must sit
@@ -1063,8 +1162,11 @@ export default function WorldClient() {
             // Two-stage clamp: first slide against obstacles (so the
             // player wall-slides along house edges/fences), then
             // box-clamp to the room's outer bounds.
-            const proposedX = this.ownPos.x + vx * SPEED * dt;
-            const proposedY = this.ownPos.y + vy * SPEED * dt;
+            // 2× speed while mounted on the horse — "doubling my
+            // movement speed on the map" per the feature spec.
+            const speed = this.mountedHorse ? SPEED * 2 : SPEED;
+            const proposedX = this.ownPos.x + vx * speed * dt;
+            const proposedY = this.ownPos.y + vy * speed * dt;
             const resolved = resolveMove(
               this.ownPos.x * TILE,
               this.ownPos.y * TILE,
@@ -1075,10 +1177,13 @@ export default function WorldClient() {
             // Animal-blocking: if the resolved point sits inside an
             // NPC body circle, fall back to axis-separated movement
             // so the player slides past instead of phasing through.
+            // Skipped while mounted — the rider IS inside the horse's
+            // foot circle by definition, so it'd lock movement.
             let nx = resolved.x;
             let ny = resolved.y;
             if (
               this.location.kind === "village" &&
+              !this.mountedHorse &&
               this.isInAnyAnimal(nx, ny)
             ) {
               const fromX = this.ownPos.x * TILE;
@@ -1102,13 +1207,32 @@ export default function WorldClient() {
             const ownAvatar = this.avatars.get(this.ownSessionId);
             if (ownAvatar) {
               ownAvatar.x = this.ownPos.x * TILE;
-              ownAvatar.y = this.ownPos.y * TILE;
+              // While mounted, the rider sprite sits on the horse's
+              // back — visually offset upward by ~26 px so feet rest
+              // on the saddle instead of the ground.
+              ownAvatar.y = this.ownPos.y * TILE - (this.mountedHorse ? 26 : 0);
               this.applyFacing(ownAvatar, this.ownFacing, true);
+            }
+            // Drag the horse along with the rider so it stays under
+            // the player avatar. Anim chosen by velocity facing.
+            if (this.mountedHorse) {
+              const h = this.mountedHorse;
+              h.sprite.x = this.ownPos.x * TILE;
+              h.sprite.y = this.ownPos.y * TILE;
+              h.vx = vx * SPEED * 2;
+              h.vy = vy * SPEED * 2;
+              h.facing = this.horseFacingFromVelocity(h.vx, h.vy);
+              this.applyHorseMovingAnim(h);
             }
           } else {
             // Stopped moving — switch own avatar to idle in current facing.
             const ownAvatar = this.avatars.get(this.ownSessionId);
             if (ownAvatar) this.applyFacing(ownAvatar, this.ownFacing, false);
+            // Mounted + idle → horse stops too.
+            if (this.mountedHorse) {
+              this.mountedHorse.sprite.anims.stop();
+              this.applyHorseIdleFrame(this.mountedHorse);
+            }
           }
 
           const now = performance.now();
@@ -1496,19 +1620,33 @@ export default function WorldClient() {
           let next: WorldAction = null;
 
           if (this.location.kind === "village") {
-            // Walk every building's door trigger. First hit wins —
-            // doors don't overlap in practice and a deterministic
-            // order is fine.
-            for (const b of BUILDINGS) {
-              const dx = px - b.door.x;
-              const dy = py - b.door.y;
-              if (Math.hypot(dx, dy) < b.door.radius) {
-                next = {
-                  kind: "enter-building",
-                  buildingId: b.id,
-                  label: `Enter ${b.displayName}`,
-                };
-                break;
+            // Mounted — only action available is dismount.
+            if (this.mountedHorse) {
+              next = { kind: "dismount-horse", label: "Dismount" };
+            } else {
+              // Horse mount trigger — closest horse within ~70 px.
+              for (const horse of this.horses) {
+                const dx = px - horse.sprite.x;
+                const dy = py - horse.sprite.y;
+                if (Math.hypot(dx, dy) < 70) {
+                  next = { kind: "mount-horse", label: "Mount Horse" };
+                  break;
+                }
+              }
+            }
+            // Building doors second — only if no horse action above.
+            if (!next) {
+              for (const b of BUILDINGS) {
+                const dx = px - b.door.x;
+                const dy = py - b.door.y;
+                if (Math.hypot(dx, dy) < b.door.radius) {
+                  next = {
+                    kind: "enter-building",
+                    buildingId: b.id,
+                    label: `Enter ${b.displayName}`,
+                  };
+                  break;
+                }
               }
             }
           } else {
@@ -1532,7 +1670,7 @@ export default function WorldClient() {
             const ownAvatar = this.avatars.get(this.ownSessionId);
             if (next && ownAvatar) {
               this.pressPrompt.setText(`Press E — ${next.label}`);
-              this.pressPrompt.setPosition(ownAvatar.x, ownAvatar.y - 90);
+              this.pressPrompt.setPosition(ownAvatar.x, ownAvatar.y - 96);
               this.pressPrompt.setVisible(true);
             } else {
               this.pressPrompt.setVisible(false);
@@ -1559,6 +1697,8 @@ export default function WorldClient() {
           if (!a) return;
           if (a.kind === "enter-building") this.enterBuilding(a.buildingId);
           else if (a.kind === "exit-building") this.exitBuilding();
+          else if (a.kind === "mount-horse") this.mountNearestHorse();
+          else if (a.kind === "dismount-horse") this.dismountHorse();
         }
 
         /** Swap to a building's interior "room": hide village +
@@ -1671,6 +1811,58 @@ export default function WorldClient() {
           });
         }
 
+        /** Mount the closest horse within trigger range. The horse's
+         *  own FSM pauses while mounted; the player drives both the
+         *  avatar and the horse position. */
+        mountNearestHorse() {
+          if (this.mountedHorse) return;
+          const px = this.ownPos.x * TILE;
+          const py = this.ownPos.y * TILE;
+          let best: Horse | null = null;
+          let bestD = Infinity;
+          for (const h of this.horses) {
+            const dx = px - h.sprite.x;
+            const dy = py - h.sprite.y;
+            const d = Math.hypot(dx, dy);
+            if (d < 70 && d < bestD) {
+              best = h;
+              bestD = d;
+            }
+          }
+          if (!best) return;
+          // Freeze the horse's AI: cancel any animation + bob, reset
+          // velocity, mark idle so updateHorses leaves it alone.
+          best.bob?.stop();
+          best.bob = null;
+          best.sprite.anims.stop();
+          best.vx = 0;
+          best.vy = 0;
+          best.state = "idle";
+          best.timer = Number.POSITIVE_INFINITY;
+          this.mountedHorse = best;
+          // Snap the player onto the horse position.
+          this.ownPos = { x: best.sprite.x / TILE, y: best.sprite.y / TILE };
+          const ownAvatar = this.avatars.get(this.ownSessionId!);
+          if (ownAvatar) {
+            ownAvatar.x = best.sprite.x;
+            ownAvatar.y = best.sprite.y;
+          }
+          this.flashHint("Mounted — 2× speed. E to dismount.");
+        }
+
+        /** Step off the horse. Returns control to the AI FSM. */
+        dismountHorse() {
+          const horse = this.mountedHorse;
+          if (!horse) return;
+          this.mountedHorse = null;
+          // Hand the horse back to its FSM with a fresh idle timer.
+          horse.timer = 1500 + Math.random() * 2000;
+          horse.state = "idle";
+          this.startHorseBob(horse);
+          this.applyHorseIdleFrame(horse);
+          this.flashHint("Dismounted.");
+        }
+
         /** Define named frames on the loaded ArMM1998 atlas so
          *  add.image(x, y, "armm", "name") works. Coords measured from
          *  the 640×576 source overlay grid; tweak in this single
@@ -1769,16 +1961,16 @@ export default function WorldClient() {
          *  inside its home radius, pauses, picks a new target. */
         spawnDog(x: number, y: number) {
           const safe = nudgeToFree(x, y, "village") ?? { x, y };
-          const sprite = this.add.image(safe.x, safe.y, "hm-dog", "dog-idle");
+          const sprite = this.add.sprite(safe.x, safe.y, "hm-dog", "dog-idle");
           sprite.setOrigin(0.5, 0.9);
           sprite.setScale(VILLAGE_SCALE);
           sprite.setDepth(-3);
           const dog: Dog = {
             sprite,
             state: "idle",
-            // First idle stretch is short so the dog starts moving
-            // soon after page load.
-            timer: 800 + Math.random() * 1200,
+            idleAction: "stand",
+            facing: "down",
+            timer: 0,
             vx: 0,
             vy: 0,
             targetX: safe.x,
@@ -1787,84 +1979,218 @@ export default function WorldClient() {
             homeY: safe.y,
             bob: null,
           };
-          this.startDogBob(dog);
+          // First idle bout starts the moment we spawn so the dog has
+          // a meaningful pose from frame 1.
+          this.startDogIdle(dog);
           this.dogs.push(dog);
           return dog;
         }
 
-        startDogBob(dog: Dog) {
-          dog.bob?.stop();
-          const baseY = dog.sprite.y;
-          dog.bob = this.tweens.add({
-            targets: dog.sprite,
-            y: { from: baseY, to: baseY - 2 },
-            duration: 1400 + Math.random() * 400,
-            ease: "Sine.inOut",
-            yoyo: true,
-            repeat: -1,
-          });
+        /** Pick a weighted idle behavior + start its animation. */
+        startDogIdle(dog: Dog) {
+          dog.state = "idle";
+          dog.vx = 0;
+          dog.vy = 0;
+          // Weighted dice. Tuned to make the dog feel alive but
+          // not chaotic — mostly stands, occasionally varies.
+          const roll = Math.random();
+          let action: DogIdleAction;
+          if (roll < 0.5) action = "stand";
+          else if (roll < 0.68) action = "sit";
+          else if (roll < 0.8) action = "scratch";
+          else if (roll < 0.9) action = "bark";
+          else if (roll < 0.96) action = "jump";
+          else action = "sleep";
+          dog.idleAction = action;
+
+          // Anim + duration per action.
+          const sp = dog.sprite;
+          switch (action) {
+            case "stand":
+              sp.anims.play("dog-stand", true);
+              dog.timer = 3000 + Math.random() * 3000;
+              break;
+            case "sit":
+              sp.anims.play("dog-sit", true);
+              dog.timer = 4000 + Math.random() * 4000;
+              break;
+            case "scratch":
+              sp.anims.play("dog-scratch", true);
+              dog.timer = 1500 + Math.random() * 1000;
+              break;
+            case "bark":
+              sp.anims.stop();
+              sp.setFrame("dog-bark");
+              dog.timer = 900 + Math.random() * 600;
+              break;
+            case "jump":
+              sp.anims.play("dog-jump", true);
+              dog.timer = 750 + Math.random() * 800;
+              break;
+            case "sleep":
+              sp.anims.play("dog-sleep", true);
+              dog.timer = 8000 + Math.random() * 7000;
+              break;
+          }
         }
 
-        /** Per-frame dog update. idle → pick a free target nearby →
-         *  walk there → idle again. Speed and radius are gentle so
-         *  the dog feels relaxed, not frantic. */
+        /** Convert a velocity vector to the closest cardinal facing.
+         *  Same logic as the horse — diagonals snap to whichever axis
+         *  dominates. */
+        dogFacingFromVelocity(vx: number, vy: number): DogFacing {
+          if (Math.abs(vx) >= Math.abs(vy)) {
+            return vx >= 0 ? "right" : "left";
+          }
+          return vy >= 0 ? "down" : "up";
+        }
+
+        /** Play the walk animation that matches the dog's current
+         *  facing. side faces LEFT natively, flipX for right. */
+        applyDogWalkAnim(dog: Dog) {
+          const sp = dog.sprite;
+          switch (dog.facing) {
+            case "down":
+              sp.setFlipX(false);
+              sp.anims.play("dog-walk-down", true);
+              break;
+            case "up":
+              sp.setFlipX(false);
+              sp.anims.play("dog-walk-up", true);
+              break;
+            case "right":
+              sp.setFlipX(true);
+              sp.anims.play("dog-walk-side", true);
+              break;
+            case "left":
+            default:
+              sp.setFlipX(false);
+              sp.anims.play("dog-walk-side", true);
+              break;
+          }
+        }
+
+        /** Per-frame dog update. Two states: idle (running one of
+         *  the ambient behaviors) and walking (heading to a target).
+         *  Idle bouts pick a new behavior 70% of the time and start
+         *  a wander 30% of the time, so the dog has long stretches
+         *  of varied poses interspersed with movement. */
         updateDogs(dt: number) {
-          const DOG_SPEED = 55; // px/sec
+          const DOG_SPEED = 55; // px/sec when wandering
+          const DOG_FLEE_SPEED = 130; // px/sec when scared
           const DOG_RADIUS = 130; // wander radius around home
-          const DOG_WALK_CAP = 4000; // ms max per walk segment
+          const DOG_TRIGGER_R = 140; // proximity radius for flee
+          const DOG_WALK_CAP = 4000;
+          const DOG_FLEE_MS = 1800;
           for (const dog of this.dogs) {
-            if (dog.state === "idle") {
-              dog.timer -= dt * 1000;
-              if (dog.timer <= 0) {
-                const target = pickFreeTarget(
-                  dog.homeX,
-                  dog.homeY,
-                  20,
-                  DOG_RADIUS,
-                  "village",
-                  10,
-                );
-                if (!target) {
-                  // Boxed in; try again after another idle bout.
-                  dog.timer = 1500 + Math.random() * 2000;
-                  continue;
+            // Proximity flee — checked in idle AND walking so the dog
+            // bolts the moment a player gets close, regardless of
+            // what behavior was running.
+            if (dog.state !== "scared") {
+              for (const avatar of this.avatars.values()) {
+                const dx = avatar.x - dog.sprite.x;
+                const dy = avatar.y - dog.sprite.y;
+                const d = Math.hypot(dx, dy);
+                if (d > 0 && d < DOG_TRIGGER_R) {
+                  // Vector AWAY from the player.
+                  dog.vx = (-dx / d) * DOG_FLEE_SPEED;
+                  dog.vy = (-dy / d) * DOG_FLEE_SPEED;
+                  dog.state = "scared";
+                  dog.timer = DOG_FLEE_MS + Math.random() * 1000;
+                  dog.facing = this.dogFacingFromVelocity(dog.vx, dog.vy);
+                  this.applyDogWalkAnim(dog);
+                  break;
                 }
-                dog.targetX = target.x;
-                dog.targetY = target.y;
-                const dx = dog.targetX - dog.sprite.x;
-                const dy = dog.targetY - dog.sprite.y;
-                const d = Math.max(0.001, Math.hypot(dx, dy));
-                dog.vx = (dx / d) * DOG_SPEED;
-                dog.vy = (dy / d) * DOG_SPEED;
-                dog.sprite.setFlipX(dog.vx < 0);
-                dog.bob?.stop();
-                dog.bob = null;
-                dog.state = "walking";
-                dog.timer = DOG_WALK_CAP;
               }
-            } else {
+              if (dog.state === "scared") continue;
+            }
+
+            if (dog.state === "scared") {
               const px = dog.sprite.x + dog.vx * dt;
               const py = dog.sprite.y + dog.vy * dt;
               const r = resolveMove(dog.sprite.x, dog.sprite.y, px, py, "village");
               if (r.x === dog.sprite.x && r.y === dog.sprite.y) {
-                // wall-slide produced no movement → end early
+                // Wall-slide produced nothing — end early so the dog
+                // doesn't grind against a fence forever.
                 dog.timer = 0;
               } else {
                 dog.sprite.x = r.x;
                 dog.sprite.y = r.y;
               }
               dog.timer -= dt * 1000;
-              const remaining = Math.hypot(
-                dog.targetX - dog.sprite.x,
-                dog.targetY - dog.sprite.y,
-              );
-              if (remaining < 4 || dog.timer <= 0) {
-                dog.state = "idle";
-                dog.vx = 0;
-                dog.vy = 0;
-                dog.timer = 1500 + Math.random() * 2500;
-                this.startDogBob(dog);
+              const newFacing = this.dogFacingFromVelocity(dog.vx, dog.vy);
+              if (newFacing !== dog.facing) {
+                dog.facing = newFacing;
+                this.applyDogWalkAnim(dog);
               }
+              if (dog.timer <= 0) this.startDogIdle(dog);
+              continue;
+            }
+
+            if (dog.state === "idle") {
+              dog.timer -= dt * 1000;
+              if (dog.timer > 0) continue;
+              // Sleep + sit make the dog less likely to immediately
+              // jump up and run; bias toward more idle. Everything
+              // else has a normal split.
+              const sleepy = dog.idleAction === "sleep" || dog.idleAction === "sit";
+              const walkChance = sleepy ? 0.15 : 0.35;
+              if (Math.random() > walkChance) {
+                // Stay idle, pick a new behavior.
+                this.startDogIdle(dog);
+                continue;
+              }
+              // Pick a wander target. If everywhere's blocked, fall
+              // back to another idle bout.
+              const target = pickFreeTarget(
+                dog.homeX,
+                dog.homeY,
+                20,
+                DOG_RADIUS,
+                "village",
+                10,
+              );
+              if (!target) {
+                this.startDogIdle(dog);
+                continue;
+              }
+              dog.targetX = target.x;
+              dog.targetY = target.y;
+              const dx = dog.targetX - dog.sprite.x;
+              const dy = dog.targetY - dog.sprite.y;
+              const d = Math.max(0.001, Math.hypot(dx, dy));
+              dog.vx = (dx / d) * DOG_SPEED;
+              dog.vy = (dy / d) * DOG_SPEED;
+              dog.facing = this.dogFacingFromVelocity(dog.vx, dog.vy);
+              dog.state = "walking";
+              dog.timer = DOG_WALK_CAP;
+              this.applyDogWalkAnim(dog);
+              continue;
+            }
+
+            // walking state
+            const px = dog.sprite.x + dog.vx * dt;
+            const py = dog.sprite.y + dog.vy * dt;
+            const r = resolveMove(dog.sprite.x, dog.sprite.y, px, py, "village");
+            if (r.x === dog.sprite.x && r.y === dog.sprite.y) {
+              dog.timer = 0;
+            } else {
+              dog.sprite.x = r.x;
+              dog.sprite.y = r.y;
+            }
+            dog.timer -= dt * 1000;
+            // Re-evaluate facing so a dog turning a corner swaps
+            // anims cleanly instead of moonwalking.
+            const newFacing = this.dogFacingFromVelocity(dog.vx, dog.vy);
+            if (newFacing !== dog.facing) {
+              dog.facing = newFacing;
+              this.applyDogWalkAnim(dog);
+            }
+            const remaining = Math.hypot(
+              dog.targetX - dog.sprite.x,
+              dog.targetY - dog.sprite.y,
+            );
+            if (remaining < 4 || dog.timer <= 0) {
+              this.startDogIdle(dog);
             }
           }
         }
@@ -1965,6 +2291,10 @@ export default function WorldClient() {
             if (dx * dx + dy * dy < HIT.chicken * HIT.chicken) return true;
           }
           for (const horse of this.horses) {
+            // Mounted horse moves WITH the player — checking it
+            // against player position would always return true and
+            // freeze movement.
+            if (horse === this.mountedHorse) continue;
             const dx = x - horse.sprite.x;
             const dy = y - horse.sprite.y;
             if (dx * dx + dy * dy < HIT.horse * HIT.horse) return true;
@@ -2731,22 +3061,24 @@ export default function WorldClient() {
             .setDepth(-3);
         }
 
-        /** Build a small archetype badge (~14px) in the right
-         *  head-shape for the given code, in the accent color. Returns
-         *  a container with a soft glow + the shape outline + small
-         *  inner dot, so the badge reads as a logo not a noise dot. */
+        /** Build an archetype badge (~32 px) in the right head-shape
+         *  for the given code, in the accent color. Sized to read as
+         *  the character's "head" — the archetype is the dominant
+         *  visual feature, not the LPC body underneath. Returns a
+         *  container with a soft glow + the shape outline + a small
+         *  inner dot, so it reads as a logo not a noise dot. */
         buildBadge(code: string, color: number): Phaser.GameObjects.Container {
           const c = this.add.container(0, 0);
           const shape = ARCHETYPE_SHAPE[code] ?? "circle";
 
           // Soft circular glow behind every badge regardless of shape.
-          const glow = this.add.circle(0, 0, 12, color, 0.32);
+          const glow = this.add.circle(0, 0, 20, color, 0.32);
           c.add(glow);
 
           const g = this.add.graphics();
           g.lineStyle(2, color, 1);
           g.fillStyle(0x0b0f12, 0.92);
-          const r = 7;
+          const r = 12;
           if (shape === "circle") {
             g.fillCircle(0, 0, r);
             g.strokeCircle(0, 0, r);
@@ -2789,7 +3121,7 @@ export default function WorldClient() {
           c.add(g);
 
           // Inner dot — the "face anchor" from the mark system.
-          c.add(this.add.circle(0, 0, 1.8, color, 1));
+          c.add(this.add.circle(0, 0, 3, color, 1));
 
           return c;
         }
@@ -2887,7 +3219,7 @@ export default function WorldClient() {
           // of the avatar container) so the bubble can drift up freely
           // without being dragged by the avatar's idle bob.
           const px = avatar.x;
-          const py = avatar.y - 96;
+          const py = avatar.y - 108;
 
           const bubble = this.add.container(px, py);
           bubble.setDepth(50);
@@ -3088,7 +3420,9 @@ export default function WorldClient() {
 function actionKey(a: WorldAction): string {
   if (!a) return "none";
   if (a.kind === "enter-building") return `enter:${a.buildingId}`;
-  return "exit";
+  if (a.kind === "exit-building") return "exit";
+  if (a.kind === "mount-horse") return "mount";
+  return "dismount";
 }
 
 function clamp(v: number, lo: number, hi: number): number {

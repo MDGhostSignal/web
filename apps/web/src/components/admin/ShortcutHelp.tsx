@@ -18,7 +18,7 @@ import styles from "./ShortcutHelp.module.css";
  * deliberately:
  *   - C → Contacts (high-frequency), O → cOntracts.
  *   - K → marKeting so it doesn't fight `g m` (Marketplace).
- *   - A → ART19 (top-priority dashboard), N → Alerts.
+ *   - A → Campaigns (formerly "ART19", top-priority dashboard), N → Alerts.
  *
  * Defined as a single array so the chord listener and the help popover
  * read from the same source — the popover can't drift from what
@@ -35,7 +35,7 @@ const NAV_SHORTCUTS: NavShortcut[] = [
   { trigger: "t", label: "Tasks", href: "/admin/tasks" },
   { trigger: "k", label: "Marketing", href: "/admin/marketing/social" },
   { trigger: "f", label: "Finance", href: "/admin/finance" },
-  { trigger: "a", label: "ART19", href: "/admin/art19" },
+  { trigger: "a", label: "Campaigns", href: "/admin/art19" },
   { trigger: "o", label: "Contracts", href: "/admin/contracts" },
   { trigger: "n", label: "Alerts", href: "/admin/alerts" },
 ];

@@ -2,6 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+import Link from "next/link";
+
 import { Badge, PageHeader } from "@/components/admin";
 
 import styles from "./page.module.css";
@@ -259,8 +261,8 @@ export default function Art19Page() {
   return (
     <div className={styles.page}>
       <PageHeader
-        title="ART19"
-        subtitle="Amazon-owned podcast hosting + ad platform. Shows + episodes pulled daily from the ART19 REST API into Supabase; the dashboard always reads from cache."
+        title="Campaigns"
+        subtitle="Podcast ad campaigns. Shows + episodes pulled daily from the ART19 REST API into Supabase; the dashboard always reads from cache."
         count={
           summary && (
             <Badge variant={hasError ? "danger" : isStale ? "warn" : "neutral"}>
@@ -269,6 +271,15 @@ export default function Art19Page() {
           )
         }
       />
+
+      <Link href="/admin/art19/cpm" className={styles.toolLink}>
+        <span className={styles.toolLinkIcon}>◐</span>
+        <span>
+          <strong>Signal Fidelity CPM Calculator</strong>
+          <span className={styles.toolLinkSub}>Ballpark a CPM from match, position, type & length</span>
+        </span>
+        <span className={styles.toolLinkArrow}>→</span>
+      </Link>
 
       {/* Sync status banner — surfaces errors + the not-yet-configured state */}
       {error && (

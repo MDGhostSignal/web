@@ -1,0 +1,376 @@
+/* Signal Fidelity CPM Calculator — retro audio-console aesthetic.
+ * Self-contained styling (no --admin-* spacing tokens) so the panel
+ * reads as a hardware unit, not an admin form. Colors lean on the
+ * amber/orange spectrum of vintage VU meters with a brushed-graphite
+ * chassis. */
+
+.page {
+  padding: 24px 28px 64px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+/* ===== The console chassis ===== */
+
+.console {
+  margin-top: 24px;
+  background:
+    linear-gradient(180deg, #1f2329 0%, #16191e 60%, #0e1115 100%);
+  border: 1px solid #2a2f37;
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+    0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+.consoleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background:
+    linear-gradient(180deg, #2a2f37 0%, #1c2026 100%);
+  border-bottom: 1px solid #0a0d11;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.consoleLeds {
+  display: flex;
+  gap: 8px;
+}
+
+.led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2a2f37;
+  border: 1px solid #0a0d11;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.ledOn {
+  background: radial-gradient(circle at 35% 35%, #ffd078 0%, #ffb454 40%, #c97a18 100%);
+  box-shadow:
+    0 0 8px rgba(255, 180, 84, 0.7),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  border-color: #5a3608;
+}
+
+.consoleStamp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.consoleStampLabel {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 2.4px;
+  color: #ffb454;
+  text-transform: uppercase;
+}
+
+.consoleStampModel {
+  font-family: "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: 1.6px;
+  color: #6a727b;
+  text-transform: uppercase;
+}
+
+.consoleBody {
+  padding: 28px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ===== Controls (sliders) ===== */
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background:
+    linear-gradient(180deg, #181c22 0%, #11141a 100%);
+  border: 1px solid #2a2f37;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.controlHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.controlLabel {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  color: #9aa0a8;
+  text-transform: uppercase;
+}
+
+.controlReadout {
+  font-family: "Courier New", monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffb454;
+  text-shadow: 0 0 8px rgba(255, 180, 84, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.controlUnit,
+.controlSuffix {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
+  margin: 0 2px;
+}
+
+/* Range slider — chrome-bezel thumb on a thin amber-glow track. */
+.slider {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, #0a0d11 0%, #16191e 100%);
+  border: 1px solid #2a2f37;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #e6e9ee 0%, #a8aeb6 50%, #4a4f57 100%);
+  border: 1px solid #2a2f37;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #e6e9ee 0%, #a8aeb6 50%, #4a4f57 100%);
+  border: 1px solid #2a2f37;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+
+/* ===== Segmented toggles (hardware-style buttons) ===== */
+
+.toggleRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+.segmented {
+  padding: 16px 18px;
+  background:
+    linear-gradient(180deg, #181c22 0%, #11141a 100%);
+  border: 1px solid #2a2f37;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.segmentedLabel {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  color: #9aa0a8;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.segmentedGroup {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+}
+
+.segmentedBtn {
+  padding: 12px 14px;
+  background:
+    linear-gradient(180deg, #2a2f37 0%, #1c2026 100%);
+  border: 1px solid #0a0d11;
+  border-radius: 6px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+  color: #9aa0a8;
+  cursor: pointer;
+  transition: all 160ms ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.segmentedBtn:hover {
+  color: #d0d4da;
+  background:
+    linear-gradient(180deg, #323840 0%, #20242b 100%);
+}
+
+.segmentedBtnActive {
+  background:
+    linear-gradient(180deg, #ffb454 0%, #c97a18 100%);
+  color: #1a0f04;
+  border-color: #6a3c10;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 12px rgba(255, 180, 84, 0.35);
+}
+
+/* ===== LED output display ===== */
+
+.output {
+  padding: 22px 24px;
+  background:
+    linear-gradient(180deg, #0a0d11 0%, #050709 100%);
+  border: 1px solid #1a1d22;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    inset 0 0 60px rgba(255, 180, 84, 0.04);
+  text-align: center;
+}
+
+.outputLabel {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 2.4px;
+  color: #6a727b;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.outputDisplay {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: "Courier New", monospace;
+  color: #ffb454;
+  text-shadow:
+    0 0 12px rgba(255, 180, 84, 0.6),
+    0 0 24px rgba(255, 180, 84, 0.25);
+}
+
+.outputCurrency {
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.outputNumber {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.outputRange {
+  margin-top: 12px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: #6a727b;
+  letter-spacing: 0.5px;
+}
+
+.outputRangeValue {
+  color: #d0d4da;
+  font-weight: 600;
+}
+
+.outputBand {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+
+/* ===== Breakdown rows (signal chain) ===== */
+
+.breakdown {
+  padding: 16px 18px;
+  background:
+    linear-gradient(180deg, #181c22 0%, #11141a 100%);
+  border: 1px solid #2a2f37;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.breakdownTitle {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  color: #9aa0a8;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2a2f37;
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+}
+
+.breakdownName {
+  color: #9aa0a8;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.breakdownValue {
+  color: #ffb454;
+  font-weight: 700;
+}
+
+/* ===== Mobile ===== */
+
+@media (max-width: 760px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .toggleRow {
+    grid-template-columns: 1fr;
+  }
+
+  .outputNumber {
+    font-size: 42px;
+  }
+}

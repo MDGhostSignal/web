@@ -107,8 +107,10 @@ export class WorldRoom extends Room {
         options.displayName ?? `Guest-${client.sessionId.slice(0, 4)}`
       ).slice(0, 24),
       archetype,
-      x: this.WORLD_W / 2,
-      y: this.WORLD_H / 2,
+      // Spawn just south of the plaza fountain — the village's
+      // meeting place at the center of the map.
+      x: 36,
+      y: 51,
       facing: "down",
       moving: false,
     };

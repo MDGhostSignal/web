@@ -22,7 +22,16 @@ const PORT = Number(process.env.PORT ?? 2567);
 
 // Colyseus 0.16 ships CORS built-in (echoes Origin, sets Allow-Methods
 // + Vary). No custom CORS layer needed here.
-const httpServer = createServer();
+//
+// /healthz returns 200 so Fly.io (and any load balancer) can verify
+// the server is alive. Anything else falls through to Colyseus.
+const httpServer = createServer((req, res) => {
+  if (req.url === "/healthz" || req.url === "/") {
+    res.writeHead(200, { "content-type": "text/plain" });
+    res.end("ok");
+    return;
+  }
+});
 
 const gameServer = new Server({
   transport: new WebSocketTransport({ server: httpServer }),
@@ -30,7 +39,7 @@ const gameServer = new Server({
 
 gameServer.define("world", WorldRoom);
 
-httpServer.listen(PORT, () => {
-  console.log(`[game-server] Colyseus listening on ws://localhost:${PORT}`);
+httpServer.listen(PORT, "0.0.0.0", () => {
+  console.log(`[game-server] Colyseus listening on port ${PORT}`);
   console.log(`[game-server] Define room: world (max 50 players)`);
 });
