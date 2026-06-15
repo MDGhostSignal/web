@@ -243,7 +243,7 @@ export default function AdminHome() {
         {/* Finance card */}
         <HomeKpiCard
           label="Total cash"
-          href="/admin/finance"
+          href="/hq/finance"
           state={
             finance.kind === "loading"
               ? "loading"
@@ -290,7 +290,7 @@ export default function AdminHome() {
         {/* Social card */}
         <HomeKpiCard
           label="Social posts due"
-          href="/admin/marketing/social"
+          href="/hq/marketing/social"
           state={
             social.kind === "loading"
               ? "loading"
@@ -342,7 +342,7 @@ export default function AdminHome() {
             we swap the value in without restructuring the card. */}
         <HomeKpiCard
           label="ART19 network"
-          href="/admin/art19"
+          href="/hq/art19"
           state={
             art19.kind === "loading"
               ? "loading"
@@ -396,7 +396,7 @@ export default function AdminHome() {
         {/* Contacts card */}
         <HomeKpiCard
           label="Contact pipeline"
-          href="/admin/contacts"
+          href="/hq/contacts"
           state={
             leads.kind === "loading"
               ? "loading"

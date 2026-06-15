@@ -14,5 +14,5 @@ import { redirect } from "next/navigation";
  * is gone.
  */
 export default function MarketingPage() {
-  redirect("/admin/marketing/social");
+  redirect("/hq/marketing/social");
 }

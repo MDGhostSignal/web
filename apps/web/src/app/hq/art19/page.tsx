@@ -272,7 +272,7 @@ export default function Art19Page() {
         }
       />
 
-      <Link href="/admin/art19/cpm" className={styles.toolLink}>
+      <Link href="/hq/art19/cpm" className={styles.toolLink}>
         <span className={styles.toolLinkIcon}>◐</span>
         <span>
           <strong>Signal Fidelity CPM Calculator</strong>

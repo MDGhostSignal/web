@@ -8,12 +8,18 @@ import {
 /**
  * Gate internal tooling behind the shared-password auth cookie.
  *
- * Any request to /admin/*, /rq-dashboard/*, or /design-tasks/* that
- * lacks a valid auth cookie gets redirected to /admin/login with
+ * Any request to /hq/*, /rq-dashboard/*, or /design-tasks/* that
+ * lacks a valid auth cookie gets redirected to /hq/login with
  * `?next=<original-path>` so the login page can send the user back
  * where they came from.
  *
- * /admin/login itself is NOT gated — it's the way in.
+ * /hq/login itself is NOT gated — it's the way in.
+ *
+ * Naming note: the page surface is /hq (renamed from /admin on
+ * 2026-06-15 to pair with the client-facing Studio surface). The
+ * /api/admin/* namespace stays as-is because GitHub Actions cron
+ * jobs and the esignatures.com webhook URL are wired to those
+ * paths externally and renaming them would break prod jobs.
  *
  * The matcher config at the bottom limits where this proxy runs so
  * the rest of the site (public marketing pages, API routes not under
@@ -28,7 +34,7 @@ import {
  */
 
 const PUBLIC_SUBPATHS = [
-  "/admin/login",
+  "/hq/login",
   // Vercel Cron hits the Mercury sync endpoint with a Bearer token, not
   // the admin cookie. We let the path through here and enforce the
   // bearer-token check inside the route handler itself. The "Refresh
@@ -81,14 +87,14 @@ export async function proxy(req: NextRequest) {
   }
 
   const loginUrl = req.nextUrl.clone();
-  loginUrl.pathname = "/admin/login";
+  loginUrl.pathname = "/hq/login";
   loginUrl.search = `?next=${encodeURIComponent(pathname + search)}`;
   return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
   matcher: [
-    "/admin/:path*",
+    "/hq/:path*",
     "/rq-dashboard/:path*",
     "/design-tasks/:path*",
     // Admin APIs — gate them too so the cookie check covers reads/writes,

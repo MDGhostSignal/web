@@ -42,7 +42,7 @@ export function ContractsTable({ rows }: Props) {
         }),
       cell: (row) => (
         <Link
-          href={`/admin/contracts/${encodeURIComponent(row.id)}`}
+          href={`/hq/contracts/${encodeURIComponent(row.id)}`}
           className={styles.cellTitle}
           prefetch={false}
         >

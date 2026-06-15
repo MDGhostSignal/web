@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   // /admin/login sits inside this layout tree but opts out of the
   // shell chrome (it's the unauthenticated entry point).
-  if (pathname === "/admin/login" || pathname.startsWith("/admin/login/")) {
+  if (pathname === "/hq/login" || pathname.startsWith("/hq/login/")) {
     return <>{children}</>;
   }
 
@@ -51,62 +51,62 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       // If the call fails the cookie clear won't land; middleware
       // will redirect again next request. Nothing actionable here.
     }
-    router.replace("/admin/login");
+    router.replace("/hq/login");
     router.refresh();
   }
 
   return (
     <AdminShell
       nav={[
-        { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
-        { href: "/admin/contacts", label: "Contacts", icon: <IconLeads /> },
+        { href: "/hq", label: "Dashboard", icon: <IconDashboard /> },
+        { href: "/hq/contacts", label: "Contacts", icon: <IconLeads /> },
         {
-          href: "/admin/marketplace",
+          href: "/hq/marketplace",
           label: "Marketplace",
           icon: <IconMarketplace />,
           children: [
             {
-              href: "/admin/marketplace?view=pool",
+              href: "/hq/marketplace?view=pool",
               label: "Pool",
               isDefault: true,
             },
-            { href: "/admin/marketplace?view=match", label: "Match" },
+            { href: "/hq/marketplace?view=match", label: "Match" },
           ],
         },
         {
-          href: "/admin/rq-responses",
+          href: "/hq/rq-responses",
           label: "RQ Responses",
           icon: <IconRQ />,
         },
         {
-          href: "/admin/xq-responses",
+          href: "/hq/xq-responses",
           label: "XQ Responses",
           icon: <IconXQ />,
         },
-        { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
+        { href: "/hq/tasks", label: "Tasks", icon: <IconTasks /> },
         {
           // Parent links directly to the Social Planner sub-page —
           // most-used Marketing surface, so clicking the tab lands
           // there without a redirect hop. The section-match logic in
           // AdminSidebar still expands + highlights the Marketing
           // group when the user is on Assets or Copy.
-          href: "/admin/marketing/social",
+          href: "/hq/marketing/social",
           label: "Marketing",
           icon: <IconMarketing />,
           children: [
-            { href: "/admin/marketing/assets", label: "Assets" },
-            { href: "/admin/marketing/copy", label: "Copy" },
-            { href: "/admin/marketing/social", label: "Social Planner" },
+            { href: "/hq/marketing/assets", label: "Assets" },
+            { href: "/hq/marketing/copy", label: "Copy" },
+            { href: "/hq/marketing/social", label: "Social Planner" },
           ],
         },
-        { href: "/admin/finance", label: "Finance", icon: <IconFinance /> },
-        { href: "/admin/art19", label: "Campaigns", icon: <IconArt19 /> },
+        { href: "/hq/finance", label: "Finance", icon: <IconFinance /> },
+        { href: "/hq/art19", label: "Campaigns", icon: <IconArt19 /> },
         {
-          href: "/admin/contracts",
+          href: "/hq/contracts",
           label: "Contracts",
           icon: <IconContracts />,
         },
-        { href: "/admin/alerts", label: "Alerts", icon: <IconAlerts /> },
+        { href: "/hq/alerts", label: "Alerts", icon: <IconAlerts /> },
       ]}
       onLogout={handleLogout}
     >

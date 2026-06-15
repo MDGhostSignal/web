@@ -169,7 +169,7 @@ export function ContractDetailView({ id }: Props) {
             : id
         }
         actions={
-          <Button variant="ghost" href="/admin/contracts">
+          <Button variant="ghost" href="/hq/contracts">
             ← Back to contracts
           </Button>
         }
