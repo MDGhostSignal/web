@@ -4,6 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { Client, Room } from "colyseus.js";
 
 import styles from "./world.module.css";
+import {
+  OBSTACLES,
+  getMask,
+  nudgeToFree,
+  pickFreeTarget,
+  registerMask,
+  resolveMove,
+  setRects,
+  type ObstacleLocation,
+} from "./obstacles";
+import { BUILDINGS, getBuilding } from "./buildings";
 
 /**
  * WorldClient — Phase 1 MVP (manual broadcast variant).
@@ -63,39 +74,10 @@ const VILLAGE_SCALE = 3;
 const SPEED = 6;
 const SEND_INTERVAL_MS = 100;
 
-// === Church interior ===
-// Church.png is 240×465 px native; at 3× display scale that's
-// 720×1395 px. We render it as its own "room" with its own camera +
-// movement bounds. The interior lives at the SAME world-space block
-// that the church facade occupies in the village so a player coming
-// out of the door reappears where they entered.
-const CHURCH_INTERIOR_SCALE = 3;
-const CHURCH_INTERIOR_W = 240 * CHURCH_INTERIOR_SCALE; // 720
-const CHURCH_INTERIOR_H = 465 * CHURCH_INTERIOR_SCALE; // 1395
-// Interior is anchored top-center to mirror the church column on the
-// village map. Interior origin in world coords:
-const CHURCH_INTERIOR_X = (WORLD_W_TILES * TILE) / 2 - CHURCH_INTERIOR_W / 2;
-const CHURCH_INTERIOR_Y = 0;
-// Door trigger on the village map — where the player must stand to
-// enter the church. Native (768×1024) door center ~ (355, 150);
-// trigger sits ON the door itself at native (355, 140) — slightly
-// above where the painted door reads visually, since the avatar's
-// origin point (feet) needs to be at this y for the prompt to fire.
-// Multiply by VILLAGE_SCALE for world coords.
-const CHURCH_DOOR_X = 355 * VILLAGE_SCALE; // 1065
-const CHURCH_DOOR_Y = 140 * VILLAGE_SCALE; // 420
-const CHURCH_DOOR_RADIUS = 56;
-// Inside-the-church spawn — just above the bottom door, on the red
-// carpet. Interior PNG native door ~(120, 445); at 3× = (360, 1335).
-const CHURCH_INTERIOR_SPAWN_X = CHURCH_INTERIOR_X + 120 * CHURCH_INTERIOR_SCALE; // door-center, interior-local
-const CHURCH_INTERIOR_SPAWN_Y = CHURCH_INTERIOR_Y + 425 * CHURCH_INTERIOR_SCALE; // a few px above the bottom edge
-// Exit trigger inside the church — decoupled from the spawn so we
-// can place it on the painted door tile itself. Sits ~30 px (PNG
-// native) below the spawn so the player has to walk down to leave
-// rather than triggering it immediately on entry.
-const CHURCH_INTERIOR_EXIT_X = CHURCH_INTERIOR_SPAWN_X;
-const CHURCH_INTERIOR_EXIT_Y = CHURCH_INTERIOR_Y + 455 * CHURCH_INTERIOR_SCALE;
-const CHURCH_EXIT_RADIUS = 72;
+// Each building's door + interior geometry lives in `buildings.ts`.
+// Interior rendering, enter/exit, and the action prompt all read from
+// that registry — adding a new building means adding one entry there
+// plus preloading its interior PNG below.
 
 const ARCHETYPE_CODES = [
   "C-P-C",
@@ -165,6 +147,39 @@ type Chicken = {
   homeY: number;
 };
 
+/** Wandering dog NPC. Roams in a small radius around its home
+ *  anchor, pauses, picks a new spot, repeats. No proximity reaction;
+ *  the dog is friendly. */
+type DogState = "idle" | "walking";
+type Dog = {
+  sprite: Phaser.GameObjects.Image;
+  state: DogState;
+  timer: number;
+  vx: number;
+  vy: number;
+  targetX: number;
+  targetY: number;
+  homeX: number;
+  homeY: number;
+  bob: Phaser.Tweens.Tween | null;
+};
+
+/** Stationary-ish cow NPC. Grazes in place with an idle bob; when a
+ *  player walks close, ambles a few seconds in the opposite direction,
+ *  then settles back to idle. Less skittish than a chicken — moves
+ *  slow and short. */
+type CowState = "idle" | "walking";
+type Cow = {
+  sprite: Phaser.GameObjects.Image;
+  state: CowState;
+  timer: number;
+  vx: number;
+  vy: number;
+  homeX: number;
+  homeY: number;
+  bob: Phaser.Tweens.Tween | null;
+};
+
 /** Wandering horse NPC — single instance for now, lives in the
  *  grass plot in front of the village barn. State machine drives the
  *  full sprite sheet: idle in 4 cardinal facings, multi-directional
@@ -206,14 +221,25 @@ type ChatMessage = {
 
 /** A keypress-triggered action the player can take right now —
  *  surfaced by the Phaser scene whenever the player stands inside a
- *  trigger zone (church door, future shop doors, etc.). Consumed by
- *  the React HUD to render the on-screen action button. */
-type WorldAction = { kind: "enter-church" | "exit-church"; label: string } | null;
+ *  trigger zone (any building door, interior exit). Consumed by the
+ *  React HUD to render the on-screen action button. */
+type WorldAction =
+  | { kind: "enter-building"; buildingId: string; label: string }
+  | { kind: "exit-building"; label: string }
+  | null;
 
-/** Which "room" the local player is currently rendered in. Other
- *  rooms get added later (shops, atelier, council hall) and use the
- *  same single-Phaser-scene location pattern. */
-type WorldLocation = "village" | "church-interior";
+/** Which "room" the local player is currently rendered in. Village +
+ *  one room per enterable building. */
+type WorldLocation =
+  | { kind: "village" }
+  | { kind: "interior"; buildingId: string };
+
+const VILLAGE: WorldLocation = { kind: "village" };
+
+/** Convert a `WorldLocation` to the obstacle-module key. */
+function obstacleKey(loc: WorldLocation): ObstacleLocation {
+  return loc.kind === "village" ? "village" : `interior:${loc.buildingId}`;
+}
 
 export default function WorldClient() {
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -226,6 +252,13 @@ export default function WorldClient() {
   const triggerActionRef = useRef<(() => void) | null>(null);
   const [chatDraft, setChatDraft] = useState("");
   const [action, setAction] = useState<WorldAction>(null);
+  /** Tells the Phaser scene to suppress its keyboard handlers while
+   *  the chat input is focused — otherwise E/O/W/A/S/D/M/R/T/C all
+   *  trigger world actions instead of typing. */
+  const setChatFocusRef = useRef<((focused: boolean) => void) | null>(null);
+  /** Direct handle on the chat input — we blur it after Enter so the
+   *  player can move again without an extra click. */
+  const chatInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -255,17 +288,21 @@ export default function WorldClient() {
         chickens: Chicken[] = [];
         /** Ambient horse NPC(s) — same client-only pattern as chickens. */
         horses: Horse[] = [];
+        /** Grazing cows — proximity-flee FSM. */
+        cows: Cow[] = [];
+        /** Wandering dogs — short walk + pause FSM. */
+        dogs: Dog[] = [];
 
-        // === Church interior state ===
+        // === Room state ===
         /** Which room the local player is in. Drives backdrop swap,
          *  camera + movement bounds, and who's visible. */
-        location: WorldLocation = "village";
+        location: WorldLocation = VILLAGE;
         /** Village backdrop — hidden while the player is in an
          *  interior. */
         villageBg: Phaser.GameObjects.Image | null = null;
-        /** The interior backdrop image — created at scene start,
-         *  hidden until the player enters the church. */
-        churchInteriorBg: Phaser.GameObjects.Image | null = null;
+        /** One image per building interior, keyed by building id.
+         *  Created at scene start, hidden until the player enters. */
+        interiorBgs = new Map<string, Phaser.GameObjects.Image>();
         /** Floating "Press E" prompt above the local avatar — shown
          *  whenever an action is available. */
         pressPrompt: Phaser.GameObjects.Text | null = null;
@@ -276,8 +313,12 @@ export default function WorldClient() {
         /** React HUD callback for action prompt changes. Set by the
          *  parent component after the scene boots. */
         onAction: (next: WorldAction) => void = () => {};
+        /** Focus the React chat input. Wired by the parent component
+         *  after the scene boots; used by the Enter key handler so
+         *  hitting Enter while the world has focus opens the chat box. */
+        focusChat: () => void = () => {};
         /** Village-tile position to restore when the player exits the
-         *  church. Captured at the moment of entry. */
+         *  active building. Captured at the moment of entry. */
         villageReturnTile = { x: 0, y: 0 };
 
         keys!: {
@@ -291,6 +332,44 @@ export default function WorldClient() {
           d: Phaser.Input.Keyboard.Key;
           e: Phaser.Input.Keyboard.Key;
         };
+
+        // === Background music ===
+        /** "The Village" by Eric Matyas, looped at low volume. Pauses
+         *  when muted rather than stopping so toggling unmute resumes
+         *  in-place. */
+        bgm: Phaser.Sound.BaseSound | null = null;
+        bgmMuted = false;
+        bgmVolume = 0.32;
+        /** Small top-right indicator + click-to-toggle mute. */
+        bgmIndicator: Phaser.GameObjects.Text | null = null;
+
+        // === Weather ===
+        weather: "clear" | "rain" | "snow" = "clear";
+        /** ms epoch when the current weather event ends. 0 = clear. */
+        weatherUntil = 0;
+        /** ms epoch when we next roll the weather dice. */
+        weatherNextRollAt = 0;
+        /** Drifting clouds, always present. Each moves east; wraps
+         *  back to the west when off-screen. */
+        clouds: Array<{
+          sprite: Phaser.GameObjects.Image;
+          vx: number;
+        }> = [];
+        rainOverlay: Phaser.GameObjects.TileSprite | null = null;
+        snowOverlay: Phaser.GameObjects.TileSprite | null = null;
+        precipFrameIdx = 0;
+        precipFrameTimer = 0;
+        /** Top-right weather text. */
+        weatherIndicator: Phaser.GameObjects.Text | null = null;
+
+        // === Obstacle debug overlay ===
+        /** Rect-fallback overlay (used for interiors). Mask-backed
+         *  rooms get their own image overlay instead. Toggle with `O`. */
+        obstacleDebugGfx: Phaser.GameObjects.Graphics | null = null;
+        /** Tinted copy of village-collision.png sitting over the
+         *  village backdrop. Toggled by `O`. */
+        villageMaskOverlay: Phaser.GameObjects.Image | null = null;
+        obstacleDebugVisible = false;
 
         constructor() {
           super("world");
@@ -314,6 +393,14 @@ export default function WorldClient() {
             "hm-village",
             "/world/sprites/SNES - Harvest Moon - Backgrounds - Village (Summer).png",
           );
+          // Pixel-perfect collision mask painted over the village
+          // (same 768 × 1024 dims). Opaque pixels = blocked. Decoded
+          // into a Uint8Array in create() and registered as the
+          // village obstacle source.
+          this.load.image(
+            "village-collision",
+            "/world/sprites/village-collision.png",
+          );
           // Harvest Moon chicken sheet — mature + baby chick poses.
           this.load.image(
             "hm-chickens",
@@ -328,12 +415,66 @@ export default function WorldClient() {
             "hm-horse",
             "/world/sprites/SNES - Harvest Moon - Animals - Horse.png",
           );
-          // Church interior background — entered via the door on the
-          // village map. 240×465 native; rendered at 3× to match the
-          // village's display scale.
+          // Harvest Moon cow sheet — 414×627, ~17 rows of cow poses
+          // at varying pitches. For the MVP we only use one frame:
+          // band 0 cell 0, a side-on grazing cow at 30 × 25 native.
+          this.load.image(
+            "hm-cow",
+            "/world/sprites/SNES - Harvest Moon - Animals - Cow.png",
+          );
+          // Harvest Moon Kero (dog) sheet — 413×141, 5 rows of dog
+          // poses at 30-px pitch. Single idle frame used for the MVP
+          // guard-dog near the Town Hall door.
+          this.load.image(
+            "hm-dog",
+            "/world/sprites/SNES - Harvest Moon - Animals - Kero _ Dog.png",
+          );
+          // Interior backdrops for every building in the registry that
+          // already has its PNG provided. Buildings without an
+          // interior block silently skip preload (their door triggers
+          // will still fire; pressing E reports "coming soon").
           this.load.image(
             "hm-church-interior",
             "/world/sprites/SNES - Harvest Moon - Backgrounds - Church.png",
+          );
+          this.load.image(
+            "tiny-home-interior",
+            "/world/sprites/toprighthouse.png",
+          );
+          this.load.image("inn-interior", "/world/sprites/theinn.png");
+          this.load.image(
+            "shed-interior",
+            "/world/sprites/SNES - Harvest Moon - Backgrounds - Tool Shed.png",
+          );
+          this.load.image("smith-interior", "/world/sprites/smith.png");
+          this.load.image(
+            "general-store-interior",
+            "/world/sprites/housenexcttotheinn.png",
+          );
+          this.load.image("town-hall-interior", "/world/sprites/townhall.png");
+          this.load.image("stable-interior", "/world/sprites/stable.png");
+
+          // Background music — "The Village" by Eric Matyas
+          // (soundimage.org), royalty-free with attribution.
+          this.load.audio("bgm-village", "/world/audio/the-village-loop.ogg");
+
+          // Weather sheets — 256-wide HM rips.
+          // Clouds: 256×512 single sheet with 3 cloud shapes at
+          // different y positions. Registered as sub-frames for drift.
+          this.load.image(
+            "hm-clouds",
+            "/world/sprites/SNES - Harvest Moon - Miscellaneous - Summer Clouds.png",
+          );
+          // Rain + snow: 256×1538 = 3 frames × 512 tall (with 1px
+          // dividers between). Cycle through frames at ~6 fps and
+          // tile across the viewport for endless precipitation.
+          this.load.image(
+            "hm-rain",
+            "/world/sprites/SNES - Harvest Moon - Miscellaneous - Rain.png",
+          );
+          this.load.image(
+            "hm-snow",
+            "/world/sprites/SNES - Harvest Moon - Miscellaneous - Snow.png",
           );
         }
 
@@ -356,6 +497,24 @@ export default function WorldClient() {
           village.setScale(VILLAGE_SCALE);
           village.setDepth(-10);
           this.villageBg = village;
+
+          // === Village collision mask ===
+          // Decode the painted PNG into a flat alpha array and hand it
+          // off to the obstacle module. After this runs, every
+          // isBlocked()/resolveMove() call for the village hits the
+          // mask, not the (empty) rect fallback.
+          this.decodeAndRegisterVillageMask();
+          // Add the same image as a tinted, hidden overlay used by the
+          // `O` debug toggle. Cheaper and more accurate than re-drawing
+          // rects with Graphics.
+          const maskOverlay = this.add.image(0, 0, "village-collision");
+          maskOverlay.setOrigin(0, 0);
+          maskOverlay.setScale(VILLAGE_SCALE);
+          maskOverlay.setDepth(9999);
+          maskOverlay.setAlpha(0.42);
+          maskOverlay.setTint(0xff2a2a);
+          maskOverlay.setVisible(false);
+          this.villageMaskOverlay = maskOverlay;
 
           // === Harvest Moon chickens ===
           // Mature hen + baby chick near the world spawn point. Each
@@ -462,6 +621,24 @@ export default function WorldClient() {
             }),
           );
 
+          // Register a single cow frame — band 0 cell 0 of the sheet.
+          // Stationary grazers; we don't need the walk cycle yet.
+          this.textures.get("hm-cow").add("cow-idle", 0, 0, 0, 30, 25);
+
+          // Two cows out by the Stable (bottom-right of the village,
+          // door at native ~600, 875 → world 1800, 2625). Anchors
+          // sit in the open grass south + west of the building; the
+          // spawn nudger will move them out of any blocker.
+          this.spawnCow(1700, 2700);
+          this.spawnCow(1880, 2760);
+
+          // Register a single dog frame — band 0 cell 0.
+          this.textures.get("hm-dog").add("dog-idle", 0, 0, 0, 30, 22);
+          // One dog by the Town Hall doorstep (top-left, door at
+          // native ~152, 142 → world 456, 426). Just south of the
+          // door so the player can see them as they approach.
+          this.spawnDog(480, 490);
+
           // Soft world-border vignette so the camera bounds don't read
           // as a hard wall — a dark frame around the playable area.
           const vG = this.add.graphics();
@@ -471,6 +648,52 @@ export default function WorldClient() {
 
           this.cameras.main.setBounds(0, 0, worldW, worldH);
           this.cameras.main.centerOn(worldW / 2, worldH / 2);
+
+          // === Background music ===
+          // Restore prior mute/volume from localStorage, then start
+          // the loop. Phaser's SoundManager defers the actual playback
+          // until the first user gesture if the browser blocks
+          // autoplay — no special handling needed here.
+          try {
+            const v = window.localStorage.getItem("world.bgm.volume");
+            if (v !== null) {
+              const parsed = Number(v);
+              if (!Number.isNaN(parsed)) this.bgmVolume = parsed;
+            }
+            this.bgmMuted =
+              window.localStorage.getItem("world.bgm.muted") === "1";
+          } catch {
+            // ignore
+          }
+          this.bgm = this.sound.add("bgm-village", {
+            loop: true,
+            volume: this.bgmMuted ? 0 : this.bgmVolume,
+          });
+          this.bgm.play();
+
+          // Top-right mute indicator — click or M to toggle.
+          this.bgmIndicator = this.add
+            .text(this.scale.width - 18, 14, this.bgmMuted ? "🔇" : "🔊", {
+              fontFamily: "Inter, ui-monospace, monospace",
+              fontSize: "14px",
+              color: "#9aa0a8",
+            })
+            .setScrollFactor(0)
+            .setOrigin(1, 0)
+            .setDepth(1000)
+            .setInteractive({ useHandCursor: true });
+          this.bgmIndicator.on("pointerdown", () => this.toggleBgmMute());
+          this.scale.on("resize", () => {
+            this.bgmIndicator?.setX(this.scale.width - 18);
+          });
+          const mKey = this.input.keyboard!.addKey(
+            Phaser.Input.Keyboard.KeyCodes.M,
+            false,
+          );
+          mKey.on("down", () => this.toggleBgmMute());
+
+          // === Weather setup ===
+          this.setupWeather();
 
           // LPC walk animations — 9 frames per direction, 10 fps.
           // Row layout: 0=up, 1=left, 2=down, 3=right (9 frames each).
@@ -508,7 +731,7 @@ export default function WorldClient() {
             .setScrollFactor(0)
             .setDepth(1000);
           this.hintText = this.add
-            .text(16, this.scale.height - 28, "WASD / arrows to move", {
+            .text(16, this.scale.height - 28, "WASD / arrows to move · M: mute", {
               fontFamily: "Inter, ui-monospace, monospace",
               fontSize: "11px",
               color: "#6b727b",
@@ -520,36 +743,74 @@ export default function WorldClient() {
           });
 
           const kb = this.input.keyboard!;
+          // IMPORTANT: pass `enableCapture = false` (second arg) to
+          // every addKey() call. The default `true` makes Phaser call
+          // `preventDefault()` at the window level on those keys —
+          // which silently steals them from focused text inputs (the
+          // chat box can't type E/W/A/S/D/O/M/R/T/C otherwise). With
+          // capture off, key events still flow to Phaser's Key
+          // objects normally but propagate to inputs as well.
           this.keys = {
-            up: kb.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-            down: kb.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-            left: kb.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-            right: kb.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-            w: kb.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-            a: kb.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-            s: kb.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-            d: kb.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-            e: kb.addKey(Phaser.Input.Keyboard.KeyCodes.E),
+            up: kb.addKey(Phaser.Input.Keyboard.KeyCodes.UP, false),
+            down: kb.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN, false),
+            left: kb.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT, false),
+            right: kb.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT, false),
+            w: kb.addKey(Phaser.Input.Keyboard.KeyCodes.W, false),
+            a: kb.addKey(Phaser.Input.Keyboard.KeyCodes.A, false),
+            s: kb.addKey(Phaser.Input.Keyboard.KeyCodes.S, false),
+            d: kb.addKey(Phaser.Input.Keyboard.KeyCodes.D, false),
+            e: kb.addKey(Phaser.Input.Keyboard.KeyCodes.E, false),
           };
           // Single-shot E handler (keyDown event, not held). The
           // per-frame check in update() can't use .isDown alone —
           // that'd re-trigger on every frame the player holds E.
           this.keys.e.on("down", () => this.tryAction());
 
-          // === Church interior backdrop ===
-          // Created hidden; flipped on by enterChurch(). Lives at the
-          // same world-space block as the church facade on the
-          // village painting so the camera shift feels like a real
-          // pan into the building.
-          this.churchInteriorBg = this.add.image(
-            CHURCH_INTERIOR_X,
-            CHURCH_INTERIOR_Y,
-            "hm-church-interior",
+          // Enter while the world has focus → open the chat input.
+          // When the chat input is already focused, keyboard.enabled
+          // is false (set by the chat focus handler) so this fires
+          // only when we're "in the world."
+          const enterKey = kb.addKey(
+            Phaser.Input.Keyboard.KeyCodes.ENTER,
+            false,
           );
-          this.churchInteriorBg.setOrigin(0, 0);
-          this.churchInteriorBg.setScale(CHURCH_INTERIOR_SCALE);
-          this.churchInteriorBg.setDepth(-10);
-          this.churchInteriorBg.setVisible(false);
+          enterKey.on("down", () => this.focusChat());
+
+          // Obstacle debug overlay — O toggles red rects on top of
+          // every blocker in the current room. Used while authoring
+          // village obstacles in Phase 1c.
+          const oKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.O, false);
+          oKey.on("down", () => this.toggleObstacleDebug());
+          if (typeof window !== "undefined") {
+            try {
+              if (window.localStorage.getItem("world.debug.obstacles") === "1") {
+                this.obstacleDebugVisible = true;
+              }
+            } catch {
+              // localStorage can throw in some embedded contexts; ignore.
+            }
+          }
+
+          // === Building interior backdrops ===
+          // One hidden image per building that has an interior PNG
+          // wired in. enterBuilding() flips visibility on/off.
+          for (const b of BUILDINGS) {
+            if (!b.interior) continue;
+            if (!this.textures.exists(b.interior.texKey)) continue;
+            const bg = this.add.image(
+              b.interior.worldX,
+              b.interior.worldY,
+              b.interior.texKey,
+            );
+            bg.setOrigin(0, 0);
+            bg.setScale(b.interior.scale);
+            bg.setDepth(-10);
+            bg.setVisible(false);
+            this.interiorBgs.set(b.id, bg);
+          }
+
+          // First obstacle-overlay paint after the scene is set up.
+          this.drawObstacleDebug();
 
           // Floating "Press E" prompt that hovers above the local
           // avatar whenever an action is in range. Camera-space; we
@@ -775,10 +1036,13 @@ export default function WorldClient() {
 
           // Ambient chickens — proximity-scared, run-away, resettle.
           // Only roam in the village; hidden + frozen indoors.
-          if (this.location === "village") {
+          if (this.location.kind === "village") {
             this.updateChickens(dt);
             this.updateHorses(dt);
+            this.updateCows(dt);
+            this.updateDogs(dt);
           }
+          this.updateWeather(dt);
 
           // Local input → predicted position
           let vx = 0;
@@ -796,16 +1060,40 @@ export default function WorldClient() {
             const len = Math.hypot(vx, vy);
             vx /= len;
             vy /= len;
-            this.ownPos.x = clamp(
-              this.ownPos.x + vx * SPEED * dt,
-              bounds.minX,
-              bounds.maxX,
+            // Two-stage clamp: first slide against obstacles (so the
+            // player wall-slides along house edges/fences), then
+            // box-clamp to the room's outer bounds.
+            const proposedX = this.ownPos.x + vx * SPEED * dt;
+            const proposedY = this.ownPos.y + vy * SPEED * dt;
+            const resolved = resolveMove(
+              this.ownPos.x * TILE,
+              this.ownPos.y * TILE,
+              proposedX * TILE,
+              proposedY * TILE,
+              obstacleKey(this.location),
             );
-            this.ownPos.y = clamp(
-              this.ownPos.y + vy * SPEED * dt,
-              bounds.minY,
-              bounds.maxY,
-            );
+            // Animal-blocking: if the resolved point sits inside an
+            // NPC body circle, fall back to axis-separated movement
+            // so the player slides past instead of phasing through.
+            let nx = resolved.x;
+            let ny = resolved.y;
+            if (
+              this.location.kind === "village" &&
+              this.isInAnyAnimal(nx, ny)
+            ) {
+              const fromX = this.ownPos.x * TILE;
+              const fromY = this.ownPos.y * TILE;
+              if (!this.isInAnyAnimal(resolved.x, fromY)) {
+                ny = fromY;
+              } else if (!this.isInAnyAnimal(fromX, resolved.y)) {
+                nx = fromX;
+              } else {
+                nx = fromX;
+                ny = fromY;
+              }
+            }
+            this.ownPos.x = clamp(nx / TILE, bounds.minX, bounds.maxX);
+            this.ownPos.y = clamp(ny / TILE, bounds.minY, bounds.maxY);
             if (Math.abs(vx) > Math.abs(vy)) {
               this.ownFacing = vx > 0 ? "right" : "left";
             } else {
@@ -850,18 +1138,349 @@ export default function WorldClient() {
           this.updateActionPrompt();
         }
 
+        setupWeather() {
+          // Register cloud sub-frames (3 distinct shapes on one sheet).
+          const c = this.textures.get("hm-clouds");
+          c.add("cloud-sm", 0, 8, 18, 106, 60);
+          c.add("cloud-md", 0, 104, 152, 128, 75);
+          c.add("cloud-lg", 0, 5, 328, 163, 87);
+
+          // Register rain + snow frames (3 frames each, 256×512 each
+          // with 1-px dividers between).
+          const r = this.textures.get("hm-rain");
+          r.add("rain-0", 0, 0, 0, 256, 512);
+          r.add("rain-1", 0, 0, 513, 256, 512);
+          r.add("rain-2", 0, 0, 1026, 256, 512);
+          const s = this.textures.get("hm-snow");
+          s.add("snow-0", 0, 0, 0, 256, 512);
+          s.add("snow-1", 0, 0, 513, 256, 512);
+          s.add("snow-2", 0, 0, 1026, 256, 512);
+
+          // Spawn 5 drifting clouds at random world positions + speeds.
+          const worldW = WORLD_W_TILES * TILE;
+          const worldH = WORLD_H_TILES * TILE;
+          const cloudFrames = ["cloud-sm", "cloud-md", "cloud-lg"];
+          for (let i = 0; i < 5; i++) {
+            const frame = cloudFrames[i % cloudFrames.length];
+            const sprite = this.add.image(
+              Math.random() * worldW,
+              Math.random() * (worldH * 0.6), // stay in the top 60% of world
+              "hm-clouds",
+              frame,
+            );
+            sprite.setOrigin(0.5, 0.5);
+            sprite.setScale(VILLAGE_SCALE);
+            sprite.setDepth(50); // above ground, below HUD
+            sprite.setAlpha(0.45); // gentle, painted-cloud feel
+            this.clouds.push({
+              sprite,
+              vx: 8 + Math.random() * 14, // 8–22 world px/sec
+            });
+          }
+
+          // Full-viewport rain + snow TileSprites, hidden initially.
+          // Use the camera-space origin so they don't scroll with the
+          // world.
+          this.rainOverlay = this.add
+            .tileSprite(0, 0, this.scale.width, this.scale.height, "hm-rain", "rain-0")
+            .setOrigin(0, 0)
+            .setScrollFactor(0)
+            .setDepth(9000)
+            .setAlpha(0.7)
+            .setVisible(false);
+          this.snowOverlay = this.add
+            .tileSprite(0, 0, this.scale.width, this.scale.height, "hm-snow", "snow-0")
+            .setOrigin(0, 0)
+            .setScrollFactor(0)
+            .setDepth(9000)
+            .setAlpha(0.85)
+            .setVisible(false);
+          this.scale.on("resize", () => {
+            this.rainOverlay?.setSize(this.scale.width, this.scale.height);
+            this.snowOverlay?.setSize(this.scale.width, this.scale.height);
+            this.weatherIndicator?.setX(this.scale.width - 44);
+          });
+
+          // Weather indicator (top-right, just left of the mute icon).
+          this.weatherIndicator = this.add
+            .text(this.scale.width - 44, 14, "☀", {
+              fontFamily: "Inter, ui-monospace, monospace",
+              fontSize: "14px",
+              color: "#9aa0a8",
+            })
+            .setScrollFactor(0)
+            .setOrigin(1, 0)
+            .setDepth(1000);
+
+          // Dev shortcuts: R/T/C force weather; useful for testing
+          // without waiting for the scheduler to fire.
+          const kb = this.input.keyboard!;
+          kb.addKey(Phaser.Input.Keyboard.KeyCodes.R, false).on("down", () =>
+            this.startWeather("rain", 60_000),
+          );
+          kb.addKey(Phaser.Input.Keyboard.KeyCodes.T, false).on("down", () =>
+            this.startWeather("snow", 60_000),
+          );
+          kb.addKey(Phaser.Input.Keyboard.KeyCodes.C, false).on("down", () =>
+            this.stopWeather(),
+          );
+
+          // Restore scheduler state from localStorage so refreshing
+          // doesn't reset the 4-hour roll cycle.
+          try {
+            const nextRoll = window.localStorage.getItem(
+              "world.weather.nextRollAt",
+            );
+            this.weatherNextRollAt = nextRoll ? Number(nextRoll) : 0;
+            const activeUntil = window.localStorage.getItem(
+              "world.weather.until",
+            );
+            const activeKind = window.localStorage.getItem(
+              "world.weather.kind",
+            );
+            if (
+              activeUntil &&
+              activeKind &&
+              Number(activeUntil) > Date.now() &&
+              (activeKind === "rain" || activeKind === "snow")
+            ) {
+              this.startWeather(
+                activeKind,
+                Number(activeUntil) - Date.now(),
+                /* persist */ false,
+              );
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        /** Begin a weather event. duration is in ms. Persists to
+         *  localStorage by default so the event survives a refresh. */
+        startWeather(kind: "rain" | "snow", durationMs: number, persist = true) {
+          this.weather = kind;
+          this.weatherUntil = Date.now() + durationMs;
+          if (kind === "rain") {
+            this.rainOverlay?.setVisible(true);
+            this.snowOverlay?.setVisible(false);
+            this.weatherIndicator?.setText("🌧");
+          } else {
+            this.snowOverlay?.setVisible(true);
+            this.rainOverlay?.setVisible(false);
+            this.weatherIndicator?.setText("❄");
+          }
+          if (persist) {
+            try {
+              window.localStorage.setItem("world.weather.kind", kind);
+              window.localStorage.setItem(
+                "world.weather.until",
+                String(this.weatherUntil),
+              );
+            } catch {
+              // ignore
+            }
+          }
+        }
+
+        stopWeather() {
+          this.weather = "clear";
+          this.weatherUntil = 0;
+          this.rainOverlay?.setVisible(false);
+          this.snowOverlay?.setVisible(false);
+          this.weatherIndicator?.setText("☀");
+          try {
+            window.localStorage.removeItem("world.weather.kind");
+            window.localStorage.removeItem("world.weather.until");
+          } catch {
+            // ignore
+          }
+        }
+
+        /** Per-frame weather update — drives cloud drift, rain/snow
+         *  frame cycle, event expiry, and the 4-hour scheduler. */
+        updateWeather(dt: number) {
+          // Cloud drift.
+          const worldW = WORLD_W_TILES * TILE;
+          for (const cl of this.clouds) {
+            cl.sprite.x += cl.vx * dt;
+            // Wrap around west when fully off-screen east.
+            if (cl.sprite.x > worldW + 200) {
+              cl.sprite.x = -200;
+              cl.sprite.y = Math.random() * (WORLD_H_TILES * TILE * 0.6);
+            }
+          }
+
+          // Precipitation frame cycle (~6 fps). Only active when
+          // there's weather AND the player is outside.
+          const showPrecip =
+            this.weather !== "clear" && this.location.kind === "village";
+          if (this.rainOverlay)
+            this.rainOverlay.setVisible(showPrecip && this.weather === "rain");
+          if (this.snowOverlay)
+            this.snowOverlay.setVisible(showPrecip && this.weather === "snow");
+          if (showPrecip) {
+            this.precipFrameTimer += dt * 1000;
+            if (this.precipFrameTimer >= 160) {
+              this.precipFrameTimer = 0;
+              this.precipFrameIdx = (this.precipFrameIdx + 1) % 3;
+              const key =
+                this.weather === "rain"
+                  ? `rain-${this.precipFrameIdx}`
+                  : `snow-${this.precipFrameIdx}`;
+              const layer =
+                this.weather === "rain" ? this.rainOverlay : this.snowOverlay;
+              layer?.setFrame(key);
+            }
+          }
+
+          // Event expiry.
+          if (this.weather !== "clear" && Date.now() > this.weatherUntil) {
+            this.stopWeather();
+          }
+
+          // Scheduler — roll every 4 hours. ~25% chance per roll of a
+          // 20–40 min weather event; rain in summer/spring, snow in
+          // winter (we don't have a season system yet, so 60/40
+          // rain/snow weighted toward rain).
+          const now = Date.now();
+          if (this.weatherNextRollAt === 0) {
+            this.weatherNextRollAt = now + 4 * 60 * 60 * 1000;
+          }
+          if (now >= this.weatherNextRollAt) {
+            const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+            this.weatherNextRollAt = now + FOUR_HOURS_MS;
+            try {
+              window.localStorage.setItem(
+                "world.weather.nextRollAt",
+                String(this.weatherNextRollAt),
+              );
+            } catch {
+              // ignore
+            }
+            if (this.weather === "clear" && Math.random() < 0.25) {
+              const kind: "rain" | "snow" =
+                Math.random() < 0.6 ? "rain" : "snow";
+              const duration = (20 + Math.random() * 20) * 60 * 1000;
+              this.startWeather(kind, duration);
+            }
+          }
+        }
+
+        toggleBgmMute() {
+          this.bgmMuted = !this.bgmMuted;
+          // Set volume on the underlying WebAudio node; works for the
+          // base type, but TS only sees BaseSound's surface. Cast.
+          (this.bgm as Phaser.Sound.WebAudioSound | null)?.setVolume(
+            this.bgmMuted ? 0 : this.bgmVolume,
+          );
+          this.bgmIndicator?.setText(this.bgmMuted ? "🔇" : "🔊");
+          try {
+            window.localStorage.setItem(
+              "world.bgm.muted",
+              this.bgmMuted ? "1" : "0",
+            );
+          } catch {
+            // ignore
+          }
+        }
+
+        toggleObstacleDebug() {
+          this.obstacleDebugVisible = !this.obstacleDebugVisible;
+          try {
+            window.localStorage.setItem(
+              "world.debug.obstacles",
+              this.obstacleDebugVisible ? "1" : "0",
+            );
+          } catch {
+            // ignore
+          }
+          this.drawObstacleDebug();
+        }
+
+        /** Refresh the debug overlay for the current room. Mask-backed
+         *  rooms show the painted mask tinted red; rect-backed rooms
+         *  draw the rect list with Graphics. Idempotent — re-call on
+         *  enter/exit interior so the right source shows. */
+        drawObstacleDebug() {
+          // Always re-init the rect-graphics layer (cheap).
+          if (!this.obstacleDebugGfx) {
+            this.obstacleDebugGfx = this.add.graphics();
+            this.obstacleDebugGfx.setDepth(10_000);
+          }
+          const g = this.obstacleDebugGfx;
+          g.clear();
+
+          const loc = obstacleKey(this.location);
+          const showing = this.obstacleDebugVisible;
+          const mask = getMask(loc);
+
+          // Mask-backed rooms (e.g., village).
+          if (this.villageMaskOverlay) {
+            this.villageMaskOverlay.setVisible(showing && loc === "village");
+          }
+
+          // Rect fallback for rooms without a mask (e.g., interiors).
+          if (!showing || mask) return;
+          const rects = OBSTACLES[loc] ?? [];
+          g.fillStyle(0xff2a2a, 0.28);
+          g.lineStyle(2, 0xff2a2a, 0.9);
+          for (const r of rects) {
+            g.fillRect(r.x, r.y, r.w, r.h);
+            g.strokeRect(r.x, r.y, r.w, r.h);
+          }
+        }
+
+        /** Decode village-collision.png alpha into a flat Uint8Array
+         *  and register it as the village obstacle mask. Drawn once at
+         *  scene start using an offscreen canvas; ~786 KB of memory
+         *  for instant O(1) lookups thereafter. */
+        decodeAndRegisterVillageMask() {
+          const src = this.textures.get("village-collision");
+          const img = src.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+          const w = img.width;
+          const h = img.height;
+          const canvas =
+            typeof OffscreenCanvas !== "undefined"
+              ? new OffscreenCanvas(w, h)
+              : Object.assign(document.createElement("canvas"), { width: w, height: h });
+          const ctx = (canvas as HTMLCanvasElement).getContext("2d");
+          if (!ctx) return;
+          ctx.drawImage(img as CanvasImageSource, 0, 0);
+          const rgba = ctx.getImageData(0, 0, w, h).data;
+          const mask = new Uint8Array(w * h);
+          // Threshold at alpha >= 128 — solid red pixels are 255,
+          // anti-aliased edges anything between, transparent background
+          // is 0. 128 keeps the painted shape and ignores feathering.
+          for (let i = 0; i < mask.length; i++) {
+            mask[i] = rgba[i * 4 + 3] >= 128 ? 1 : 0;
+          }
+          registerMask("village", {
+            width: w,
+            height: h,
+            worldScale: VILLAGE_SCALE,
+            data: mask,
+          });
+        }
+
         /** Per-location player-clamp rectangle in TILE coordinates.
          *  Interior bounds keep the player inside the church PNG
          *  with a small wall buffer; village uses the full world. */
         movementBoundsTiles(): { minX: number; minY: number; maxX: number; maxY: number } {
-          if (this.location === "church-interior") {
-            const margin = 32; // px wall buffer
-            return {
-              minX: (CHURCH_INTERIOR_X + margin) / TILE,
-              minY: (CHURCH_INTERIOR_Y + margin) / TILE,
-              maxX: (CHURCH_INTERIOR_X + CHURCH_INTERIOR_W - margin) / TILE,
-              maxY: (CHURCH_INTERIOR_Y + CHURCH_INTERIOR_H - margin) / TILE,
-            };
+          if (this.location.kind === "interior") {
+            const b = getBuilding(this.location.buildingId);
+            if (b?.interior) {
+              const m = b.interior.wallMargin;
+              const x0 = b.interior.worldX;
+              const y0 = b.interior.worldY;
+              const w = b.interior.pngWidth * b.interior.scale;
+              const h = b.interior.pngHeight * b.interior.scale;
+              return {
+                minX: (x0 + m) / TILE,
+                minY: (y0 + m) / TILE,
+                maxX: (x0 + w - m) / TILE,
+                maxY: (y0 + h - m) / TILE,
+              };
+            }
           }
           return { minX: 0, minY: 0, maxX: WORLD_W_TILES, maxY: WORLD_H_TILES };
         }
@@ -876,22 +1495,34 @@ export default function WorldClient() {
           const py = this.ownPos.y * TILE;
           let next: WorldAction = null;
 
-          if (this.location === "village") {
-            // Church door — circle around the trigger point so the
-            // player can be sloppy by a tile or two.
-            const dx = px - CHURCH_DOOR_X;
-            const dy = py - CHURCH_DOOR_Y;
-            if (Math.hypot(dx, dy) < CHURCH_DOOR_RADIUS) {
-              next = { kind: "enter-church", label: "Enter Church" };
+          if (this.location.kind === "village") {
+            // Walk every building's door trigger. First hit wins —
+            // doors don't overlap in practice and a deterministic
+            // order is fine.
+            for (const b of BUILDINGS) {
+              const dx = px - b.door.x;
+              const dy = py - b.door.y;
+              if (Math.hypot(dx, dy) < b.door.radius) {
+                next = {
+                  kind: "enter-building",
+                  buildingId: b.id,
+                  label: `Enter ${b.displayName}`,
+                };
+                break;
+              }
             }
-          } else if (this.location === "church-interior") {
-            // Stand on (or near) the painted bottom-door tile to
-            // leave. The exit trigger is decoupled from the spawn
-            // so entering doesn't immediately re-fire it.
-            const dx = px - CHURCH_INTERIOR_EXIT_X;
-            const dy = py - CHURCH_INTERIOR_EXIT_Y;
-            if (Math.hypot(dx, dy) < CHURCH_EXIT_RADIUS) {
-              next = { kind: "exit-church", label: "Leave Church" };
+          } else {
+            // Interior — any exit trigger fires the same leave action.
+            const b = getBuilding(this.location.buildingId);
+            if (b?.interior) {
+              for (const ex of b.interior.exits) {
+                const dx = px - ex.x;
+                const dy = py - ex.y;
+                if (Math.hypot(dx, dy) < ex.radius) {
+                  next = { kind: "exit-building", label: `Leave ${b.displayName}` };
+                  break;
+                }
+              }
             }
           }
 
@@ -909,10 +1540,12 @@ export default function WorldClient() {
           }
 
           // Only push to React when the prompt actually changed —
-          // avoids re-rendering the HUD every frame.
-          if (
-            (this.currentAction?.kind ?? null) !== (next?.kind ?? null)
-          ) {
+          // avoids re-rendering the HUD every frame. Building id is
+          // part of the identity since two doors in a row should
+          // re-render the pill.
+          const prevKey = actionKey(this.currentAction);
+          const nextKey = actionKey(next);
+          if (prevKey !== nextKey) {
             this.currentAction = next;
             this.onAction(next);
           }
@@ -924,79 +1557,90 @@ export default function WorldClient() {
         tryAction() {
           const a = this.currentAction;
           if (!a) return;
-          if (a.kind === "enter-church") this.enterChurch();
-          else if (a.kind === "exit-church") this.exitChurch();
+          if (a.kind === "enter-building") this.enterBuilding(a.buildingId);
+          else if (a.kind === "exit-building") this.exitBuilding();
         }
 
-        /** Swap to the church-interior "room": hide village +
+        /** Swap to a building's interior "room": hide village +
          *  chickens + other-player avatars, show interior backdrop,
          *  teleport local avatar to interior spawn, re-bound the
          *  camera. Single-player visual for now — other clients in
-         *  the village will see this player at the interior coords,
-         *  which puts them somewhere up near the top of the village
-         *  painting. Acceptable for MVP. */
-        enterChurch() {
-          if (this.location === "church-interior") return;
-          this.location = "church-interior";
+         *  the village will see this player at the interior coords. */
+        enterBuilding(buildingId: string) {
+          const b = getBuilding(buildingId);
+          if (!b?.interior) {
+            // Door fires but interior isn't wired — flash a hint and
+            // bail. Lets us land the trigger-zone passes before each
+            // interior PNG arrives without dead-end keypresses.
+            this.flashHint(`(${b?.displayName ?? "Interior"} coming soon)`);
+            return;
+          }
+          if (this.location.kind === "interior") return;
+          const bg = this.interiorBgs.get(b.id);
+          if (!bg) {
+            this.flashHint(`(${b.displayName} interior asset missing)`);
+            return;
+          }
+          this.location = { kind: "interior", buildingId: b.id };
 
           // Save where we were so we can put the player back outside
           // the door on exit.
           this.villageReturnTile = { x: this.ownPos.x, y: this.ownPos.y };
 
-          // Hide the village + chickens + horses.
+          // Hide village layer + ambient NPCs + other players.
           this.villageBg?.setVisible(false);
           for (const ch of this.chickens) ch.sprite.setVisible(false);
           for (const horse of this.horses) horse.sprite.setVisible(false);
-          // Hide everyone else (single-player interior MVP).
           this.avatars.forEach((avatar, sessionId) => {
             if (sessionId !== this.ownSessionId) avatar.setVisible(false);
           });
-          this.churchInteriorBg?.setVisible(true);
+          bg.setVisible(true);
 
-          // Teleport local player to inside-the-door spawn.
+          // Per-interior obstacle rects.
+          setRects(`interior:${b.id}`, b.interior.obstacles ?? []);
+
+          // Teleport local player to interior spawn.
           this.ownPos = {
-            x: CHURCH_INTERIOR_SPAWN_X / TILE,
-            y: CHURCH_INTERIOR_SPAWN_Y / TILE,
+            x: b.interior.spawn.x / TILE,
+            y: b.interior.spawn.y / TILE,
           };
-          this.ownFacing = "up"; // face the altar
+          this.ownFacing = "up";
           const ownAvatar = this.avatars.get(this.ownSessionId!);
           if (ownAvatar) {
-            ownAvatar.x = CHURCH_INTERIOR_SPAWN_X;
-            ownAvatar.y = CHURCH_INTERIOR_SPAWN_Y;
+            ownAvatar.x = b.interior.spawn.x;
+            ownAvatar.y = b.interior.spawn.y;
             this.applyFacing(ownAvatar, this.ownFacing, false);
           }
 
           // Camera bounded to interior + framed on the spawn.
+          const w = b.interior.pngWidth * b.interior.scale;
+          const h = b.interior.pngHeight * b.interior.scale;
           this.cameras.main.setBounds(
-            CHURCH_INTERIOR_X,
-            CHURCH_INTERIOR_Y,
-            CHURCH_INTERIOR_W,
-            CHURCH_INTERIOR_H,
+            b.interior.worldX,
+            b.interior.worldY,
+            w,
+            h,
           );
-          this.cameras.main.centerOn(
-            CHURCH_INTERIOR_SPAWN_X,
-            CHURCH_INTERIOR_SPAWN_Y,
-          );
+          this.cameras.main.centerOn(b.interior.spawn.x, b.interior.spawn.y);
 
           this.hintText.setText("WASD / arrows to move · E to leave");
+          this.drawObstacleDebug();
         }
 
-        /** Reverse `enterChurch`: hide interior, show village +
-         *  chickens + other avatars, drop the player back on the
+        /** Reverse `enterBuilding`: hide active interior, show village
+         *  + chickens + other avatars, drop the player back on the
          *  doorstep where they entered. */
-        exitChurch() {
-          if (this.location === "village") return;
-          this.location = "village";
+        exitBuilding() {
+          if (this.location.kind !== "interior") return;
+          const bg = this.interiorBgs.get(this.location.buildingId);
+          bg?.setVisible(false);
+          this.location = VILLAGE;
 
-          this.churchInteriorBg?.setVisible(false);
-          // Re-show village + chickens + horses + everyone else.
           this.villageBg?.setVisible(true);
           for (const ch of this.chickens) ch.sprite.setVisible(true);
           for (const horse of this.horses) horse.sprite.setVisible(true);
           this.avatars.forEach((avatar) => avatar.setVisible(true));
 
-          // Put player back exactly where they entered (just outside
-          // the door).
           this.ownPos = { ...this.villageReturnTile };
           this.ownFacing = "down";
           const ownAvatar = this.avatars.get(this.ownSessionId!);
@@ -1006,13 +1650,25 @@ export default function WorldClient() {
             this.applyFacing(ownAvatar, this.ownFacing, false);
           }
 
-          // Camera bounded to full world again.
           const worldW = WORLD_W_TILES * TILE;
           const worldH = WORLD_H_TILES * TILE;
           this.cameras.main.setBounds(0, 0, worldW, worldH);
           this.cameras.main.centerOn(this.ownPos.x * TILE, this.ownPos.y * TILE);
 
-          this.hintText.setText("WASD / arrows to move");
+          this.hintText.setText("WASD / arrows to move · M: mute");
+          this.drawObstacleDebug();
+        }
+
+        /** Briefly replace the bottom-left hint text. Used by
+         *  enterBuilding to surface "coming soon" when an interior
+         *  isn't wired yet. */
+        flashHint(text: string, ms = 1800) {
+          if (!this.hintText) return;
+          const prev = this.hintText.text;
+          this.hintText.setText(text);
+          this.time.delayedCall(ms, () => {
+            if (this.hintText.text === text) this.hintText.setText(prev);
+          });
         }
 
         /** Define named frames on the loaded ArMM1998 atlas so
@@ -1026,6 +1682,10 @@ export default function WorldClient() {
         spawnChicken(opts: {
           x: number;
           y: number;
+          /** Phaser texture key — defaults to the HM chicken sheet,
+           *  overridable for other chicken-shaped animals (golden
+           *  chicken, future variants) so they share the FSM. */
+          textureKey?: string;
           idleFrame: string;
           walkFrames: string[];
           triggerRadius: number;
@@ -1033,7 +1693,21 @@ export default function WorldClient() {
           bobAmp: number;
           bobMs: number;
         }): Chicken {
-          const sprite = this.add.image(opts.x, opts.y, "hm-chickens", opts.idleFrame);
+          // Nudge the spawn out of any blocker so the chicken doesn't
+          // appear inside a wall or fence. Home anchor follows the
+          // spawn so wander targets stay near the (nudged) origin.
+          const safe = nudgeToFree(opts.x, opts.y, "village") ?? {
+            x: opts.x,
+            y: opts.y,
+          };
+          opts.x = safe.x;
+          opts.y = safe.y;
+          const sprite = this.add.image(
+            opts.x,
+            opts.y,
+            opts.textureKey ?? "hm-chickens",
+            opts.idleFrame,
+          );
           sprite.setOrigin(0.5, 0.9);
           sprite.setScale(VILLAGE_SCALE);
           sprite.setDepth(-3);
@@ -1091,6 +1765,223 @@ export default function WorldClient() {
           ch.sprite.setFrame(ch.idleFrame);
         }
 
+        /** Spawn a wandering dog near (x, y). Walks short distances
+         *  inside its home radius, pauses, picks a new target. */
+        spawnDog(x: number, y: number) {
+          const safe = nudgeToFree(x, y, "village") ?? { x, y };
+          const sprite = this.add.image(safe.x, safe.y, "hm-dog", "dog-idle");
+          sprite.setOrigin(0.5, 0.9);
+          sprite.setScale(VILLAGE_SCALE);
+          sprite.setDepth(-3);
+          const dog: Dog = {
+            sprite,
+            state: "idle",
+            // First idle stretch is short so the dog starts moving
+            // soon after page load.
+            timer: 800 + Math.random() * 1200,
+            vx: 0,
+            vy: 0,
+            targetX: safe.x,
+            targetY: safe.y,
+            homeX: safe.x,
+            homeY: safe.y,
+            bob: null,
+          };
+          this.startDogBob(dog);
+          this.dogs.push(dog);
+          return dog;
+        }
+
+        startDogBob(dog: Dog) {
+          dog.bob?.stop();
+          const baseY = dog.sprite.y;
+          dog.bob = this.tweens.add({
+            targets: dog.sprite,
+            y: { from: baseY, to: baseY - 2 },
+            duration: 1400 + Math.random() * 400,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+        }
+
+        /** Per-frame dog update. idle → pick a free target nearby →
+         *  walk there → idle again. Speed and radius are gentle so
+         *  the dog feels relaxed, not frantic. */
+        updateDogs(dt: number) {
+          const DOG_SPEED = 55; // px/sec
+          const DOG_RADIUS = 130; // wander radius around home
+          const DOG_WALK_CAP = 4000; // ms max per walk segment
+          for (const dog of this.dogs) {
+            if (dog.state === "idle") {
+              dog.timer -= dt * 1000;
+              if (dog.timer <= 0) {
+                const target = pickFreeTarget(
+                  dog.homeX,
+                  dog.homeY,
+                  20,
+                  DOG_RADIUS,
+                  "village",
+                  10,
+                );
+                if (!target) {
+                  // Boxed in; try again after another idle bout.
+                  dog.timer = 1500 + Math.random() * 2000;
+                  continue;
+                }
+                dog.targetX = target.x;
+                dog.targetY = target.y;
+                const dx = dog.targetX - dog.sprite.x;
+                const dy = dog.targetY - dog.sprite.y;
+                const d = Math.max(0.001, Math.hypot(dx, dy));
+                dog.vx = (dx / d) * DOG_SPEED;
+                dog.vy = (dy / d) * DOG_SPEED;
+                dog.sprite.setFlipX(dog.vx < 0);
+                dog.bob?.stop();
+                dog.bob = null;
+                dog.state = "walking";
+                dog.timer = DOG_WALK_CAP;
+              }
+            } else {
+              const px = dog.sprite.x + dog.vx * dt;
+              const py = dog.sprite.y + dog.vy * dt;
+              const r = resolveMove(dog.sprite.x, dog.sprite.y, px, py, "village");
+              if (r.x === dog.sprite.x && r.y === dog.sprite.y) {
+                // wall-slide produced no movement → end early
+                dog.timer = 0;
+              } else {
+                dog.sprite.x = r.x;
+                dog.sprite.y = r.y;
+              }
+              dog.timer -= dt * 1000;
+              const remaining = Math.hypot(
+                dog.targetX - dog.sprite.x,
+                dog.targetY - dog.sprite.y,
+              );
+              if (remaining < 4 || dog.timer <= 0) {
+                dog.state = "idle";
+                dog.vx = 0;
+                dog.vy = 0;
+                dog.timer = 1500 + Math.random() * 2500;
+                this.startDogBob(dog);
+              }
+            }
+          }
+        }
+
+        /** Spawn a grazing cow near (x, y) with the proximity-flee
+         *  FSM. Nudged out of any blocker on spawn. */
+        spawnCow(x: number, y: number) {
+          const safe = nudgeToFree(x, y, "village") ?? { x, y };
+          const sprite = this.add.image(safe.x, safe.y, "hm-cow", "cow-idle");
+          sprite.setOrigin(0.5, 0.9);
+          sprite.setScale(VILLAGE_SCALE);
+          sprite.setDepth(-3);
+          const cow: Cow = {
+            sprite,
+            state: "idle",
+            timer: 0,
+            vx: 0,
+            vy: 0,
+            homeX: safe.x,
+            homeY: safe.y,
+            bob: null,
+          };
+          this.startCowBob(cow);
+          this.cows.push(cow);
+          return cow;
+        }
+
+        startCowBob(cow: Cow) {
+          cow.bob?.stop();
+          const baseY = cow.sprite.y;
+          cow.bob = this.tweens.add({
+            targets: cow.sprite,
+            y: { from: baseY, to: baseY - 3 },
+            duration: 2200 + Math.random() * 400,
+            ease: "Sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+        }
+
+        /** Per-frame cow update. idle → check player distance →
+         *  ambling-away if close → idle again. Slow speed, short
+         *  duration; cows are placid. */
+        updateCows(dt: number) {
+          const COW_TRIGGER_R = 130; // px; bigger than the chicken's
+          const COW_SPEED = 40; // px/sec; slow amble
+          const COW_FLEE_MS = 1400;
+          for (const cow of this.cows) {
+            if (cow.state === "idle") {
+              for (const avatar of this.avatars.values()) {
+                const dx = avatar.x - cow.sprite.x;
+                const dy = avatar.y - cow.sprite.y;
+                const d = Math.hypot(dx, dy);
+                if (d > 0 && d < COW_TRIGGER_R) {
+                  // Pick a slow vector away from the player.
+                  cow.vx = (-dx / d) * COW_SPEED;
+                  cow.vy = (-dy / d) * COW_SPEED;
+                  cow.state = "walking";
+                  cow.timer = COW_FLEE_MS;
+                  cow.bob?.stop();
+                  cow.bob = null;
+                  cow.sprite.setFlipX(cow.vx < 0);
+                  break;
+                }
+              }
+            } else if (cow.state === "walking") {
+              const px = cow.sprite.x + cow.vx * dt;
+              const py = cow.sprite.y + cow.vy * dt;
+              const r = resolveMove(cow.sprite.x, cow.sprite.y, px, py, "village");
+              // If wall-slide produced no movement, end the flee early
+              // so the cow doesn't grind against a fence.
+              if (r.x === cow.sprite.x && r.y === cow.sprite.y) {
+                cow.timer = 0;
+              } else {
+                cow.sprite.x = r.x;
+                cow.sprite.y = r.y;
+              }
+              cow.timer -= dt * 1000;
+              if (cow.timer <= 0) {
+                cow.state = "idle";
+                cow.vx = 0;
+                cow.vy = 0;
+                this.startCowBob(cow);
+              }
+            }
+          }
+        }
+
+        /** Is the given world-coord point inside any animal's foot
+         *  circle? Used to keep player movement out of NPC bodies. */
+        isInAnyAnimal(x: number, y: number): boolean {
+          // Foot-circle radii (world px). Tuned by sprite size at
+          // VILLAGE_SCALE = 3.
+          const HIT = { chicken: 18, horse: 36, cow: 30, dog: 22 };
+          for (const ch of this.chickens) {
+            const dx = x - ch.sprite.x;
+            const dy = y - ch.sprite.y;
+            if (dx * dx + dy * dy < HIT.chicken * HIT.chicken) return true;
+          }
+          for (const horse of this.horses) {
+            const dx = x - horse.sprite.x;
+            const dy = y - horse.sprite.y;
+            if (dx * dx + dy * dy < HIT.horse * HIT.horse) return true;
+          }
+          for (const cow of this.cows) {
+            const dx = x - cow.sprite.x;
+            const dy = y - cow.sprite.y;
+            if (dx * dx + dy * dy < HIT.cow * HIT.cow) return true;
+          }
+          for (const dog of this.dogs) {
+            const dx = x - dog.sprite.x;
+            const dy = y - dog.sprite.y;
+            if (dx * dx + dy * dy < HIT.dog * HIT.dog) return true;
+          }
+          return false;
+        }
+
         /** Create a horse NPC at (x, y). Side-view sprite faces LEFT
          *  natively; we flipX it when facing right. Spawns idle with
          *  a slow Y-bob so it feels alive at rest. */
@@ -1100,6 +1991,15 @@ export default function WorldClient() {
           speed: number;
           wanderRadius: number;
         }): Horse {
+          // Nudge spawn out of any blocker (the horse's pasture moves
+          // as the mask gets edited; the seed coord may now sit on a
+          // fence or building wall).
+          const safe = nudgeToFree(opts.x, opts.y, "village") ?? {
+            x: opts.x,
+            y: opts.y,
+          };
+          opts.x = safe.x;
+          opts.y = safe.y;
           const sprite = this.add.sprite(opts.x, opts.y, "hm-horse", "horse-s0");
           sprite.setOrigin(0.5, 0.9);
           sprite.setScale(VILLAGE_SCALE);
@@ -1237,28 +2137,53 @@ export default function WorldClient() {
             // Short gallop — farther target, faster speed. Side view
             // only (we don't have gallop frames for down/up), so
             // bias the target horizontally so the side anim fits.
+            // pickFreeTarget rejects blocked spots; if every candidate
+            // hits a wall, fall through to a regular walk instead so
+            // the horse never freezes wedged against a fence.
             const dir = Math.random() < 0.5 ? -1 : 1;
-            horse.targetX = horse.homeX + dir * (radius * 0.9);
-            horse.targetY = horse.homeY + (Math.random() - 0.5) * 40;
-            const dx = horse.targetX - horse.sprite.x;
-            const dy = horse.targetY - horse.sprite.y;
-            const d = Math.max(0.001, Math.hypot(dx, dy));
-            const gallopSpeed = horse.speed * 2.6;
-            horse.vx = (dx / d) * gallopSpeed;
-            horse.vy = (dy / d) * gallopSpeed;
-            horse.facing = dir > 0 ? "right" : "left";
-            horse.state = "gallop";
-            horse.timer = 1500 + Math.random() * 1000;
-            this.applyHorseMovingAnim(horse);
-            return;
+            const cand = pickFreeTarget(
+              horse.homeX + dir * (radius * 0.9),
+              horse.homeY,
+              0,
+              30,
+              "village",
+            );
+            if (cand) {
+              horse.targetX = cand.x;
+              horse.targetY = cand.y;
+              const dx = horse.targetX - horse.sprite.x;
+              const dy = horse.targetY - horse.sprite.y;
+              const d = Math.max(0.001, Math.hypot(dx, dy));
+              const gallopSpeed = horse.speed * 2.6;
+              horse.vx = (dx / d) * gallopSpeed;
+              horse.vy = (dy / d) * gallopSpeed;
+              horse.facing = dir > 0 ? "right" : "left";
+              horse.state = "gallop";
+              horse.timer = 1500 + Math.random() * 1000;
+              this.applyHorseMovingAnim(horse);
+              return;
+            }
+            // fall through to walk
           }
 
-          // Otherwise walk to a random spot near home. Pick the
-          // cardinal facing that matches the velocity vector.
-          const r = 30 + Math.random() * radius;
-          const a = Math.random() * Math.PI * 2;
-          horse.targetX = horse.homeX + Math.cos(a) * r;
-          horse.targetY = horse.homeY + Math.sin(a) * r;
+          // Walk to a random spot near home that isn't blocked. If
+          // every candidate is fenced in, stay idle for a beat.
+          const target = pickFreeTarget(
+            horse.homeX,
+            horse.homeY,
+            30,
+            radius,
+            "village",
+            12,
+          );
+          if (!target) {
+            horse.state = "idle";
+            horse.timer = 2000 + Math.random() * 2000;
+            this.startHorseBob(horse);
+            return;
+          }
+          horse.targetX = target.x;
+          horse.targetY = target.y;
           const dx = horse.targetX - horse.sprite.x;
           const dy = horse.targetY - horse.sprite.y;
           const d = Math.max(0.001, Math.hypot(dx, dy));
@@ -1298,8 +2223,21 @@ export default function WorldClient() {
 
             // walk or gallop — same movement code, different anims
             // and speeds (already baked into vx/vy + anim selection).
-            horse.sprite.x += horse.vx * dt;
-            horse.sprite.y += horse.vy * dt;
+            // Resolve against obstacles so the horse wall-slides
+            // rather than ghosting through a fence.
+            {
+              const px = horse.sprite.x + horse.vx * dt;
+              const py = horse.sprite.y + horse.vy * dt;
+              const r = resolveMove(
+                horse.sprite.x,
+                horse.sprite.y,
+                px,
+                py,
+                "village",
+              );
+              horse.sprite.x = r.x;
+              horse.sprite.y = r.y;
+            }
             horse.timer -= dt * 1000;
 
             // Re-evaluate facing every frame so turn-as-you-walk
@@ -1352,20 +2290,42 @@ export default function WorldClient() {
                 }
               }
             } else if (ch.state === "scared") {
-              ch.sprite.x += ch.vx * dt;
-              ch.sprite.y += ch.vy * dt;
-              // Mirror sprite by horizontal velocity for a tiny bit of
-              // directional flair.
+              // Resolve against obstacles so the chicken bounces off
+              // a fence/wall instead of fleeing through it.
+              const px = ch.sprite.x + ch.vx * dt;
+              const py = ch.sprite.y + ch.vy * dt;
+              const r = resolveMove(ch.sprite.x, ch.sprite.y, px, py, "village");
+              ch.sprite.x = r.x;
+              ch.sprite.y = r.y;
               ch.sprite.setFlipX(ch.vx < 0);
               ch.timer -= dt * 1000;
               if (ch.timer <= 0) {
-                // Pick a new resting spot — somewhere near home base.
-                const r = 60 + Math.random() * 100;
-                const a = Math.random() * Math.PI * 2;
-                ch.targetX = ch.homeX + Math.cos(a) * r;
-                ch.targetY = ch.homeY + Math.sin(a) * r;
-                ch.state = "wander";
-                ch.timer = 4000; // hard cap so we don't loop forever
+                // Pick a free resting spot near home base. If the
+                // chicken's home is itself fenced in (e.g., user moved
+                // a fence over it), accept whatever spot is closest
+                // by falling back to the current sprite position.
+                const target = pickFreeTarget(
+                  ch.homeX,
+                  ch.homeY,
+                  60,
+                  160,
+                  "village",
+                  10,
+                );
+                if (target) {
+                  ch.targetX = target.x;
+                  ch.targetY = target.y;
+                  ch.state = "wander";
+                  ch.timer = 4000;
+                } else {
+                  ch.state = "idle";
+                  this.startChickenBob(
+                    ch,
+                    ch.idleFrame === "chick" ? 3 : 4,
+                    ch.idleFrame === "chick" ? 700 : 900,
+                  );
+                  this.stopChickenWalk(ch);
+                }
               }
             } else if (ch.state === "wander") {
               const dx = ch.targetX - ch.sprite.x;
@@ -1382,8 +2342,17 @@ export default function WorldClient() {
                   ch.idleFrame === "chick" ? 700 : 900);
               } else {
                 const slowerSpeed = ch.speed * 0.55;
-                ch.sprite.x += (dx / d) * slowerSpeed * dt;
-                ch.sprite.y += (dy / d) * slowerSpeed * dt;
+                const px = ch.sprite.x + (dx / d) * slowerSpeed * dt;
+                const py = ch.sprite.y + (dy / d) * slowerSpeed * dt;
+                const r = resolveMove(ch.sprite.x, ch.sprite.y, px, py, "village");
+                // If the wall-slide made zero progress, give up on
+                // this target so we don't spin in place against a wall.
+                if (r.x === ch.sprite.x && r.y === ch.sprite.y) {
+                  ch.timer = 0;
+                } else {
+                  ch.sprite.x = r.x;
+                  ch.sprite.y = r.y;
+                }
                 ch.sprite.setFlipX(dx < 0);
                 ch.timer -= dt * 1000;
               }
@@ -2021,6 +2990,12 @@ export default function WorldClient() {
         }
         scene.onAction = (next) => setAction(next);
         triggerActionRef.current = () => scene.tryAction();
+        setChatFocusRef.current = (focused) => {
+          if (scene.input.keyboard) {
+            scene.input.keyboard.enabled = !focused;
+          }
+        };
+        scene.focusChat = () => chatInputRef.current?.focus();
       };
       wireAction();
 
@@ -2038,9 +3013,34 @@ export default function WorldClient() {
     };
   }, []);
 
+  // Press Enter anywhere in the world (outside any input/textarea)
+  // to focus the chat box. Bypasses Phaser's keyboard plugin so we
+  // don't depend on the scene's enabled state. The form's onSubmit
+  // already handles Enter inside the input.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName ?? "";
+      // If a real text input/textarea already has focus, let it
+      // handle the Enter (form submit logic kicks in).
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (chatInputRef.current) {
+        e.preventDefault();
+        chatInputRef.current.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   function submitChat(e: React.FormEvent) {
     e.preventDefault();
     const body = chatDraft.trim();
+    // Always blur on Enter — whether or not there's a message — so
+    // the player can resume moving without an extra click. onBlur
+    // re-enables the Phaser keyboard handlers.
+    chatInputRef.current?.blur();
     if (!body) return;
     sendChatRef.current?.(body);
     setChatDraft("");
@@ -2066,10 +3066,13 @@ export default function WorldClient() {
         onMouseDown={(e) => e.stopPropagation()}
       >
         <input
+          ref={chatInputRef}
           type="text"
           className={styles.chatInput}
           value={chatDraft}
           onChange={(e) => setChatDraft(e.target.value.slice(0, 200))}
+          onFocus={() => setChatFocusRef.current?.(true)}
+          onBlur={() => setChatFocusRef.current?.(false)}
           placeholder="Press Enter to speak…"
           aria-label="Speak to the world"
           maxLength={200}
@@ -2077,6 +3080,15 @@ export default function WorldClient() {
       </form>
     </main>
   );
+}
+
+/** Stable identity for a WorldAction — drives the React HUD diff.
+ *  Including the building id means two adjacent doors flip the pill
+ *  text correctly when the player walks between them. */
+function actionKey(a: WorldAction): string {
+  if (!a) return "none";
+  if (a.kind === "enter-building") return `enter:${a.buildingId}`;
+  return "exit";
 }
 
 function clamp(v: number, lo: number, hi: number): number {

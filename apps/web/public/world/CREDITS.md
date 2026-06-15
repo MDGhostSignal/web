@@ -83,6 +83,19 @@ shipped here:
 (See `Attribution.txt` for the complete list — the LPC contest pulled
 work from dozens of artists. Per CC-BY-SA all of them are credited.)
 
+### Background music — "The Village" by Eric Matyas
+
+- `apps/web/public/world/audio/the-village-loop.ogg` — looping cut of
+  the track, plays as ambient BGM on the `/world` route. Toggle mute
+  with `M` or the speaker icon top-right.
+
+Source: [soundimage.org / Fantasy 3](https://soundimage.org/fantasy-3/)
+
+**License: royalty-free with attribution required.** Per
+soundimage.org's policy: credit "Eric Matyas" and link to
+`https://soundimage.org`. This entry, plus the music-credit line on
+the `/world` route, satisfy that requirement.
+
 ## Future asset sources to layer on
 
 When we add clothing, hair, props per archetype, candidate layer paths
