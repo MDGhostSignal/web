@@ -299,4 +299,107 @@
   margin-top: 6px;
   font-size: 12px;
   color: #6a727b;
+  line-height: 1.5;
+}
+
+/* === Show header (creator dashboard) ============================ */
+
+.showHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 20px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid #e6e8ee;
+  border-radius: 14px;
+}
+
+.showImage {
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.showTitle {
+  margin: 4px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0e1119;
+  letter-spacing: -0.01em;
+}
+
+/* === Recent episodes section ==================================== */
+
+.section {
+  margin-top: 36px;
+}
+
+.sectionTitle {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0e1119;
+  letter-spacing: -0.01em;
+}
+
+.episodeList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.episodeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  transition: border-color 160ms ease;
+}
+
+.episodeRow:hover {
+  border-color: #b4a4dc;
+}
+
+.episodeBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.episodeTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0e1119;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.episodeMeta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6a727b;
+}
+
+.episodeListens {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.episodeListens strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #7c58d6;
+}
+
+.episodeListens span {
+  font-size: 11px;
+  color: #6a727b;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
