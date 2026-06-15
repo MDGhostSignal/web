@@ -4,6 +4,7 @@ import {
   ADMIN_COOKIE_NAME,
   verifyAdminCookie,
 } from "@/lib/admin-auth";
+import { createStudioServerClient } from "@/lib/studio-auth";
 
 /**
  * Gate internal tooling behind the shared-password auth cookie.
@@ -66,6 +67,31 @@ const PUBLIC_SUBPATHS = [
 export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
+  // === Studio surface (per-user Supabase Auth) ===========================
+  // /studio/login + /studio/register are unauthenticated. Everything
+  // else under /studio/* requires a Supabase session. Approved (= the
+  // member row has activated_at IS NOT NULL) users see the surface;
+  // pending users get the "waiting for approval" holding page.
+  if (pathname.startsWith("/studio")) {
+    if (pathname === "/studio/login" || pathname === "/studio/register") {
+      return NextResponse.next();
+    }
+    const supabase = await createStudioServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/studio/login";
+      loginUrl.search = "";
+      return NextResponse.redirect(loginUrl);
+    }
+    // /studio/pending is allowed once authed; the page itself
+    // redirects approved users back to /studio.
+    return NextResponse.next();
+  }
+
+  // === HQ + legacy admin gates (shared-password cookie) ==================
   // Let the login page through unconditionally.
   if (PUBLIC_SUBPATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next();
@@ -95,6 +121,9 @@ export async function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     "/hq/:path*",
+    // Studio — client-facing brand/creator surface with per-user
+    // Supabase Auth (distinct from the HQ shared-cookie gate).
+    "/studio/:path*",
     "/rq-dashboard/:path*",
     "/design-tasks/:path*",
     // Admin APIs — gate them too so the cookie check covers reads/writes,

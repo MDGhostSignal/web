@@ -1,0 +1,302 @@
+/* Studio shell — minimal, brand-aligned, distinct from the /hq
+ * admin chrome. Light theme by default; we can add a theme toggle
+ * later. All sizing in raw px (this surface is excluded from the
+ * --gs-* token discipline via .stylelintignore). */
+
+.shell {
+  min-height: 100vh;
+  background: #fafbff;
+  color: #0e1119;
+  font-family: "Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* === Auth pages (login, register, pending) ============================ */
+
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 440px;
+  background: #ffffff;
+  border: 1px solid #e6e8ee;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px -28px rgba(15, 23, 42, 0.15);
+  padding: 36px 36px 28px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.brandName {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.brandTag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #7c58d6;
+  background: rgba(124, 88, 214, 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #0e1119;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #5a5e66;
+  line-height: 1.5;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2a2f37;
+  letter-spacing: 0.3px;
+}
+
+.input,
+.select {
+  appearance: none;
+  width: 100%;
+  padding: 11px 14px;
+  background: #ffffff;
+  border: 1px solid #d8dade;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0e1119;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #7c58d6;
+  box-shadow: 0 0 0 3px rgba(124, 88, 214, 0.15);
+}
+
+.kindRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.kindBtn {
+  padding: 14px 12px;
+  background: #ffffff;
+  border: 1px solid #d8dade;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 160ms ease;
+}
+
+.kindBtn:hover {
+  border-color: #b4a4dc;
+}
+
+.kindBtnActive {
+  border-color: #7c58d6;
+  background: rgba(124, 88, 214, 0.06);
+  box-shadow: 0 0 0 3px rgba(124, 88, 214, 0.12);
+}
+
+.kindBtnLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0e1119;
+  margin-bottom: 2px;
+}
+
+.kindBtnDesc {
+  display: block;
+  font-size: 11px;
+  color: #6a727b;
+  line-height: 1.4;
+}
+
+.submit {
+  margin-top: 6px;
+  padding: 12px 20px;
+  background: linear-gradient(180deg, #8d6ce2 0%, #7c58d6 100%);
+  color: #ffffff;
+  border: 1px solid #6a45c7;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.submit:hover {
+  filter: brightness(1.05);
+}
+
+.submit:active {
+  transform: translateY(1px);
+}
+
+.submit:disabled {
+  filter: grayscale(0.5);
+  cursor: not-allowed;
+}
+
+.altLink {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: #5a5e66;
+}
+
+.altLink a {
+  color: #7c58d6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.altLink a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  padding: 10px 14px;
+  background: rgba(214, 69, 69, 0.08);
+  border: 1px solid rgba(214, 69, 69, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #a23636;
+}
+
+/* === Pending screen ============================================== */
+
+.pendingIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124, 88, 214, 0.1);
+  border-radius: 50%;
+  font-size: 30px;
+}
+
+/* === Dashboard ==================================================== */
+
+.dashHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6e8ee;
+}
+
+.dashHeaderBrand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dashSignOut {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid #d8dade;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2a2f37;
+  cursor: pointer;
+}
+
+.dashSignOut:hover {
+  background: #f4f4f6;
+}
+
+.dashMain {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 32px 80px;
+}
+
+.dashWelcome {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0e1119;
+}
+
+.dashSubtitle {
+  margin: 0 0 32px;
+  font-size: 15px;
+  color: #5a5e66;
+}
+
+.dashGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.dashCard {
+  padding: 22px 24px;
+  background: #ffffff;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
+}
+
+.dashCardLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #6a727b;
+  margin-bottom: 8px;
+}
+
+.dashCardValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0e1119;
+}
+
+.dashCardHint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6a727b;
+}

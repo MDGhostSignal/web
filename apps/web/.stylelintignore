@@ -10,6 +10,10 @@
 src/app/hq/
 src/components/admin/
 
+# Studio — client-facing brand/creator surface. Self-contained
+# spacing using raw px; doesn't consume the public --gs-* scale.
+src/app/studio/
+
 # RQ quiz + visualizations: --rq-* token namespace, separate visual
 # rhythm tuned for the quiz/results UX.
 src/app/rq-quiz/
