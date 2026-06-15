@@ -9,49 +9,53 @@
 
 /* Tool launcher card — links to companion tools like the
  * Signal Fidelity CPM Calculator. Pulled to the top of the dashboard
- * so it's the second thing you see after the sync header. */
+ * so it's the second thing you see after the sync header. Themed via
+ * the --admin-* tokens so dark + light flip together with the rest
+ * of the admin tree. */
 .toolLink {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 14px 18px;
-  background: linear-gradient(180deg, #181c22 0%, #11141a 100%);
-  border: 1px solid #2a2f37;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
   border-radius: 10px;
-  color: var(--admin-text);
+  color: var(--admin-text-primary);
   text-decoration: none;
-  transition: border-color 160ms ease, transform 160ms ease;
+  transition: border-color 160ms ease, transform 160ms ease,
+    background 160ms ease;
 }
 
 .toolLink:hover {
-  border-color: #ffb454;
+  background: var(--admin-surface-hover);
+  border-color: var(--admin-accent);
   transform: translateY(-1px);
 }
 
 .toolLinkIcon {
   font-size: 22px;
-  color: #ffb454;
-  text-shadow: 0 0 8px rgba(255, 180, 84, 0.5);
+  color: var(--admin-accent);
+  text-shadow: 0 0 8px var(--admin-accent-soft);
 }
 
 .toolLink strong {
   display: block;
   font-size: 14px;
   font-weight: 700;
-  color: var(--admin-text);
+  color: var(--admin-text-primary);
 }
 
 .toolLinkSub {
   display: block;
   margin-top: 2px;
   font-size: 12px;
-  color: var(--admin-text-muted, #9aa0a8);
+  color: var(--admin-text-muted);
 }
 
 .toolLinkArrow {
   margin-left: auto;
   font-size: 18px;
-  color: #ffb454;
+  color: var(--admin-accent);
   opacity: 0.6;
   transition: opacity 160ms ease, transform 160ms ease;
 }

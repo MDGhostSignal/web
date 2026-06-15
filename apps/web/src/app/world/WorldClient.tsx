@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Client, Room } from "colyseus.js";
 
 import styles from "./world.module.css";
+import { CharacterCard, type CharacterCardData } from "./CharacterCard";
 import {
   OBSTACLES,
   getMask,
@@ -238,6 +239,7 @@ type WorldAction =
   | { kind: "exit-building"; label: string }
   | { kind: "mount-horse"; label: string }
   | { kind: "dismount-horse"; label: string }
+  | { kind: "talk-player"; sessionId: string; label: string }
   | null;
 
 /** Which "room" the local player is currently rendered in. Village +
@@ -264,6 +266,11 @@ export default function WorldClient() {
   const triggerActionRef = useRef<(() => void) | null>(null);
   const [chatDraft, setChatDraft] = useState("");
   const [action, setAction] = useState<WorldAction>(null);
+  /** When non-null, the character-card overlay is open. The scene
+   *  posts the data via setCardRef when `I` is pressed (own card)
+   *  or when the player E's another character (chunk 2). */
+  const [card, setCard] = useState<CharacterCardData | null>(null);
+  const setCardRef = useRef<((c: CharacterCardData | null) => void) | null>(null);
   /** Tells the Phaser scene to suppress its keyboard handlers while
    *  the chat input is focused — otherwise E/O/W/A/S/D/M/R/T/C all
    *  trigger world actions instead of typing. */
@@ -339,6 +346,20 @@ export default function WorldClient() {
          *  after the scene boots; used by the Enter key handler so
          *  hitting Enter while the world has focus opens the chat box. */
         focusChat: () => void = () => {};
+        /** Last full snapshot of the local player from the server.
+         *  Captured each `state` broadcast so the character-card
+         *  overlay can read displayName + archetype on demand. */
+        lastSelfPlayer: ServerPlayer | null = null;
+        /** Most recent full snapshot per session id — used to open
+         *  the character card for OTHER players the local user walks
+         *  up to. Updated every `state` broadcast. */
+        playerSnapshots = new Map<string, ServerPlayer>();
+        /** Open the inventory / own character card. Wired from React. */
+        openOwnCard: () => void = () => {};
+        /** Open the character card for another player. Wired from
+         *  React; called from tryAction when a `talk-player` action
+         *  is resolved. */
+        openOtherCard: (sessionId: string) => void = () => {};
         /** Village-tile position to restore when the player exits the
          *  active building. Captured at the moment of entry. */
         villageReturnTile = { x: 0, y: 0 };
@@ -874,6 +895,10 @@ export default function WorldClient() {
           );
           enterKey.on("down", () => this.focusChat());
 
+          // Inventory / own character card — press I to toggle.
+          const iKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.I, false);
+          iKey.on("down", () => this.openOwnCard());
+
           // Obstacle debug overlay — O toggles red rects on top of
           // every blocker in the current room. Used while authoring
           // village obstacles in Phase 1c.
@@ -983,6 +1008,13 @@ export default function WorldClient() {
           const seen = new Set<string>();
           for (const player of players) {
             seen.add(player.sessionId);
+            // Cache the local player's most recent snapshot so the
+            // character-card overlay can read displayName + archetype
+            // without a separate roundtrip.
+            if (player.sessionId === this.ownSessionId) {
+              this.lastSelfPlayer = player;
+            }
+            this.playerSnapshots.set(player.sessionId, player);
             if (!this.avatars.has(player.sessionId)) {
               this.spawnAvatar(player);
             } else if (player.sessionId !== this.ownSessionId) {
@@ -1649,6 +1681,31 @@ export default function WorldClient() {
                 }
               }
             }
+            // Player-to-player talk trigger — closest other character
+            // within 72 px. Building doors take priority so doorstep
+            // huddles don't accidentally hide the door action.
+            if (!next) {
+              let nearestSid: string | null = null;
+              let nearestD = Infinity;
+              this.avatars.forEach((avatar, sid) => {
+                if (sid === this.ownSessionId) return;
+                const dx = px - avatar.x;
+                const dy = py - avatar.y;
+                const d = Math.hypot(dx, dy);
+                if (d < 72 && d < nearestD) {
+                  nearestSid = sid;
+                  nearestD = d;
+                }
+              });
+              if (nearestSid) {
+                const snap = this.playerSnapshots.get(nearestSid);
+                next = {
+                  kind: "talk-player",
+                  sessionId: nearestSid,
+                  label: `Talk to ${snap?.displayName ?? "player"}`,
+                };
+              }
+            }
           } else {
             // Interior — any exit trigger fires the same leave action.
             const b = getBuilding(this.location.buildingId);
@@ -1699,6 +1756,7 @@ export default function WorldClient() {
           else if (a.kind === "exit-building") this.exitBuilding();
           else if (a.kind === "mount-horse") this.mountNearestHorse();
           else if (a.kind === "dismount-horse") this.dismountHorse();
+          else if (a.kind === "talk-player") this.openOtherCard(a.sessionId);
         }
 
         /** Swap to a building's interior "room": hide village +
@@ -3328,6 +3386,26 @@ export default function WorldClient() {
           }
         };
         scene.focusChat = () => chatInputRef.current?.focus();
+        setCardRef.current = (c) => setCard(c);
+        scene.openOwnCard = () => {
+          const data = scene.lastSelfPlayer;
+          if (!data) return;
+          setCardRef.current?.({
+            displayName: data.displayName,
+            archetype: data.archetype,
+            isSelf: true,
+          });
+        };
+        scene.openOtherCard = (sessionId: string) => {
+          const data = scene.playerSnapshots.get(sessionId);
+          if (!data) return;
+          setCardRef.current?.({
+            displayName: data.displayName,
+            archetype: data.archetype,
+            isSelf: false,
+            selfArchetype: scene.lastSelfPlayer?.archetype,
+          });
+        };
       };
       wireAction();
 
@@ -3381,6 +3459,20 @@ export default function WorldClient() {
   return (
     <main className={styles.worldRoot}>
       <div ref={hostRef} className={styles.canvasHost} aria-label="GhostSignal world canvas" />
+      {card && (
+        <CharacterCard
+          data={card}
+          onClose={() => setCard(null)}
+          onSendMessage={(toName) => {
+            // Prefill the chat input with an @-mention and focus it.
+            // No real DM channel yet — Phase 3 adds a server route.
+            setChatDraft(`@${toName} `);
+            setCard(null);
+            // Defer focus until after the card unmounts.
+            requestAnimationFrame(() => chatInputRef.current?.focus());
+          }}
+        />
+      )}
       {action && (
         <button
           type="button"
@@ -3422,7 +3514,8 @@ function actionKey(a: WorldAction): string {
   if (a.kind === "enter-building") return `enter:${a.buildingId}`;
   if (a.kind === "exit-building") return "exit";
   if (a.kind === "mount-horse") return "mount";
-  return "dismount";
+  if (a.kind === "dismount-horse") return "dismount";
+  return `talk:${a.sessionId}`;
 }
 
 function clamp(v: number, lo: number, hi: number): number {
