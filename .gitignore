@@ -68,3 +68,8 @@ nimble_*.csv
 **/nimble_*.csv
 docs/nimble_*
 
+# Local Supabase snapshots (taken before destructive migrations).
+# Each dir holds full PII dumps of contacts/members/etc — must stay
+# local. Restore via apps/web/scripts/restore-from-snapshot.mjs.
+backups/
+
