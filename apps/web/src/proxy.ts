@@ -158,6 +158,9 @@ export const config = {
     "/api/admin/alerts",
     "/api/admin/alerts/count",
     "/api/admin/alerts/:id",
+    // Studio approval — admin co-founders flip activated_at to grant
+    // access. Cookie-gated like the rest of /api/admin/*.
+    "/api/admin/studio/:path*",
     // ART19 read endpoints — /sync is allowlisted above; reads are
     // cookie-gated so only signed-in admins can see show/episode data.
     "/api/admin/art19/summary",
