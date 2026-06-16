@@ -273,3 +273,108 @@ export function formatRelativeDate(iso: string | null): string {
   if (day < 30) return `${Math.floor(day / 7)} wk ago`;
   return d.toLocaleDateString();
 }
+
+/* ============================================================
+ * XQ + RQ summary loaders
+ * ============================================================
+ *
+ * Surface the signed-in member's full conviction (XQ) and resonance
+ * (RQ) profiles on the /studio dashboard. Each loader takes the
+ * relevant `*_submission_id` from the members row and returns a
+ * compact shape ready for the dashboard card. Null IDs short-circuit
+ * to null returns so the caller can render a "not taken yet" prompt.
+ */
+
+export type StudioXqSummary = {
+  code: string | null;
+  archetypeName: string | null;
+  tagline: string | null;
+  axes: {
+    continuityChange: string | null;
+    personSystem: string | null;
+    craftLeverage: string | null;
+  };
+  values: {
+    nonNegotiables: string[];
+    core: string[];
+    aspirational: string[];
+  };
+  submittedAt: string | null;
+};
+
+export type StudioRqSummary = {
+  code: string | null;
+  name: string | null;
+  clarityLabel: string | null;
+  clarityNote: string | null;
+  undertone: string | null;
+  submittedAt: string | null;
+};
+
+type XqRow = {
+  xq_code: string | null;
+  xq_archetype_name: string | null;
+  xq_archetype_tagline: string | null;
+  axis_continuity_change: string | null;
+  axis_person_system: string | null;
+  axis_craft_leverage: string | null;
+  non_negotiables_json: string[] | null;
+  core_values_json: string[] | null;
+  aspirational_values_json: string[] | null;
+  submitted_at: string | null;
+};
+
+type RqRow = {
+  rq_code: string | null;
+  rq_name: string | null;
+  signal_clarity_label: string | null;
+  signal_clarity_note: string | null;
+  undertone: string | null;
+  submitted_at: string | null;
+};
+
+export async function loadStudioXqSummary(
+  submissionId: string | null,
+): Promise<StudioXqSummary | null> {
+  if (!submissionId) return null;
+  const res = await supabaseRest<XqRow[]>(
+    `xq_submissions?select=xq_code,xq_archetype_name,xq_archetype_tagline,axis_continuity_change,axis_person_system,axis_craft_leverage,non_negotiables_json,core_values_json,aspirational_values_json,submitted_at&id=eq.${encodeURIComponent(submissionId)}&limit=1`,
+  );
+  if (!res.ok || !res.data?.length) return null;
+  const r = res.data[0];
+  return {
+    code: r.xq_code,
+    archetypeName: r.xq_archetype_name,
+    tagline: r.xq_archetype_tagline,
+    axes: {
+      continuityChange: r.axis_continuity_change,
+      personSystem: r.axis_person_system,
+      craftLeverage: r.axis_craft_leverage,
+    },
+    values: {
+      nonNegotiables: r.non_negotiables_json ?? [],
+      core: r.core_values_json ?? [],
+      aspirational: r.aspirational_values_json ?? [],
+    },
+    submittedAt: r.submitted_at,
+  };
+}
+
+export async function loadStudioRqSummary(
+  submissionId: string | null,
+): Promise<StudioRqSummary | null> {
+  if (!submissionId) return null;
+  const res = await supabaseRest<RqRow[]>(
+    `rq_submissions?select=rq_code,rq_name,signal_clarity_label,signal_clarity_note,undertone,submitted_at&id=eq.${encodeURIComponent(submissionId)}&limit=1`,
+  );
+  if (!res.ok || !res.data?.length) return null;
+  const r = res.data[0];
+  return {
+    code: r.rq_code,
+    name: r.rq_name,
+    clarityLabel: r.signal_clarity_label,
+    clarityNote: r.signal_clarity_note,
+    undertone: r.undertone,
+    submittedAt: r.submitted_at,
+  };
+}

@@ -12,8 +12,12 @@ import {
   formatRelativeDate,
   loadBrandCampaignsData,
   loadCreatorShowData,
+  loadStudioRqSummary,
+  loadStudioXqSummary,
   type BrandCampaignsData,
   type CreatorShowData,
+  type StudioRqSummary,
+  type StudioXqSummary,
 } from "@/lib/studio-data";
 
 import styles from "./studio.module.css";
@@ -29,14 +33,19 @@ export default async function StudioDashboardPage() {
 
   // Load the right slice of data based on what kind of member they are.
   // Both queries scope by id; no cross-tenant data is reachable.
-  const creatorData: CreatorShowData | null =
+  // XQ + RQ summaries are loaded in parallel — both come from the
+  // signed-in member's own submission rows, so every account type
+  // gets them regardless of kind.
+  const [creatorData, brandData, xqSummary, rqSummary] = await Promise.all([
     member.kind === "creator" && member.creatorId
-      ? await loadCreatorShowData(member.creatorId)
-      : null;
-  const brandData: BrandCampaignsData | null =
+      ? loadCreatorShowData(member.creatorId)
+      : Promise.resolve<CreatorShowData | null>(null),
     member.kind === "brand" && member.brandId
-      ? await loadBrandCampaignsData(member.brandId)
-      : null;
+      ? loadBrandCampaignsData(member.brandId)
+      : Promise.resolve<BrandCampaignsData | null>(null),
+    loadStudioXqSummary(member.xqSubmissionId),
+    loadStudioRqSummary(member.rqSubmissionId),
+  ]);
 
   return (
     <>
@@ -76,6 +85,17 @@ export default async function StudioDashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Conviction (XQ) + Resonance (RQ) profile — shown for every
+            member type. Real data from the linked submission rows;
+            empty rendering nudges the user to take the quiz. */}
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>Your conviction profile</h3>
+          <div className={styles.profileGrid}>
+            <XqProfileCard summary={xqSummary} fallbackCode={member.xqArchetype} />
+            <RqProfileCard summary={rqSummary} fallbackCode={member.rqCode} />
+          </div>
+        </section>
       </main>
     </>
   );
@@ -104,7 +124,6 @@ function CreatorView({
             once it&apos;s connected.
           </div>
         </div>
-        <ProfileCard memberXq={memberXq} />
       </div>
     );
   }
@@ -144,7 +163,6 @@ function CreatorView({
           <div className={styles.dashCardValue}>{show.episodeCount}</div>
           <div className={styles.dashCardHint}>Published on ART19.</div>
         </div>
-        <ProfileCard memberXq={memberXq} />
       </div>
 
       {/* Recent episodes */}
@@ -197,7 +215,6 @@ function BrandView({
             here once the link lands.
           </div>
         </div>
-        <ProfileCard memberXq={memberXq} />
       </div>
     );
   }
@@ -213,25 +230,145 @@ function BrandView({
           </div>
         </div>
       ))}
-      <ProfileCard memberXq={memberXq} />
     </div>
   );
 }
 
 /* ============================================================
- * Shared profile card
- * ============================================================ */
+ * XQ + RQ profile cards (shown for every member type)
+ * ============================================================
+ *
+ * Real data from the linked submission rows. Empty states nudge the
+ * user toward taking the quiz. Visual style mirrors the dashGrid
+ * cards but the chip layout matches the in-world CharacterCard
+ * value-pill convention so the two surfaces feel like siblings.
+ */
 
-function ProfileCard({ memberXq }: { memberXq: string | null }) {
+function XqProfileCard({
+  summary,
+  fallbackCode,
+}: {
+  summary: StudioXqSummary | null;
+  fallbackCode: string | null;
+}) {
+  // Show the empty state if the user hasn't taken the XQ. Surface
+  // a clear CTA so the dashboard doesn't dead-end on a placeholder.
+  if (!summary && !fallbackCode) {
+    return (
+      <div className={styles.profileCard}>
+        <div className={styles.profileTag}>XQ · Conviction Quotient</div>
+        <div className={styles.profileEmpty}>
+          You haven&apos;t taken the XQ yet. It surfaces your values DNA
+          and powers the matching engine — under 5 minutes.{" "}
+          <a href="/xq-quiz">Take the XQ →</a>
+        </div>
+      </div>
+    );
+  }
+  const code = summary?.code ?? fallbackCode;
+  const name = summary?.archetypeName ?? null;
   return (
-    <div className={styles.dashCard}>
-      <div className={styles.dashCardLabel}>Your XQ</div>
-      <div className={styles.dashCardValue}>{memberXq ?? "Not yet taken"}</div>
-      <div className={styles.dashCardHint}>
-        {memberXq
-          ? "This archetype shapes the matching profile in the marketplace."
-          : "Take the XQ assessment to surface your values-DNA. It powers the matching engine."}
+    <div className={styles.profileCard}>
+      <div className={styles.profileTag}>XQ · Conviction Quotient</div>
+      <div className={styles.profileHeader}>
+        <div className={styles.profileCode}>{code}</div>
+        {name && <div className={styles.profileName}>{name}</div>}
+      </div>
+      {summary?.tagline && (
+        <p className={styles.profileTagline}>&ldquo;{summary.tagline}&rdquo;</p>
+      )}
+      {summary &&
+        (summary.values.nonNegotiables.length > 0 ||
+          summary.values.core.length > 0 ||
+          summary.values.aspirational.length > 0) && (
+          <div className={styles.profileValues}>
+            {summary.values.nonNegotiables.length > 0 && (
+              <ValueRow label="Non-negotiables" items={summary.values.nonNegotiables} />
+            )}
+            {summary.values.core.length > 0 && (
+              <ValueRow label="Core" items={summary.values.core} />
+            )}
+            {summary.values.aspirational.length > 0 && (
+              <ValueRow label="Aspirational" items={summary.values.aspirational} />
+            )}
+          </div>
+        )}
+      {!summary && fallbackCode && (
+        <p className={styles.profileHint}>
+          Your archetype is set, but we don&apos;t have your full XQ
+          dossier on file. <a href="/xq-quiz">Re-take the XQ</a> to
+          surface your value chips.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function RqProfileCard({
+  summary,
+  fallbackCode,
+}: {
+  summary: StudioRqSummary | null;
+  fallbackCode: string | null;
+}) {
+  if (!summary && !fallbackCode) {
+    return (
+      <div className={styles.profileCard}>
+        <div className={styles.profileTag}>RQ · Resonance Quotient</div>
+        <div className={styles.profileEmpty}>
+          You haven&apos;t taken the RQ yet. It reads how your brand or
+          show actually lands — clarity, authenticity, undertone.{" "}
+          <a href="/rq-quiz">Take the RQ →</a>
+        </div>
+      </div>
+    );
+  }
+  const code = summary?.code ?? fallbackCode;
+  return (
+    <div className={styles.profileCard}>
+      <div className={styles.profileTag}>RQ · Resonance Quotient</div>
+      <div className={styles.profileHeader}>
+        <div className={styles.profileCode}>{code}</div>
+        {summary?.name && <div className={styles.profileName}>{summary.name}</div>}
+      </div>
+      {summary?.clarityLabel && (
+        <div className={styles.profileRow}>
+          <span className={styles.profileRowLabel}>Signal clarity</span>
+          <span className={styles.profileRowValue}>{summary.clarityLabel}</span>
+        </div>
+      )}
+      {summary?.clarityNote && (
+        <p className={styles.profileTagline}>{summary.clarityNote}</p>
+      )}
+      {summary?.undertone && (
+        <div className={styles.profileRow}>
+          <span className={styles.profileRowLabel}>Undertone</span>
+          <span className={styles.profileRowValue}>{summary.undertone}</span>
+        </div>
+      )}
+      {!summary && fallbackCode && (
+        <p className={styles.profileHint}>
+          Your RQ code is set, but we don&apos;t have your full RQ
+          dossier on file. <a href="/rq-quiz">Re-take the RQ</a> to
+          surface clarity + undertone.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ValueRow({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div className={styles.valueRow}>
+      <span className={styles.valueRowLabel}>{label}</span>
+      <div className={styles.valuePills}>
+        {items.map((v) => (
+          <span key={v} className={styles.valuePill}>
+            {v}
+          </span>
+        ))}
       </div>
     </div>
   );
 }
+

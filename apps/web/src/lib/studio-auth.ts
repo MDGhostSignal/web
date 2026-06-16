@@ -93,7 +93,9 @@ export type StudioMember = {
   creatorId: string | null;
   isApproved: boolean;
   xqArchetype: string | null;
+  xqSubmissionId: string | null;
   rqCode: string | null;
+  rqSubmissionId: string | null;
 };
 
 /** Load the currently-signed-in member from the database. Returns
@@ -115,7 +117,7 @@ export async function loadCurrentStudioMember(): Promise<StudioMember | null> {
   const { data, error } = await admin
     .from("members")
     .select(
-      "id, auth_user_id, email, first_name, last_name, member_type, brand_id, creator_id, activated_at, xq_archetype, rq_code",
+      "id, auth_user_id, email, first_name, last_name, member_type, brand_id, creator_id, activated_at, xq_archetype, xq_submission_id, rq_code, rq_submission_id",
     )
     .eq("auth_user_id", user.id)
     .maybeSingle();
@@ -137,6 +139,8 @@ export async function loadCurrentStudioMember(): Promise<StudioMember | null> {
     creatorId: data.creator_id,
     isApproved: data.activated_at !== null,
     xqArchetype: data.xq_archetype,
+    xqSubmissionId: data.xq_submission_id,
     rqCode: data.rq_code,
+    rqSubmissionId: data.rq_submission_id,
   };
 }

@@ -519,3 +519,140 @@
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
+
+/* === Conviction profile (XQ + RQ cards on dashboard) ============= */
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 24px;
+  background: #ffffff;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
+}
+
+.profileTag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #7c58d6;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.profileCode {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0e1119;
+  letter-spacing: 0.5px;
+}
+
+.profileName {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a4e58;
+}
+
+.profileTagline {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #444751;
+  font-style: italic;
+}
+
+.profileHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6a727b;
+}
+
+.profileHint a,
+.profileEmpty a {
+  color: #7c58d6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profileHint a:hover,
+.profileEmpty a:hover {
+  text-decoration: underline;
+}
+
+.profileEmpty {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #5a5e66;
+}
+
+.profileRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profileRowLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #6a727b;
+}
+
+.profileRowValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0e1119;
+}
+
+.profileValues {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.valueRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.valueRowLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #6a727b;
+}
+
+.valuePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.valuePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid rgba(124, 88, 214, 0.35);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6a45c7;
+  background: rgba(124, 88, 214, 0.04);
+}
