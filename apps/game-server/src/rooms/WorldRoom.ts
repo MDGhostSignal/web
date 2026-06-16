@@ -63,6 +63,12 @@ type JoinOptions = {
   token?: string;
 };
 
+/** Sentinel for players without a classified XQ. Distinct from the 8
+ *  archetype codes so the client paints a neutral gray figure with a
+ *  plain head badge — a clear "take the quiz" cue instead of a fake
+ *  random archetype. */
+const NEUTRAL_ARCHETYPE = "NEUTRAL";
+
 const ARCHETYPE_CODES = new Set([
   "C-P-C",
   "C-P-L",
@@ -72,10 +78,11 @@ const ARCHETYPE_CODES = new Set([
   "X-P-L",
   "X-S-C",
   "X-S-L",
+  NEUTRAL_ARCHETYPE,
 ]);
 
 function normalizeArchetype(value: string | null | undefined): string {
-  return value && ARCHETYPE_CODES.has(value) ? value : "X-S-L";
+  return value && ARCHETYPE_CODES.has(value) ? value : NEUTRAL_ARCHETYPE;
 }
 
 function normalizeMemberType(

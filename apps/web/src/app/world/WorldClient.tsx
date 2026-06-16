@@ -39,6 +39,12 @@ import { BUILDINGS, getBuilding } from "./buildings";
 const SERVER_URL =
   process.env.NEXT_PUBLIC_GAME_SERVER_URL ?? "ws://127.0.0.1:2567";
 
+/** Sentinel for players who haven't taken the XQ (and so have no
+ *  archetype to render). Distinct from the 8 codes so the avatar
+ *  paint can swap to a neutral gray + plain circle head — a clear
+ *  visual signal that "you're not classified yet, take the quiz". */
+const NEUTRAL_ARCHETYPE = "NEUTRAL";
+
 const ARCHETYPE_COLOR: Record<string, number> = {
   "C-P-C": 0xfbad25,
   "C-P-L": 0xff7bad,
@@ -48,6 +54,7 @@ const ARCHETYPE_COLOR: Record<string, number> = {
   "X-P-L": 0xfa7b3f,
   "X-S-C": 0x4dc9ae,
   "X-S-L": 0x7c58d6,
+  [NEUTRAL_ARCHETYPE]: 0x9aa0a8, // desaturated stone gray
 };
 
 /** Head-shape mark per archetype — mirrors the XQCharacterMark system
@@ -64,6 +71,7 @@ const ARCHETYPE_SHAPE: Record<string, MarkShape> = {
   "X-P-L": "triangle",     // Catalyst
   "X-S-C": "hexagon",      // Designer
   "X-S-L": "pentagon",     // Architect
+  [NEUTRAL_ARCHETYPE]: "circle", // plain head — no archetype yet
 };
 
 const TILE = 32;
@@ -91,9 +99,14 @@ const ARCHETYPE_CODES = [
   "X-S-L",
 ];
 
+/** Kept around for any debug surface that still wants a random
+ *  colorful avatar (e.g., the /x-deck demo card carousel). Live
+ *  connection paths now default to NEUTRAL when no XQ identity is
+ *  attached — a clear "take the quiz" cue rather than a fake one. */
 function pickArchetype(): string {
   return ARCHETYPE_CODES[Math.floor(Math.random() * ARCHETYPE_CODES.length)];
 }
+void pickArchetype; // suppress unused-var lint while still exporting intent
 
 /** Authoritative-snapshot shape received from the server. Matches
  *  `apps/game-server/src/rooms/WorldRoom.ts` PlayerData. */
@@ -594,7 +607,7 @@ export default function WorldClient({
           // The village backdrop's grassy plaza isn't at the literal
           // mathematical map center — it's offset west. Nudge the
           // statue accordingly so it lands on the plaza disc.
-          const STATUE_CX = (WORLD_W_TILES * TILE) / 2 - 200; // 952
+          const STATUE_CX = (WORLD_W_TILES * TILE) / 2 - 300; // 852
           const STATUE_CY = (WORLD_H_TILES * TILE) / 2; // 1536
           const statue = this.add.image(STATUE_CX, STATUE_CY, "gs-statue");
           statue.setOrigin(0.5, 1);
@@ -1024,7 +1037,10 @@ export default function WorldClient({
             // still wander in. The server (re-)validates `token` in
             // WorldRoom.onAuth — what we put here is only a hint.
             const ident = identityRef.current;
-            const archetype = ident?.archetype ?? pickArchetype();
+            // No XQ identity → neutral gray character (per "if no XQ/RQ
+            // filled out, give them a standard gray figure"). The
+            // server enforces the same default in its onAuth fallback.
+            const archetype = ident?.archetype ?? NEUTRAL_ARCHETYPE;
             const displayName =
               ident?.displayName?.trim() ||
               `Guest-${Math.floor(Math.random() * 9999)

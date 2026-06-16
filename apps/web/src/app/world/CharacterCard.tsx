@@ -69,6 +69,16 @@ const ARCHETYPE_SUMMARY: Record<
     xq: "Change, system-first, leverage-led. Designs platforms that change defaults at scale.",
     rq: "Matches platform-tier brands and infrastructure plays where the win condition is structural.",
   },
+  // Neutral sentinel — player hasn't taken the XQ/RQ yet. Card uses
+  // this to surface a "no classification" state with a take-the-quiz
+  // CTA instead of misrepresenting them as an archetype.
+  NEUTRAL: {
+    name: "Unclassified",
+    shape: "circle",
+    accent: 0x9aa0a8,
+    xq: "No XQ on file yet. Once they take the Conviction Quotient, their archetype, value blueprint, and matching profile will appear here.",
+    rq: "No RQ on file yet. The Resonance Quotient reads how a brand or show actually lands — clarity, authenticity, undertone.",
+  },
 };
 
 /** Real RQ/XQ summary returned by /api/studio/players/[authUserId]/summary.
@@ -194,7 +204,7 @@ export function CharacterCard({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const meta = ARCHETYPE_SUMMARY[data.archetype] ?? ARCHETYPE_SUMMARY["X-S-L"];
+  const meta = ARCHETYPE_SUMMARY[data.archetype] ?? ARCHETYPE_SUMMARY.NEUTRAL;
   const accentCss = `#${meta.accent.toString(16).padStart(6, "0")}`;
   // Did we get real RQ/XQ data back from the summary endpoint?
   const richReady =
