@@ -15,7 +15,7 @@ type Kind = "creator" | "brand";
  * auth user, then hits /api/studio/register which creates (or matches
  * by email) a `members` row with the auth_user_id link and
  * activated_at = NULL. The user lands at /studio/pending until a
- * GhostSignal co-founder approves them from /hq/studio-approvals.
+ * GhostSignal co-founder approves them from /admin/studio-approvals.
  */
 export default function RegisterPage() {
   const router = useRouter();

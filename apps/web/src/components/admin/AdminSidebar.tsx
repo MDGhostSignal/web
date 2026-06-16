@@ -8,7 +8,7 @@ import { IconChevron, IconClose } from "./icons";
 import styles from "./AdminSidebar.module.css";
 
 export interface AdminNavSubItem {
-  /** May include a query string, e.g. `/hq/marketplace?view=pool`. */
+  /** May include a query string, e.g. `/admin/marketplace?view=pool`. */
   href: string;
   label: string;
   /** When true, this sub-item is active even when the URL is missing
@@ -167,7 +167,7 @@ export function AdminSidebar({
 /* --- Active-detection helpers ----------------------------------------
  *
  * Sub-items may carry a query string in their href (e.g.
- * `/hq/marketplace?view=pool`). The active check needs to compare
+ * `/admin/marketplace?view=pool`). The active check needs to compare
  * pathname + query for those — `usePathname` alone won't differentiate
  * between Pool / Match / Map.
  */

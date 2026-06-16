@@ -84,7 +84,7 @@ export function DueBanner({ onOpenSocial }: Props) {
         <Button
           variant="secondary"
           size="sm"
-          href="/hq/marketing/social"
+          href="/admin/marketing/social"
         >
           Open scheduler
         </Button>

@@ -3,11 +3,9 @@
 # systems with parallel token namespaces — those are intentional and
 # should not be forced through the public --gs-* system.
 
-# HQ tree (renamed from /admin on 2026-06-15): --admin-space-* tokens
-# + pragmatic micro-pixel values (1–10px) for chrome tuning below the
-# public spacing scale. /api/admin and the internal admin component
-# folder kept their names since they're not user-facing.
-src/app/hq/
+# Admin tree: --admin-space-* tokens + pragmatic micro-pixel values
+# (1–10px) for chrome tuning below the public spacing scale.
+src/app/admin/
 src/components/admin/
 
 # Studio — client-facing brand/creator surface. Self-contained

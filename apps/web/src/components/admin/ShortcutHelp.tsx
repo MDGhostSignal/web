@@ -27,17 +27,17 @@ import styles from "./ShortcutHelp.module.css";
 type NavShortcut = { trigger: string; label: string; href: string };
 
 const NAV_SHORTCUTS: NavShortcut[] = [
-  { trigger: "d", label: "Dashboard", href: "/hq" },
-  { trigger: "c", label: "Contacts", href: "/hq/contacts" },
-  { trigger: "m", label: "Marketplace", href: "/hq/marketplace" },
-  { trigger: "r", label: "RQ Responses", href: "/hq/rq-responses" },
-  { trigger: "x", label: "XQ Responses", href: "/hq/xq-responses" },
-  { trigger: "t", label: "Tasks", href: "/hq/tasks" },
-  { trigger: "k", label: "Marketing", href: "/hq/marketing/social" },
-  { trigger: "f", label: "Finance", href: "/hq/finance" },
-  { trigger: "a", label: "Campaigns", href: "/hq/art19" },
-  { trigger: "o", label: "Contracts", href: "/hq/contracts" },
-  { trigger: "n", label: "Alerts", href: "/hq/alerts" },
+  { trigger: "d", label: "Dashboard", href: "/admin" },
+  { trigger: "c", label: "Contacts", href: "/admin/contacts" },
+  { trigger: "m", label: "Marketplace", href: "/admin/marketplace" },
+  { trigger: "r", label: "RQ Responses", href: "/admin/rq-responses" },
+  { trigger: "x", label: "XQ Responses", href: "/admin/xq-responses" },
+  { trigger: "t", label: "Tasks", href: "/admin/tasks" },
+  { trigger: "k", label: "Marketing", href: "/admin/marketing/social" },
+  { trigger: "f", label: "Finance", href: "/admin/finance" },
+  { trigger: "a", label: "Campaigns", href: "/admin/art19" },
+  { trigger: "o", label: "Contracts", href: "/admin/contracts" },
+  { trigger: "n", label: "Alerts", href: "/admin/alerts" },
 ];
 
 /** Global (non-navigation) shortcuts surfaced in the help popover.

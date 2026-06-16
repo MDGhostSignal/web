@@ -39,10 +39,10 @@ const POLL_MS = 60_000;
 
 /** Best-link target per alert. */
 function alertHref(a: AlertWithSubject): string {
-  if (a.kind === "marketplace_stall") return "/hq/marketplace?view=pool";
-  if (a.kind === "task_stale") return "/hq/tasks";
-  if (a.kind === "contract_expiring") return "/hq/marketplace?view=pool";
-  return "/hq/contacts";
+  if (a.kind === "marketplace_stall") return "/admin/marketplace?view=pool";
+  if (a.kind === "task_stale") return "/admin/tasks";
+  if (a.kind === "contract_expiring") return "/admin/marketplace?view=pool";
+  return "/admin/contacts";
 }
 
 function subjectLabel(a: AlertWithSubject): string {
@@ -236,7 +236,7 @@ export function AlertsBell() {
 
           <footer className={styles.panelFooter}>
             <Link
-              href="/hq/alerts"
+              href="/admin/alerts"
               className={styles.viewAllLink}
               onClick={() => setOpen(false)}
             >

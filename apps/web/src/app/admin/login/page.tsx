@@ -32,11 +32,11 @@ export default function AdminLoginPage() {
 function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rawNext = searchParams?.get("next") ?? "/hq";
+  const rawNext = searchParams?.get("next") ?? "/admin";
   // Sanitise client-side too — server does the real check.
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//")
     ? rawNext
-    : "/hq";
+    : "/admin";
 
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +58,7 @@ function AdminLoginForm() {
         setError(data.error || "Invalid password.");
         return;
       }
-      router.replace(typeof data.next === "string" ? data.next : "/hq");
+      router.replace(typeof data.next === "string" ? data.next : "/admin");
       router.refresh();
     } catch {
       setError("Failed to reach the server.");
@@ -72,7 +72,7 @@ function AdminLoginForm() {
       <div className={styles.card}>
         <div className={styles.brand}>
           <span className={styles.brandName}>GhostSignal</span>
-          <span className={styles.brandTag}>HQ</span>
+          <span className={styles.brandTag}>Admin</span>
         </div>
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>
@@ -122,7 +122,7 @@ function LoginShell() {
       <div className={styles.card}>
         <div className={styles.brand}>
           <span className={styles.brandName}>GhostSignal</span>
-          <span className={styles.brandTag}>HQ</span>
+          <span className={styles.brandTag}>Admin</span>
         </div>
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>

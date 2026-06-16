@@ -255,7 +255,7 @@ export default function ContractsPage() {
           // Re-fetch so the row appears immediately, then navigate to
           // the detail page where the user can review what they sent.
           loadList();
-          router.push(`/hq/contracts/${encodeURIComponent(id)}`);
+          router.push(`/admin/contracts/${encodeURIComponent(id)}`);
         }}
       />
     </div>

@@ -1,4 +1,4 @@
-/* Studio shell — minimal, brand-aligned, distinct from the /hq
+/* Studio shell — minimal, brand-aligned, distinct from the /admin
  * admin chrome. Light theme by default; we can add a theme toggle
  * later. All sizing in raw px (this surface is excluded from the
  * --gs-* token discipline via .stylelintignore). */

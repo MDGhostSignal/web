@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 /**
  * Studio shell — bare wrapper for the client-facing /studio surface.
- * Distinct from /hq (where the four co-founders work). Brand and
+ * Distinct from /admin (where the four co-founders work). Brand and
  * creator accounts log in here to see their own data and browse the
  * marketplace.
  *

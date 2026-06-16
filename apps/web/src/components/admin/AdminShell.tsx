@@ -137,9 +137,9 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
         </button>
 
         <Link
-          href="/hq"
+          href="/admin"
           className={styles.brand}
-          aria-label="GhostSignal HQ"
+          aria-label="GhostSignal Admin"
         >
           {/* Theme-aware logo swap. Two <img>s mount, CSS hides the
               inactive one based on the `data-theme` attribute the
@@ -147,7 +147,7 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/brand/ghostsiggnal-admin-white-4c.svg"
-            alt="GhostSignal HQ"
+            alt="GhostSignal Admin"
             className={`${styles.brandLogo} ${styles.brandLogoDark}`}
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}

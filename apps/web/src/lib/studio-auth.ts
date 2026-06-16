@@ -2,7 +2,7 @@
  * Studio auth — per-user Supabase Auth for the client-facing
  * /studio surface.
  *
- * Distinct from /hq's shared-password admin cookie (lib/admin-auth.ts).
+ * Distinct from /admin's shared-password admin cookie (lib/admin-auth.ts).
  * Each brand or creator has their own Supabase auth user; the
  * `members` table links their auth_user_id to their CRM record + their
  * brand_id / creator_id (which scopes what data they can read).
