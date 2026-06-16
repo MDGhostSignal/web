@@ -86,12 +86,18 @@
 }
 
 /* Approve button — matches the admin Button system: solid fill, flat
- * (no gradient), subtle hover lift. Uses --admin-success since
- * "approve" is the success action on this view. */
+ * (no gradient), subtle hover lift.
+ *
+ * Color hardcoded to #50ff96 rather than var(--admin-success). The
+ * token is intentionally darker in light mode (#0a7a3c) so it stays
+ * readable as TEXT against the off-white page bg, but as a button
+ * BACKGROUND that dark value renders the button as a near-black blob
+ * with dark text. Using the dark-theme value in both modes preserves
+ * the legible #0a1d12 text + bright fill combination across themes. */
 .approveBtn {
   padding: 7px 14px;
-  background: var(--admin-success);
-  border: 1px solid var(--admin-success);
+  background: #50ff96;
+  border: 1px solid #50ff96;
   border-radius: var(--admin-radius-md);
   color: #0a1d12;
   font-size: 12px;
@@ -105,10 +111,10 @@
 }
 
 .approveBtn:hover {
-  background: color-mix(in srgb, var(--admin-success) 92%, white);
-  border-color: color-mix(in srgb, var(--admin-success) 92%, white);
+  background: #76ffae;
+  border-color: #76ffae;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(80, 255, 150, 0.22);
+  box-shadow: 0 6px 16px rgba(80, 255, 150, 0.28);
 }
 
 .approveBtn:disabled {
