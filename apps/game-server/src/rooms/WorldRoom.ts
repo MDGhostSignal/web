@@ -10,15 +10,38 @@ import { Room, Client } from "colyseus";
  * 10 Hz = trivial bandwidth, and we can swap back to schema delta
  * sync once decorators stabilise in Next/SWC.
  *
- * Phase 2 will add: Supabase JWT auth in onAuth, tile-grid collision,
- * chat bubble broadcast, persistence snapshots to Supabase.
+ * Phase 2 (now): Supabase JWT auth in onAuth. The Studio /world tab
+ * passes the access token; the room validates it via Supabase's REST
+ * `/auth/v1/user` endpoint, then looks up the corresponding members
+ * row (first/last name, xq_archetype, rq_code, organization). Bad or
+ * missing tokens fall through to guest UX so the public /world page
+ * keeps working without auth.
  */
+
+type AuthGuest = { kind: "guest" };
+type AuthAuthed = {
+  kind: "authed";
+  authUserId: string;
+  displayName: string;
+  archetype: string;
+  rqCode: string | null;
+  memberType: "brand" | "creator" | "other";
+  organization: string | null;
+};
+type AuthResult = AuthGuest | AuthAuthed;
 
 type PlayerData = {
   sessionId: string;
   userId: string;
+  /** Supabase auth.users.id when the player joined via Studio; null
+   *  for guests. This is the key the E-key card uses to fetch the
+   *  player's RQ/XQ summary from the Next API. */
+  authUserId: string | null;
   displayName: string;
   archetype: string;
+  rqCode: string | null;
+  memberType: "brand" | "creator" | "other" | "guest";
+  organization: string | null;
   x: number;
   y: number;
   facing: "down" | "up" | "left" | "right";
@@ -35,6 +58,9 @@ type MoveMessage = {
 type JoinOptions = {
   displayName?: string;
   archetype?: string;
+  /** Supabase access token from a Studio session. Optional — public
+   *  /world joins skip this and arrive as guests. */
+  token?: string;
 };
 
 const ARCHETYPE_CODES = new Set([
@@ -48,7 +74,17 @@ const ARCHETYPE_CODES = new Set([
   "X-S-L",
 ]);
 
-export class WorldRoom extends Room {
+function normalizeArchetype(value: string | null | undefined): string {
+  return value && ARCHETYPE_CODES.has(value) ? value : "X-S-L";
+}
+
+function normalizeMemberType(
+  value: string | null | undefined,
+): "brand" | "creator" | "other" {
+  return value === "brand" || value === "creator" ? value : "other";
+}
+
+export class WorldRoom extends Room<AuthResult> {
   maxClients = 50;
 
   /** Soft world bounds in tiles. Matched to the Harvest Moon village
@@ -96,31 +132,144 @@ export class WorldRoom extends Room {
     }, 1000 / this.BROADCAST_HZ);
   }
 
+  /**
+   * Validate the optional Supabase access token + look up the member
+   * record. Returns a guest result when the token is missing or fails
+   * to validate so public /world joins still work. Throwing here would
+   * disconnect the client; we don't want that for soft-auth.
+   */
+  async onAuth(_client: Client, options: JoinOptions): Promise<AuthResult> {
+    const token = options.token?.trim();
+    if (!token) return { kind: "guest" };
+
+    const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+    const anonKey = process.env.SUPABASE_ANON_KEY;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !anonKey || !serviceKey) {
+      console.warn(
+        "[WorldRoom] Supabase env not configured (SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY); falling back to guest.",
+      );
+      return { kind: "guest" };
+    }
+
+    try {
+      // 1. Verify the token by asking Supabase who it belongs to. The
+      //    /auth/v1/user endpoint accepts the user's access_token in
+      //    the Authorization header and returns the auth.users row.
+      const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!userRes.ok) {
+        console.warn(
+          `[WorldRoom] Token rejected by Supabase (${userRes.status}); guest fallback.`,
+        );
+        return { kind: "guest" };
+      }
+      const user = (await userRes.json()) as { id?: string; email?: string };
+      if (!user?.id) return { kind: "guest" };
+
+      // 2. Look up the linked member row via the service role so RLS
+      //    doesn't block. The auth_user_id column was added by the
+      //    Studio identity migration.
+      const memberRes = await fetch(
+        `${supabaseUrl}/rest/v1/members?auth_user_id=eq.${encodeURIComponent(user.id)}&select=first_name,last_name,member_type,organization,xq_archetype,rq_code&limit=1`,
+        {
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+          },
+        },
+      );
+      if (!memberRes.ok) {
+        console.warn(
+          `[WorldRoom] Member lookup failed (${memberRes.status}); guest fallback.`,
+        );
+        return { kind: "guest" };
+      }
+      const members = (await memberRes.json()) as Array<{
+        first_name: string | null;
+        last_name: string | null;
+        member_type: string | null;
+        organization: string | null;
+        xq_archetype: string | null;
+        rq_code: string | null;
+      }>;
+      const member = members[0];
+      if (!member) {
+        // Authed Supabase user but no linked Studio member — could be
+        // an admin-only user. Treat as guest in the world.
+        return { kind: "guest" };
+      }
+
+      const first = (member.first_name ?? "").trim();
+      const last = (member.last_name ?? "").trim();
+      const fallback = (user.email ?? "Member").split("@")[0] ?? "Member";
+      const displayName = (`${first} ${last}`.trim() || fallback).slice(0, 24);
+
+      return {
+        kind: "authed",
+        authUserId: user.id,
+        displayName,
+        archetype: normalizeArchetype(member.xq_archetype),
+        rqCode: member.rq_code ?? null,
+        memberType: normalizeMemberType(member.member_type),
+        organization: member.organization ?? null,
+      };
+    } catch (err) {
+      console.error("[WorldRoom] onAuth threw — guest fallback:", err);
+      return { kind: "guest" };
+    }
+  }
+
   onJoin(client: Client, options: JoinOptions = {}) {
-    const archetype = ARCHETYPE_CODES.has(options.archetype ?? "")
-      ? (options.archetype as string)
-      : "X-S-L";
-    const player: PlayerData = {
-      sessionId: client.sessionId,
-      userId: client.sessionId, // Phase 2: Supabase user id
-      displayName: (
-        options.displayName ?? `Guest-${client.sessionId.slice(0, 4)}`
-      ).slice(0, 24),
-      archetype,
-      // Spawn just south of the plaza fountain — the village's
-      // meeting place at the center of the map.
-      x: 36,
-      y: 51,
-      facing: "down",
-      moving: false,
-    };
+    const auth = (client.auth ?? { kind: "guest" }) as AuthResult;
+
+    let player: PlayerData;
+    if (auth.kind === "authed") {
+      player = {
+        sessionId: client.sessionId,
+        userId: auth.authUserId,
+        authUserId: auth.authUserId,
+        displayName: auth.displayName,
+        archetype: auth.archetype,
+        rqCode: auth.rqCode,
+        memberType: auth.memberType,
+        organization: auth.organization,
+        x: 36,
+        y: 51,
+        facing: "down",
+        moving: false,
+      };
+    } else {
+      player = {
+        sessionId: client.sessionId,
+        userId: client.sessionId,
+        authUserId: null,
+        displayName: (
+          options.displayName ?? `Guest-${client.sessionId.slice(0, 4)}`
+        ).slice(0, 24),
+        archetype: normalizeArchetype(options.archetype),
+        rqCode: null,
+        memberType: "guest",
+        organization: null,
+        x: 36,
+        y: 51,
+        facing: "down",
+        moving: false,
+      };
+    }
     this.players.set(client.sessionId, player);
 
     // Immediate snapshot so the new client sees the world without
     // waiting up to one tick (~100ms).
     client.send("state", { players: Array.from(this.players.values()) });
 
-    console.log(`[WorldRoom] join ${player.displayName} (${client.sessionId})`);
+    console.log(
+      `[WorldRoom] join ${player.displayName} (${client.sessionId}, ${player.memberType})`,
+    );
   }
 
   onLeave(client: Client) {

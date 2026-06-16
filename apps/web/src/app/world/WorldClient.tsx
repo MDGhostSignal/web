@@ -100,8 +100,15 @@ function pickArchetype(): string {
 type ServerPlayer = {
   sessionId: string;
   userId: string;
+  /** When the player joined via /studio/world with a valid Supabase
+   *  token, this is their auth.users.id. Null for guests. Used by the
+   *  E-key card to fetch the player's real RQ + XQ summary. */
+  authUserId: string | null;
   displayName: string;
   archetype: string;
+  rqCode: string | null;
+  memberType: "brand" | "creator" | "other" | "guest";
+  organization: string | null;
   x: number;
   y: number;
   facing: "down" | "up" | "left" | "right";
@@ -255,8 +262,23 @@ function obstacleKey(loc: WorldLocation): ObstacleLocation {
   return loc.kind === "village" ? "village" : `interior:${loc.buildingId}`;
 }
 
-export default function WorldClient() {
+/** Identity handed in by `/studio/world`. When present, joinOptions
+ *  use these values; the server validates `token` via Supabase in
+ *  WorldRoom.onAuth and the player shows up with their real name +
+ *  XQ archetype. Public `/world` keeps working without props. */
+export type WorldIdentity = {
+  token?: string;
+  displayName?: string;
+  archetype?: string;
+};
+
+export default function WorldClient({ identity }: { identity?: WorldIdentity } = {}) {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  // Stash identity on a ref so the Phaser scene (which only runs the
+  // outer useEffect once) can read the latest value at connect time
+  // without re-running the effect on prop change.
+  const identityRef = useRef<WorldIdentity | undefined>(identity);
+  identityRef.current = identity;
   const gameRef = useRef<unknown>(null);
   /** Set inside the Phaser scene's create(). The HUD's chat form calls
    *  this on submit. */
@@ -958,16 +980,27 @@ export default function WorldClient() {
         async connect() {
           this.client = new Client(SERVER_URL);
           try {
-            const archetype = pickArchetype();
+            // Identity comes from /studio/world via identityRef. Public
+            // /world keeps the random-Guest path so passers-by can
+            // still wander in. The server (re-)validates `token` in
+            // WorldRoom.onAuth — what we put here is only a hint.
+            const ident = identityRef.current;
+            const archetype = ident?.archetype ?? pickArchetype();
+            const displayName =
+              ident?.displayName?.trim() ||
+              `Guest-${Math.floor(Math.random() * 9999)
+                .toString()
+                .padStart(4, "0")}`;
+            const joinOptions: {
+              archetype: string;
+              displayName: string;
+              token?: string;
+            } = { archetype, displayName };
+            if (ident?.token) joinOptions.token = ident.token;
             // 8s timeout race surfaces a stuck WebSocket upgrade as an
             // error in the HUD instead of an infinite "Connecting…".
             const room = await Promise.race([
-              this.client.joinOrCreate("world", {
-                archetype,
-                displayName: `Guest-${Math.floor(Math.random() * 9999)
-                  .toString()
-                  .padStart(4, "0")}`,
-              }),
+              this.client.joinOrCreate("world", joinOptions),
               new Promise<never>((_, reject) =>
                 setTimeout(
                   () =>
@@ -3399,12 +3432,66 @@ export default function WorldClient() {
         scene.openOtherCard = (sessionId: string) => {
           const data = scene.playerSnapshots.get(sessionId);
           if (!data) return;
-          setCardRef.current?.({
+          const baseCard = {
             displayName: data.displayName,
             archetype: data.archetype,
             isSelf: false,
             selfArchetype: scene.lastSelfPlayer?.archetype,
-          });
+          };
+          // Guest? No real RQ/XQ to fetch — surface the generic
+          // per-archetype copy that the card already renders.
+          if (!data.authUserId) {
+            setCardRef.current?.({ ...baseCard, rich: null });
+            return;
+          }
+          // Authenticated player. Show the card immediately in
+          // "loading" state, then fold in the real RQ/XQ payload once
+          // the API responds. The card stays open if the fetch fails.
+          setCardRef.current?.({ ...baseCard, rich: "loading" });
+          fetch(
+            `/api/studio/players/${encodeURIComponent(data.authUserId)}/summary`,
+            { cache: "no-store" },
+          )
+            .then((res) => res.json())
+            .then((body) => {
+              if (!body?.ok || !body.player) {
+                setCardRef.current?.({ ...baseCard, rich: null });
+                return;
+              }
+              const p = body.player as {
+                organization: string | null;
+                memberType: "brand" | "creator" | "other";
+                xq: {
+                  code: string | null;
+                  archetypeName: string | null;
+                  tagline: string | null;
+                  values: {
+                    nonNegotiables: string[];
+                    core: string[];
+                    aspirational: string[];
+                  };
+                } | null;
+                rq: {
+                  code: string | null;
+                  name: string | null;
+                  clarityLabel: string | null;
+                  clarityNote: string | null;
+                  undertone: string | null;
+                } | null;
+              };
+              setCardRef.current?.({
+                ...baseCard,
+                rich: {
+                  organization: p.organization,
+                  memberType: p.memberType,
+                  xq: p.xq,
+                  rq: p.rq,
+                },
+              });
+            })
+            .catch(() => {
+              setCardRef.current?.({ ...baseCard, rich: null });
+            });
         };
       };
       wireAction();

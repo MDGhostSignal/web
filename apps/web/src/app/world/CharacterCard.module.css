@@ -297,3 +297,44 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* Real-data XQ values block — three rows of chip pills, one per
+ * bucket (non-negotiables / core / aspirational). Only shown when
+ * we got a PlayerRichSummary back from /api/studio/players/[id]/summary. */
+.valuesBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.valuesRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.valuesLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.valuesPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.valuesPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+}

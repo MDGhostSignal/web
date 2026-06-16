@@ -71,6 +71,32 @@ const ARCHETYPE_SUMMARY: Record<
   },
 };
 
+/** Real RQ/XQ summary returned by /api/studio/players/[authUserId]/summary.
+ *  Mirrors the PlayerSummary shape from that route. When present on
+ *  CharacterCardData the card surfaces the player's actual values
+ *  blueprint + match profile instead of the generic per-archetype copy. */
+export type PlayerRichSummary = {
+  organization: string | null;
+  memberType: "brand" | "creator" | "other";
+  xq: {
+    code: string | null;
+    archetypeName: string | null;
+    tagline: string | null;
+    values: {
+      nonNegotiables: string[];
+      core: string[];
+      aspirational: string[];
+    };
+  } | null;
+  rq: {
+    code: string | null;
+    name: string | null;
+    clarityLabel: string | null;
+    clarityNote: string | null;
+    undertone: string | null;
+  } | null;
+};
+
 export type CharacterCardData = {
   displayName: string;
   archetype: string;
@@ -82,6 +108,11 @@ export type CharacterCardData = {
    *  section when viewing someone else's card. Optional; the section
    *  is hidden if absent. */
   selfArchetype?: string;
+  /** Real RQ/XQ data fetched for authenticated players. When null the
+   *  card falls back to the generic per-archetype copy below. Set to
+   *  "loading" while the fetch is in flight so we can show a spinner
+   *  instead of a flash of generic copy. */
+  rich?: PlayerRichSummary | "loading" | null;
 };
 
 /** A short compatibility paragraph derived from the three XQ axes
@@ -165,6 +196,14 @@ export function CharacterCard({
 
   const meta = ARCHETYPE_SUMMARY[data.archetype] ?? ARCHETYPE_SUMMARY["X-S-L"];
   const accentCss = `#${meta.accent.toString(16).padStart(6, "0")}`;
+  // Did we get real RQ/XQ data back from the summary endpoint?
+  const richReady =
+    data.rich && data.rich !== "loading" ? data.rich : null;
+  const richLoading = data.rich === "loading";
+  // Pick the headline name shown on the hero. Real archetype name from
+  // the XQ submission beats the generic ARCHETYPE_SUMMARY label.
+  const archetypeName =
+    richReady?.xq?.archetypeName?.trim() || meta.name;
 
   return (
     <div
@@ -195,23 +234,52 @@ export function CharacterCard({
           </div>
           <div className={styles.heroBody}>
             <div className={styles.eyebrow}>
-              {data.isSelf ? "You" : "Citizen"}
+              {data.isSelf
+                ? "You"
+                : richReady?.memberType === "brand"
+                  ? "Brand"
+                  : richReady?.memberType === "creator"
+                    ? "Creator"
+                    : "Citizen"}
             </div>
             <h2 className={styles.name}>{data.displayName}</h2>
             <div className={styles.archetypeRow}>
               <span className={styles.archetypeCode}>{data.archetype}</span>
-              <span className={styles.archetypeName}>{meta.name}</span>
+              <span className={styles.archetypeName}>{archetypeName}</span>
             </div>
+            {richReady?.organization && (
+              <div className={styles.eyebrow} style={{ marginTop: 4 }}>
+                {richReady.organization}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* === XQ summary === */}
+        {/* === XQ summary ===
+                Real data when we got it from the API; otherwise the
+                generic per-archetype paragraph below. */}
         <section className={styles.section}>
           <div className={styles.sectionLabel}>
             <span className={styles.sectionTag}>XQ</span>
             <span>Values blueprint</span>
           </div>
-          <p className={styles.sectionBody}>{meta.xq}</p>
+          {richReady?.xq?.tagline && (
+            <p className={styles.sectionBody}>
+              &ldquo;{richReady.xq.tagline}&rdquo;
+            </p>
+          )}
+          {richReady?.xq && (
+            richReady.xq.values.nonNegotiables.length > 0 ||
+              richReady.xq.values.core.length > 0 ||
+              richReady.xq.values.aspirational.length > 0
+          ) ? (
+            <ValuesBlock values={richReady.xq.values} accent={accentCss} />
+          ) : (
+            !richLoading && <p className={styles.sectionBody}>{meta.xq}</p>
+          )}
+          {richLoading && (
+            <p className={styles.sectionBody}>Loading dossier…</p>
+          )}
         </section>
 
         {/* === RQ summary === */}
@@ -220,7 +288,37 @@ export function CharacterCard({
             <span className={styles.sectionTag}>RQ</span>
             <span>Match profile</span>
           </div>
-          <p className={styles.sectionBody}>{meta.rq}</p>
+          {richReady?.rq ? (
+            <div>
+              {richReady.rq.name && (
+                <p className={styles.sectionBody}>
+                  <strong>{richReady.rq.name}</strong>
+                  {richReady.rq.code ? ` · ${richReady.rq.code}` : ""}
+                </p>
+              )}
+              {richReady.rq.clarityLabel && (
+                <p className={styles.sectionBody}>
+                  Signal clarity: <strong>{richReady.rq.clarityLabel}</strong>
+                  {richReady.rq.clarityNote ? ` — ${richReady.rq.clarityNote}` : ""}
+                </p>
+              )}
+              {richReady.rq.undertone && (
+                <p className={styles.sectionBody}>
+                  Undertone: {richReady.rq.undertone}
+                </p>
+              )}
+              {!richReady.rq.name &&
+                !richReady.rq.clarityLabel &&
+                !richReady.rq.undertone && (
+                  <p className={styles.sectionBody}>{meta.rq}</p>
+                )}
+            </div>
+          ) : (
+            !richLoading && <p className={styles.sectionBody}>{meta.rq}</p>
+          )}
+          {richLoading && (
+            <p className={styles.sectionBody}>Loading dossier…</p>
+          )}
         </section>
 
         {/* === Match read (visible only when looking at someone else
@@ -281,6 +379,45 @@ export function CharacterCard({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Three rows of value pills — non-negotiables, core, aspirational —
+ *  rendered as a stack of horizontal chip lists. Same mental model as
+ *  the admin XQSummaryCard. Skip any row that's empty. */
+function ValuesBlock({
+  values,
+  accent,
+}: {
+  values: { nonNegotiables: string[]; core: string[]; aspirational: string[] };
+  accent: string;
+}) {
+  const rows: Array<{ label: string; items: string[] }> = [
+    { label: "Non-negotiables", items: values.nonNegotiables },
+    { label: "Core", items: values.core },
+    { label: "Aspirational", items: values.aspirational },
+  ];
+  return (
+    <div className={styles.valuesBlock}>
+      {rows
+        .filter((r) => r.items.length > 0)
+        .map((r) => (
+          <div key={r.label} className={styles.valuesRow}>
+            <span className={styles.valuesLabel}>{r.label}</span>
+            <div className={styles.valuesPills}>
+              {r.items.map((v) => (
+                <span
+                  key={v}
+                  className={styles.valuesPill}
+                  style={{ borderColor: accent, color: accent }}
+                >
+                  {v}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
     </div>
   );
 }
