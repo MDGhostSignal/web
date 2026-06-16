@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 
 import { loadCurrentStudioMember } from "@/lib/studio-auth";
 
+/** Auth-gated state page; render every request. */
+export const dynamic = "force-dynamic";
+
 import styles from "../studio.module.css";
 
 /** Shown after registration (or login while still unapproved).

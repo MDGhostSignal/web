@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { XDeckSection } from "@/app/x-deck/XDeckSection";
+
+/** Marketplace is auth-scoped — no static output possible. */
+export const dynamic = "force-dynamic";
 import type { ArchetypeCode } from "@/lib/xq/constants";
 import type {
   AxisVector,

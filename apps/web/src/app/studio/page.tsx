@@ -1,6 +1,10 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
+/** Studio dashboard is per-user; static prerender would just throw
+ *  on the missing auth context. Render every request. */
+export const dynamic = "force-dynamic";
+
 import { loadCurrentStudioMember } from "@/lib/studio-auth";
 import {
   formatDuration,

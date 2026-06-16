@@ -4,6 +4,9 @@ import { supabaseRest } from "@/lib/supabase-admin";
 import { ApprovalsTable } from "./ApprovalsTable";
 import styles from "./page.module.css";
 
+/** Admin page reading live Supabase state; no useful static output. */
+export const dynamic = "force-dynamic";
+
 /** Pending Studio registrations. Members with auth_user_id set
  *  (= they registered) but activated_at NULL (= no co-founder has
  *  approved yet). One Approve button per row → flips activated_at. */
