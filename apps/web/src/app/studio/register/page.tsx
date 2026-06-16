@@ -43,6 +43,14 @@ export default function RegisterPage() {
       const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          // Points the confirmation link at our server route, which
+          // exchanges the PKCE code for a session and redirects into
+          // /studio. Without this, Supabase falls back to Site URL (/)
+          // where nothing consumes the code and the user sees nothing.
+          // The URL must also be in Supabase's Redirect URLs allowlist.
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       if (authError) {
         // Surface Supabase auth errors with the most informative

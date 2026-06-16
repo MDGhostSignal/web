@@ -35,9 +35,35 @@ function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const justRegistered = search.get("registered") === "1";
+  // Errors forwarded by /auth/callback when the email confirmation
+  // link is expired, already-used, or otherwise unusable. We render
+  // them as the structured panel so the user sees a clear next step
+  // instead of a silent landing page.
+  const callbackErrorCode = search.get("auth_error");
+  const callbackErrorMessage = search.get("auth_message");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<LoginError | null>(null);
+  const [error, setError] = useState<LoginError | null>(() => {
+    if (!callbackErrorCode) return null;
+    if (
+      callbackErrorCode === "otp_expired" ||
+      callbackErrorCode === "access_denied"
+    ) {
+      return {
+        kind: "structured",
+        title: "Your confirmation link expired",
+        reasons: [
+          "Email links are one-time use and expire after about an hour. Some corporate inboxes also pre-scan links, which can consume them before you click.",
+        ],
+        footer:
+          "Register again with the same email to get a fresh link. We won't create a duplicate account — Supabase will resend confirmation to the existing one.",
+      };
+    }
+    return {
+      kind: "plain",
+      message: callbackErrorMessage || `Sign-in callback failed: ${callbackErrorCode}`,
+    };
+  });
   const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
