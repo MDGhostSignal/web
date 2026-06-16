@@ -38,8 +38,24 @@ export default function RegisterPage() {
         email,
         password,
       });
-      if (authError) throw new Error(authError.message);
-      if (!data.user) throw new Error("Registration failed: no user returned.");
+      if (authError) {
+        // Surface Supabase auth errors with the most informative
+        // value we can extract. The SDK sometimes returns an
+        // AuthApiError whose `message` is descriptive, sometimes an
+        // object that stringifies to "[object Object]" or "{}".
+        // Log the raw error so DevTools console shows the full
+        // payload for debugging.
+        console.error("[studio/register] signUp authError:", authError);
+        const msg =
+          (authError as { message?: string }).message ||
+          (authError as { error_description?: string }).error_description ||
+          JSON.stringify(authError);
+        throw new Error(msg && msg !== "{}" ? msg : "Supabase auth rejected the sign-up. Check the browser console for details.");
+      }
+      if (!data.user) {
+        console.error("[studio/register] signUp returned no user:", data);
+        throw new Error("Registration failed: no user returned from Supabase.");
+      }
 
       // Server-side member-row create/link. Verifies the new
       // authUserId via the Supabase admin API — works whether or
@@ -59,7 +75,12 @@ export default function RegisterPage() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `Registration sync failed (${res.status}).`);
+        console.error("[studio/register] /api/studio/register failed:", res.status, body);
+        const msg =
+          typeof body?.error === "string" && body.error.length > 0
+            ? body.error
+            : `Registration sync failed (HTTP ${res.status}). Check the browser console for the full response.`;
+        throw new Error(msg);
       }
 
       // If signUp gave us a session, the user is already logged in —
@@ -72,7 +93,17 @@ export default function RegisterPage() {
         router.replace("/studio/login?registered=1");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error("[studio/register] caught error:", err);
+      let msg = "Unknown error during registration.";
+      if (err instanceof Error && err.message) {
+        msg = err.message;
+      } else if (typeof err === "string" && err.length > 0) {
+        msg = err;
+      } else if (err && typeof err === "object") {
+        const obj = err as { message?: string; error?: string };
+        msg = obj.message || obj.error || "Unknown error (see browser console).";
+      }
+      setError(msg);
       setSubmitting(false);
     }
   }
