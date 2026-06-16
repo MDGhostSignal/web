@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -8,8 +8,19 @@ import { createStudioBrowserClient } from "@/lib/studio-auth-client";
 
 import styles from "../studio.module.css";
 
-/** Studio sign-in. Email + password via Supabase Auth. */
+/** Studio sign-in. Email + password via Supabase Auth.
+ *  Wrapped in Suspense because the form reads `?registered=1` via
+ *  useSearchParams — Next.js refuses to statically prerender a page
+ *  that calls that hook without a Suspense boundary. */
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const justRegistered = search.get("registered") === "1";
