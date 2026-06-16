@@ -6,6 +6,7 @@ import {
 } from "@/lib/studio-auth";
 import WorldClient from "@/app/world/WorldClient";
 
+import styles from "./world.module.css";
 import { StudioHeader } from "../StudioHeader";
 
 /** Studio /world — authed entry into the multiplayer RPG.
@@ -42,16 +43,18 @@ export default async function StudioWorldPage() {
     `${firstName} ${lastName}`.trim() || member.displayName;
 
   return (
-    <>
+    <div className={styles.page}>
       <StudioHeader activeTab="world" />
-      <WorldClient
-        windowed
-        identity={{
-          token,
-          displayName,
-          archetype: member.xqArchetype ?? undefined,
-        }}
-      />
-    </>
+      <div className={styles.gameArea}>
+        <WorldClient
+          windowed
+          identity={{
+            token,
+            displayName,
+            archetype: member.xqArchetype ?? undefined,
+          }}
+        />
+      </div>
+    </div>
   );
 }

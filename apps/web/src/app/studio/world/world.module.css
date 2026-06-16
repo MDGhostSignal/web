@@ -1,0 +1,17 @@
+/* /studio/world layout. Flex column so the StudioHeader takes its
+ * natural height and the game area fills the rest of the viewport.
+ * Lets the windowed WorldClient drop in with `position: absolute;
+ * inset: 0` without us having to hardcode the header's height. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0b0f12;
+}
+
+.gameArea {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
