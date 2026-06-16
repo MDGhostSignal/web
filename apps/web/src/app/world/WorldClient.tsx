@@ -607,12 +607,15 @@ export default function WorldClient({
           // The village backdrop's grassy plaza isn't at the literal
           // mathematical map center — it's offset west. Nudge the
           // statue accordingly so it lands on the plaza disc.
-          const STATUE_CX = (WORLD_W_TILES * TILE) / 2 - 262; // 890
-          const STATUE_CY = (WORLD_H_TILES * TILE) / 2 - 5; // 1531
+          const STATUE_CX = (WORLD_W_TILES * TILE) / 2 - 263; // 889
+          const STATUE_CY = (WORLD_H_TILES * TILE) / 2 - 15; // 1521
           const statue = this.add.image(STATUE_CX, STATUE_CY, "gs-statue");
           statue.setOrigin(0.5, 1);
           statue.setScale(0.5);
-          statue.setDepth(5);
+          // Depth 30 — above avatars (10) so characters walking past
+          // are covered by the statue silhouette, but below chat
+          // bubbles (50) so speech still reads from any side.
+          statue.setDepth(30);
           this.statue = statue;
 
           // === Village collision mask ===
