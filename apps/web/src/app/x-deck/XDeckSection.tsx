@@ -18,12 +18,12 @@ type Props = {
   /** Section title shown above the deck. Defaults to a count-based
    *  string ("N creators ranked by conviction fit"). */
   title?: string;
-  /** When true, hide the ThumbnailRail + MatchCardDetail panel. The
-   *  deck IS the experience in compact mode — used by the Studio
-   *  marketplace surface where the deck is the discovery primitive
-   *  and a long secondary list / detail panel below was redundant.
-   *  The standalone /x-deck preview and the XQ results screen
-   *  default to the full layout. */
+  /** When true, hide the long ThumbnailRail navigation strip. The
+   *  active-card MatchCardDetail panel underneath the deck still
+   *  renders — it's the per-card summary + connect CTA that pairs
+   *  with whichever card is centered. Used by the Studio marketplace
+   *  surface, where the long secondary candidate list was redundant
+   *  but the per-card detail is the thing that drives action. */
   compact?: boolean;
 };
 
@@ -78,7 +78,7 @@ export function XDeckSection({
         <kbd>←</kbd> <kbd>→</kbd> navigate · click any card to center
       </p>
 
-      {!compact && active && (
+      {active && (
         <MatchCardDetail
           candidate={active.candidate}
           compatibility={active.compatibility}
