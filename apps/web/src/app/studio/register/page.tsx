@@ -71,6 +71,37 @@ export default function RegisterPage() {
         throw new Error("Registration failed: no user returned from Supabase.");
       }
 
+      // Email-enumeration obfuscation: when the email is already in
+      // auth.users (first signup landed but the confirmation link
+      // wasn't clicked / expired), Supabase returns a fake user object
+      // with identities: [] and no session. The id is a placeholder —
+      // passing it to /api/studio/register fails getUserById and
+      // surfaces as "Could not verify the new account." Instead, treat
+      // this as a re-confirmation: explicitly resend the OTP. The
+      // members row was already created during the first signup so we
+      // don't need to call /api/studio/register again.
+      const isAlreadyRegistered =
+        (data.user.identities ?? []).length === 0 && !data.session;
+      if (isAlreadyRegistered) {
+        const { error: resendError } = await supabase.auth.resend({
+          type: "signup",
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+        if (resendError) {
+          console.error("[studio/register] resend failed:", resendError);
+          throw new Error(
+            resendError.message
+              ? `Couldn't resend confirmation: ${resendError.message}`
+              : "Couldn't resend the confirmation email. Try signing in instead.",
+          );
+        }
+        setSuccess({ email, needsEmailConfirmation: true });
+        return;
+      }
+
       // Server-side member-row create/link. Verifies the new
       // authUserId via the Supabase admin API — works whether or
       // not the browser got a session from signUp (Supabase doesn't
