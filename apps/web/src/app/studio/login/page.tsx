@@ -35,6 +35,7 @@ function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const justRegistered = search.get("registered") === "1";
+  const justReset = search.get("reset") === "1";
   // Errors forwarded by /auth/callback when the email confirmation
   // link is expired, already-used, or otherwise unusable. We render
   // them as the structured panel so the user sees a clear next step
@@ -134,7 +135,9 @@ function LoginForm() {
         </div>
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>
-          {justRegistered
+          {justReset
+            ? "Password updated. Sign in below with your new password."
+            : justRegistered
             ? "Registration received. Check your email for a confirmation link, then sign in below."
             : "Welcome back. Sign in to see your performance and the marketplace."}
         </p>
