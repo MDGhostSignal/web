@@ -721,7 +721,13 @@ export default function RQIndexPage() {
               disabled={!canProceed() || submitting}
               className="rq-nav-btn rq-nav-next"
             >
-              {submitting ? "Generating..." : isLastStep ? "Generate My RQ →" : "Continue →"}
+              {submitting
+                ? "Generating..."
+                : isLastStep
+                  ? "Generate My RQ →"
+                  : isIntroStep
+                    ? "Start →"
+                    : "Continue →"}
             </button>
           </nav>
 

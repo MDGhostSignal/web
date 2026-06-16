@@ -217,6 +217,21 @@ html:has(.rq-results-page) {
   opacity: 0.9;
 }
 
+/* Slot for the RQ 3D wordmark hero (replaces the static brandmark
+ * on the intro step). The inline SVG keeps its 800×240 viewBox; the
+ * container width drives final size, height follows aspect. */
+.rq-brand-wordmark {
+  display: block;
+  width: 300px;
+  max-width: 92vw;
+  margin: 0 auto 18px;
+}
+.rq-brand-wordmark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .rq-intro-title {
   font-size: clamp(28px, 5.5vw, 42px);
   font-weight: 700;
@@ -1435,6 +1450,11 @@ html:has(.rq-results-page) {
   .rq-brand-logo {
     width: 56px;
     margin-bottom: 18px;
+  }
+
+  .rq-brand-wordmark {
+    width: 240px;
+    margin-bottom: 14px;
   }
 
   .rq-intro-title {

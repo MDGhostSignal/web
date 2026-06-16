@@ -1,8 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { Fragment } from "react";
+
+import { RQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
 
 const SimpleFog = dynamic(() => import("./SimpleFog"), { ssr: false });
 
@@ -19,14 +20,9 @@ export function IntroStep({ description }: IntroStepProps) {
       <div className="rq-intro-liquid-bg" aria-hidden="true">
         <SimpleFog />
       </div>
-      <Image
-        src="/images/brand/brandmark-vert-white.svg"
-        alt="GhostSignal"
-        className="rq-brand-logo"
-        width={309}
-        height={263}
-        priority
-      />
+      <div className="rq-brand-wordmark" aria-label="RQ">
+        <RQ3DWordmark />
+      </div>
       <h1 className="rq-intro-title">
         Welcome
         <br />
