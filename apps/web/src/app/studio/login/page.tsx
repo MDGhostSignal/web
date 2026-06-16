@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { createStudioBrowserClient } from "@/lib/studio-auth";
+import { createStudioBrowserClient } from "@/lib/studio-auth-client";
 
 import styles from "../studio.module.css";
 

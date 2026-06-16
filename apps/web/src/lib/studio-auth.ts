@@ -1,17 +1,25 @@
+import "server-only";
+
 /**
- * Studio auth — per-user Supabase Auth for the client-facing
- * /studio surface.
+ * Studio auth — SERVER-SIDE entry point.
  *
- * Distinct from /admin's shared-password admin cookie (lib/admin-auth.ts).
- * Each brand or creator has their own Supabase auth user; the
- * `members` table links their auth_user_id to their CRM record + their
- * brand_id / creator_id (which scopes what data they can read).
+ * For the browser-side client, import from `studio-auth-client.ts`
+ * instead. They're split because Next.js bundlers conflate any file
+ * that imports `next/headers` with server-only code and the browser
+ * client can't co-exist in the same module.
  *
- * Three creation paths, mirroring the @supabase/ssr conventions:
- *   - createStudioBrowserClient (Client Components)
+ * Three creation paths here, all server-only:
  *   - createStudioServerClient (Route Handlers / Server Components)
  *   - createStudioAdminClient (service-role; for admin-only writes
  *     like activating a registration)
+ *   - loadCurrentStudioMember (reads the linked CRM row for the
+ *     authed user)
+ *
+ * Distinct from /admin's shared-password admin cookie
+ * (lib/admin-auth.ts). Each brand or creator has their own Supabase
+ * auth user; the `members` table links their auth_user_id to their
+ * CRM record + their brand_id / creator_id (which scopes what data
+ * they can read).
  *
  * Approval gate: a Supabase auth user exists the moment someone
  * registers. They can sign in immediately. But we DO NOT let them
@@ -19,7 +27,7 @@
  * member row's `activated_at`. Until then they land on /studio/pending.
  */
 
-import { createBrowserClient, createServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
@@ -33,12 +41,6 @@ function assertPublicEnv() {
       "Studio auth: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.",
     );
   }
-}
-
-/** Client-component Supabase client. Use in 'use client' files only. */
-export function createStudioBrowserClient() {
-  assertPublicEnv();
-  return createBrowserClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
 }
 
 /** Server-side client tied to the request's cookie jar.
