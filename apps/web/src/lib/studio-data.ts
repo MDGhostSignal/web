@@ -308,6 +308,21 @@ export type StudioRqSummary = {
   clarityLabel: string | null;
   clarityNote: string | null;
   undertone: string | null;
+  /** Per-axis letter + score + band, hydrated from rq_submissions.details_json.
+   *  Drives the RQResultsGraph rendering on the dashboard card — same
+   *  shape the quiz reveal screen consumes. Null axes fall back to a
+   *  graphic-less render. */
+  details: {
+    values: { letter: string; score: number; band: string } | null;
+    authenticity: { letter: string; score: number; band: string } | null;
+    horizon: { letter: string; score: number; band: string } | null;
+  };
+  /** Per-axis prose explanation from profile_json. */
+  profile: {
+    values: string | null;
+    authenticity: string | null;
+    horizon: string | null;
+  };
   submittedAt: string | null;
 };
 
@@ -324,6 +339,12 @@ type XqRow = {
   submitted_at: string | null;
 };
 
+type RqAxisDetailRow = {
+  letter?: string | null;
+  score?: number | null;
+  band?: string | null;
+};
+
 type RqRow = {
   rq_code: string | null;
   rq_name: string | null;
@@ -331,7 +352,28 @@ type RqRow = {
   signal_clarity_note: string | null;
   undertone: string | null;
   submitted_at: string | null;
+  details_json: {
+    values?: RqAxisDetailRow;
+    authenticity?: RqAxisDetailRow;
+    horizon?: RqAxisDetailRow;
+  } | null;
+  profile_json: {
+    values?: string;
+    authenticity?: string;
+    horizon?: string;
+  } | null;
 };
+
+function normalizeAxisDetail(
+  raw: RqAxisDetailRow | undefined,
+): { letter: string; score: number; band: string } | null {
+  if (!raw || !raw.letter || typeof raw.score !== "number") return null;
+  return {
+    letter: raw.letter,
+    score: raw.score,
+    band: raw.band ?? "",
+  };
+}
 
 export async function loadStudioXqSummary(
   submissionId: string | null,
@@ -365,7 +407,7 @@ export async function loadStudioRqSummary(
 ): Promise<StudioRqSummary | null> {
   if (!submissionId) return null;
   const res = await supabaseRest<RqRow[]>(
-    `rq_submissions?select=rq_code,rq_name,signal_clarity_label,signal_clarity_note,undertone,submitted_at&id=eq.${encodeURIComponent(submissionId)}&limit=1`,
+    `rq_submissions?select=rq_code,rq_name,signal_clarity_label,signal_clarity_note,undertone,submitted_at,details_json,profile_json&id=eq.${encodeURIComponent(submissionId)}&limit=1`,
   );
   if (!res.ok || !res.data?.length) return null;
   const r = res.data[0];
@@ -375,6 +417,16 @@ export async function loadStudioRqSummary(
     clarityLabel: r.signal_clarity_label,
     clarityNote: r.signal_clarity_note,
     undertone: r.undertone,
+    details: {
+      values: normalizeAxisDetail(r.details_json?.values),
+      authenticity: normalizeAxisDetail(r.details_json?.authenticity),
+      horizon: normalizeAxisDetail(r.details_json?.horizon),
+    },
+    profile: {
+      values: r.profile_json?.values ?? null,
+      authenticity: r.profile_json?.authenticity ?? null,
+      horizon: r.profile_json?.horizon ?? null,
+    },
     submittedAt: r.submitted_at,
   };
 }

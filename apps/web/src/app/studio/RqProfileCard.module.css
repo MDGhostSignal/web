@@ -1,0 +1,152 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px;
+  background: #ffffff;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #c4880d;
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #5a5e66;
+}
+
+.empty a {
+  color: #c4880d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.empty a:hover {
+  text-decoration: underline;
+}
+
+.hero {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.codeChip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(196, 136, 13, 0.1);
+  color: #c4880d;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.archetypeName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0e1119;
+  letter-spacing: -0.01em;
+}
+
+.clarity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(196, 136, 13, 0.04);
+  border: 1px solid rgba(196, 136, 13, 0.18);
+  border-radius: 8px;
+}
+
+.clarityLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #6a727b;
+}
+
+.clarityBadge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.clarity_high {
+  background: rgba(34, 139, 34, 0.12);
+  color: #1f8a4b;
+}
+
+.clarity_medium {
+  background: rgba(196, 136, 13, 0.14);
+  color: #b67a0e;
+}
+
+.clarity_low {
+  background: rgba(178, 34, 34, 0.1);
+  color: #b22222;
+}
+
+.clarityNote {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #5a5e66;
+}
+
+.graphFrame {
+  margin: 6px -8px 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #6a727b;
+}
+
+.rowValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0e1119;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6a727b;
+}
+
+.hint a {
+  color: #c4880d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hint a:hover {
+  text-decoration: underline;
+}
