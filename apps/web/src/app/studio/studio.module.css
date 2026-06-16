@@ -365,9 +365,9 @@
 }
 
 .dashMain {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 36px 32px 80px;
+  padding: 36px 48px 80px;
 }
 
 .dashWelcome {
@@ -523,8 +523,8 @@
 /* === Conviction profile (XQ + RQ cards on dashboard) ============= */
 
 .profileGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 18px;
 }
 
