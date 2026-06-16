@@ -364,6 +364,10 @@ export default function WorldClient({
         /** Village backdrop — hidden while the player is in an
          *  interior. */
         villageBg: Phaser.GameObjects.Image | null = null;
+        /** GhostSignal statue at the town-square centerpiece. Hidden
+         *  while the player is in an interior, same lifecycle as
+         *  villageBg. */
+        statue: Phaser.GameObjects.Image | null = null;
         /** One image per building interior, keyed by building id.
          *  Created at scene start, hidden until the player enters. */
         interiorBgs = new Map<string, Phaser.GameObjects.Image>();
@@ -479,6 +483,9 @@ export default function WorldClient({
             "village-collision",
             "/world/sprites/village-collision.png",
           );
+          // GhostSignal statue — town-square centerpiece. Native
+          // 600×513 stone figure holding the GhostSignal logo plaque.
+          this.load.image("gs-statue", "/world/sprites/statue.png");
           // Harvest Moon chicken sheet — mature + baby chick poses.
           this.load.image(
             "hm-chickens",
@@ -575,6 +582,22 @@ export default function WorldClient({
           village.setScale(VILLAGE_SCALE);
           village.setDepth(-10);
           this.villageBg = village;
+
+          // === GhostSignal statue ===
+          // Town-square centerpiece. The village backdrop has a
+          // grassy circle at its exact center; the statue sits there
+          // with its base anchored to that point (origin 0.5, 1.0).
+          // Scale 0.5 sizes it ~3-4 character-heights tall — big
+          // enough to read as a landmark, small enough not to block
+          // half the plaza. Depth between backdrop (-10) and avatars
+          // (+10) so players render in front of it as they walk past.
+          const STATUE_CX = (WORLD_W_TILES * TILE) / 2; // 1152
+          const STATUE_CY = (WORLD_H_TILES * TILE) / 2; // 1536
+          const statue = this.add.image(STATUE_CX, STATUE_CY, "gs-statue");
+          statue.setOrigin(0.5, 1);
+          statue.setScale(0.5);
+          statue.setDepth(5);
+          this.statue = statue;
 
           // === Village collision mask ===
           // Decode the painted PNG into a flat alpha array and hand it
@@ -1833,6 +1856,7 @@ export default function WorldClient({
 
           // Hide village layer + ambient NPCs + other players.
           this.villageBg?.setVisible(false);
+          this.statue?.setVisible(false);
           for (const ch of this.chickens) ch.sprite.setVisible(false);
           for (const horse of this.horses) horse.sprite.setVisible(false);
           this.avatars.forEach((avatar, sessionId) => {
@@ -1881,6 +1905,7 @@ export default function WorldClient({
           this.location = VILLAGE;
 
           this.villageBg?.setVisible(true);
+          this.statue?.setVisible(true);
           for (const ch of this.chickens) ch.sprite.setVisible(true);
           for (const horse of this.horses) horse.sprite.setVisible(true);
           this.avatars.forEach((avatar) => avatar.setVisible(true));
