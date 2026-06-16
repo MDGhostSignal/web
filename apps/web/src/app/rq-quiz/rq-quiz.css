@@ -257,19 +257,31 @@ html:has(.rq-results-page) {
   opacity: 0.9;
 }
 
-/* Intro Extended/Collapsible Section (using details/summary) */
+/* Intro Extended/Collapsible Section (using details/summary)
+ * Subtle warm-tinted panel so it reads as a discrete card against the
+ * dark foggy intro backdrop. Border + bg both lean on the accent
+ * amber so the hover treatment intensifies the same hue rather than
+ * adding a new color. */
 .rq-intro-extended {
   margin-top: 20px;
   max-width: 520px;
   margin-left: auto;
   margin-right: auto;
+  background: rgba(251, 173, 37, 0.06);
+  border: 1px solid rgba(251, 173, 37, 0.18);
   border-left: 3px solid var(--rq-accent);
   border-radius: 0 8px 8px 0;
+  backdrop-filter: blur(4px);
   transition: var(--rq-transition);
 }
 
 .rq-intro-extended:hover {
-  background: rgba(251, 173, 37, 0.05);
+  background: rgba(251, 173, 37, 0.1);
+  border-color: rgba(251, 173, 37, 0.28);
+}
+
+.rq-intro-extended[open] {
+  background: rgba(251, 173, 37, 0.08);
 }
 
 .rq-intro-collapsible {
