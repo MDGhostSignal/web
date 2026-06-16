@@ -4,6 +4,7 @@ import {
   createStudioServerClient,
   loadCurrentStudioMember,
 } from "@/lib/studio-auth";
+import { loadStudioXqSummary } from "@/lib/studio-data";
 import WorldClient from "@/app/world/WorldClient";
 
 import styles from "./world.module.css";
@@ -42,6 +43,18 @@ export default async function StudioWorldPage() {
   const displayName =
     `${firstName} ${lastName}`.trim() || member.displayName;
 
+  // `members.xq_archetype` is a denormalization that doesn't always
+  // get written when the XQ quiz is submitted, so the column is often
+  // null even for users who have a valid xq_submissions row. Read-
+  // time fallback: pull the code from the linked submission. Without
+  // this the world picks a random archetype and the user's character
+  // looks wrong despite their identity being correct.
+  let archetype = member.xqArchetype ?? null;
+  if (!archetype && member.xqSubmissionId) {
+    const xq = await loadStudioXqSummary(member.xqSubmissionId);
+    archetype = xq?.code ?? null;
+  }
+
   return (
     <div className={styles.page}>
       <StudioHeader activeTab="world" />
@@ -51,7 +64,7 @@ export default async function StudioWorldPage() {
           identity={{
             token,
             displayName,
-            archetype: member.xqArchetype ?? undefined,
+            archetype: archetype ?? undefined,
           }}
         />
       </div>

@@ -24,15 +24,22 @@ const EMAIL_TO = process.env.XQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
 async function linkSubmissionToMember(
   submissionId: string,
   email: string | null | undefined,
+  xqCode: string | null | undefined,
 ): Promise<void> {
   if (!submissionId || !email || !email.includes("@")) return;
   try {
     const matches = await findMembersByEmail(email);
     if (matches.length !== 1) return;
     const memberId = matches[0].id;
+    // Backfill BOTH the submission link AND the denormalized
+    // xq_archetype column. The latter powers the world avatar, the
+    // dashboard summary card, and the matching engine — without it,
+    // those surfaces look at a null and pick a default.
+    const patch: Record<string, unknown> = { xq_submission_id: submissionId };
+    if (xqCode) patch.xq_archetype = xqCode;
     await supabaseRest(`members?id=eq.${encodeURIComponent(memberId)}`, {
       method: "PATCH",
-      body: JSON.stringify({ xq_submission_id: submissionId }),
+      body: JSON.stringify(patch),
       prefer: "return=minimal",
     });
   } catch (err) {
@@ -254,7 +261,11 @@ export async function POST(request: Request) {
   // the existing member record. Best-effort — quiz user gets their
   // email no matter what.
   if (typeof insertedId === "string") {
-    await linkSubmissionToMember(insertedId, payload.basics?.email);
+    await linkSubmissionToMember(
+      insertedId,
+      payload.basics?.email,
+      result.code ?? null,
+    );
   }
 
   // Complete: admin notification + user summary emails.

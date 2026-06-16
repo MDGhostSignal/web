@@ -175,7 +175,7 @@ export class WorldRoom extends Room<AuthResult> {
       //    doesn't block. The auth_user_id column was added by the
       //    Studio identity migration.
       const memberRes = await fetch(
-        `${supabaseUrl}/rest/v1/members?auth_user_id=eq.${encodeURIComponent(user.id)}&select=first_name,last_name,member_type,organization,xq_archetype,rq_code&limit=1`,
+        `${supabaseUrl}/rest/v1/members?auth_user_id=eq.${encodeURIComponent(user.id)}&select=first_name,last_name,member_type,organization,xq_archetype,xq_submission_id,rq_code&limit=1`,
         {
           headers: {
             apikey: serviceKey,
@@ -195,6 +195,7 @@ export class WorldRoom extends Room<AuthResult> {
         member_type: string | null;
         organization: string | null;
         xq_archetype: string | null;
+        xq_submission_id: string | null;
         rq_code: string | null;
       }>;
       const member = members[0];
@@ -202,6 +203,31 @@ export class WorldRoom extends Room<AuthResult> {
         // Authed Supabase user but no linked Studio member — could be
         // an admin-only user. Treat as guest in the world.
         return { kind: "guest" };
+      }
+
+      // members.xq_archetype is a denormalization that isn't always
+      // populated when the XQ quiz is submitted. If null, fall back
+      // to the linked xq_submissions row's xq_code so the player's
+      // avatar reflects their real archetype.
+      let archetype = member.xq_archetype;
+      if (!archetype && member.xq_submission_id) {
+        try {
+          const xqRes = await fetch(
+            `${supabaseUrl}/rest/v1/xq_submissions?id=eq.${encodeURIComponent(member.xq_submission_id)}&select=xq_code&limit=1`,
+            {
+              headers: {
+                apikey: serviceKey,
+                Authorization: `Bearer ${serviceKey}`,
+              },
+            },
+          );
+          if (xqRes.ok) {
+            const xq = (await xqRes.json()) as Array<{ xq_code: string | null }>;
+            archetype = xq[0]?.xq_code ?? null;
+          }
+        } catch {
+          /* swallow — fall back to default archetype below */
+        }
       }
 
       const first = (member.first_name ?? "").trim();
@@ -213,7 +239,7 @@ export class WorldRoom extends Room<AuthResult> {
         kind: "authed",
         authUserId: user.id,
         displayName,
-        archetype: normalizeArchetype(member.xq_archetype),
+        archetype: normalizeArchetype(archetype),
         rqCode: member.rq_code ?? null,
         memberType: normalizeMemberType(member.member_type),
         organization: member.organization ?? null,
