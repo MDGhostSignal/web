@@ -272,7 +272,20 @@ export type WorldIdentity = {
   archetype?: string;
 };
 
-export default function WorldClient({ identity }: { identity?: WorldIdentity } = {}) {
+export default function WorldClient({
+  identity,
+  windowed = false,
+}: {
+  identity?: WorldIdentity;
+  /** When true, the world renders inside its parent container instead
+   *  of as a full-viewport fixed canvas. Used by /studio/world so the
+   *  Studio header stays visible above the game. The CSS adds
+   *  `transform: translateZ(0)` to the root so fixed HUD children
+   *  (chat form, action button, character-card backdrop) become
+   *  containing-block-relative to the windowed root instead of the
+   *  viewport. */
+  windowed?: boolean;
+} = {}) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   // Stash identity on a ref so the Phaser scene (which only runs the
   // outer useEffect once) can read the latest value at connect time
@@ -3544,7 +3557,7 @@ export default function WorldClient({ identity }: { identity?: WorldIdentity } =
   }
 
   return (
-    <main className={styles.worldRoot}>
+    <main className={`${styles.worldRoot} ${windowed ? styles.worldWindowed : ""}`}>
       <div ref={hostRef} className={styles.canvasHost} aria-label="GhostSignal world canvas" />
       {card && (
         <CharacterCard

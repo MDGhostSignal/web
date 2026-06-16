@@ -45,6 +45,7 @@ export default async function StudioWorldPage() {
     <>
       <StudioHeader activeTab="world" />
       <WorldClient
+        windowed
         identity={{
           token,
           displayName,
