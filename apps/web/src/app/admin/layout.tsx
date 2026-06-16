@@ -112,6 +112,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           label: "Studio Approvals",
           icon: <IconLeads />,
         },
+        { href: "/admin/pages", label: "Pages", icon: <IconDashboard /> },
       ]}
       onLogout={handleLogout}
     >
