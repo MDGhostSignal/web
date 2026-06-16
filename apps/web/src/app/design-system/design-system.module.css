@@ -4,16 +4,22 @@
    =========================================== */
 
 .page {
-  --ds-bg: #0a0a0b;
-  --ds-surface: #111113;
-  --ds-surface-raised: #18181b;
-  --ds-border: #27272a;
-  --ds-border-subtle: #1f1f23;
-  --ds-text: #fafafa;
+  /* Light theme defaults — applied when the .dark class is absent.
+   * Keeping the token set consistent so every rule that consumes
+   * --ds-* updates automatically when the page class flips. */
+  --ds-bg: #fafafa;
+  --ds-surface: #ffffff;
+  --ds-surface-raised: #ffffff;
+  --ds-border: #e5e5e5;
+  --ds-border-subtle: #ededed;
+  --ds-text: #0a0a0b;
   --ds-text-muted: #71717a;
-  --ds-text-subtle: #52525b;
+  --ds-text-subtle: #a1a1aa;
   --ds-accent: #3b82f6;
-  --ds-accent-muted: #1e40af;
+  --ds-accent-muted: #2563eb;
+  --ds-header-bg: rgba(255, 255, 255, 0.85);
+  --ds-bg-gradient-a: rgba(59, 130, 246, 0.06);
+  --ds-bg-gradient-b: rgba(139, 92, 246, 0.04);
 
   position: relative;
   min-height: 100vh;
@@ -24,7 +30,19 @@
 }
 
 .page.dark {
-  /* Already dark by default, but this signals intent */
+  --ds-bg: #0a0a0b;
+  --ds-surface: #111113;
+  --ds-surface-raised: #18181b;
+  --ds-border: #27272a;
+  --ds-border-subtle: #1f1f23;
+  --ds-text: #fafafa;
+  --ds-text-muted: #71717a;
+  --ds-text-subtle: #52525b;
+  --ds-accent: #3b82f6;
+  --ds-accent-muted: #1e40af;
+  --ds-header-bg: rgba(10, 10, 11, 0.85);
+  --ds-bg-gradient-a: rgba(59, 130, 246, 0.08);
+  --ds-bg-gradient-b: rgba(139, 92, 246, 0.05);
 }
 
 /* Background decorations */
@@ -44,8 +62,8 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.08), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.05), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--ds-bg-gradient-a), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, var(--ds-bg-gradient-b), transparent);
   pointer-events: none;
   z-index: 0;
 }
@@ -55,7 +73,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 10, 11, 0.85);
+  background: var(--ds-header-bg);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--ds-border);
 }

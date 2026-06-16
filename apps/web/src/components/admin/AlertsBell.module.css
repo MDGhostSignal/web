@@ -58,7 +58,10 @@
   max-height: 480px;
   display: flex;
   flex-direction: column;
-  background: var(--admin-surface-1);
+  /* Solid surface so the popover doesn't bleed through to the page
+   * content underneath. --admin-surface-1 is 4%-alpha white which
+   * reads transparent against a non-uniform background. */
+  background: var(--admin-bg-elevated);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
   box-shadow: var(--admin-shadow-lg);
