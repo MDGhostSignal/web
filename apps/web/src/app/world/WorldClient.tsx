@@ -1193,6 +1193,11 @@ export default function WorldClient({
           this.targets.set(player.sessionId, { x: player.x, y: player.y });
           container.setData("facing", player.facing);
           container.setData("moving", player.moving);
+          // Stash references to the body-only parts so mountHorse /
+          // dismountHorse can hide them and leave just the head badge
+          // + name label visible while riding. Same names also help
+          // any future debug overlay introspect a character.
+          container.setData("bodyParts", [sprite, glow, shadow, halo]);
           this.applyFacing(container, player.facing, player.moving);
 
           // Halo pulse — gentle alpha breathing on all avatars.
@@ -1997,8 +2002,27 @@ export default function WorldClient({
           if (ownAvatar) {
             ownAvatar.x = best.sprite.x;
             ownAvatar.y = best.sprite.y;
+            this.setAvatarMounted(ownAvatar, true);
           }
           this.flashHint("Mounted — 2× speed. E to dismount.");
+        }
+
+        /** Hide / show the body-only parts of an avatar container.
+         *  While mounted, only the head badge + name label remain so
+         *  the rider reads as a head sitting on top of the horse. */
+        setAvatarMounted(
+          container: Phaser.GameObjects.Container,
+          mounted: boolean,
+        ) {
+          const parts = container.getData("bodyParts") as
+            | Phaser.GameObjects.GameObject[]
+            | undefined;
+          if (!parts) return;
+          for (const p of parts) {
+            (p as Phaser.GameObjects.GameObject & {
+              setVisible: (v: boolean) => void;
+            }).setVisible(!mounted);
+          }
         }
 
         /** Step off the horse. Returns control to the AI FSM. */
@@ -2011,6 +2035,10 @@ export default function WorldClient({
           horse.state = "idle";
           this.startHorseBob(horse);
           this.applyHorseIdleFrame(horse);
+          // Restore the rider's body so they go back to a normal
+          // walking figure.
+          const ownAvatar = this.avatars.get(this.ownSessionId!);
+          if (ownAvatar) this.setAvatarMounted(ownAvatar, false);
           this.flashHint("Dismounted.");
         }
 
