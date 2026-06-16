@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { createStudioBrowserClient } from "@/lib/studio-auth-client";
 
@@ -11,6 +11,8 @@ import styles from "../studio.module.css";
 /** Studio sign-in. Email + password via Supabase Auth. */
 export default function LoginPage() {
   const router = useRouter();
+  const search = useSearchParams();
+  const justRegistered = search.get("registered") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +49,9 @@ export default function LoginPage() {
         </div>
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>
-          Welcome back. Sign in to see your performance and the
-          marketplace.
+          {justRegistered
+            ? "Registration received. Check your email for a confirmation link, then sign in below."
+            : "Welcome back. Sign in to see your performance and the marketplace."}
         </p>
 
         {error && <div className={styles.error}>{error}</div>}

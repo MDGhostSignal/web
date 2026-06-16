@@ -41,9 +41,10 @@ export default function RegisterPage() {
       if (authError) throw new Error(authError.message);
       if (!data.user) throw new Error("Registration failed: no user returned.");
 
-      // Hand off to our server route so the member row is created /
-      // linked under the service role (RLS-bypassing). The browser
-      // user just made an authed session via signUp.
+      // Server-side member-row create/link. Verifies the new
+      // authUserId via the Supabase admin API — works whether or
+      // not the browser got a session from signUp (Supabase doesn't
+      // create a session when email confirmation is required).
       const res = await fetch("/api/studio/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,7 +62,15 @@ export default function RegisterPage() {
         throw new Error(body.error ?? `Registration sync failed (${res.status}).`);
       }
 
-      router.replace("/studio/pending");
+      // If signUp gave us a session, the user is already logged in —
+      // send them to the pending screen. If not, Supabase is waiting
+      // on email confirmation: bounce to the login page with a note
+      // so they know to check their inbox first.
+      if (data.session) {
+        router.replace("/studio/pending");
+      } else {
+        router.replace("/studio/login?registered=1");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setSubmitting(false);

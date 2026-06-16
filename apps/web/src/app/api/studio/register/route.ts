@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createStudioAdminClient, createStudioServerClient } from "@/lib/studio-auth";
+import { createStudioAdminClient } from "@/lib/studio-auth";
 
 /**
  * POST /api/studio/register
@@ -10,12 +10,16 @@ import { createStudioAdminClient, createStudioServerClient } from "@/lib/studio-
  * `members` row so the new auth user is linked to a CRM record from
  * day one.
  *
- * Idempotent — if there's already a member row for the email, we
- * just attach the auth_user_id (no duplicate row). If not, we insert
- * a new one in 'discern' phase (= "contact" tier in the user-facing
- * model), with activated_at = NULL so they remain unapproved.
+ * Verifies the claimed authUserId via the Supabase admin API rather
+ * than the session cookie — when "Confirm email" is enabled in
+ * Supabase Auth settings, signUp does NOT produce a session until
+ * the user clicks the verification email, so the cookie-based check
+ * always failed. The admin-API check works in both modes.
  *
- * Approval flips activated_at later from /hq/studio-approvals.
+ * Idempotent — existing rows by email get their auth_user_id
+ * attached; new emails get a fresh discern-phase row with
+ * activated_at = NULL. Co-founder flips activated_at from
+ * /admin/studio-approvals.
  */
 type Body = {
   authUserId: string;
@@ -27,21 +31,9 @@ type Body = {
 };
 
 export async function POST(req: NextRequest) {
-  // Confirm the calling browser actually has an authed session with
-  // the claimed user id (otherwise anyone could attach themselves to
-  // anyone else's email).
-  const supabase = await createStudioServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "No active session." }, { status: 401 });
-  }
-
   const body = (await req.json()) as Body;
-  if (body.authUserId !== user.id) {
-    return NextResponse.json(
-      { error: "Auth user id mismatch." },
-      { status: 403 },
-    );
+  if (!body.authUserId) {
+    return NextResponse.json({ error: "authUserId required." }, { status: 400 });
   }
   const email = body.email?.trim();
   if (!email) {
@@ -52,6 +44,25 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createStudioAdminClient();
+
+  // Verify the authUserId actually exists in Supabase Auth AND
+  // matches the claimed email. Protects against a hostile client
+  // claiming someone else's email + an arbitrary auth user id.
+  const { data: authUser, error: authErr } = await admin.auth.admin.getUserById(
+    body.authUserId,
+  );
+  if (authErr || !authUser?.user) {
+    return NextResponse.json(
+      { error: "Could not verify the new account. Try registering again." },
+      { status: 401 },
+    );
+  }
+  if (authUser.user.email?.toLowerCase() !== email.toLowerCase()) {
+    return NextResponse.json(
+      { error: "Auth user email does not match the submitted email." },
+      { status: 403 },
+    );
+  }
 
   // Find existing member by email (case-insensitive). We do this
   // server-side under the service role so RLS doesn't block reads.
