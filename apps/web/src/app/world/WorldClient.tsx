@@ -591,7 +591,10 @@ export default function WorldClient({
           // enough to read as a landmark, small enough not to block
           // half the plaza. Depth between backdrop (-10) and avatars
           // (+10) so players render in front of it as they walk past.
-          const STATUE_CX = (WORLD_W_TILES * TILE) / 2; // 1152
+          // The village backdrop's grassy plaza isn't at the literal
+          // mathematical map center — it's slightly west of it. Nudge
+          // the statue left so it lands on the plaza disc.
+          const STATUE_CX = (WORLD_W_TILES * TILE) / 2 - 50; // 1102
           const STATUE_CY = (WORLD_H_TILES * TILE) / 2; // 1536
           const statue = this.add.image(STATUE_CX, STATUE_CY, "gs-statue");
           statue.setOrigin(0.5, 1);
