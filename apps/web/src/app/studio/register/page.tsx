@@ -17,6 +17,11 @@ type Kind = "creator" | "brand";
  * activated_at = NULL. The user lands at /studio/pending until a
  * GhostSignal co-founder approves them from /admin/studio-approvals.
  */
+type SuccessState = {
+  email: string;
+  needsEmailConfirmation: boolean;
+};
+
 export default function RegisterPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -27,6 +32,7 @@ export default function RegisterPage() {
   const [orgName, setOrgName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState<SuccessState | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -83,15 +89,12 @@ export default function RegisterPage() {
         throw new Error(msg);
       }
 
-      // If signUp gave us a session, the user is already logged in —
-      // send them to the pending screen. If not, Supabase is waiting
-      // on email confirmation: bounce to the login page with a note
-      // so they know to check their inbox first.
-      if (data.session) {
-        router.replace("/studio/pending");
-      } else {
-        router.replace("/studio/login?registered=1");
-      }
+      // Surface a positive confirmation state instead of silently
+      // redirecting — the user just gave us credentials and deserves
+      // to see that it landed. The CTA on the success card routes
+      // them to the right next step based on whether Supabase
+      // produced a session (email confirmation on/off).
+      setSuccess({ email, needsEmailConfirmation: !data.session });
     } catch (err) {
       console.error("[studio/register] caught error:", err);
       let msg = "Unknown error during registration.";
@@ -106,6 +109,46 @@ export default function RegisterPage() {
       setError(msg);
       setSubmitting(false);
     }
+  }
+
+  if (success) {
+    return (
+      <main className={styles.authPage}>
+        <div className={styles.authCard} style={{ textAlign: "center" }}>
+          <div className={styles.successIcon} aria-hidden="true">✓</div>
+          <h1 className={styles.title}>Request received</h1>
+          <p className={styles.subtitle}>
+            {success.needsEmailConfirmation ? (
+              <>
+                We sent a confirmation link to{" "}
+                <strong>{success.email}</strong>. Click it to verify
+                your email, then sign in.
+              </>
+            ) : (
+              <>
+                Your account is registered as{" "}
+                <strong>{success.email}</strong>. A GhostSignal
+                co-founder will approve your access shortly — you&apos;ll
+                see your dashboard the moment they do.
+              </>
+            )}
+          </p>
+          <button
+            type="button"
+            className={styles.submit}
+            onClick={() => {
+              router.replace(
+                success.needsEmailConfirmation
+                  ? "/studio/login?registered=1"
+                  : "/studio/pending",
+              );
+            }}
+          >
+            {success.needsEmailConfirmation ? "Continue to sign in" : "Continue"}
+          </button>
+        </div>
+      </main>
+    );
   }
 
   return (

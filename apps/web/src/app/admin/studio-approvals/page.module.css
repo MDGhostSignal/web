@@ -85,23 +85,33 @@
   text-align: right;
 }
 
+/* Approve button — matches the admin Button system: solid fill, flat
+ * (no gradient), subtle hover lift. Uses --admin-success since
+ * "approve" is the success action on this view. */
 .approveBtn {
   padding: 7px 14px;
-  background: linear-gradient(180deg, #50c878 0%, #3fa563 100%);
-  border: 1px solid #2f7d49;
-  border-radius: 6px;
+  background: var(--admin-success);
+  border: 1px solid var(--admin-success);
+  border-radius: var(--admin-radius-md);
   color: #0a1d12;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: filter 160ms ease;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base),
+    transform var(--admin-transition-base),
+    box-shadow var(--admin-transition-base);
 }
 
 .approveBtn:hover {
-  filter: brightness(1.06);
+  background: color-mix(in srgb, var(--admin-success) 92%, white);
+  border-color: color-mix(in srgb, var(--admin-success) 92%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(80, 255, 150, 0.22);
 }
 
 .approveBtn:disabled {
-  filter: grayscale(0.5);
+  opacity: 0.5;
   cursor: not-allowed;
 }

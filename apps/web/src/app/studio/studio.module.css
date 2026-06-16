@@ -216,6 +216,24 @@
   font-size: 30px;
 }
 
+/* Success state on the register card — green-tinted check badge so
+ * the win reads instantly. Soft, not loud — same visual weight as
+ * the pending icon. */
+.successIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(80, 200, 120, 0.14);
+  color: #1f8a4b;
+  border: 1px solid rgba(80, 200, 120, 0.32);
+  border-radius: 50%;
+  font-size: 30px;
+  font-weight: 700;
+}
+
 /* === Dashboard ==================================================== */
 
 .dashHeader {

@@ -39,7 +39,28 @@ function LoginForm() {
         email,
         password,
       });
-      if (authError) throw new Error(authError.message);
+      if (authError) {
+        // Rewrite Supabase's generic auth errors into something that
+        // actually helps the user. Common cases after self-serve
+        // registration:
+        //   - "Email not confirmed" → they haven't clicked the link
+        //   - "Invalid login credentials" → could be wrong password
+        //     OR an unconfirmed email (Supabase intentionally hides
+        //     which to avoid leaking account existence). Tell them
+        //     about both possibilities + the approval gate.
+        const raw = (authError.message ?? "").toLowerCase();
+        if (raw.includes("not confirmed") || raw.includes("email")) {
+          throw new Error(
+            "We can't sign you in yet. Click the confirmation link in the email we sent you, then come back here. If you didn't get it, check spam.",
+          );
+        }
+        if (raw.includes("invalid login")) {
+          throw new Error(
+            "Couldn't sign you in. Either your password is incorrect, OR you haven't clicked the email confirmation link yet. After confirming, your account also needs GhostSignal team approval before you can access the dashboard — we'll email you the moment that lands.",
+          );
+        }
+        throw new Error(authError.message || "Sign-in failed. Try again.");
+      }
       // The server-side proxy decides where they go (dashboard if
       // approved, /studio/pending if not). Just redirect to /studio
       // and let the gate route them.
