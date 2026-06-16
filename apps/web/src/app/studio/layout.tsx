@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import "./studio-tokens.css";
 import styles from "./studio.module.css";
 
 export const metadata: Metadata = {
@@ -22,5 +23,5 @@ export default function StudioLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className={styles.shell}>{children}</div>;
+  return <div className={`${styles.shell} studio-root`}>{children}</div>;
 }

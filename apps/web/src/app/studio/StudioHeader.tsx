@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
+
 import styles from "./studio.module.css";
 import { SignOutButton } from "./SignOutButton";
 
@@ -37,7 +39,10 @@ export function StudioHeader({
           World
         </Link>
       </nav>
-      <SignOutButton />
+      <div className={styles.headerTrail}>
+        <ThemeToggle />
+        <SignOutButton />
+      </div>
     </header>
   );
 }

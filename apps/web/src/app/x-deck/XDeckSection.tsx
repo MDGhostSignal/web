@@ -18,6 +18,13 @@ type Props = {
   /** Section title shown above the deck. Defaults to a count-based
    *  string ("N creators ranked by conviction fit"). */
   title?: string;
+  /** When true, hide the ThumbnailRail + MatchCardDetail panel. The
+   *  deck IS the experience in compact mode — used by the Studio
+   *  marketplace surface where the deck is the discovery primitive
+   *  and a long secondary list / detail panel below was redundant.
+   *  The standalone /x-deck preview and the XQ results screen
+   *  default to the full layout. */
+  compact?: boolean;
 };
 
 /**
@@ -30,7 +37,13 @@ type Props = {
  * runs above this; on the results screen the persona reveal stage
  * already serves the same purpose.
  */
-export function XDeckSection({ viewer, candidates, eyebrow, title }: Props) {
+export function XDeckSection({
+  viewer,
+  candidates,
+  eyebrow,
+  title,
+  compact = false,
+}: Props) {
   const ranked = useMemo(
     () => scoreAndRank(viewer, candidates),
     [viewer, candidates],
@@ -53,17 +66,19 @@ export function XDeckSection({ viewer, candidates, eyebrow, title }: Props) {
         onChange={setActiveIndex}
       />
 
-      <ThumbnailRail
-        candidates={ranked.map((r) => r.candidate)}
-        activeIndex={activeIndex}
-        onSelect={setActiveIndex}
-      />
+      {!compact && (
+        <ThumbnailRail
+          candidates={ranked.map((r) => r.candidate)}
+          activeIndex={activeIndex}
+          onSelect={setActiveIndex}
+        />
+      )}
 
       <p className={styles.keyHint}>
         <kbd>←</kbd> <kbd>→</kbd> navigate · click any card to center
       </p>
 
-      {active && (
+      {!compact && active && (
         <MatchCardDetail
           candidate={active.candidate}
           compatibility={active.compatibility}

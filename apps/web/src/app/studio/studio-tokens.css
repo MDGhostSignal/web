@@ -1,0 +1,81 @@
+/* Studio theme tokens — light by default, dark via
+ * `.studio-root[data-theme="dark"]`. Mirrors the shape of the admin
+ * token system but kept as a parallel namespace so the studio surface
+ * can evolve its own visual identity without dragging admin along.
+ *
+ * Imported as a global stylesheet from `apps/web/src/app/studio/layout.tsx`.
+ * All Studio CSS modules reference these via `var(--studio-*)`. */
+
+.studio-root {
+  /* Surfaces */
+  --studio-bg: #fafbff;
+  --studio-surface-1: #ffffff;
+  --studio-surface-2: #f4f6fb;
+  --studio-surface-hover: #f0f3f9;
+
+  /* Borders */
+  --studio-border: #e6e8ee;
+  --studio-border-strong: #d8dade;
+
+  /* Text */
+  --studio-text-primary: #0e1119;
+  --studio-text-secondary: #5a5e66;
+  --studio-text-muted: #6a727b;
+  --studio-text-inverse: #ffffff;
+
+  /* Accents */
+  --studio-accent: #7c58d6;
+  --studio-accent-strong: #6a45c7;
+  --studio-accent-soft: rgba(124, 88, 214, 0.1);
+  --studio-accent-hover: rgba(124, 88, 214, 0.18);
+
+  /* Semantic */
+  --studio-success: #1f8a4b;
+  --studio-success-soft: rgba(34, 139, 34, 0.12);
+  --studio-warning: #b67a0e;
+  --studio-warning-soft: rgba(196, 136, 13, 0.14);
+  --studio-danger: #b22222;
+  --studio-danger-soft: rgba(178, 34, 34, 0.08);
+
+  /* Elevation */
+  --studio-shadow-card: 0 24px 60px -28px rgba(15, 23, 42, 0.15);
+  --studio-shadow-soft: 0 8px 24px -12px rgba(15, 23, 42, 0.1);
+
+  color: var(--studio-text-primary);
+}
+
+.studio-root[data-theme="dark"] {
+  /* Surfaces — true dark to match the admin chrome, not "less white" */
+  --studio-bg: #0f1219;
+  --studio-surface-1: #161a23;
+  --studio-surface-2: #1c2230;
+  --studio-surface-hover: #232a3a;
+
+  /* Borders */
+  --studio-border: #2a3142;
+  --studio-border-strong: #353e54;
+
+  /* Text */
+  --studio-text-primary: #f1f3f8;
+  --studio-text-secondary: #adb3c0;
+  --studio-text-muted: #7a8094;
+  --studio-text-inverse: #0e1119;
+
+  /* Accents — same hue, slightly punchier on dark */
+  --studio-accent: #9b7ee6;
+  --studio-accent-strong: #b09cf0;
+  --studio-accent-soft: rgba(155, 126, 230, 0.16);
+  --studio-accent-hover: rgba(155, 126, 230, 0.24);
+
+  /* Semantic */
+  --studio-success: #50ff96;
+  --studio-success-soft: rgba(80, 255, 150, 0.14);
+  --studio-warning: #ffc857;
+  --studio-warning-soft: rgba(255, 200, 87, 0.18);
+  --studio-danger: #ff6b6b;
+  --studio-danger-soft: rgba(255, 107, 107, 0.16);
+
+  /* Elevation — softer, deeper shadows on dark */
+  --studio-shadow-card: 0 24px 60px -28px rgba(0, 0, 0, 0.55);
+  --studio-shadow-soft: 0 8px 24px -12px rgba(0, 0, 0, 0.4);
+}

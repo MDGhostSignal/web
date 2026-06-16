@@ -87,21 +87,32 @@ export function ThemeToggle() {
   );
 
   // Apply the data-theme attribute as a side-effect of theme changes.
-  // The token rules are declared at BOTH `:root` and `.admin-root`
-  // selectors, so just setting the attribute on `<html>` isn't enough
-  // — `.admin-root` re-declares the dark variables at its own scope
-  // and would still win there. Setting the attribute on every
-  // `.admin-root` element makes the `.admin-root[data-theme="light"]`
-  // selector match at that scope.
+  // The token rules are declared at BOTH `:root` and `.admin-root` /
+  // `.studio-root` selectors, so just setting the attribute on `<html>`
+  // isn't enough — the root scopes re-declare their own variables and
+  // would still win there. Stamp every shell root so the
+  // `[data-theme=...]` selector matches at each scope.
+  //
+  // Studio defaults to LIGHT (admin defaults to DARK), so the attribute
+  // semantics flip per scope: on `.admin-root`, no attribute = dark;
+  // on `.studio-root`, no attribute = light. We always set the explicit
+  // value rather than removing the attribute so each root picks up the
+  // correct variant from its own selectors.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const targets: Element[] = [
-      document.documentElement,
-      ...Array.from(document.querySelectorAll(".admin-root")),
-    ];
-    for (const el of targets) {
+    const adminRoots = Array.from(document.querySelectorAll(".admin-root"));
+    const studioRoots = Array.from(document.querySelectorAll(".studio-root"));
+    document.documentElement.setAttribute("data-theme", theme);
+    for (const el of adminRoots) {
       if (theme === "light") {
         el.setAttribute("data-theme", "light");
+      } else {
+        el.removeAttribute("data-theme");
+      }
+    }
+    for (const el of studioRoots) {
+      if (theme === "dark") {
+        el.setAttribute("data-theme", "dark");
       } else {
         el.removeAttribute("data-theme");
       }

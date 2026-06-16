@@ -77,6 +77,7 @@ export default async function StudioMarketplacePage() {
           <XDeckSection
             viewer={viewer}
             candidates={candidates}
+            compact
             eyebrow={
               member.kind === "brand"
                 ? "Creators matched to your XQ"

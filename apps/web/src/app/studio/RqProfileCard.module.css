@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: 14px;
   padding: 22px 24px;
-  background: #ffffff;
-  border: 1px solid #e6e8ee;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
   border-radius: 12px;
 }
 
@@ -20,7 +20,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.55;
-  color: #5a5e66;
+  color: var(--studio-text-secondary);
 }
 
 .empty a {
@@ -55,7 +55,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #0e1119;
+  color: var(--studio-text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -75,7 +75,7 @@
   font-weight: 700;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #6a727b;
+  color: var(--studio-text-muted);
 }
 
 .clarityBadge {
@@ -107,7 +107,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: #5a5e66;
+  color: var(--studio-text-secondary);
 }
 
 .graphFrame {
@@ -125,20 +125,20 @@
   font-weight: 700;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #6a727b;
+  color: var(--studio-text-muted);
 }
 
 .rowValue {
   font-size: 14px;
   font-weight: 600;
-  color: #0e1119;
+  color: var(--studio-text-primary);
 }
 
 .hint {
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: #6a727b;
+  color: var(--studio-text-muted);
 }
 
 .hint a {
