@@ -288,14 +288,15 @@ export function RQ3DWordmark() {
   // sunrise highlight on the letters — different from XQ's top-right.
   const light = useTrackedLight(svgRef, { x: 280, y: 60 });
 
-  // Retrowave depth ramp: deep navy/violet back → hot magenta middle
-  // → near-white pink front. Each slice nudges right + down so the
-  // extrusion catches the implied bottom-right vanishing point.
+  // Sunset depth ramp: dark amber back → warm pink front. Each
+  // slice nudges right + down so the extrusion catches the implied
+  // bottom-right vanishing point. Tuned to sit cleanly under the
+  // yellow→magenta front gradient.
   const slices = Array.from({ length: SLICE_COUNT }, (_, i) => {
     const t = i / (SLICE_COUNT - 1);
-    const r = Math.round(28 + (240 - 28) * t);
-    const g = Math.round(18 + (90 - 18) * t);
-    const b = Math.round(72 + (200 - 72) * t);
+    const r = Math.round(60 + (235 - 60) * t);
+    const g = Math.round(38 + (75 - 38) * t);
+    const b = Math.round(8 + (130 - 8) * t);
     const dx = (SLICE_COUNT - 1 - i) * SLICE_STEP * 0.7;
     const dy = (SLICE_COUNT - 1 - i) * SLICE_STEP;
     return (
@@ -326,12 +327,15 @@ export function RQ3DWordmark() {
       aria-hidden="true"
     >
       <defs>
-        {/* Front-face fill — retrowave magenta → cyan horizontal. */}
-        <linearGradient id="rq-front-fill" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#ff2e88" />
-          <stop offset="40%" stopColor="#ff5fb0" />
-          <stop offset="70%" stopColor="#bf6fff" />
-          <stop offset="100%" stopColor="#39d6ff" />
+        {/* Front-face fill — sunset gradient: warm yellow at the
+         * bottom-left running diagonally up to hot magenta at the
+         * top-right. The diagonal direction (x1/y1 bottom-left →
+         * x2/y2 top-right) mirrors a sky-meets-horizon palette. */}
+        <linearGradient id="rq-front-fill" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stopColor="#ffd23f" />
+          <stop offset="35%" stopColor="#ffa53f" />
+          <stop offset="65%" stopColor="#ff5fa8" />
+          <stop offset="100%" stopColor="#ff2e88" />
         </linearGradient>
         {/* Top highlight band — bright pink-white scan running across
          * the top third of the letters. Reads as a single horizontal
@@ -341,7 +345,8 @@ export function RQ3DWordmark() {
           <stop offset="30%" stopColor="rgba(255,255,255,0.25)" />
           <stop offset="55%" stopColor="rgba(255,255,255,0)" />
         </linearGradient>
-        {/* Cyan-tinted mouse light. Cooler than XQ's warm white. */}
+        {/* Warm-tinted mouse light — sun-flare yellow fading to
+         * transparent. Matches the yellow→magenta sunset theme. */}
         <radialGradient
           id="rq-mouse-light"
           cx={light.x}
@@ -349,10 +354,10 @@ export function RQ3DWordmark() {
           r="240"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="rgba(150,250,255,0.95)" />
-          <stop offset="30%" stopColor="rgba(120,200,255,0.45)" />
-          <stop offset="65%" stopColor="rgba(120,160,255,0.10)" />
-          <stop offset="100%" stopColor="rgba(120,160,255,0)" />
+          <stop offset="0%" stopColor="rgba(255,240,170,0.95)" />
+          <stop offset="30%" stopColor="rgba(255,220,140,0.45)" />
+          <stop offset="65%" stopColor="rgba(255,200,120,0.10)" />
+          <stop offset="100%" stopColor="rgba(255,200,120,0)" />
         </radialGradient>
         {/* Sunset drop shadow — magenta/pink glow rather than pure
          * black. Reads as the neon afterimage behind the letters. */}
