@@ -29,6 +29,46 @@
   --xd-mono: 'DM Mono', ui-monospace, monospace;
 }
 
+/* Light-mode override — when the deck renders inside the Studio shell
+ * in light mode (`.studio-root` without a `data-theme="dark"`
+ * attribute), flip the token values so the text reads on white cards
+ * instead of being baked for a dark page background.
+ *
+ * Scope is intentionally narrow: standalone /x-deck and the XQ quiz
+ * results embed both keep the dark deck (their host pages are dark).
+ * Only the Studio marketplace surface gets the light variant. */
+:global(.studio-root:not([data-theme="dark"])) .section {
+  --xd-bg: #fafbff;
+  --xd-card-bg: #ffffff;
+  --xd-card-bg-strong: #f4f6fb;
+  --xd-line: rgba(15, 23, 42, 0.08);
+  --xd-line-strong: rgba(15, 23, 42, 0.18);
+  --xd-text: #0e1119;
+  --xd-muted: #5a5e66;
+  /* --xd-accent stays the archetype purple — reads on both themes */
+}
+
+/* Replace the subtle white overlays in the detail panel with dark-on-
+ * light equivalents. These were tuned as ~2-6% white on a dark page
+ * background and become invisible on the light Studio shell. */
+:global(.studio-root:not([data-theme="dark"])) .detail {
+  background: #ffffff;
+  border-color: var(--xd-line);
+  box-shadow: 0 18px 48px -28px rgba(15, 23, 42, 0.18);
+}
+:global(.studio-root:not([data-theme="dark"])) .axisTrack {
+  background: rgba(15, 23, 42, 0.06);
+}
+:global(.studio-root:not([data-theme="dark"])) .axisTrackMid {
+  background: rgba(15, 23, 42, 0.18);
+}
+:global(.studio-root:not([data-theme="dark"])) .valueChip {
+  background: rgba(15, 23, 42, 0.04);
+}
+:global(.studio-root:not([data-theme="dark"])) .detailCtaBtnGhost:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
 .page {
   min-height: 100vh;
   background:
