@@ -16,7 +16,39 @@
  * same XQ_NOTIFY_TO override (defaults to hello@ghostsignal.cloud).
  */
 
+import { CHARACTERS } from "@/lib/xq/characters";
+import type { ArchetypeCode } from "@/lib/xq/constants";
+
 import type { XQSubmissionPayload } from "./types";
+
+/** Resolve per-archetype palette for the email reveal card. Falls
+ *  back to a neutral slate if the code is missing or unrecognised so
+ *  the email never renders an invalid color. */
+function archetypePalette(code: string | null | undefined): {
+  accent: string;
+  accentSoft: string;
+  accentSoftStrong: string;
+  accentBorder: string;
+} {
+  const identity = code ? CHARACTERS[code as ArchetypeCode] : undefined;
+  if (!identity) {
+    return {
+      accent: "#4a4e58",
+      accentSoft: "rgba(74, 78, 88, 0.08)",
+      accentSoftStrong: "rgba(74, 78, 88, 0.16)",
+      accentBorder: "rgba(74, 78, 88, 0.32)",
+    };
+  }
+  // `accentSoft` is the canonical ~18% wash. Build a slightly stronger
+  // version for the card border so it reads as a defined frame and a
+  // weaker version for the gradient base.
+  return {
+    accent: identity.accent,
+    accentSoft: identity.accentSoft.replace("0.18", "0.06"),
+    accentSoftStrong: identity.accentSoft,
+    accentBorder: identity.accentSoft.replace("0.18", "0.45"),
+  };
+}
 
 export function escapeHtml(value: string) {
   return value
@@ -65,6 +97,12 @@ export async function sendUserSummaryEmail(
       : "Your archetype dossier is ready below.";
 
   const vectorBias = result.vectorBias ?? "";
+
+  // Per-archetype palette — overrides the hardcoded teal the email
+  // used for every code. Drives the reveal-card gradient, border,
+  // archetype name color, and label tint so the email matches the
+  // on-site dossier visual language.
+  const palette = archetypePalette(result.code);
 
   // Bucket renderers — color match the public quiz dossier visual
   // language (red = non-neg, accent = core, purple = aspirational,
@@ -119,21 +157,21 @@ export async function sendUserSummaryEmail(
 
           <tr>
             <td style="padding: 0 32px 32px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(199, 249, 255, 0.18), rgba(199, 249, 255, 0.04)); border: 2px solid rgba(199, 249, 255, 0.45); border-radius: 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, ${palette.accentSoftStrong}, ${palette.accentSoft}); border: 2px solid ${palette.accentBorder}; border-radius: 12px;">
                 <tr>
                   <td align="center" style="padding: 32px 24px;">
-                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #0a7794; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;">
+                    <div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: ${palette.accent}; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;">
                       Calibration Architecture Verified
                     </div>
-                    <div style="font-size: 28px; font-weight: 700; color: #0a7794; margin-bottom: 6px; line-height: 1.2;">
+                    <div style="font-size: 28px; font-weight: 700; color: ${palette.accent}; margin-bottom: 6px; line-height: 1.2;">
                       ${escapeHtml(archetypeName)}
                     </div>
-                    <div style="font-size: 14px; font-style: italic; color: #0a7794; opacity: 0.85; margin-bottom: 16px;">
+                    <div style="font-size: 14px; font-style: italic; color: ${palette.accent}; opacity: 0.85; margin-bottom: 16px;">
                       ${escapeHtml(archetypeTagline)}
                     </div>
                     ${
                       vectorBias
-                        ? `<div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 12px; color: #666666; padding-top: 16px; border-top: 1px solid rgba(199, 249, 255, 0.4);">
+                        ? `<div style="font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; font-size: 12px; color: #666666; padding-top: 16px; border-top: 1px solid ${palette.accentBorder};">
                             Triangulated Vector Bias · ${escapeHtml(vectorBias)}
                           </div>`
                         : ""
