@@ -297,6 +297,7 @@ export default function XQQuizPage() {
             result={result}
             submitStatus={submit}
             basics={basics}
+            variant="3d"
           />
         )}
       </div>
