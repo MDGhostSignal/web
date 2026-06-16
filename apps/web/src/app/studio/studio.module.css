@@ -202,6 +202,74 @@
   color: #a23636;
 }
 
+/* Structured error panel — used on the login page when the auth
+ * failure has a cause + a next-step. Two visual sections: the
+ * title/reasons stack at top, and a quieter footer note divided
+ * by a hairline border. Reads like a tooltip card rather than a
+ * single red wall of text. */
+.errorPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #f1c8c8;
+  border-left: 3px solid #d64545;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -16px rgba(214, 69, 69, 0.4);
+}
+
+.errorPanelTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #8b2c2c;
+  letter-spacing: -0.005em;
+}
+
+.errorPanelLead {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #444751;
+}
+
+.errorPanelList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.errorPanelList li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #444751;
+}
+
+.errorPanelList li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d64545;
+}
+
+.errorPanelFooter {
+  margin: 4px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #f1c8c8;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6a727b;
+}
+
 /* === Pending screen ============================================== */
 
 .pendingIcon {

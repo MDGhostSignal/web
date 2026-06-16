@@ -20,13 +20,24 @@ export default function LoginPage() {
   );
 }
 
+/** Structured error so we can lay it out as two sections (cause +
+ *  next step) instead of one wall of text. */
+type LoginError =
+  | {
+      kind: "structured";
+      title: string;
+      reasons: string[];
+      footer?: string;
+    }
+  | { kind: "plain"; message: string };
+
 function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const justRegistered = search.get("registered") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<LoginError | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -40,26 +51,39 @@ function LoginForm() {
         password,
       });
       if (authError) {
-        // Rewrite Supabase's generic auth errors into something that
-        // actually helps the user. Common cases after self-serve
-        // registration:
-        //   - "Email not confirmed" → they haven't clicked the link
-        //   - "Invalid login credentials" → could be wrong password
-        //     OR an unconfirmed email (Supabase intentionally hides
-        //     which to avoid leaking account existence). Tell them
-        //     about both possibilities + the approval gate.
+        // Rewrite Supabase's generic auth errors into structured
+        // sections so the user can scan cause + next step quickly.
         const raw = (authError.message ?? "").toLowerCase();
-        if (raw.includes("not confirmed") || raw.includes("email")) {
-          throw new Error(
-            "We can't sign you in yet. Click the confirmation link in the email we sent you, then come back here. If you didn't get it, check spam.",
-          );
+        if (raw.includes("not confirmed") || raw.includes("email link")) {
+          setError({
+            kind: "structured",
+            title: "Confirm your email first",
+            reasons: [
+              "We sent a confirmation link to your inbox. Click it, then come back here to sign in.",
+            ],
+            footer:
+              "Can't find the email? Check spam or junk. Re-registering won't fix it — the original link is the one that works.",
+          });
+          setSubmitting(false);
+          return;
         }
         if (raw.includes("invalid login")) {
-          throw new Error(
-            "Couldn't sign you in. Either your password is incorrect, OR you haven't clicked the email confirmation link yet. After confirming, your account also needs GhostSignal team approval before you can access the dashboard — we'll email you the moment that lands.",
-          );
+          setError({
+            kind: "structured",
+            title: "We couldn't sign you in",
+            reasons: [
+              "Your password is incorrect.",
+              "You haven't clicked the email confirmation link yet.",
+            ],
+            footer:
+              "After confirming, your account still needs GhostSignal team approval before you can access the dashboard. We'll email you the moment that lands.",
+          });
+          setSubmitting(false);
+          return;
         }
-        throw new Error(authError.message || "Sign-in failed. Try again.");
+        setError({ kind: "plain", message: authError.message || "Sign-in failed. Try again." });
+        setSubmitting(false);
+        return;
       }
       // The server-side proxy decides where they go (dashboard if
       // approved, /studio/pending if not). Just redirect to /studio
@@ -67,7 +91,10 @@ function LoginForm() {
       router.replace("/studio");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError({
+        kind: "plain",
+        message: err instanceof Error ? err.message : String(err),
+      });
       setSubmitting(false);
     }
   }
@@ -86,7 +113,26 @@ function LoginForm() {
             : "Welcome back. Sign in to see your performance and the marketplace."}
         </p>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && error.kind === "plain" && (
+          <div className={styles.error}>{error.message}</div>
+        )}
+        {error && error.kind === "structured" && (
+          <div className={styles.errorPanel} role="alert">
+            <div className={styles.errorPanelTitle}>{error.title}</div>
+            {error.reasons.length === 1 ? (
+              <p className={styles.errorPanelLead}>{error.reasons[0]}</p>
+            ) : (
+              <ul className={styles.errorPanelList}>
+                {error.reasons.map((r, i) => (
+                  <li key={i}>{r}</li>
+                ))}
+              </ul>
+            )}
+            {error.footer && (
+              <p className={styles.errorPanelFooter}>{error.footer}</p>
+            )}
+          </div>
+        )}
 
         <form className={styles.form} onSubmit={onSubmit}>
           <div className={styles.field}>
