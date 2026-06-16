@@ -523,8 +523,8 @@
 /* === Conviction profile (XQ + RQ cards on dashboard) ============= */
 
 .profileGrid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 18px;
 }
 
