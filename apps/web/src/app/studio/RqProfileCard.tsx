@@ -1,15 +1,13 @@
 "use client";
 
-import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
-import type { RQResult } from "@/lib/rq/scoring";
 import type { StudioRqSummary } from "@/lib/studio-data";
 
 import styles from "./RqProfileCard.module.css";
 
-/** Dashboard RQ profile — mirrors the post-quiz reveal: the
- *  RQResultsGraph radar / axis-bar visualization + three axis
- *  summary blocks (letter + score + brief). Empty state nudges
- *  the user to take the RQ. */
+/** Dashboard RQ profile — compact reveal-style card. Replaces the
+ *  heavy full RQResultsGraph from the quiz reveal with three slim
+ *  axis bars + native <details> for the per-axis prose. Empty state
+ *  nudges the user to take the RQ. */
 export function RqProfileCard({
   summary,
   fallbackCode,
@@ -31,7 +29,7 @@ export function RqProfileCard({
   }
 
   const code = summary?.code ?? fallbackCode;
-  const hasGraphData =
+  const hasAxes =
     summary &&
     summary.details.values &&
     summary.details.authenticity &&
@@ -46,34 +44,57 @@ export function RqProfileCard({
         {summary?.name && (
           <h4 className={styles.archetypeName}>{summary.name}</h4>
         )}
-      </div>
-
-      {summary?.clarityLabel && (
-        <div className={styles.clarity}>
-          <span className={styles.clarityLabel}>Signal clarity</span>
+        {summary?.clarityLabel && (
           <span
             className={`${styles.clarityBadge} ${
               styles[`clarity_${summary.clarityLabel.toLowerCase()}`] ?? ""
             }`}
           >
-            {summary.clarityLabel}
+            {summary.clarityLabel} signal
           </span>
-          {summary.clarityNote && (
-            <p className={styles.clarityNote}>{summary.clarityNote}</p>
-          )}
-        </div>
+        )}
+      </div>
+
+      {summary?.clarityNote && (
+        <p className={styles.clarityNote}>{summary.clarityNote}</p>
       )}
 
-      {hasGraphData ? (
-        <div className={styles.graphFrame}>
-          <RQResultsGraph result={summaryToRqResult(summary)} />
+      {hasAxes ? (
+        <div className={styles.axes}>
+          <AxisRow
+            label="Values"
+            leftLetter="F"
+            leftName="Formative"
+            rightLetter="I"
+            rightName="Implicit"
+            detail={summary.details.values!}
+            profile={summary.profile.values}
+          />
+          <AxisRow
+            label="Authenticity"
+            leftLetter="R"
+            leftName="Relational"
+            rightLetter="S"
+            rightName="Structural"
+            detail={summary.details.authenticity!}
+            profile={summary.profile.authenticity}
+          />
+          <AxisRow
+            label="Horizon"
+            leftLetter="L"
+            leftName="Long-Arc"
+            rightLetter="C"
+            rightName="Catalytic"
+            detail={summary.details.horizon!}
+            profile={summary.profile.horizon}
+          />
         </div>
       ) : (
         summary && (
           <p className={styles.hint}>
             We don&apos;t have your full RQ dossier on file —{" "}
             <a href="/rq-quiz">re-take the RQ</a> to surface the axis
-            graph + per-axis breakdown.
+            breakdown.
           </p>
         )
       )}
@@ -88,21 +109,81 @@ export function RqProfileCard({
   );
 }
 
-/** Reshape the loaded summary into the RQResult shape RQResultsGraph
- *  expects. Caller must have verified `hasGraphData` first. */
-function summaryToRqResult(summary: StudioRqSummary): RQResult {
-  return {
-    rq: summary.code ?? "",
-    rqName: summary.name ?? "",
-    details: {
-      values: summary.details.values!,
-      authenticity: summary.details.authenticity!,
-      horizon: summary.details.horizon!,
-    },
-    profile: {
-      values: summary.profile.values ?? "",
-      authenticity: summary.profile.authenticity ?? "",
-      horizon: summary.profile.horizon ?? "",
-    },
-  };
+/** A single axis line — letter+score badge, an inline bar showing
+ *  position 1–10, and a native <details> that reveals the prose
+ *  profile without forcing it into the always-visible card height. */
+function AxisRow({
+  label,
+  leftLetter,
+  leftName,
+  rightLetter,
+  rightName,
+  detail,
+  profile,
+}: {
+  label: string;
+  leftLetter: string;
+  leftName: string;
+  rightLetter: string;
+  rightName: string;
+  detail: { letter: string; score: number; band: string };
+  profile: string | null;
+}) {
+  // Position on the 1–10 scale, with 5 at center (50%).
+  const position =
+    detail.score <= 5
+      ? ((detail.score - 1) / 4) * 50
+      : 50 + ((detail.score - 5) / 5) * 50;
+  const isLeft = detail.letter === leftLetter;
+  const bandTint =
+    detail.score <= 3
+      ? "light"
+      : detail.score <= 6
+        ? "balanced"
+        : "strong";
+
+  return (
+    <details className={styles.axisDetails}>
+      <summary className={styles.axisSummary}>
+        <div className={styles.axisHeader}>
+          <span className={styles.axisLabel}>{label}</span>
+          <span
+            className={`${styles.axisBadge} ${
+              styles[`axisBadge_${bandTint}`]
+            }`}
+          >
+            {detail.letter} · {detail.score}
+          </span>
+        </div>
+        <div className={styles.axisBar}>
+          <span
+            className={`${styles.axisLeftLabel} ${
+              isLeft ? styles.axisActive : ""
+            }`}
+          >
+            {leftName}
+          </span>
+          <div className={styles.axisTrack}>
+            <span className={styles.axisCenter} />
+            <span
+              className={styles.axisDot}
+              style={{ left: `${position}%` }}
+            />
+          </div>
+          <span
+            className={`${styles.axisRightLabel} ${
+              !isLeft ? styles.axisActive : ""
+            }`}
+          >
+            {rightName}
+          </span>
+        </div>
+      </summary>
+      {profile && (
+        <p className={styles.axisProfile}>
+          As {isLeft ? leftName : rightName}, {profile}
+        </p>
+      )}
+    </details>
+  );
 }

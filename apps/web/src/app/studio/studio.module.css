@@ -371,9 +371,11 @@
 }
 
 .dashMain {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 36px 48px 80px;
+  /* Use the full screen — only ~100px gutters on each side. The cards
+   * inside still cap their own readable widths where it matters. */
+  max-width: none;
+  margin: 0;
+  padding: 28px 100px 60px;
 }
 
 .dashWelcome {

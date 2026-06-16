@@ -1,8 +1,8 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px 24px;
+  gap: 12px;
+  padding: 18px 20px;
   background: var(--studio-surface-1);
   border: 1px solid var(--studio-border);
   border-radius: 12px;
@@ -35,7 +35,8 @@
 
 .hero {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -53,38 +54,20 @@
 
 .archetypeName {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--studio-text-primary);
   letter-spacing: -0.01em;
-}
-
-.clarity {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 12px;
-  background: rgba(196, 136, 13, 0.04);
-  border: 1px solid rgba(196, 136, 13, 0.18);
-  border-radius: 8px;
-}
-
-.clarityLabel {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: var(--studio-text-muted);
 }
 
 .clarityBadge {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.4px;
+  margin-left: auto;
 }
 
 .clarity_high {
@@ -103,21 +86,17 @@
 }
 
 .clarityNote {
-  flex-basis: 100%;
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
   color: var(--studio-text-secondary);
 }
 
-.graphFrame {
-  margin: 6px -8px 0;
-}
-
 .row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .rowLabel {
@@ -129,7 +108,7 @@
 }
 
 .rowValue {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--studio-text-primary);
 }
@@ -149,4 +128,140 @@
 
 .hint a:hover {
   text-decoration: underline;
+}
+
+/* === Compact axis rows — inline bar + native <details> ============ */
+
+.axes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.axisDetails {
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface-2);
+}
+
+.axisSummary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.axisSummary::-webkit-details-marker {
+  display: none;
+}
+
+.axisSummary::marker {
+  display: none;
+}
+
+.axisHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.axisLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+}
+
+.axisBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: ui-monospace, "SF Mono", monospace;
+}
+
+.axisBadge_light {
+  background: rgba(120, 144, 156, 0.14);
+  color: #607882;
+}
+
+.axisBadge_balanced {
+  background: rgba(196, 136, 13, 0.14);
+  color: #b67a0e;
+}
+
+.axisBadge_strong {
+  background: rgba(34, 139, 34, 0.12);
+  color: #1f8a4b;
+}
+
+.axisBar {
+  display: grid;
+  grid-template-columns: 70px 1fr 70px;
+  align-items: center;
+  gap: 10px;
+}
+
+.axisLeftLabel,
+.axisRightLabel {
+  font-size: 11px;
+  color: var(--studio-text-muted);
+}
+
+.axisLeftLabel {
+  text-align: right;
+}
+
+.axisActive {
+  color: var(--studio-text-primary);
+  font-weight: 600;
+}
+
+.axisTrack {
+  position: relative;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+}
+
+.axisCenter {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: rgba(15, 23, 42, 0.18);
+}
+
+.axisDot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c4880d;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(196, 136, 13, 0.35);
+}
+
+.axisProfile {
+  margin: 0;
+  padding: 0 12px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+}
+
+/* Dark-mode tweaks for the axis surfaces — the rgba(15,23,42,…) tones
+ * are tuned for light. Override with white-overlay equivalents. */
+:global(.studio-root[data-theme="dark"]) .axisTrack {
+  background: rgba(255, 255, 255, 0.08);
+}
+:global(.studio-root[data-theme="dark"]) .axisCenter {
+  background: rgba(255, 255, 255, 0.2);
 }
