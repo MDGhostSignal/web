@@ -25,6 +25,12 @@ type Props = {
    *  surface, where the long secondary candidate list was redundant
    *  but the per-card detail is the thing that drives action. */
   compact?: boolean;
+  /** Marketing-preview mode. Renders the deck as a non-functional
+   *  showcase: the "Request intro" / "Save for later" CTAs on the
+   *  active-card detail panel become disabled buttons so visitors
+   *  can scrub through the demo without thinking the action will
+   *  fire. Used on the public /what-is-this page. */
+  previewMode?: boolean;
 };
 
 /**
@@ -43,6 +49,7 @@ export function XDeckSection({
   eyebrow,
   title,
   compact = false,
+  previewMode = false,
 }: Props) {
   const ranked = useMemo(
     () => scoreAndRank(viewer, candidates),
@@ -83,6 +90,7 @@ export function XDeckSection({
           candidate={active.candidate}
           compatibility={active.compatibility}
           viewer={viewer}
+          previewMode={previewMode}
         />
       )}
     </section>

@@ -785,6 +785,186 @@
 }
 
 /* =============================================================================
+   XQ TEASER SECTION — invites visitors into the assessment that powers
+   the X-Deck demo below. Sits between the globe and the X-Deck preview.
+   ============================================================================= */
+
+.xqTeaserSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
+  margin-top: calc(var(--gs-n-80) * var(--gs-px));
+}
+
+.xqTeaserContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+  max-width: calc(var(--gs-n-960, 960) * var(--gs-px));
+}
+
+/* Two-up assessment columns — XQ on the left, RQ on the right. Each
+   column stacks its extruded 3D wordmark directly above its prose
+   card so the brand mark and the explanation read as a single unit.
+   Side-by-side on desktop, stacked on narrower viewports. */
+.assessmentPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--gs-n-32) * var(--gs-px));
+  width: 100%;
+  margin-top: calc(var(--gs-n-24) * var(--gs-px));
+  align-items: stretch;
+}
+.assessmentColumn {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  align-items: stretch;
+  height: 100%;
+}
+/* Wordmark slot above each column's prose card. The Wordmarks3D SVGs
+   carry the `.xq-intro-hero-svg` global class for their own sizing
+   token (--xq-hero-size) which is declared on the xq-quiz page; we
+   override the height locally via :global so the marks render at a
+   column-friendly scale without pulling in the entire xq-quiz CSS. */
+.assessmentWordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.assessmentWordmark :global(.xq-intro-hero-svg) {
+  display: block;
+  height: clamp(64px, 8vw, 104px);
+  width: auto;
+  overflow: visible;
+}
+.assessmentCard {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  padding: calc(var(--gs-n-32) * var(--gs-px))
+    calc(var(--gs-n-28) * var(--gs-px));
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  height: 100%;
+  box-sizing: border-box;
+}
+.assessmentLabel {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1.2;
+  color: var(--gs-tw-white);
+  letter-spacing: -0.01em;
+}
+.assessmentAvailability {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: clamp(11px, 1vw, 13px);
+  line-height: 1.4;
+  color: #FBAD25;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.assessmentBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-md-size);
+  line-height: var(--gs-text-md-leading);
+  color: rgba(255, 255, 255, 0.78);
+}
+.teaserBodyEmphatic {
+  margin: calc(var(--gs-n-8) * var(--gs-px)) 0 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.92);
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+}
+
+@media (max-width: 768px) {
+  .assessmentPair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.teaserEyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: clamp(12px, 1.2vw, 14px);
+  line-height: 1.4;
+  color: #FBAD25;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.teaserHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: clamp(32px, 5.5vw, 64px);
+  line-height: 1.1;
+  color: var(--gs-tw-white);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.teaserBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* =============================================================================
+   X-DECK DEMO SECTION — explainer block + embedded live deck.
+   The deck component owns its own dark surface and viewport-breakout
+   side margins; we only own the surrounding intro + outro.
+   ============================================================================= */
+
+.xdeckSection {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+  margin-top: calc(var(--gs-n-80) * var(--gs-px));
+  gap: calc(var(--gs-n-32) * var(--gs-px));
+}
+
+.xdeckIntro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+  max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
+}
+
+.xdeckDemo {
+  /* Full-width slot — the embedded XDeckSection already breaks out of
+     its parent via negative margins, but giving the slot block-level
+     width keeps that math stable when the outer section is padded. */
+  width: 100%;
+}
+
+/* =============================================================================
    WHITE PAPER CTA SECTION
    ============================================================================= */
 
@@ -795,7 +975,10 @@
   justify-content: center;
   padding: calc(var(--gs-n-48) * var(--gs-px)) var(--edge-pad);
   padding-bottom: calc(var(--gs-n-200) * var(--gs-px));
-  margin-top: calc(var(--gs-n-160) * var(--gs-px));
+  /* Margin-top trimmed (was n-160) since the X-Deck outro block
+     was removed; the persona-split CTA now pulls up into the gap
+     the outro used to occupy. */
+  margin-top: calc(var(--gs-n-64) * var(--gs-px));
 }
 
 .whitepaperContent {

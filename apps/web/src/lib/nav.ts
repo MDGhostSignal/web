@@ -10,7 +10,7 @@ export const navLinks = [
   { href: "/for-advertisers", label: "For Advertisers" },
   { href: "/who-are-we", label: "Who Are We" },
   { href: "/snowdrift", label: "SNOWDRIFT" },
-  { href: "/rq-quiz", label: "RQ Quiz" },
+  { href: "/xq-quiz", label: "XQ Quiz" },
   // `cta: true` → rendered as the primary call-to-action button (solid
   // pill) rather than a plain nav link. Keep this as the last entry so
   // it sits at the right edge of the nav row.

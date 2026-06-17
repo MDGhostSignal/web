@@ -14,6 +14,10 @@ type Props = {
   candidate: MatchCandidate;
   compatibility: Compatibility;
   viewer: ViewerProfile;
+  /** When true, the connect CTAs render as disabled buttons — used
+   *  on public marketing surfaces where the deck is a preview, not a
+   *  real action surface. */
+  previewMode?: boolean;
 };
 
 type AxisRowProps = {
@@ -39,7 +43,12 @@ function AxisRow({ leftLabel, rightLabel, value }: AxisRowProps) {
   );
 }
 
-export function MatchCardDetail({ candidate, compatibility, viewer }: Props) {
+export function MatchCardDetail({
+  candidate,
+  compatibility,
+  viewer,
+  previewMode = false,
+}: Props) {
   const identity = CHARACTERS[candidate.archetype];
   const archetype = ARCHETYPES[candidate.archetype];
   const sharedSet = new Set(compatibility.sharedNonNegotiables);
@@ -86,12 +95,27 @@ export function MatchCardDetail({ candidate, compatibility, viewer }: Props) {
         </div>
 
         <div className={styles.detailCta}>
-          <button type="button" className={styles.detailCtaBtn}>
+          <button
+            type="button"
+            className={`${styles.detailCtaBtn} ${previewMode ? styles.detailCtaBtnDisabled : ""}`}
+            disabled={previewMode}
+            aria-disabled={previewMode}
+          >
             Request intro →
           </button>
-          <button type="button" className={styles.detailCtaBtnGhost}>
+          <button
+            type="button"
+            className={`${styles.detailCtaBtnGhost} ${previewMode ? styles.detailCtaBtnDisabled : ""}`}
+            disabled={previewMode}
+            aria-disabled={previewMode}
+          >
             Save for later
           </button>
+          {previewMode && (
+            <span className={styles.detailCtaPreviewNote}>
+              Preview only &mdash; intros open after the XQ.
+            </span>
+          )}
         </div>
       </div>
 

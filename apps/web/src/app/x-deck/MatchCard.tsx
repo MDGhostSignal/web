@@ -129,12 +129,10 @@ export function MatchCard({
         </div>
 
         <div className={styles.cardIdentity}>
+          <span className={styles.cardMemberChip}>{candidate.memberType}</span>
           <div className={styles.cardName}>{candidate.name}</div>
           <div className={styles.cardRoleLine}>
-            <span className={styles.cardRoleText}>
-              {candidate.role} · {candidate.organization}
-            </span>
-            <span className={styles.cardMemberChip}>{candidate.memberType}</span>
+            {candidate.role} &middot; {candidate.organization}
           </div>
         </div>
 

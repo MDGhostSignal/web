@@ -62,12 +62,19 @@ export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // === Studio surface (per-user Supabase Auth) ===========================
-  // /studio/login + /studio/register are unauthenticated. Everything
-  // else under /studio/* requires a Supabase session. Approved (= the
-  // member row has activated_at IS NOT NULL) users see the surface;
-  // pending users get the "waiting for approval" holding page.
+  // /studio (the root landing page), /studio/login, and /studio/register
+  // are unauthenticated — the root serves a public marketing landing for
+  // visitors who hit the workspace cold, and the page itself decides
+  // whether to render the landing or the dashboard based on the member
+  // session. Everything else under /studio/* requires a Supabase session.
+  // Approved (member row has activated_at IS NOT NULL) users see the
+  // surface; pending users get the "waiting for approval" holding page.
   if (pathname.startsWith("/studio")) {
-    if (pathname === "/studio/login" || pathname === "/studio/register") {
+    if (
+      pathname === "/studio" ||
+      pathname === "/studio/login" ||
+      pathname === "/studio/register"
+    ) {
       return NextResponse.next();
     }
     const supabase = await createStudioServerClient();

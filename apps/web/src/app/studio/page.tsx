@@ -20,6 +20,7 @@ import {
 
 import { RqProfileCard } from "./RqProfileCard";
 import { XqProfileCard } from "./XqProfileCard";
+import { StudioLanding } from "./StudioLanding";
 
 import styles from "./studio.module.css";
 import { StudioHeader } from "./StudioHeader";
@@ -29,7 +30,11 @@ import { StudioHeader } from "./StudioHeader";
  *  their own performance numbers. */
 export default async function StudioDashboardPage() {
   const member = await loadCurrentStudioMember();
-  if (!member) redirect("/studio/login");
+  // Public landing page — visitors without an authenticated member
+  // (i.e. prospective brands or creators who land at /studio cold)
+  // see the marketing front door. The "Sign in" CTA in the landing
+  // routes them on to /studio/login when they're actually a member.
+  if (!member) return <StudioLanding />;
   if (!member.isApproved) redirect("/studio/pending");
 
   // Load the right slice of data based on what kind of member they are.

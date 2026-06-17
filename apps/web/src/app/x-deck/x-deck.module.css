@@ -13,7 +13,12 @@
 .page,
 .section {
   --xd-card-w: 360px;
-  --xd-card-h: 504px;
+  /* Card height bumped (was 504) to accommodate the multi-row
+   * identity stack (pill / name / role · org) introduced when the
+   * cramped single-row roleLine layout was split apart. Without the
+   * extra ~30px the italic pitch line collided with the bottom
+   * gauge band and got clipped by `overflow: hidden`. */
+  --xd-card-h: 540px;
   --xd-card-radius: 14px;
   --xd-deck-perspective: 1600px;
   --xd-bg: #0b0f12;
@@ -67,6 +72,41 @@
 }
 :global(.studio-root:not([data-theme="dark"])) .detailCtaBtnGhost:hover {
   background: rgba(15, 23, 42, 0.05);
+}
+
+/* Forced-dark escape hatch — when the deck is wrapped in an element
+ * carrying `data-xd-force-dark`, re-assert the dark token values
+ * even though the surrounding studio-root is in light mode. Used on
+ * the public Studio landing where the X-Deck preview is rendered as
+ * a deliberately dark band inside an otherwise light page so the
+ * trading-card aesthetic (matte black foil, neon accents) still
+ * lands. Specificity matches the light-mode rules above; source
+ * order (this block is later) wins the tie. */
+:global(.studio-root) :global([data-xd-force-dark]) .section {
+  --xd-bg: #0b0f12;
+  --xd-card-bg: #14181c;
+  --xd-card-bg-strong: #1a1f25;
+  --xd-line: rgba(255, 255, 255, 0.08);
+  --xd-line-strong: rgba(255, 255, 255, 0.18);
+  --xd-text: #f4f4f6;
+  --xd-muted: #9aa0a8;
+}
+:global(.studio-root) :global([data-xd-force-dark]) .detail {
+  background: rgba(255, 255, 255, 0.022);
+  border-color: var(--xd-line);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6);
+}
+:global(.studio-root) :global([data-xd-force-dark]) .axisTrack {
+  background: rgba(255, 255, 255, 0.06);
+}
+:global(.studio-root) :global([data-xd-force-dark]) .axisTrackMid {
+  background: rgba(255, 255, 255, 0.16);
+}
+:global(.studio-root) :global([data-xd-force-dark]) .valueChip {
+  background: rgba(255, 255, 255, 0.04);
+}
+:global(.studio-root) :global([data-xd-force-dark]) .detailCtaBtnGhost:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .page {
@@ -348,43 +388,53 @@
 
 .cardIdentity {
   padding: 12px 18px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  text-align: left;
 }
 .cardName {
   font-family: var(--xd-display);
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--xd-text);
-  margin: 0 0 2px;
+  margin: 0;
   letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  align-self: stretch;
 }
 .cardRoleLine {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-size: 12px;
+  line-height: 1.35;
   color: var(--xd-muted);
+  margin: 0;
   white-space: nowrap;
-}
-.cardRoleText {
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1 1 auto;
-  min-width: 0;
+  max-width: 100%;
+  align-self: stretch;
 }
+/* Member type pill — now sits as its own top-row label above the
+ * name (was previously squeezed onto the same row as role · org,
+ * which collided with creators whose role text already contained
+ * "creator/creative"). Accent-tinted so it reads as a typed label,
+ * not another piece of body copy. */
 .cardMemberChip {
   font-family: var(--xd-mono);
   font-size: 9.5px;
-  letter-spacing: 1px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  padding: 2px 7px;
+  padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--xd-text);
-  border: 1px solid var(--xd-line);
+  background: var(--card-accent-soft);
+  color: var(--card-accent);
+  border: 1px solid var(--card-accent);
   flex-shrink: 0;
+  font-weight: 600;
 }
 
 .cardPitch {
@@ -659,6 +709,31 @@
 }
 .detailCtaBtnGhost:hover { color: var(--xd-text); background: rgba(255, 255, 255, 0.04); }
 
+/* Marketing-preview disabled state for both CTA buttons. Applied
+ * alongside `disabled` so hover affordances + active depress are
+ * suppressed and the cursor reads as non-interactive. Used on the
+ * public /what-is-this page where the deck is a non-functional
+ * showcase. */
+.detailCtaBtnDisabled,
+.detailCtaBtnDisabled:hover {
+  cursor: not-allowed;
+  opacity: 0.5;
+  filter: none;
+  transform: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--xd-muted);
+  border-color: var(--xd-line);
+}
+.detailCtaPreviewNote {
+  font-family: var(--xd-mono);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--xd-muted);
+  opacity: 0.75;
+  margin-left: 4px;
+}
+
 /* --- Thumbnail rail --------------------------------------------- */
 .thumbRail {
   display: flex;
@@ -716,7 +791,10 @@
   .page,
   .section {
     --xd-card-w: 300px;
-    --xd-card-h: 420px;
+    /* Matches the desktop bump in proportion — was 420; +30 for the
+     * multi-row identity layout so the pitch line stays uncut on
+     * mobile too. */
+    --xd-card-h: 450px;
   }
   .hero {
     grid-template-columns: 1fr;

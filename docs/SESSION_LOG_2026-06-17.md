@@ -365,3 +365,269 @@ Plus today's session log (this file).
 Studio is now actually accessible at `ghostsignal.cloud/studio`.
 Registration flow is end-to-end pending the final Resend smoke test.
 Tomorrow's call.
+
+---
+
+# Continuation — public-facing storytelling pass (later 2026-06-17)
+
+Second working block on the same day. Theme: explain the product on
+the public surfaces. Built the **XQ + RQ explainer + X-Deck preview**
+on `/what-is-this`, a **public landing page** for `/studio` with the
+same narrative blocks (framework → X-Deck → features → personas →
+World preview → CTA), removed the **graph axes** from the
+`/for-advertisers` Lottie, switched the **main nav** RQ link to XQ,
+and iterated on the X-Deck card layout twice based on review feedback.
+
+## 1 · `/what-is-this` — XQ + RQ explainer + X-Deck preview
+
+Built directly below the existing globe `finalSection`, above the
+persona-split `whitepaperSection`. Sections all use `@/motion`
+components (`SplitLinesReveal`, `ScrollFadeUp`) and the `--gs-*`
+public surface tokens.
+
+**Initial drop:**
+- New XQ-teaser section with the headline "What kind of signal do
+  you transmit?" and a CTA to `/xq-quiz`.
+- New X-Deck section embedding `<XDeckSection>` (from `apps/web/src/
+  app/x-deck/`) in `compact` mode with `MOCK_VIEWER` + the curated
+  candidate set.
+
+**Two iterations on the explainer:**
+1. Added the **XQ + RQ extruded 3D wordmarks** (`XQ3DWordmark` /
+   `RQ3DWordmark` from `xq-quiz/Wordmarks3D`) above the teaser
+   headline, alongside two-up assessment cards labeled "Values
+   Blueprint — Free · Open to everyone" and "Resonance Quotient —
+   Members only · The matching engine". Copy adapted from
+   `/xq-quiz` `IntroStep.tsx` so the two surfaces stay in lockstep.
+2. **Moved the wordmarks down** so each one sits directly on top of
+   its respective assessment card (XQ above Values Blueprint, RQ
+   above Resonance Quotient). The wordmarks size via a CSS-module
+   `:global(.xq-intro-hero-svg)` hook so we don't have to import
+   `/xq-quiz/xq-quiz.css` into the public-site bundle just for the
+   `--xq-hero-size` token.
+
+**`<XDeckSection>` gained two new props:**
+- `previewMode: boolean` — when true, the "Request intro" /
+  "Save for later" CTAs on `MatchCardDetail` render disabled with
+  a "Preview only — intros open after the XQ." note. Used on both
+  `/what-is-this` and the new `/studio` landing.
+- (Existing `compact` prop is already in use too — hides the long
+  ThumbnailRail strip.)
+
+**Curated portrait swap.** The shared `MOCK_CANDIDATES` ships with
+picsum.photos random-seed imageUrls — unpredictable on a marketing
+surface. Extracted a new module:
+
+- `apps/web/src/lib/match/preview-fixtures.ts` — re-exports
+  `PREVIEW_CANDIDATES` with `imageUrl` overridden per `id` using
+  six curated Unsplash portraits (verified via the photo pages):
+  - cand-01 Jeremy Arche — Caucasian male portrait
+    (`photo-1590086782792-42dd2350140d`)
+  - cand-02 — unchanged Unsplash artistic crop
+  - cand-03 — unchanged Unsplash crop
+  - cand-04 Iris Tanaka — young East Asian professional
+    (`photo-1581065178047-8ee15951ede6`)
+  - cand-05 — unchanged
+  - cand-06 Priya Shankar — young Indian businesswoman
+    (`photo-1637589267610-6c66fc2a086b`)
+
+The base `MOCK_CANDIDATES` are **not** mutated — `/x-deck` (the
+iteration surface) keeps its previous picsum images so a designer
+can spot which surface is which.
+
+**Removed the X-Deck outro** ("Your own deck is one quiz away" +
+"Build my deck" CTA). The "Follow Your Signal" persona-split CTA
+now pulls up into that gap (`whitepaperSection` margin-top trimmed
+`n-160 → n-64`).
+
+## 2 · X-Deck card identity — two iterations
+
+User feedback round 1: "the name is bold and centered, but below
+that 'creator' is mentioned twice" — the original layout had
+`{role} · {organization}` + a "creator" pill on the same flex row.
+For candidates whose role text contained "creator" (e.g. Saanvi's
+"Creative Director"), the visible row read as "Creative Director ·
+Frame & Function [creator]" — visually redundant.
+
+Restructured `MatchCard.tsx` + `x-deck.module.css`:
+- Identity column now flex column, left-aligned: **pill (top) →
+  name → role · org**. Pill restyled with the archetype accent
+  (`--card-accent-soft` background, `--card-accent` text + border)
+  so it reads as a typed label, not body copy.
+- The roleLine is now just text — no flex/ellipsis duel.
+
+User feedback round 2: the italic pitch line was clipped at the
+bottom of each card. Diagnosed: the new multi-row identity stack
+added ~35 px of content vs the previous single row, which pushed
+the pitch into the gauge band where `overflow: hidden` cut it off.
+
+- `--xd-card-h` bumped `504 → 540` (desktop) and `420 → 450`
+  (mobile responsive block).
+- Identity block tightened: `padding-top 14 → 12`, `gap 6 → 5`.
+
+## 3 · `/for-advertisers` Lottie — X/Y axes removed
+
+User initially pointed at `creators.json` then corrected to
+`advertisers.json`. Inspected the file via a `node` script:
+21 root layers including two **literally named `"x"` and `"y"`**
+(plus a `"line"` layer for the graph curve, eight precomp icon
+references, nine masked-rectangle dot-grid layers, and a bg solid).
+
+Removed layers 8 (`"y"`) and 9 (`"x"`) via a Node script. 21 →
+19 root layers. `assets:audit` still passes. The four feature
+icons, the connecting `"line"` curve, the dot-grid background,
+and the bg solid are all untouched.
+
+## 4 · Main nav — `/rq-quiz` → `/xq-quiz`
+
+`apps/web/src/lib/nav.ts` — single source of truth swap:
+- Before: `{ href: "/rq-quiz", label: "RQ Quiz" }`
+- After:  `{ href: "/xq-quiz", label: "XQ Quiz" }`
+
+Every public page that pulls `navLinks` (homepage, what-is-this,
+for-creators, for-advertisers, who-are-we, etc.) picks this up
+automatically.
+
+## 5 · `/studio` — public landing page
+
+**Problem.** `/studio` redirected unauthenticated visitors straight
+to `/studio/login` — the workspace had no "front door" for
+prospective members landing cold.
+
+**Plan.** Gate inside `/studio/page.tsx`: render `<StudioLanding />`
+for visitors without a member session; keep the dashboard for
+approved members; pending users still bounce to `/studio/pending`.
+
+**New files:**
+- `apps/web/src/app/studio/StudioLanding.tsx` — server component
+  (no interactivity beyond `<Link>` navigation). Pulls
+  `<XQ3DWordmark>`, `<RQ3DWordmark>`, `<XDeckSection>`,
+  `MOCK_VIEWER`, and `PREVIEW_CANDIDATES`.
+- `apps/web/src/app/studio/StudioLanding.module.css` — themed
+  through the existing `--studio-*` token namespace so it light/dark
+  themes alongside the rest of the workspace.
+
+**Two routing fixes were needed:**
+
+a) `apps/web/src/app/studio/page.tsx` — `if (!member)
+   redirect("/studio/login")` → `if (!member) return
+   <StudioLanding />`.
+
+b) `apps/web/src/proxy.ts` — the proxy was intercepting every
+   unauthenticated `/studio/*` request and bouncing to
+   `/studio/login` before `page.tsx` could decide. Added
+   `pathname === "/studio"` to the unauthenticated allowlist
+   alongside `/studio/login` and `/studio/register`.
+
+**Final section order on `/studio` (signed out) — settled after
+three reorders requested during the session:**
+
+1. **Hero** — "Your private signal HQ for brand & creator
+   partnerships."
+2. **The framework — XQ + RQ** — wordmark + Values-Blueprint card,
+   wordmark + Resonance-Quotient card, closing emphatic line.
+   **No "Take the XQ" CTA** per explicit instruction (the studio
+   landing shouldn't push prospects into the public quiz from this
+   surface).
+3. **The X-Deck preview** — moved here on the user's third pass.
+   Embeds the same dark deck UI.
+4. **What this is** — three-up features (Live performance · XQ & RQ
+   profile · Marketplace + World).
+5. **Who this is for** — two-up persona cards with bulletted
+   benefit lists for brands and creators.
+6. **The World preview** — pixel-art Harvest Moon village PNG in a
+   framed card with `image-rendering: pixelated`, plus a four-up
+   feature list (pixel-art world, real-time multiplayer, walk-up
+   to chat with a `<kbd>E</kbd>` glyph, members only). No "Zelda"
+   mention per instruction; described as "classic 16-bit style".
+7. **Closing CTA** — "Sign in to Studio" + "Get in touch".
+
+## 6 · X-Deck — forced-dark escape hatch
+
+The X-Deck section on the studio landing needed to read as a dark
+band even though the surrounding studio surface is light by
+default. The existing `x-deck.module.css` already has a
+`.studio-root:not([data-theme="dark"]) .section` light-mode
+override that fires inside the studio shell.
+
+**Added a forced-dark opt-in** to `x-deck.module.css`:
+
+```css
+:global(.studio-root) :global([data-xd-force-dark]) .section {
+  --xd-bg: #0b0f12; --xd-card-bg: #14181c; /* ... */
+}
+/* + matching overrides for .detail, .axisTrack, .axisTrackMid,
+   .valueChip, .detailCtaBtnGhost:hover */
+```
+
+Specificity ties with the light-mode rules; source order (this
+block is later) wins.
+
+In `StudioLanding.tsx`, the X-Deck section now carries
+`data-xd-force-dark` on the wrapper, plus a `.xdeckDarkSection`
+className that sets the section background to `#0b0f12` and
+re-colors the eyebrow / title / lede so they read on dark.
+
+## 7 · Asset note — `statue.png` & `worldblock.psd`
+
+Two pre-existing local-asset changes from earlier in the day
+(unrelated to the storytelling pass) shipped alongside this
+commit: `statue.png` was re-exported smaller (256 KB → 196 KB),
+and `worldblock.psd` was added to public/world/sprites/ as an
+untracked vault file (the PSD source, not yet referenced by code).
+
+`worldblock.psd` should arguably be in `assets/` (the local-only
+vault) rather than `public/`. Logging it here so we revisit if a
+PR reviewer flags the binary in `public/`.
+
+## Files touched (continuation block)
+
+### New
+- `apps/web/src/app/studio/StudioLanding.tsx`
+- `apps/web/src/app/studio/StudioLanding.module.css`
+- `apps/web/src/lib/match/preview-fixtures.ts`
+
+### Modified
+- `apps/web/public/images/for-advertisers/advertisers.json` (axis
+  layers removed)
+- `apps/web/public/world/sprites/statue.png` (re-exported)
+- `apps/web/src/app/studio/page.tsx` (landing gate)
+- `apps/web/src/app/what-is-this/page.module.css`
+- `apps/web/src/app/what-is-this/page.tsx`
+- `apps/web/src/app/x-deck/MatchCard.tsx` (identity restructure)
+- `apps/web/src/app/x-deck/MatchCardDetail.tsx` (`previewMode` prop +
+  disabled CTAs)
+- `apps/web/src/app/x-deck/XDeckSection.tsx` (`previewMode` prop)
+- `apps/web/src/app/x-deck/x-deck.module.css` (card height bump +
+  identity column + forced-dark escape hatch)
+- `apps/web/src/lib/nav.ts` (RQ → XQ)
+- `apps/web/src/proxy.ts` (/studio in unauth allowlist)
+
+### New untracked (binary)
+- `apps/web/public/world/sprites/worldblock.psd` — see §7 above
+
+## Validation
+
+- `npm run typecheck` — clean after every edit batch.
+- `npm run lint:css` — clean.
+- `npm run assets:audit` — 53/53 referenced public assets exist
+  (run after the Lottie edit).
+- Dev server stayed up at `localhost:3000` throughout. All affected
+  routes rendered without console errors during the session.
+
+## Open / next-step notes
+
+- **Replace Unsplash portraits with real member shots** when
+  Studio onboarding is fleshed out — the curated Unsplash URLs in
+  `preview-fixtures.ts` are placeholder-grade, not brand-grade.
+  Three are deliberately matched to fixture names by ethnicity at
+  the user's direction; the other three are still generic.
+- **`worldblock.psd` location** — decide whether to keep it in
+  `public/world/sprites/` or move to `assets/`.
+- **"Build my deck" link** on the public quiz funnel — currently
+  `/xq-quiz` from both XQ teaser and (removed) X-Deck outro. If
+  the eventual flow lands on a deck-reveal page that's not
+  `/xq-quiz` itself, update.
+- **Studio landing "Sign in to Studio" / "Apply for access" CTAs**
+  — `/studio/login` works; `/get-in-touch` works. Nothing else to
+  wire on the landing page itself.

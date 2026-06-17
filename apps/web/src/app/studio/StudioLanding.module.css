@@ -1,0 +1,567 @@
+/* Studio landing — public-facing surface served at /studio when no
+ * authenticated member is detected. Uses the --studio-* token
+ * namespace so it inherits the same light/dark theme as the rest of
+ * the studio shell. Raw px is fine here (studio surface is excluded
+ * from the public --gs-* Stylelint rule). */
+
+.page {
+  min-height: 100dvh;
+  background: var(--studio-bg);
+  color: var(--studio-text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----- Top bar — brand mark + minimal sign-in CTA --------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--studio-border);
+  background: var(--studio-surface-1);
+}
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-body, system-ui), sans-serif;
+}
+.brandName {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: 17px;
+  color: var(--studio-text-primary);
+}
+.brandTag {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+.topbarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.linkSubtle {
+  color: var(--studio-text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: background 180ms ease, color 180ms ease;
+}
+.linkSubtle:hover {
+  color: var(--studio-text-primary);
+  background: var(--studio-surface-hover);
+}
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--studio-accent);
+  color: var(--studio-text-inverse);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--studio-accent);
+  transition: background 180ms ease, transform 180ms ease;
+}
+.btnPrimary:hover {
+  background: var(--studio-accent-strong);
+  transform: translateY(-1px);
+}
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--studio-text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--studio-border-strong);
+  background: var(--studio-surface-1);
+  transition: background 180ms ease, border-color 180ms ease;
+}
+.btnGhost:hover {
+  background: var(--studio-surface-hover);
+  border-color: var(--studio-accent);
+}
+
+/* ----- Hero ----------------------------------------------------- */
+.hero {
+  position: relative;
+  padding: 96px 32px 80px;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 1100px 540px at 50% -10%,
+      var(--studio-accent-soft),
+      transparent 60%
+    );
+  pointer-events: none;
+}
+.heroInner {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.heroEyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--studio-accent);
+  margin: 0 0 18px;
+}
+.heroTitle {
+  font-family: var(--font-body, system-ui), sans-serif;
+  font-size: clamp(36px, 5.5vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  margin: 0 0 22px;
+  color: var(--studio-text-primary);
+}
+.heroLede {
+  font-size: clamp(17px, 1.6vw, 20px);
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+  max-width: 680px;
+  margin: 0 auto 36px;
+}
+.heroActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ----- Sections ------------------------------------------------ */
+.section {
+  padding: 72px 32px;
+  border-top: 1px solid var(--studio-border);
+}
+.sectionInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.sectionEyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--studio-accent);
+  margin: 0 0 12px;
+}
+.sectionTitle {
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+  margin: 0 0 14px;
+  max-width: 720px;
+}
+.sectionLede {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--studio-text-secondary);
+  max-width: 720px;
+  margin: 0 0 36px;
+}
+
+/* What-it-is — three-up feature cards. */
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.featureCard {
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 16px;
+  padding: 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 220ms ease, box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+.featureCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--studio-accent);
+  box-shadow: var(--studio-shadow-card);
+}
+.featureBadge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--studio-accent-soft);
+  color: var(--studio-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.featureTitle {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+  margin: 0;
+}
+.featureBody {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--studio-text-secondary);
+  margin: 0;
+}
+
+/* Who-it's-for — two-up persona cards. */
+.personaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.personaCard {
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  padding: 32px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.personaLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+.personaTitle {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+  margin: 0;
+}
+.personaIntro {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--studio-text-secondary);
+  margin: 0;
+}
+.personaList {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.personaListItem {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--studio-text-primary);
+}
+.personaListItem::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--studio-accent);
+}
+
+/* ----- Framework section (XQ + RQ) ------------------------------ */
+/* Two-column grid: wordmark above each assessment card. Mirrors the
+ * /what-is-this layout but uses --studio-* tokens so the cards read
+ * on both light and dark studio themes. */
+.assessmentPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  align-items: stretch;
+  margin-top: 28px;
+}
+.assessmentColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+}
+.assessmentWordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* The wordmark SVGs are dark-tuned (extruded slices on a black
+   * underlay, gradient fronts). Sit them on the studio-2 surface so
+   * the deep colors keep their punch on both light and dark modes. */
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  padding: 22px 18px;
+}
+/* The Wordmarks3D SVGs carry the `.xq-intro-hero-svg` global class
+ * for their own sizing token (--xq-hero-size) — declared on the
+ * xq-quiz page only. Size locally via :global so the SVGs render
+ * at a column-friendly scale without pulling in xq-quiz.css. */
+.assessmentWordmark :global(.xq-intro-hero-svg) {
+  display: block;
+  height: clamp(64px, 7vw, 100px);
+  width: auto;
+  overflow: visible;
+}
+.assessmentCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 26px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.assessmentLabel {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+}
+.assessmentAvailability {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+.assessmentBody {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--studio-text-secondary);
+}
+.frameworkEmphatic {
+  margin: 32px 0 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--studio-text-primary);
+  max-width: 760px;
+  font-weight: 500;
+}
+
+/* ----- X-Deck preview slot -------------------------------------- */
+/* The embedded XDeckSection breaks out to viewport width via its
+ * own negative margins, so the wrapping slot just gives it block-
+ * level space and a top margin to separate it from the intro copy. */
+.xdeckSlot {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* Forced-dark X-Deck band on the otherwise light landing. The deck
+ * itself opts back into dark via the `data-xd-force-dark` attribute
+ * on the section (see x-deck.module.css). This block just dark-
+ * themes the surrounding chrome — section bg, eyebrow / title /
+ * lede colors — so the band reads as a single dark moment in the
+ * page rather than dark cards floating on a white surface.
+ *
+ * Class-name selectors with `>` and direct descendant scoping let
+ * the rules win without `!important` against the equally-specific
+ * default eyebrow/title/lede rules above. */
+.xdeckDarkSection {
+  background: #0b0f12;
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+.xdeckDarkSection .sectionEyebrow {
+  color: #c3b4dc;
+}
+.xdeckDarkSection .sectionTitle {
+  color: #f4f4f6;
+}
+.xdeckDarkSection .sectionLede {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ----- World preview ------------------------------------------- */
+/* Two-column on desktop: pixel-art village frame on the left, a
+ * feature list on the right. Stacks on narrower viewports.
+ *
+ * The world image is rendered with `image-rendering: pixelated` so
+ * the upscaled 16-bit village stays crisp instead of being blurred
+ * by the browser's default smoothing — the same image-render hint
+ * the actual /studio/world page uses. */
+.worldPreview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 36px;
+  align-items: stretch;
+  margin-top: 32px;
+}
+.worldFrame {
+  position: relative;
+  background: #2d4a26;
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  box-shadow: var(--studio-shadow-card);
+}
+.worldImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.worldFrameOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 14px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 18, 25, 0.36) 0%,
+    rgba(15, 18, 25, 0) 30%,
+    rgba(15, 18, 25, 0) 70%,
+    rgba(15, 18, 25, 0.32) 100%
+  );
+}
+.worldFrameBadge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(15, 18, 25, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 5px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+}
+.worldFeatureList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.worldFeatureItem {
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.worldFeatureLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+.worldFeatureBody {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+}
+.worldFeatureBody kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 11.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--studio-text-primary);
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: 5px;
+  vertical-align: baseline;
+}
+
+@media (max-width: 960px) {
+  .worldPreview {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .worldFrame {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+/* Closing CTA — slim band with primary + secondary actions. */
+.closingSection {
+  padding: 80px 32px 96px;
+  text-align: center;
+  border-top: 1px solid var(--studio-border);
+  background: var(--studio-surface-2);
+}
+.closingTitle {
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: var(--studio-text-primary);
+}
+.closingLede {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+.closingActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 960px) {
+  .featureGrid { grid-template-columns: 1fr; }
+  .personaGrid { grid-template-columns: 1fr; }
+  .assessmentPair { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .topbar { padding: 16px 18px; }
+  .hero { padding: 64px 22px 56px; }
+  .section { padding: 56px 22px; }
+  .closingSection { padding: 60px 22px 72px; }
+}

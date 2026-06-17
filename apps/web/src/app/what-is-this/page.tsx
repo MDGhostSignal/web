@@ -12,6 +12,10 @@ const HarmonyOrbs = dynamic(() => import("./HarmonyOrbs"), { ssr: false });
 
 import BarsRipple from "./BarsRipple";
 import { SiteHeader } from "@/components/SiteHeader";
+import { XDeckSection } from "@/app/x-deck/XDeckSection";
+import { XQ3DWordmark, RQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
+import { MOCK_VIEWER } from "@/lib/match/fixtures";
+import { PREVIEW_CANDIDATES } from "@/lib/match/preview-fixtures";
 // ScrollScenes pulls in a custom WebGL globe + ring system (~700 LOC of
 // shader and JS). Defer it off the initial route chunk — the globe only
 // becomes visible well below the fold anyway.
@@ -631,6 +635,136 @@ export default function WhatIsThisPage() {
             {/* Globe behind the headline */}
             <div className={styles.finalGlobeWrapper}>
               <ScrollScenes className={styles.finalGlobe} verticalOffset={0} scale={0.88} />
+            </div>
+          </Section>
+
+          {/* XQ + RQ assessment teaser — first stop after the globe.
+              The two extruded wordmarks crown the section so visitors
+              immediately recognise the assessments by their hero
+              marks before the headline lands. Copy adapted from the
+              XQ intro screen so the two surfaces stay in lockstep. */}
+          <Section className={styles.xqTeaserSection}>
+            <div className={styles.xqTeaserContent}>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.teaserEyebrow}>Decode your signal</p>
+              </ScrollFadeUp>
+              <h2 className={styles.teaserHeadline}>
+                <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
+                  <span>What kind of signal</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} delay={0.4} className={styles.headlineLine}>
+                  <span>do you transmit?</span>
+                </SplitLinesReveal>
+              </h2>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.teaserBody}>
+                  Every brand and every show puts out a signal. We built
+                  two connected assessments to map yours and turn it into
+                  partnerships you can be proud of.
+                </p>
+              </ScrollFadeUp>
+              <div className={styles.assessmentPair}>
+                <ScrollFadeUp index={2} duration={1.6} className={styles.assessmentColumn}>
+                  <div className={styles.assessmentWordmark}>
+                    <XQ3DWordmark />
+                  </div>
+                  <article className={styles.assessmentCard}>
+                    <p className={styles.assessmentLabel}>
+                      Values Blueprint
+                    </p>
+                    <p className={styles.assessmentAvailability}>
+                      Free &middot; Open to everyone
+                    </p>
+                    <p className={styles.assessmentBody}>
+                      A three-minute audit that uncovers the internal
+                      compass of your business. Codify your non-negotiables
+                      and your operating style across eight archetypes &mdash;
+                      and walk away with a Values Blueprint that gives
+                      brands and creators absolute clarity on who they are.
+                    </p>
+                  </article>
+                </ScrollFadeUp>
+                <ScrollFadeUp index={3} duration={1.6} className={styles.assessmentColumn}>
+                  <div className={styles.assessmentWordmark}>
+                    <RQ3DWordmark />
+                  </div>
+                  <article className={styles.assessmentCard}>
+                    <p className={styles.assessmentLabel}>
+                      Resonance Quotient
+                    </p>
+                    <p className={styles.assessmentAvailability}>
+                      Members only &middot; The matching engine
+                    </p>
+                    <p className={styles.assessmentBody}>
+                      Reserved for full <BrandedGhostSignal /> members,
+                      the RQ translates your XQ blueprint into aligned
+                      partnerships. It&rsquo;s the bridge that matches
+                      brands with the right podcasts for revenue you can
+                      be proud of &mdash; and creators with the right
+                      brands for campaigns that don&rsquo;t cost them
+                      their audience.
+                    </p>
+                  </article>
+                </ScrollFadeUp>
+              </div>
+              <ScrollFadeUp index={4} duration={1.6}>
+                <p className={styles.teaserBodyEmphatic}>
+                  Together, the XQ and RQ give brands and creators a
+                  renewed sense of purpose, rich clarity, and the data
+                  needed for frictionless, high-value partnerships.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={5} duration={1.6}>
+                <Link href="/xq-quiz" className={styles.whitepaperButton}>
+                  Take the XQ &mdash; it&rsquo;s free
+                </Link>
+              </ScrollFadeUp>
+            </div>
+          </Section>
+
+          {/* X-Deck demo — embeds the same trading-card surface used
+              after the XQ results, but with fixture data so visitors
+              can preview the matching experience before they take the
+              assessment. */}
+          <Section className={styles.xdeckSection}>
+            <div className={styles.xdeckIntro}>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.teaserEyebrow}>The X-Deck</p>
+              </ScrollFadeUp>
+              <h2 className={styles.teaserHeadline}>
+                <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
+                  <span>Your match deck.</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} delay={0.4} className={styles.headlineLine}>
+                  <span>Made for you.</span>
+                </SplitLinesReveal>
+              </h2>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.teaserBody}>
+                  When the XQ knows you, the X-Deck shows you. Every potential
+                  partner becomes a trading card &mdash; archetype, conviction
+                  fingerprint, shared values, and a single resonance score that
+                  reads at a glance.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={2} duration={1.6}>
+                <p className={styles.teaserBody}>
+                  For brands, it&rsquo;s the end of cold outreach to creators
+                  who don&rsquo;t share your soul. For creators, it&rsquo;s a
+                  shortlist of advertisers who already get it. The deck below
+                  is a live preview &mdash; sample data, real interface.
+                </p>
+              </ScrollFadeUp>
+            </div>
+            <div className={styles.xdeckDemo}>
+              <XDeckSection
+                viewer={MOCK_VIEWER}
+                candidates={PREVIEW_CANDIDATES}
+                eyebrow="Preview"
+                title="A sample deck for a brand-side viewer"
+                compact
+                previewMode
+              />
             </div>
           </Section>
 
