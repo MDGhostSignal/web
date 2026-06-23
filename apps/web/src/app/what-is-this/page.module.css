@@ -933,38 +933,6 @@
 }
 
 /* =============================================================================
-   X-DECK DEMO SECTION — explainer block + embedded live deck.
-   The deck component owns its own dark surface and viewport-breakout
-   side margins; we only own the surrounding intro + outro.
-   ============================================================================= */
-
-.xdeckSection {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
-  margin-top: calc(var(--gs-n-80) * var(--gs-px));
-  gap: calc(var(--gs-n-32) * var(--gs-px));
-}
-
-.xdeckIntro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-  max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
-}
-
-.xdeckDemo {
-  /* Full-width slot — the embedded XDeckSection already breaks out of
-     its parent via negative margins, but giving the slot block-level
-     width keeps that math stable when the outer section is padded. */
-  width: 100%;
-}
-
-/* =============================================================================
    WHITE PAPER CTA SECTION
    ============================================================================= */
 

@@ -12,10 +12,7 @@ const HarmonyOrbs = dynamic(() => import("./HarmonyOrbs"), { ssr: false });
 
 import BarsRipple from "./BarsRipple";
 import { SiteHeader } from "@/components/SiteHeader";
-import { XDeckSection } from "@/app/x-deck/XDeckSection";
 import { XQ3DWordmark, RQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
-import { MOCK_VIEWER } from "@/lib/match/fixtures";
-import { PREVIEW_CANDIDATES } from "@/lib/match/preview-fixtures";
 // ScrollScenes pulls in a custom WebGL globe + ring system (~700 LOC of
 // shader and JS). Defer it off the initial route chunk — the globe only
 // becomes visible well below the fold anyway.
@@ -719,52 +716,6 @@ export default function WhatIsThisPage() {
                   Take the XQ &mdash; it&rsquo;s free
                 </Link>
               </ScrollFadeUp>
-            </div>
-          </Section>
-
-          {/* X-Deck demo — embeds the same trading-card surface used
-              after the XQ results, but with fixture data so visitors
-              can preview the matching experience before they take the
-              assessment. */}
-          <Section className={styles.xdeckSection}>
-            <div className={styles.xdeckIntro}>
-              <ScrollFadeUp index={0} duration={1.6}>
-                <p className={styles.teaserEyebrow}>The X-Deck</p>
-              </ScrollFadeUp>
-              <h2 className={styles.teaserHeadline}>
-                <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
-                  <span>Your match deck.</span>
-                </SplitLinesReveal>
-                <SplitLinesReveal duration={1.8} delay={0.4} className={styles.headlineLine}>
-                  <span>Made for you.</span>
-                </SplitLinesReveal>
-              </h2>
-              <ScrollFadeUp index={1} duration={1.6}>
-                <p className={styles.teaserBody}>
-                  When the XQ knows you, the X-Deck shows you. Every potential
-                  partner becomes a trading card &mdash; archetype, conviction
-                  fingerprint, shared values, and a single resonance score that
-                  reads at a glance.
-                </p>
-              </ScrollFadeUp>
-              <ScrollFadeUp index={2} duration={1.6}>
-                <p className={styles.teaserBody}>
-                  For brands, it&rsquo;s the end of cold outreach to creators
-                  who don&rsquo;t share your soul. For creators, it&rsquo;s a
-                  shortlist of advertisers who already get it. The deck below
-                  is a live preview &mdash; sample data, real interface.
-                </p>
-              </ScrollFadeUp>
-            </div>
-            <div className={styles.xdeckDemo}>
-              <XDeckSection
-                viewer={MOCK_VIEWER}
-                candidates={PREVIEW_CANDIDATES}
-                eyebrow="Preview"
-                title="A sample deck for a brand-side viewer"
-                compact
-                previewMode
-              />
             </div>
           </Section>
 
