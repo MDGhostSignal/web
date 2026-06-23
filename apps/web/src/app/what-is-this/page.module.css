@@ -944,7 +944,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+  /* Tighter horizontal padding than the rest of the page so the
+     two-column preview can spread across the full viewport — the
+     image needs the real estate to read as a "live world" and the
+     feature cards on the right need room to breathe without the
+     map crowding them. */
+  padding: calc(var(--gs-n-80) * var(--gs-px))
+    calc(var(--gs-n-64) * var(--gs-px));
   margin-top: calc(var(--gs-n-64) * var(--gs-px));
 }
 
@@ -954,15 +960,22 @@
   align-items: center;
   text-align: center;
   gap: calc(var(--gs-n-24) * var(--gs-px));
-  max-width: calc(var(--gs-n-1152, 1152) * var(--gs-px));
+  /* Cap text blocks (headline, lede paragraphs) at a comfortable
+     reading width — the worldPreview grid below opts out of this
+     via its own `max-width: none`. */
   width: 100%;
+  max-width: calc(var(--gs-n-1664, 1664) * var(--gs-px));
+}
+
+.worldTeaserContent > :not(.worldPreview) {
+  max-width: calc(var(--gs-n-960, 960) * var(--gs-px));
 }
 
 .worldPreview {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  gap: calc(var(--gs-n-36) * var(--gs-px));
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: calc(var(--gs-n-48) * var(--gs-px));
+  align-items: start;
   width: 100%;
   margin-top: calc(var(--gs-n-32) * var(--gs-px));
   text-align: left;
@@ -1070,12 +1083,23 @@
 }
 
 @media (max-width: 960px) {
+  .worldTeaserSection {
+    padding: calc(var(--gs-n-64) * var(--gs-px))
+      calc(var(--gs-n-32) * var(--gs-px));
+  }
   .worldPreview {
     grid-template-columns: 1fr;
     gap: calc(var(--gs-n-22) * var(--gs-px));
   }
   .worldFrame {
     aspect-ratio: 16 / 10;
+  }
+}
+
+@media (max-width: 560px) {
+  .worldTeaserSection {
+    padding: calc(var(--gs-n-48) * var(--gs-px))
+      calc(var(--gs-n-20) * var(--gs-px));
   }
 }
 
