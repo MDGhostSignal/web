@@ -719,6 +719,93 @@ export default function WhatIsThisPage() {
             </div>
           </Section>
 
+          {/* World preview — mirrors the bottom-of-studio teaser so
+              public visitors get a glimpse of the in-progress
+              multiplayer world before they ever sign up. Themed
+              against the public site's dark surface + --gs-* tokens
+              rather than the studio's light --studio-* tokens. */}
+          <Section className={styles.worldTeaserSection}>
+            <div className={styles.worldTeaserContent}>
+              <ScrollFadeUp index={0} duration={1.6}>
+                <p className={styles.teaserEyebrow}>The World</p>
+              </ScrollFadeUp>
+              <h2 className={styles.teaserHeadline}>
+                <SplitLinesReveal duration={1.8} className={styles.headlineLine}>
+                  <span>Walk into the world.</span>
+                </SplitLinesReveal>
+                <SplitLinesReveal duration={1.8} delay={0.4} className={styles.headlineLine}>
+                  <span>Meet your match in person.</span>
+                </SplitLinesReveal>
+              </h2>
+              <ScrollFadeUp index={1} duration={1.6}>
+                <p className={styles.teaserBody}>
+                  Studio members enter a shared, browser-based world
+                  &mdash; an overhead-view, real-time multiplayer space
+                  where every brand and creator is represented by a
+                  character tuned to their XQ archetype. Walk up to
+                  anyone, press a key, and a private chat opens with
+                  their full match read alongside.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={2} duration={1.6}>
+                <p className={styles.teaserBody}>
+                  It&rsquo;s the &ldquo;office floor&rdquo; of the
+                  network &mdash; built so partnerships can start from a
+                  real conversation instead of a cold inbox.
+                </p>
+              </ScrollFadeUp>
+              <ScrollFadeUp index={3} duration={1.6} className={styles.worldPreview}>
+                <div className={styles.worldFrame}>
+                  <Image
+                    src="/world/sprites/SNES - Harvest Moon - Backgrounds - Village (Summer).png"
+                    alt="A bird's-eye view of the GhostSignal World village — pixel-art buildings, paths, and trees laid out in a town square."
+                    fill
+                    sizes="(max-width: 960px) 100vw, 50vw"
+                    className={styles.worldImage}
+                  />
+                  <div className={styles.worldFrameOverlay} aria-hidden="true">
+                    <span className={styles.worldFrameBadge}>Live preview</span>
+                  </div>
+                </div>
+                <ul className={styles.worldFeatureList}>
+                  <li className={styles.worldFeatureItem}>
+                    <span className={styles.worldFeatureLabel}>Pixel-art world</span>
+                    <p className={styles.worldFeatureBody}>
+                      A persistent overhead village, rendered in classic
+                      16-bit style so the surface stays welcoming rather
+                      than overwhelming.
+                    </p>
+                  </li>
+                  <li className={styles.worldFeatureItem}>
+                    <span className={styles.worldFeatureLabel}>Real-time multiplayer</span>
+                    <p className={styles.worldFeatureBody}>
+                      Every other member online is a character on the
+                      same map &mdash; you see them move, gather, and
+                      idle near the buildings that fit their archetype.
+                    </p>
+                  </li>
+                  <li className={styles.worldFeatureItem}>
+                    <span className={styles.worldFeatureLabel}>Walk-up to chat</span>
+                    <p className={styles.worldFeatureBody}>
+                      Step up to any other player, press <kbd>E</kbd>,
+                      and a private conversation opens with their XQ
+                      archetype, values, and resonance fit shown next
+                      to it.
+                    </p>
+                  </li>
+                  <li className={styles.worldFeatureItem}>
+                    <span className={styles.worldFeatureLabel}>Members only</span>
+                    <p className={styles.worldFeatureBody}>
+                      The world is reserved for vetted brand and creator
+                      members &mdash; a small, considered room rather
+                      than a public lobby.
+                    </p>
+                  </li>
+                </ul>
+              </ScrollFadeUp>
+            </div>
+          </Section>
+
           {/* Follow Your Signal CTA Section — splits visitors into the
               two persona pages (Creator / Advertiser) instead of a
               single white-paper download. */}
