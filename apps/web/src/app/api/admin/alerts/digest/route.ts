@@ -4,6 +4,7 @@ import { ADMIN_COOKIE_NAME, verifyAdminCookie } from "@/lib/admin-auth";
 import { supabaseRest } from "@/lib/supabase-admin";
 
 import {
+  CONTRACT_ALERT_OWNERS,
   type DigestAlert,
   fallbackEmail,
   ownerEmailFromEnv,
@@ -25,6 +26,11 @@ export const dynamic = "force-dynamic";
  *     address.
  *   • Owner has NO configured email, or owner is null → fall back to
  *     ALERT_EMAIL_FALLBACK (default hello@ghostsignal.cloud).
+ *
+ * Exception: `contract_expiring` (renewal/expiry) alerts ignore the
+ * member's owner and always route to the contract owners — Mike + Jack
+ * (see CONTRACT_ALERT_OWNERS in ../emails.ts). Both receive every
+ * contract alert; they appear in no other owner's digest.
  *
  * Auth: Bearer CRON_SECRET (GitHub Actions) OR admin cookie (manual
  * "Send digest now" trigger from the UI).
@@ -87,12 +93,51 @@ export async function POST(req: Request) {
   // member.owner; task alerts route by task.assigned_to (or
   // task.created_by when unassigned). See `ownerForAlert` in
   // ../emails.ts for the resolution rule.
+  //
+  // Exception: contract renewal/expiry alerts always go to the contract
+  // owners (Mike + Jack), regardless of the member's owner — so they
+  // land in BOTH those buckets and nowhere else.
   const byOwner = new Map<string, DigestAlert[]>();
-  for (const a of alerts) {
-    const key = ownerForAlert(a) ?? "";
+  const pushTo = (key: string, a: DigestAlert) => {
     const arr = byOwner.get(key) ?? [];
     arr.push(a);
     byOwner.set(key, arr);
+  };
+  for (const a of alerts) {
+    if (a.kind === "contract_expiring") {
+      for (const owner of CONTRACT_ALERT_OWNERS) pushTo(owner, a);
+      continue;
+    }
+    pushTo(ownerForAlert(a) ?? "", a);
+  }
+
+  // Collapse owner buckets by their RESOLVED recipient address, so one
+  // inbox never receives two digest emails in a single run — e.g. Jack
+  // unconfigured falls back to the same address as the Unowned bucket,
+  // or two owners share an address. Within a recipient, alerts are
+  // de-duplicated by id (a contract alert routed to both Mike + Jack is
+  // listed once if those names happen to resolve to the same inbox).
+  const byRecipient = new Map<
+    string,
+    { to: string; ownerNames: string[]; alerts: DigestAlert[]; seen: Set<string> }
+  >();
+  for (const [ownerKey, group] of byOwner) {
+    const isFallback = ownerKey === "";
+    const ownerName = isFallback ? "Unowned" : ownerKey;
+    const to = isFallback
+      ? fallbackEmail()
+      : ownerEmailFromEnv(ownerKey) ?? fallbackEmail();
+    const key = to.trim().toLowerCase();
+    const bucket =
+      byRecipient.get(key) ??
+      { to, ownerNames: [], alerts: [], seen: new Set<string>() };
+    if (!bucket.ownerNames.includes(ownerName)) bucket.ownerNames.push(ownerName);
+    for (const a of group) {
+      if (bucket.seen.has(a.id)) continue;
+      bucket.seen.add(a.id);
+      bucket.alerts.push(a);
+    }
+    byRecipient.set(key, bucket);
   }
 
   const details: Array<{
@@ -103,21 +148,17 @@ export async function POST(req: Request) {
     reason?: string;
   }> = [];
 
-  for (const [ownerKey, group] of byOwner) {
-    const isFallback = ownerKey === "";
-    const ownerName = isFallback ? "Unowned" : ownerKey;
-    const recipient = isFallback
-      ? fallbackEmail()
-      : ownerEmailFromEnv(ownerKey) ?? fallbackEmail();
+  for (const [, bucket] of byRecipient) {
+    const ownerName = bucket.ownerNames.join(" + ");
     const r = await sendDigestEmail({
-      to: recipient,
+      to: bucket.to,
       ownerName,
-      alerts: group,
+      alerts: bucket.alerts,
     });
     details.push({
       owner: ownerName,
-      recipient,
-      count: group.length,
+      recipient: bucket.to,
+      count: bucket.alerts.length,
       sent: r.sent,
       reason: r.reason,
     });

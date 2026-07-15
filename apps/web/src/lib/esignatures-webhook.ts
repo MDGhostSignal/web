@@ -128,7 +128,17 @@ export async function upsertContractFromApi(
         // Don't override a suggestion if the user has already confirmed.
         existing?.member_id ? null : suggestedMemberId,
       sent_at: parseIsoOrNull(contract.sent_at),
-      signed_at: parseIsoOrNull(contract.signed_at),
+      // esignatures returns the completion time as `finalized_at`, not
+      // `signed_at` (verified against the live API — `signed_at` is
+      // absent from both GET and webhook payloads). Prefer an explicit
+      // `signed_at` if a future payload ever carries one, then fall back
+      // to `finalized_at`, then to the latest signer signed_at. Without
+      // this the member's renewal date is never captured and the
+      // contract_expiring alert can never fire.
+      signed_at:
+        parseIsoOrNull(contract.signed_at) ??
+        parseIsoOrNull(contract.finalized_at) ??
+        latestSignerSignedAt(contract.signers),
       withdrawn_at: parseIsoOrNull(contract.withdrawn_at),
       effective_date: null, // pulled from placeholder_fields in a future pass
       expires_at: parseIsoOrNull(contract.expires_at),
@@ -181,7 +191,7 @@ export async function upsertContractFromApi(
  * to a non-default value. Fire-and-forget at the call site — failure
  * is logged but doesn't fail the parent contract upsert.
  */
-async function syncContractDatesToMember(row: ContractRow): Promise<void> {
+export async function syncContractDatesToMember(row: ContractRow): Promise<void> {
   try {
     if (!row.member_id || !row.signed_at) return;
 
@@ -230,6 +240,27 @@ async function syncContractDatesToMember(row: ContractRow): Promise<void> {
   } catch (err) {
     console.error("syncContractDatesToMember failed", err);
   }
+}
+
+/**
+ * Latest `signed_at` across a contract's signers, as an ISO string, or
+ * null when none carry one. Belt-and-braces fallback for the contract
+ * signed date: the current API leaves signer.signed_at empty on read,
+ * but signed-event webhook payloads may include it, and "all signers
+ * signed" == max(signer.signed_at).
+ */
+function latestSignerSignedAt(
+  signers: EsignaturesSigner[] | undefined | null,
+): string | null {
+  if (!signers || signers.length === 0) return null;
+  let best: number = -Infinity;
+  for (const s of signers) {
+    const iso = parseIsoOrNull(s.signed_at);
+    if (!iso) continue;
+    const t = Date.parse(iso);
+    if (t > best) best = t;
+  }
+  return best === -Infinity ? null : new Date(best).toISOString();
 }
 
 async function upsertSigners(

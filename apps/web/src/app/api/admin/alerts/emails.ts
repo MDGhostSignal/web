@@ -80,6 +80,16 @@ export function ownerEmailFromEnv(owner: string): string | undefined {
   return process.env[`ALERT_EMAIL_${slug}`];
 }
 
+/**
+ * Contract renewal/expiry alerts (`contract_expiring`) always route to
+ * these owners — Mike + Jack own the contract book — regardless of the
+ * member's CRM owner. Only the names are fixed here; the actual
+ * addresses still resolve from ALERT_EMAIL_<SLUG> (MIKE_SENSE /
+ * JACK_W_HARDING) so they stay in env. Used by the digest route to
+ * override its normal owner-based grouping for this one kind.
+ */
+export const CONTRACT_ALERT_OWNERS = ["Mike Sense", "Jack W Harding"] as const;
+
 /** Fallback inbox for alerts whose subject has no owner set. */
 export function fallbackEmail(): string {
   return process.env.ALERT_EMAIL_FALLBACK ?? "hello@ghostsignal.cloud";

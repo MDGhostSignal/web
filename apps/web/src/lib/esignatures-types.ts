@@ -100,6 +100,13 @@ export interface EsignaturesContract {
   created_at?: string | null;
   sent_at?: string | null;
   signed_at?: string | null;
+  // esignatures.com stamps the completion time here — NOT on `signed_at`,
+  // which is absent from the GET /contracts/<id> and webhook payloads.
+  // This is the authoritative "all signers signed" timestamp; we fold it
+  // into our `signed_at` column at sync time. Signer objects carry no
+  // per-signer signed_at on read, so this contract-level field is the
+  // only signed date the API exposes.
+  finalized_at?: string | null;
   withdrawn_at?: string | null;
   expires_at?: string | null;
   // Some templates surface effective dates via placeholder values; we

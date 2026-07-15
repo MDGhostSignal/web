@@ -5,8 +5,10 @@ import {
   type ContractRow,
   type ContractSignerRow,
   type ContractWithSigners,
+  CONTRACT_ACTIVE_STATUSES,
   COUNTERPARTY_KINDS,
 } from "@/lib/esignatures-types";
+import { syncContractDatesToMember } from "@/lib/esignatures-webhook";
 import { supabaseRest } from "@/lib/supabase-admin";
 
 /**
@@ -178,6 +180,24 @@ export async function PATCH(
       { status: 404 },
     );
   }
+
+  // If this PATCH just confirmed a member link on an already-signed
+  // contract, propagate the signed date onto the member so the renewal
+  // reminder arms without waiting on a resync. The upsert path handles
+  // this for webhook/create flows; linking-after-sync is the remaining
+  // gap this closes. Guarded + only-when-null inside the helper.
+  const linkedMember =
+    typeof validated.payload.member_id === "string"
+      ? validated.payload.member_id
+      : null;
+  if (
+    linkedMember &&
+    updated.signed_at &&
+    (CONTRACT_ACTIVE_STATUSES as readonly string[]).includes(updated.status)
+  ) {
+    await syncContractDatesToMember(updated);
+  }
+
   return NextResponse.json({ ok: true, contract: updated });
 }
 
