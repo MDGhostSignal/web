@@ -135,6 +135,65 @@ Files: `AdminShell.tsx`, `AdminSidebar.tsx`, `AdminShell.module.css`,
 `AdminSidebar.module.css`. Typecheck clean, dev-compiled; not clicked
 through (admin is auth-gated) — pending an eyeball from the team.
 
+## 10 · Campaign-ending alerts (email + in-app)
+
+New alert kind for ART19 campaigns: when a campaign reaches **97% of its
+run time**, notify Jack + Mike. Built on the existing crm_alerts system
+(bell + dashboard) plus a dedicated one-time email.
+
+**Why run-time, not impressions**: campaigns routinely over-deliver
+impressions (e.g. 20.0M delivered on a 20.0M goal, some >130%), so a
+volume threshold would misfire. The trigger is `run_pct ∈ [97, 100)` —
+still running, in the final stretch. The upper bound is load-bearing:
+without it a first run would fire on all 13 already-concluded campaigns
+(confirmed by query). Excludes `archived_draft`.
+
+**Delivery model** — two channels, deliberately split:
+- *In-app*: a `campaign_ending` crm_alerts row (subject = campaign),
+  shown in the bell + `/admin/alerts` with a new filter pill, links to
+  `/admin/art19`. Rendered entirely from `reason_json.campaign` (a
+  captured snapshot) so no new PostgREST embed was needed.
+- *Email (fire-once)*: sent to Jack + Mike the moment the alert row is
+  first inserted — NOT re-sent by the daily digest. The open-alert row
+  is the dedup guard (partial unique index on `(kind, campaign_id)`).
+
+**Email hierarchy** (as requested, most→least significant): run-time
+elapsed + days left + window → impressions delivered vs goal (+ % of
+goal) → delivery-vs-run-time pacing + fill rate → CPM + est. gross
+value → ad units + type/source. Header names the campaign and states
+"reached X% of its run time."
+
+**Files**
+- `docs/CRM_ALERTS_CAMPAIGN_MIGRATION.sql` — adds `campaign_id` subject,
+  `campaign_ending` kind, relaxed subject-check, fire-once unique index.
+  Must be applied manually (Supabase read-only via MCP this session).
+- `lib/campaign-alerts.ts` — detection, snapshot, email builder,
+  recipient resolution (Jack + Mike from ALERT_EMAIL_* env, deduped).
+- `api/admin/campaign-alerts/sync/route.ts` — detect → insert → email
+  once → reconcile (resolves concluded ones). Bearer CRON_SECRET or
+  admin cookie.
+- `.github/workflows/campaign-alerts.yml` — hourly cron (`15 * * * *`).
+- `lib/alerts.ts` — new kind, label, `campaign_id`, `CampaignAlertSnapshot`.
+- `proxy.ts` — allowlist the cron endpoint.
+- `AlertsBell.tsx`, `admin/alerts/page.tsx` — render the new kind
+  (subject, age label, href, filter pill); "Re-scan now" also kicks the
+  campaign sync.
+- CRM `alerts/sync` (`&campaign_id=is.null`) + `alerts/digest`
+  (`&kind=neq.campaign_ending`) — so the member/task jobs never touch
+  campaign alerts.
+
+**Verification**: typecheck clean; dev-compiled; detector confirmed
+against live data (0 qualify now, 5 running at 46.3%, 13 would falsely
+fire without the upper guard); test email of the exact layout delivered
+to Martin + Jack (Resend 200). DB-write path is gated on the migration.
+
+**Prod prerequisites** (not yet done):
+1. Apply `docs/CRM_ALERTS_CAMPAIGN_MIGRATION.sql` in Supabase.
+2. Add GitHub secret `CAMPAIGN_ALERTS_SYNC_URL`
+   (= https://www.ghostsignal.cloud/api/admin/campaign-alerts/sync).
+3. Confirm `ALERT_EMAIL_JACK_W_HARDING` + `ALERT_EMAIL_MIKE_SENSE` set
+   in Vercel.
+
 ## Follow-ups
 
 - **Verify `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel prod** — else

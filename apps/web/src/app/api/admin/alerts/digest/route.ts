@@ -68,6 +68,9 @@ export async function POST(req: Request) {
     "member:members(id,first_name,last_name,owner,phase,organization)," +
     "task:design_tasks(id,title,status,priority,assigned_to,created_by)" +
     "&resolved_at=is.null" +
+    // campaign_ending alerts get their own one-time email at detection
+    // time (see campaign-alerts/sync), so keep them out of this digest.
+    "&kind=neq.campaign_ending" +
     `&or=(snoozed_until.is.null,snoozed_until.lt.${nowIso})` +
     "&order=triggered_at.desc";
 

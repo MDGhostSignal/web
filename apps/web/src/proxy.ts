@@ -52,6 +52,10 @@ const PUBLIC_SUBPATHS = [
   // Daily alert digest cron — sends one grouped email per owner each
   // morning. Same auth path: Bearer CRON_SECRET or admin cookie.
   "/api/admin/alerts/digest",
+  // Hourly campaign-ending detection cron — inserts the in-app alert and
+  // sends the one-time email when a campaign hits 97% run time. Bearer
+  // CRON_SECRET or admin cookie.
+  "/api/admin/campaign-alerts/sync",
   // ART19 → Supabase sync — runs daily from GitHub Actions with the
   // CRON_SECRET bearer. Route also accepts the admin cookie so the
   // in-app "Refresh now" button (Phase B) can hit it.

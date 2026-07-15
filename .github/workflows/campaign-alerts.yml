@@ -1,0 +1,49 @@
+# Campaign-ending alerts — runs hourly. Detects ART19 campaigns that
+# have reached 97% of their run time and, for each newly-qualifying one,
+# inserts an in-app alert and sends a one-time email to Jack + Mike.
+#
+# Idempotent: the open-alert set is the fire-once guard, so re-runs never
+# double-email. Hourly is plenty — a 30-day campaign moves ~0.14%/hour,
+# so the 97→100% window is ~21 hours wide and never missed.
+#
+# Setup
+# ─────
+# Repo secrets (Settings → Secrets → Actions):
+#   - CRON_SECRET               — shared with the other alert crons.
+#   - CAMPAIGN_ALERTS_SYNC_URL  — full URL to production, e.g.
+#                                 https://www.ghostsignal.cloud/api/admin/campaign-alerts/sync
+#
+# Vercel env vars (Settings → Environment Variables):
+#   - RESEND_API_KEY / RESEND_FROM   — required to send mail
+#   - ALERT_EMAIL_JACK_W_HARDING     — Jack's email
+#   - ALERT_EMAIL_MIKE_SENSE         — Mike's email
+#   - ALERT_EMAIL_FALLBACK           — used only if neither above is set
+
+name: Campaign alerts
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: campaign-alerts
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/admin/campaign-alerts/sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CAMPAIGN_ALERTS_SYNC_URL: ${{ secrets.CAMPAIGN_ALERTS_SYNC_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$CAMPAIGN_ALERTS_SYNC_URL" ]; then
+            echo "::error::Missing CRON_SECRET or CAMPAIGN_ALERTS_SYNC_URL secret."
+            exit 1
+          fi
+          curl -fsS -i -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$CAMPAIGN_ALERTS_SYNC_URL"

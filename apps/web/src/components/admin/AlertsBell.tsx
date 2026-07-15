@@ -42,10 +42,14 @@ function alertHref(a: AlertWithSubject): string {
   if (a.kind === "marketplace_stall") return "/admin/marketplace?view=pool";
   if (a.kind === "task_stale") return "/admin/tasks";
   if (a.kind === "contract_expiring") return "/admin/marketplace?view=pool";
+  if (a.kind === "campaign_ending") return "/admin/art19";
   return "/admin/contacts";
 }
 
 function subjectLabel(a: AlertWithSubject): string {
+  if (a.kind === "campaign_ending") {
+    return a.reason_json.campaign?.name || "Campaign";
+  }
   if (a.task) return a.task.title || "Untitled task";
   const m = a.member;
   if (!m) return "Unknown";
@@ -74,6 +78,9 @@ function ageLabel(a: AlertWithSubject): string {
     if (r.days_until_renewal < 0) return `expired ${Math.abs(r.days_until_renewal)}d ago`;
     if (r.days_until_renewal === 0) return "renews today";
     return `renews in ${r.days_until_renewal}d`;
+  }
+  if (a.kind === "campaign_ending" && r.campaign) {
+    return `${r.campaign.run_pct}% run time`;
   }
   return "—";
 }

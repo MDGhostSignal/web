@@ -31,6 +31,7 @@ export const ALERT_KINDS = [
   "marketplace_stall",
   "task_stale",
   "contract_expiring",
+  "campaign_ending",
 ] as const;
 export type AlertKind = (typeof ALERT_KINDS)[number];
 
@@ -39,6 +40,33 @@ export const ALERT_KIND_LABELS: Record<AlertKind, string> = {
   marketplace_stall: "Marketplace stalled",
   task_stale: "Task untouched",
   contract_expiring: "Contract renewal due",
+  campaign_ending: "Campaign wrapping up",
+};
+
+/** Snapshot of an ART19 campaign captured when a `campaign_ending`
+ *  alert fires, so the bell/dashboard and the one-time email can render
+ *  the numbers without re-querying. Ordered here roughly by the
+ *  hierarchy the email presents. */
+export type CampaignAlertSnapshot = {
+  name: string | null;
+  campaign_type: string | null;
+  ad_source: string | null;
+  /** Percent of the run-time window elapsed, e.g. 97.4. */
+  run_pct: number;
+  days_remaining: number;
+  start_date: string | null;
+  end_date: string | null;
+  /** Impressions delivered so far (listen_count). */
+  impressions: number | null;
+  /** Contracted goal (maximum_impressions). */
+  goal: number | null;
+  /** impressions / goal * 100, null when goal is missing. */
+  pct_of_goal: number | null;
+  fill_rate: number | null;
+  cpm: number | null;
+  /** cpm * impressions / 1000, null when either is missing. */
+  est_value: number | null;
+  ads_count: number | null;
 };
 
 /** Wire shape — mirrors the Supabase row. Exactly one of member_id /
@@ -48,6 +76,7 @@ export type CrmAlert = {
   kind: AlertKind;
   member_id: string | null;
   task_id: string | null;
+  campaign_id: string | null;
   triggered_at: string;
   resolved_at: string | null;
   snoozed_until: string | null;
@@ -69,6 +98,8 @@ export type AlertReason = {
   task_title?: string;
   task_priority?: "low" | "medium" | "high";
   task_status?: string;
+  // campaign-side snapshot (kind === "campaign_ending")
+  campaign?: CampaignAlertSnapshot;
   // contract-side fields
   contract_signed_at?: string;
   contract_term_months?: number;

@@ -37,6 +37,9 @@ type OwnerFilter = "all" | MemberOwner | "unowned";
 type KindFilter = "all" | AlertKind;
 
 function subjectLabel(a: AlertWithSubject): string {
+  if (a.kind === "campaign_ending") {
+    return a.reason_json.campaign?.name || "Campaign";
+  }
   if (a.task) return a.task.title || "Untitled task";
   const m = a.member;
   if (!m) return "Unknown";
@@ -68,6 +71,11 @@ function ageLabel(a: AlertWithSubject): string {
     if (r.days_until_renewal === 0) return "renews today";
     return `renews in ${r.days_until_renewal} days`;
   }
+  if (a.kind === "campaign_ending" && r.campaign) {
+    const c = r.campaign;
+    const left = c.days_remaining > 0 ? ` · ${c.days_remaining}d left` : "";
+    return `${c.run_pct}% of run time${left}`;
+  }
   return "—";
 }
 
@@ -75,6 +83,7 @@ function alertHref(a: AlertWithSubject): string {
   if (a.kind === "marketplace_stall") return "/admin/marketplace?view=pool";
   if (a.kind === "task_stale") return "/admin/tasks";
   if (a.kind === "contract_expiring") return "/admin/marketplace?view=pool";
+  if (a.kind === "campaign_ending") return "/admin/art19";
   return "/admin/contacts";
 }
 
@@ -124,7 +133,11 @@ export default function AlertsPage() {
   async function syncNow() {
     setBusy(true);
     try {
-      await fetch("/api/admin/alerts/sync", { method: "POST" });
+      // Kick both detectors: member/task alerts and campaign-ending.
+      await Promise.all([
+        fetch("/api/admin/alerts/sync", { method: "POST" }),
+        fetch("/api/admin/campaign-alerts/sync", { method: "POST" }),
+      ]);
       await load();
     } finally {
       setBusy(false);
@@ -217,6 +230,13 @@ export default function AlertsPage() {
           >
             Contract renewal
             <span className={styles.pillCount}>{kindCounts.get("contract_expiring") ?? 0}</span>
+          </button>
+          <button
+            className={`${styles.pill} ${kindFilter === "campaign_ending" ? styles.pillActive : ""}`}
+            onClick={() => setKindFilter("campaign_ending")}
+          >
+            Campaign ending
+            <span className={styles.pillCount}>{kindCounts.get("campaign_ending") ?? 0}</span>
           </button>
         </div>
         <button

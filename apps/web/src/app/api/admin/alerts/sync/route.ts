@@ -116,8 +116,11 @@ export async function POST(req: Request) {
   }));
 
   // ── Existing open alerts, keyed by (kind, subject_id) ──────────────
+  // Campaign alerts (campaign_id set) are owned by the campaign-alerts
+  // sync; exclude them here so this member/task reconcile never resolves
+  // them.
   const openRes = await supabaseRest<CrmAlert[]>(
-    "crm_alerts?select=id,kind,member_id,task_id&resolved_at=is.null",
+    "crm_alerts?select=id,kind,member_id,task_id&resolved_at=is.null&campaign_id=is.null",
   );
   if (!openRes.ok) {
     return NextResponse.json(
