@@ -1,10 +1,13 @@
-# CRM alerts detection — runs hourly, reconciles open alerts against
-# the live member set.
+# CRM alerts detection — runs every 2 days, reconciles open alerts
+# against the live member set.
 #
-# Two alert kinds are reconciled:
-#   contact_cold       — last_contact_at older than 28 days
+# Alert kinds reconciled here (all with multi-day/week thresholds, so a
+# 2-day cadence is plenty — hourly was needless load):
+#   contact_cold       — paused (env-gated off)
 #   marketplace_stall  — Sign/Onboard/Run member with open lifecycle
 #                        steps and phase_entered_at older than 30 days
+#   task_stale         — active task untouched > 14 days
+#   contract_expiring  — contract within 30 days of renewal/expiry
 #
 # Idempotent: every run computes the desired open set and inserts /
 # resolves the delta. Auto-resolution also fires inline on member
@@ -25,9 +28,10 @@ name: CRM alerts sync
 
 on:
   schedule:
-    # Hourly. Detection is cheap; this keeps "stale by 1 day" never
-    # more than ~60 minutes off from reality.
-    - cron: "5 * * * *"
+    # Every 2 days at 00:05 UTC. All thresholds here are 14–30 days, so
+    # being up to ~2 days late on first detection is immaterial (and
+    # task/member edits auto-resolve inline regardless).
+    - cron: "5 0 */2 * *"
   workflow_dispatch: {}
 
 concurrency:

@@ -217,6 +217,30 @@ Only open item: confirm `RESEND_API_KEY` / `RESEND_FROM` exist in Vercel
 prod (shared with the CRM digest) so the send fires rather than
 no-ops. Everything else is done.
 
+## 12 · Alert cron cadences slowed (+ campaign grace fix)
+
+Hourly detection was needless load — every threshold in play is days to
+weeks. Slowed both alert crons:
+
+- **`crm-alerts-sync.yml`** (contract_expiring + marketplace_stall +
+  task_stale): hourly → **every 2 days** (`5 0 */2 * *`). No code change
+  — all thresholds are 14–30 days, and member/task edits still
+  auto-resolve inline instantly.
+- **`campaign-alerts.yml`**: hourly → **daily** (`15 7 * * *`).
+
+Slowing the campaign cron forced a correctness fix. The 97→100% run-time
+window is ~21h for a 30-day campaign — narrower than a day — so a daily
+check could skip it. Replaced the strict `< 100%` upper bound in
+`detectCampaignEndingAlert` with a **grace window**
+(`CAMPAIGN_ENDING_GRACE_DAYS = 7`): fires at ≥97% and keeps qualifying up
+to 7 days past end_date, so a run landing just after 100% still fires
+once (fire-once via the crm_alerts row), while campaigns concluded >7
+days ago never fire (no redeploy blast). Verified against live data: 0
+campaigns fire now.
+
+Files: `lib/campaign-alerts.ts`, `.github/workflows/campaign-alerts.yml`,
+`.github/workflows/crm-alerts-sync.yml`.
+
 ## Follow-ups
 
 - **Verify `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel prod** — else

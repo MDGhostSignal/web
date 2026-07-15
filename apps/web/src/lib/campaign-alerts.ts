@@ -18,6 +18,18 @@ import type { Art19CampaignRow } from "@/lib/art19-types";
 /** Run-time completion that trips the alert. */
 export const CAMPAIGN_ENDING_RUN_PCT = 97;
 
+/**
+ * How many days past a campaign's end_date we still allow the alert to
+ * fire. This decouples detection cadence from the trigger: the 97→100%
+ * run-time window is narrower than a day for a 30-day campaign (~21h),
+ * so a daily/every-few-days cron could otherwise step right over it. The
+ * grace lets a just-concluded campaign still fire once (fire-once via the
+ * crm_alerts row), while excluding long-concluded history so a redeploy
+ * never blasts old campaigns. Keep it comfortably larger than the cron
+ * interval (currently daily).
+ */
+export const CAMPAIGN_ENDING_GRACE_DAYS = 7;
+
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 /** Slim shape the detector needs from a campaign row. */
@@ -87,9 +99,11 @@ export function buildCampaignSnapshot(
 
 /**
  * Pure: should this campaign have an open `campaign_ending` alert right
- * now? Qualifies only while the campaign is still running in its final
- * stretch — run_pct in [97, 100). Past 100% (concluded) we never alert,
- * which also means a first run never blasts historical campaigns.
+ * now? Qualifies once run time reaches 97%, and keeps qualifying up to
+ * `CAMPAIGN_ENDING_GRACE_DAYS` past the end date — so a slow cron never
+ * skips the narrow 97→100% window, yet long-concluded campaigns (end
+ * date older than the grace) never fire, so a redeploy can't blast
+ * history. Fire-once is enforced by the open crm_alerts row.
  */
 export function detectCampaignEndingAlert(
   c: CampaignCandidate,
@@ -98,7 +112,11 @@ export function detectCampaignEndingAlert(
   if (c.status === "archived_draft") return null;
   const snap = buildCampaignSnapshot(c, nowMs);
   if (!snap) return null;
-  if (snap.run_pct < CAMPAIGN_ENDING_RUN_PCT || snap.run_pct >= 100) return null;
+  if (snap.run_pct < CAMPAIGN_ENDING_RUN_PCT) return null;
+  // Exclude campaigns that concluded longer than the grace window ago.
+  const end = snap.end_date ? Date.parse(snap.end_date) : NaN;
+  if (Number.isNaN(end)) return null;
+  if (end < nowMs - CAMPAIGN_ENDING_GRACE_DAYS * MS_PER_DAY) return null;
   return { campaign_id: c.id, reason: { campaign: snap } };
 }
 

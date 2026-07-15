@@ -1,10 +1,12 @@
-# Campaign-ending alerts — runs hourly. Detects ART19 campaigns that
+# Campaign-ending alerts — runs once daily. Detects ART19 campaigns that
 # have reached 97% of their run time and, for each newly-qualifying one,
 # inserts an in-app alert and sends a one-time email to Jack + Mike.
 #
 # Idempotent: the open-alert set is the fire-once guard, so re-runs never
-# double-email. Hourly is plenty — a 30-day campaign moves ~0.14%/hour,
-# so the 97→100% window is ~21 hours wide and never missed.
+# double-email. Daily cadence is safe despite the narrow 97→100% window
+# (~21h for a 30-day campaign) because detection qualifies for a grace
+# period past the end date (CAMPAIGN_ENDING_GRACE_DAYS) — a run that
+# lands just after 100% still fires once.
 #
 # Setup
 # ─────
@@ -23,7 +25,8 @@ name: Campaign alerts
 
 on:
   schedule:
-    - cron: "15 * * * *"
+    # Once daily at 07:15 UTC.
+    - cron: "15 7 * * *"
   workflow_dispatch: {}
 
 concurrency:
