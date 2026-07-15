@@ -77,6 +77,22 @@ export type AlertReason = {
   days_until_renewal?: number;
 };
 
+/**
+ * Contact-cold alerts are PAUSED as of 2026-07-15 at the team's
+ * request. Detection is gated off by default — the logic in
+ * `detectAlertsForMember` below is intentionally left fully intact so
+ * this is a clean on/off switch, not a removal. To resume, set
+ * `ALERTS_CONTACT_COLD_ENABLED=true` (no code change / redeploy needed)
+ * or flip the default here.
+ *
+ * While paused: the hourly sync stops emitting `contact_cold`, so its
+ * reconcile pass resolves every currently-open contact_cold alert on
+ * its next run — they clear from the bell, dashboard, and digest.
+ */
+export function contactColdAlertsEnabled(): boolean {
+  return process.env.ALERTS_CONTACT_COLD_ENABLED === "true";
+}
+
 /** Threshold knobs — read from env so the user can tune without code
  *  changes. Defaults: 28d contacts, 30d marketplace, 14d tasks,
  *  30d contract-expiring lead time. */
@@ -173,7 +189,13 @@ export function detectAlertsForMember(
   const { contactColdDays, marketplaceStallDays, contractExpiringDays } =
     getThresholds();
 
-  if (member.phase !== "paused" && member.phase !== "churned") {
+  // Gated off while contact-cold alerts are paused (see
+  // contactColdAlertsEnabled). Logic below is left intact.
+  if (
+    contactColdAlertsEnabled() &&
+    member.phase !== "paused" &&
+    member.phase !== "churned"
+  ) {
     const reference = member.last_contact_at ?? member.created_at;
     const days = daysSince(reference);
     if (days !== null && days >= contactColdDays) {

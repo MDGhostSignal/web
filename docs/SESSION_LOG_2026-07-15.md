@@ -88,6 +88,25 @@ one to hello@martindrexler.com, one to hello@martindrexler.com +
 jack@ghostsignal.cloud. Isolated one-off sends — did **not** touch the
 real digest route or the 217 open alerts.
 
+## 8 · Paused contact-cold alerts
+
+At the team's request, `contact_cold` detection is paused (kept, not
+removed). Added `contactColdAlertsEnabled()` in `alerts.ts` — reads
+`ALERTS_CONTACT_COLD_ENABLED`, defaults **off** — and gated the one
+detection branch in `detectAlertsForMember` behind it. The logic is
+left fully intact; flip the env var to `true` to resume, no redeploy.
+
+`alerts.ts:203` is the only place the kind is emitted (verified), so
+the gate stops it entirely. On deploy, the hourly sync's reconcile
+resolves all 217 currently-open contact_cold alerts on its next run —
+clearing them from the bell, dashboard, and digest. Re-enabling
+re-creates them for members still cold.
+
+Jack confirmed he received the contract-renewal test email, so
+deliverability to his address is verified. Note the test was sent
+directly to jack@ghostsignal.cloud — it does not prove
+`ALERT_EMAIL_JACK_W_HARDING` is set in Vercel (still a follow-up).
+
 ## Follow-ups
 
 - **Verify `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel prod** — else
