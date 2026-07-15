@@ -168,6 +168,10 @@
        --admin-sidebar-width on `.shell` so collapsing the sidebar
        reflows the content column in lockstep. */
     margin-left: var(--admin-sidebar-width);
+  }
+  /* Gate the reflow transition until first paint is done, matching the
+     sidebar — so the initial collapsed snap on hard nav is instant. */
+  .shell[data-ready="true"] .content {
     transition: margin-left 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 }

@@ -107,6 +107,34 @@ deliverability to his address is verified. Note the test was sent
 directly to jack@ghostsignal.cloud — it does not prove
 `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel (still a follow-up).
 
+## 9 · Admin sidebar — collapse flash fix + hover-to-expand
+
+Jack reported the collapsible sidebar sometimes showing a wide rail
+with icons only (expanded width, no labels) after clicking straight to
+a page.
+
+Root cause: on a hard nav with a stored *collapsed* preference, SSR
+paints the sidebar expanded, then hydration snaps it to collapsed. The
+width had a 200ms transition but labels hide instantly (`display:none`)
+— so for ~200ms you saw a wide icon-only rail.
+
+- **Flash fix**: gated all sidebar/content transitions behind a
+  `data-ready` flag (flipped one `requestAnimationFrame` after mount).
+  The initial expanded → collapsed snap is now instant + atomic; later
+  toggles/hovers still animate. Touches AdminShell + both CSS modules.
+- **Hover-to-expand**: added a transient `peek` state — when collapsed,
+  hovering the expand button reveals the full rail. It *overlays* the
+  content (rail width decoupled from the content-reflow var + a
+  drop-shadow) rather than shoving it, and does not change the saved
+  preference. Peek starts on button hover, ends when the pointer leaves
+  the sidebar (not the button — leaving on button-exit would snap shut
+  as you reach for a nav item). Strict button-only is a one-liner if
+  wanted.
+
+Files: `AdminShell.tsx`, `AdminSidebar.tsx`, `AdminShell.module.css`,
+`AdminSidebar.module.css`. Typecheck clean, dev-compiled; not clicked
+through (admin is auth-gated) — pending an eyeball from the team.
+
 ## Follow-ups
 
 - **Verify `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel prod** — else

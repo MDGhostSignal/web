@@ -45,6 +45,14 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  // Transient hover-peek: when the sidebar is collapsed, hovering the
+  // expand button temporarily reveals the full rail (overlaying content,
+  // not reflowing it). Cleared when the pointer leaves the sidebar.
+  const [peek, setPeek] = useState(false);
+  // Transitions stay off until after first paint so the SSR-expanded →
+  // stored-collapsed snap on hard nav is instant (no 200ms width animation
+  // that would otherwise show a wide rail with icons only).
+  const [ready, setReady] = useState(false);
 
   // Render-phase hydration of the collapsed preference from
   // localStorage. Uses the same compare-and-set idiom as the local
@@ -67,6 +75,7 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
   // Persist on change. Skipping the initial false write is fine; we
   // only need to remember explicit user choices.
   const toggleCollapsed = useCallback(() => {
+    setPeek(false);
     setCollapsed((prev) => {
       const next = !prev;
       try {
@@ -76,6 +85,12 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
       }
       return next;
     });
+  }, []);
+
+  // Enable transitions one frame after mount — see `ready` above.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
   }, []);
 
   // Ctrl/Cmd + B — power-user toggle. Matches VS Code's binding so it
@@ -124,6 +139,7 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
     <div
       className={`${styles.shell} admin-root`}
       data-sidebar-collapsed={collapsed ? "true" : "false"}
+      data-ready={ready ? "true" : "false"}
     >
       <header className={styles.topbar}>
         <button
@@ -174,6 +190,10 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
             onClose={() => setDrawerOpen(false)}
             collapsed={collapsed}
             onToggleCollapsed={toggleCollapsed}
+            peek={peek}
+            ready={ready}
+            onPeekStart={() => setPeek(true)}
+            onPeekEnd={() => setPeek(false)}
           />
         </Suspense>
         {/* Mirror Suspense around the main content so any admin page

@@ -31,10 +31,21 @@ type Props = {
   open: boolean;
   onClose: () => void;
   /** Desktop collapsed state (icon-rail mode). Ignored at ≤768 px
-   *  where the sidebar is a full-width drawer regardless. */
+   *  where the sidebar is a full-width drawer regardless. This is the
+   *  PERSISTED preference; the visual state is `collapsed && !peek`. */
   collapsed: boolean;
   /** Toggle handler for the collapse/expand footer button. */
   onToggleCollapsed: () => void;
+  /** Transient hover-peek — expand the rail without changing the
+   *  persisted `collapsed` preference. Only meaningful while collapsed. */
+  peek: boolean;
+  /** Whether the shell has finished first paint — gates CSS transitions
+   *  so the initial collapsed snap doesn't animate. */
+  ready: boolean;
+  /** Fired when the pointer enters the expand button (start hover-peek). */
+  onPeekStart: () => void;
+  /** Fired when the pointer leaves the sidebar (end hover-peek). */
+  onPeekEnd: () => void;
 };
 
 /**
@@ -54,8 +65,15 @@ export function AdminSidebar({
   onClose,
   collapsed,
   onToggleCollapsed,
+  peek,
+  ready,
+  onPeekStart,
+  onPeekEnd,
 }: Props) {
   const pathname = usePathname() ?? "";
+  // What the sidebar actually shows: the persisted collapsed preference,
+  // overridden to expanded while the user is hover-peeking.
+  const visualCollapsed = collapsed && !peek;
   const searchParams = useSearchParams();
   const searchParamsString = searchParams ? searchParams.toString() : "";
 
@@ -102,7 +120,10 @@ export function AdminSidebar({
       <aside
         className={styles.sidebar}
         data-open={open ? "true" : "false"}
-        data-collapsed={collapsed ? "true" : "false"}
+        data-collapsed={visualCollapsed ? "true" : "false"}
+        data-peek={collapsed && peek ? "true" : "false"}
+        data-ready={ready ? "true" : "false"}
+        onMouseLeave={onPeekEnd}
         aria-label="Admin sections"
       >
         <div className={styles.mobileHeader}>
@@ -126,6 +147,7 @@ export function AdminSidebar({
             type="button"
             className={styles.collapseBtn}
             onClick={onToggleCollapsed}
+            onMouseEnter={collapsed ? onPeekStart : undefined}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={
               collapsed
@@ -136,7 +158,7 @@ export function AdminSidebar({
             <span
               className={[
                 styles.collapseGlyph,
-                collapsed ? styles.collapseGlyphExpand : "",
+                visualCollapsed ? styles.collapseGlyphExpand : "",
               ].join(" ")}
               aria-hidden="true"
             >
@@ -154,7 +176,7 @@ export function AdminSidebar({
                 item={item}
                 pathname={pathname}
                 searchParams={searchParamsString}
-                collapsed={collapsed}
+                collapsed={visualCollapsed}
               />
             ))}
           </ul>

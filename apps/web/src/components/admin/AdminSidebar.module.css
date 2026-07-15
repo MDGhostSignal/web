@@ -31,6 +31,15 @@
     visibility 0s linear 0s;
 }
 
+/* No transition until the shell reports first paint is done. On a hard
+   nav with a stored collapsed preference the sidebar snaps expanded →
+   collapsed during hydration; without this gate the 200ms width
+   animation outpaces the instant label hide, showing a wide rail with
+   icons only. Gating makes that snap instant + atomic. */
+.sidebar:not([data-ready="true"]) {
+  transition: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sidebar {
     transition: none;
@@ -426,6 +435,26 @@
    ============================================================================= */
 
 @media (min-width: 769px) {
+  /* Drive the rail's own width from its (visual) collapsed state rather
+     than the shared --admin-sidebar-width var. This lets hover-peek
+     expand the rail to overlay the content while the content column —
+     which still follows the var — stays put instead of shoving right. */
+  .sidebar {
+    width: 256px;
+  }
+  .sidebar[data-collapsed="true"] {
+    width: 64px;
+  }
+
+  /* Hover-peek: the rail is visually expanded (data-collapsed=false)
+     while the persisted state is still collapsed (data-peek=true). Lift
+     it above the content with a shadow so it reads as a temporary
+     overlay. */
+  .sidebar[data-peek="true"] {
+    box-shadow: 8px 0 24px rgb(0 0 0 / 18%);
+    z-index: calc(var(--admin-z-header) + 1);
+  }
+
   /* Hide labels, chevrons, and sub-lists when collapsed. The nav rows
      reflow to icon-only with their icons centered. */
   .sidebar[data-collapsed="true"] .label,
