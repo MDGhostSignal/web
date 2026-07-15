@@ -194,6 +194,29 @@ to Martin + Jack (Resend 200). DB-write path is gated on the migration.
 3. Confirm `ALERT_EMAIL_JACK_W_HARDING` + `ALERT_EMAIL_MIKE_SENSE` set
    in Vercel.
 
+## 11 · Campaign-ending alerts — go-live
+
+Took §10 from "built" to "deployed + verified in prod" the same day.
+
+- **Migration applied** (by Martin, via Supabase SQL editor on project
+  `mavtvivcwrxiqrruwdib`). Verified live: `campaign_id` column present,
+  `kind_check` includes `campaign_ending`, `subject_check` is the 3-way
+  member/task/campaign, and `crm_alerts_open_campaign_unique` exists.
+- **Code deployed** to prod from `main` (commit d8d12ba).
+- **GitHub secret** `CAMPAIGN_ALERTS_SYNC_URL` added; the
+  `campaign-alerts.yml` workflow ran green via manual dispatch.
+- **Independent prod smoke-test** (curl with CRON_SECRET bearer):
+  `HTTP 200 · scanned:30 · qualifying:0 · opened:0 · emailed:0 ·
+  resolved:0 · recipients:[jack@, mike@]`. The real recipient
+  addresses (not the fallback inbox) confirm `ALERT_EMAIL_JACK_W_HARDING`
+  + `ALERT_EMAIL_MIKE_SENSE` are set in Vercel prod.
+- **First real fire** expected ~2026-07-30 — the running July campaigns
+  are at ~46% and end Aug 1, crossing 97% around then.
+
+Only open item: confirm `RESEND_API_KEY` / `RESEND_FROM` exist in Vercel
+prod (shared with the CRM digest) so the send fires rather than
+no-ops. Everything else is done.
+
 ## Follow-ups
 
 - **Verify `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel prod** — else
