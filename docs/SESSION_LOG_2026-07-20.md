@@ -81,9 +81,17 @@ Assessment: clusters exist but are interleaved; three items stranded
   cookie gate as `/admin/*`.
 - `.stylelintignore`: added `src/app/admin2/` under the admin
   exemption.
+- **On-page comparison** (follow-up, bc8a78d): the /admin2 content
+  pane now renders both orders side by side — two mock rails at real
+  sidebar metrics, cluster color-coded with a legend; current order
+  flags stranded items + the buried CPM entry, V2 shows contiguous
+  groups with Campaigns expanded. Note: `cluster_*` classes are
+  accessed via dynamic bracket lookup (orphan-CSS trap).
 - **Temporary route** — once the team picks an order, port the array
   into `admin/layout.tsx` and delete `src/app/admin2/` + the proxy
   matcher entry.
+- Prod verified: /admin2 serves 307 → /admin/login?next=%2Fadmin2
+  when unauthenticated (probe after deploy).
 
 ## Files touched
 
