@@ -93,6 +93,18 @@ Assessment: clusters exist but are interleaved; three items stranded
 - Prod verified: /admin2 serves 307 → /admin/login?next=%2Fadmin2
   when unauthenticated (probe after deploy).
 
+## 5 · Sidebar hover-peek — whole rail, not just the button
+
+Behavior change to the collapsed-sidebar peek (built 2026-07-15,
+which noted "strict button-only is a one-liner if wanted" — this is
+the opposite direction): peek now starts when the pointer enters
+**anywhere on the collapsed rail** (nav items, empty space, button),
+not only the expand button. Moved the `onMouseEnter` peek trigger
+from the collapse button to the `<aside>` in `AdminSidebar.tsx`; end
+condition unchanged (pointer leaves the sidebar). Comments/prop docs
+updated in `AdminSidebar.tsx` + `AdminShell.tsx`. Applies to both
+/admin and /admin2 (shared AdminShell).
+
 ## Files touched
 
 - `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +

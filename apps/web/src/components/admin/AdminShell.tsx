@@ -45,9 +45,10 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  // Transient hover-peek: when the sidebar is collapsed, hovering the
-  // expand button temporarily reveals the full rail (overlaying content,
-  // not reflowing it). Cleared when the pointer leaves the sidebar.
+  // Transient hover-peek: when the sidebar is collapsed, hovering
+  // anywhere on the rail temporarily reveals the full width (overlaying
+  // content, not reflowing it). Cleared when the pointer leaves the
+  // sidebar.
   const [peek, setPeek] = useState(false);
   // Transitions stay off until after first paint so the SSR-expanded →
   // stored-collapsed snap on hard nav is instant (no 200ms width animation

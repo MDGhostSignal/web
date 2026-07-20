@@ -42,7 +42,7 @@ type Props = {
   /** Whether the shell has finished first paint — gates CSS transitions
    *  so the initial collapsed snap doesn't animate. */
   ready: boolean;
-  /** Fired when the pointer enters the expand button (start hover-peek). */
+  /** Fired when the pointer enters the collapsed rail (start hover-peek). */
   onPeekStart: () => void;
   /** Fired when the pointer leaves the sidebar (end hover-peek). */
   onPeekEnd: () => void;
@@ -123,6 +123,7 @@ export function AdminSidebar({
         data-collapsed={visualCollapsed ? "true" : "false"}
         data-peek={collapsed && peek ? "true" : "false"}
         data-ready={ready ? "true" : "false"}
+        onMouseEnter={collapsed ? onPeekStart : undefined}
         onMouseLeave={onPeekEnd}
         aria-label="Admin sections"
       >
@@ -147,7 +148,6 @@ export function AdminSidebar({
             type="button"
             className={styles.collapseBtn}
             onClick={onToggleCollapsed}
-            onMouseEnter={collapsed ? onPeekStart : undefined}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={
               collapsed
