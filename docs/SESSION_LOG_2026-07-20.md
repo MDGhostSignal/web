@@ -166,28 +166,53 @@ compiles + serves 200. Visual check in a real browser still pending
 (fog density/softness may read slightly different at 0.6×; the knob
 is `ratio` in XQFog.tsx resize()).
 
-## Files touched
+## Files touched (whole day)
 
-- `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +
-  markup restructure)
-- `apps/web/src/app/admin/art19/cpm/page.module.css` (full rewrite,
-  token-driven)
-- `apps/web/src/app/admin/art19/page.tsx` (subtitle)
-- `apps/web/src/app/admin/pages/page.tsx` (description)
+- `apps/web/src/app/admin/art19/cpm/{page.tsx,page.module.css}` —
+  CPM calculator: match removal, token restyle, how-it-works panel
+- `apps/web/src/app/admin/art19/page.tsx`,
+  `apps/web/src/app/admin/pages/page.tsx` — stale copy
+- `apps/web/src/app/admin2/{page.tsx,page.module.css}` — NEW Nav V2
+  preview shell + on-page comparison + wide layout
+- `apps/web/src/proxy.ts` — /admin2 matcher entry
+- `apps/web/.stylelintignore` — admin2 exemption
+- `apps/web/src/components/admin/{AdminSidebar.tsx,
+  AdminSidebar.module.css,AdminShell.tsx}` — hover-anywhere peek +
+  bottom-pinned toggle
+- `apps/web/src/app/what-is-this/{page.tsx,page.module.css}` —
+  Jeremy's copy + finished token migration
+- `apps/web/src/app/xq-quiz/{XQFog.tsx,XQFogParticles.tsx,
+  Wordmarks3D.tsx}` — perf fixes
+
+## Commits (all pushed to main, each Vercel-deployed)
+
+e7367c2, 96037f5, 574ac78, bc8a78d, 26f17db, e6245ec, d698c74,
+af41feb, 22c1794, 4243f85, 4e4f1be.
 
 ## Validation
 
-- `npm run typecheck` — clean.
-- `npm run lint` — 0 errors; 5 pre-existing warnings, all in
-  studio/world files untouched today.
-- `npm run lint:css` — clean.
+- `npm run typecheck` / `lint` / `lint:css` — clean after every
+  batch (5 pre-existing lint warnings in studio/world files only).
+- `assets:audit` — 53/53 after the what-is-this copy pass.
+- Prod probes: /admin2 gate verified (307 → login with next param);
+  /xq-quiz dev-server smoke 200.
 
 ## Open / next-step notes
 
-- CPM multipliers are still placeholder defaults — waiting on
-  Jack's real formula + inputs (memo: `project_cpm_tool.md`).
-- Working tree still carries the unrelated uncommitted
-  `what-is-this/page.module.css` edit and the untracked
-  `apps/web/public/world/sprites/worldblock.psd` (which per asset
-  policy belongs in `assets/`) — both deliberately left out of
-  today's commit.
+- **Nav V2 decision pending** — team evaluates /admin2 + the
+  artifact; on a verdict, port the array into admin/layout.tsx and
+  delete src/app/admin2/ + proxy matcher entry (or just delete for
+  V1). Group separators would need a small AdminSidebar extension.
+- **/xq-quiz visual check pending** — perf fix deployed; Martin to
+  eyeball fog density at 0.6× (knob: `ratio` in XQFog.tsx). Also
+  confirm the machine-slowdown symptom is gone in a real browser.
+- **Hover-peek edge flare** — if sweeping the pointer along the left
+  screen edge feels twitchy, add ~150ms hover-intent delay.
+- CPM multipliers still placeholder — waiting on Jack's formula
+  (memo: `project_cpm_tool.md`).
+- "Together, the XQ and RQ helps…" kept verbatim from Jeremy's doc —
+  flag the subject-verb agreement if anyone cares.
+- `worldblock.psd` still untracked in public/world/sprites/ — per
+  asset policy belongs in `assets/`.
+- Claude Code CLI updated 2.1.207 → 2.1.215; stale npm temp dir
+  `.claude-code-gzumGhMb` deletable after session restart.
