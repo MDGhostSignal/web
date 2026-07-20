@@ -312,42 +312,44 @@ export default function AdminNavV2Preview() {
           subtitle="The sidebar on the left shows the proposed order. Same thirteen destinations, no renames, no route changes — just re-sorted into task clusters. Below: both orders side by side."
         />
 
-        <NavComparison />
+        <div className={styles.contentGrid}>
+          <NavComparison />
 
-        <div className={styles.cards}>
-          <div className={styles.card}>
-            <h3 className={styles.cardTitle}>What changed</h3>
-            <ul className={styles.cardList}>
-              <li>
-                <strong>Campaigns has sub-items</strong> — expand it to see
-                Overview + CPM Calculator. The calculator finally gets a
-                visible entry point instead of hiding behind a card on the
-                Campaigns dashboard.
-              </li>
-              <li>
-                <strong>Revenue moved up</strong> — Campaigns, Finance, and
-                Contracts now sit right after the monitoring pair
-                (Dashboard + Alerts) instead of positions 8–10.
-              </li>
-              <li>
-                <strong>Clusters are contiguous</strong> — Tasks rejoins
-                Contacts, Studio Approvals joins the people block, Alerts
-                pairs with Dashboard, and XQ now precedes RQ (free hook →
-                premium engine).
-              </li>
-            </ul>
-          </div>
+          <div className={styles.cards}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>What changed</h3>
+              <ul className={styles.cardList}>
+                <li>
+                  <strong>Campaigns has sub-items</strong> — expand it to
+                  see Overview + CPM Calculator. The calculator finally
+                  gets a visible entry point instead of hiding behind a
+                  card on the Campaigns dashboard.
+                </li>
+                <li>
+                  <strong>Revenue moved up</strong> — Campaigns, Finance,
+                  and Contracts now sit right after the monitoring pair
+                  (Dashboard + Alerts) instead of positions 8–10.
+                </li>
+                <li>
+                  <strong>Clusters are contiguous</strong> — Tasks rejoins
+                  Contacts, Studio Approvals joins the people block,
+                  Alerts pairs with Dashboard, and XQ now precedes RQ
+                  (free hook → premium engine).
+                </li>
+              </ul>
+            </div>
 
-          <div className={styles.card}>
-            <h3 className={styles.cardTitle}>How to evaluate</h3>
-            <p className={styles.cardText}>
-              Every sidebar link is live — click through your normal
-              morning routine and notice how far your pointer travels.
-              Heads up: the rest of the admin still runs the current nav,
-              so navigating away exits this preview. Come back to{" "}
-              <code className={styles.code}>/admin2</code> to see the V2
-              order again, or scan the side-by-side comparison above.
-            </p>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>How to evaluate</h3>
+              <p className={styles.cardText}>
+                Every sidebar link is live — click through your normal
+                morning routine and notice how far your pointer travels.
+                Heads up: the rest of the admin still runs the current
+                nav, so navigating away exits this preview. Come back to{" "}
+                <code className={styles.code}>/admin2</code> to see the V2
+                order again, or scan the side-by-side comparison.
+              </p>
+            </div>
           </div>
         </div>
       </div>
