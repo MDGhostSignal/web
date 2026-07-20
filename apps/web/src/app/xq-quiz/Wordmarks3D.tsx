@@ -23,17 +23,52 @@ const SLICE_STEP = 0.55;
 
 /** Mouse-tracked light position in SVG viewBox coords. Lerped each
  *  frame so the highlight glides rather than snaps. Shared between
- *  both wordmarks. */
+ *  both wordmarks.
+ *
+ *  Perf: the lerp loop runs only while the light is actually moving —
+ *  it stops once the position settles on the target (each tick is a
+ *  React re-render of the whole sliced-SVG wordmark, so a perpetual
+ *  60fps loop per instance was a measurable idle CPU drain) and
+ *  restarts on the next pointermove. Reduced motion pins the light
+ *  to its initial position. */
 function useTrackedLight(
   svgRef: React.RefObject<SVGSVGElement | null>,
   initial: { x: number; y: number } = { x: 400, y: 80 },
 ) {
   const targetRef = useRef(initial);
+  const posRef = useRef(initial);
   const [pos, setPos] = useState(initial);
 
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    let raf = 0;
+    let running = false;
+
+    const tick = () => {
+      const t = targetRef.current;
+      const p = posRef.current;
+      const nx = p.x + (t.x - p.x) * 0.085;
+      const ny = p.y + (t.y - p.y) * 0.085;
+      const settled = Math.abs(t.x - nx) < 0.2 && Math.abs(t.y - ny) < 0.2;
+      posRef.current = settled ? { ...t } : { x: nx, y: ny };
+      setPos(posRef.current);
+      if (settled) {
+        running = false;
+        return;
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const ensureRunning = () => {
+      if (running) return;
+      running = true;
+      raf = window.requestAnimationFrame(tick);
+    };
 
     const onPointerMove = (e: PointerEvent) => {
       const rect = svg.getBoundingClientRect();
@@ -44,17 +79,8 @@ function useTrackedLight(
         x: Math.max(-100, Math.min(900, nx * 800)),
         y: Math.max(-50, Math.min(290, ny * 240)),
       };
+      ensureRunning();
     };
-
-    let raf = 0;
-    const tick = () => {
-      setPos((prev) => ({
-        x: prev.x + (targetRef.current.x - prev.x) * 0.085,
-        y: prev.y + (targetRef.current.y - prev.y) * 0.085,
-      }));
-      raf = window.requestAnimationFrame(tick);
-    };
-    raf = window.requestAnimationFrame(tick);
 
     window.addEventListener("pointermove", onPointerMove);
     return () => {

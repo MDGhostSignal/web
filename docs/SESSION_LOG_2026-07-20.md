@@ -139,6 +139,33 @@ Also committed the pre-existing uncommitted token cleanup in
 `page.module.css` (raw px → --gs-* calc pattern, 2 decls) as its own
 chore commit — it predated today but passed all gates.
 
+## 8 · /xq-quiz performance fix (browser/computer slowdown report)
+
+Martin reported ghostsignal.cloud/xq-quiz "drastically slows the
+browser and computer." Three always-on animation loops on the intro
+stage were the cause:
+
+1. **XQFog (dominant)** — full-viewport dual-pass WebGL fluid sim at
+   up to 2× devicePixelRatio with MSAA; ~18 texture taps + 11 noise
+   octaves per pixel per frame. Fixes: sim/render at **0.6× CSS px**
+   (CSS upscales; fog is soft so visually identical — ~11× fewer
+   fragments on retina), `antialias: false` (fullscreen quads, MSAA
+   was pure cost), FBM octaves 5→3 (update) / 6→4 (render).
+2. **Wordmarks3D** — per-instance rAF calling setState 60fps forever
+   (full SVG re-render even with the mouse idle; intro mounts several
+   instances). Fix: lerp loop settles-and-stops (delta < 0.2), rearms
+   on pointermove; posRef mirror keeps the settle check out of the
+   React updater.
+3. **XQFogParticles** — ~14k createRadialGradient allocs/sec at 2×
+   DPR. Fix: two pre-baked 128px gradient sprites + drawImage with
+   globalAlpha; canvas pinned to 1× DPR.
+
+All three now respect `prefers-reduced-motion` (static ground, no
+loops). Verified: typecheck/lint clean; dev-server smoke — /xq-quiz
+compiles + serves 200. Visual check in a real browser still pending
+(fog density/softness may read slightly different at 0.6×; the knob
+is `ratio` in XQFog.tsx resize()).
+
 ## Files touched
 
 - `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +

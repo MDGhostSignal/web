@@ -65,7 +65,9 @@ float fbm(vec2 p) {
   float amp = 0.5;
   mat2 rot = mat2(0.82, -0.57, 0.57, 0.82);
 
-  for (int i = 0; i < 5; i++) {
+  // 3 octaves (was 5) — the flow field only perturbs advection, so
+  // the high octaves were invisible after the trail blur.
+  for (int i = 0; i < 3; i++) {
     value += amp * noise(p);
     p = rot * p * 2.02 + vec2(5.43, 3.17);
     amp *= 0.52;
@@ -228,7 +230,9 @@ float fbm(vec2 p) {
   float amp = 0.5;
   mat2 rot = mat2(0.79, -0.61, 0.61, 0.79);
 
-  for (int i = 0; i < 6; i++) {
+  // 4 octaves (was 6) — at the 0.6× sim resolution the two finest
+  // octaves were sub-pixel.
+  for (int i = 0; i < 4; i++) {
     value += amp * noise(p);
     p = rot * p * 2.04 + vec2(7.11, 2.39);
     amp *= 0.52;
@@ -467,8 +471,10 @@ export default function XQFog() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = (canvas.getContext("webgl2", { alpha: true, antialias: true, premultipliedAlpha: false }) ||
-      canvas.getContext("webgl", { alpha: true, antialias: true, premultipliedAlpha: false })) as WebGLRenderingContext | null;
+    // antialias off — both passes draw a fullscreen quad, so MSAA
+    // buys nothing and costs fill rate.
+    const gl = (canvas.getContext("webgl2", { alpha: true, antialias: false, premultipliedAlpha: false }) ||
+      canvas.getContext("webgl", { alpha: true, antialias: false, premultipliedAlpha: false })) as WebGLRenderingContext | null;
 
     if (!gl) {
       console.warn("WebGL not supported");
@@ -544,7 +550,12 @@ export default function XQFog() {
     };
 
     const resize = () => {
-      const ratio = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+      // Fog is soft by nature — simulate + render at 0.6× CSS pixels
+      // and let the browser upscale. vs the previous devicePixelRatio
+      // (up to 2×) this cuts per-frame fragment work ~3× on standard
+      // displays and ~11× on retina, which is what was pegging GPUs
+      // and dragging whole machines down on /xq-quiz.
+      const ratio = 0.6;
       const width = Math.floor(canvas.clientWidth * ratio);
       const height = Math.floor(canvas.clientHeight * ratio);
       if (width <= 0 || height <= 0) return;
@@ -639,9 +650,16 @@ export default function XQFog() {
       raf = window.requestAnimationFrame(render);
     };
 
-    raf = window.requestAnimationFrame(render);
+    // Reduced motion: leave the canvas as the static dark ground —
+    // no sim loop, no pointer tracking.
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (!reducedMotion) {
+      raf = window.requestAnimationFrame(render);
+      window.addEventListener("pointermove", onPointerMove);
+    }
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", onPointerMove);
 
     return () => {
       window.removeEventListener("resize", resize);

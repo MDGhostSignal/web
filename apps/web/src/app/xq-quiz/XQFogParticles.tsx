@@ -56,7 +56,9 @@ export default function XQFogParticles() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // 1× regardless of devicePixelRatio — the particles are soft
+    // radial blobs, so retina resolution bought nothing but fill cost.
+    const dpr = 1;
     const resize = () => {
       canvas.width = Math.floor(window.innerWidth * dpr);
       canvas.height = Math.floor(window.innerHeight * dpr);
@@ -69,6 +71,38 @@ export default function XQFogParticles() {
 
     const particles: Particle[] = [];
     let raf = 0;
+
+    // Pre-rendered gradient sprites (one per tint variant), drawn per
+    // particle via drawImage + globalAlpha. The previous code built a
+    // fresh createRadialGradient for every particle every frame
+    // (~14k gradient allocations/sec at the 240-particle cap) which
+    // showed up as constant main-thread churn.
+    const SPRITE_SIZE = 128;
+    const makeSprite = (inner: string, mid: string) => {
+      const sprite = document.createElement("canvas");
+      sprite.width = SPRITE_SIZE;
+      sprite.height = SPRITE_SIZE;
+      const sctx = sprite.getContext("2d");
+      if (!sctx) return sprite;
+      const half = SPRITE_SIZE / 2;
+      const grad = sctx.createRadialGradient(half, half, 0, half, half, half);
+      grad.addColorStop(0, inner);
+      grad.addColorStop(0.5, mid);
+      grad.addColorStop(1, "rgba(40, 80, 110, 0)");
+      sctx.fillStyle = grad;
+      sctx.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+      return sprite;
+    };
+    // Same stops as the old per-frame gradients, with the fade*0.22
+    // opacity term moved out to globalAlpha at draw time.
+    const spriteWarm = makeSprite(
+      "rgba(150, 210, 230, 0.65)",
+      "rgba(110, 170, 200, 0.28)",
+    );
+    const spriteCool = makeSprite(
+      "rgba(140, 190, 240, 0.65)",
+      "rgba(100, 150, 210, 0.28)",
+    );
 
     const spawn = () => {
       const W = window.innerWidth;
@@ -130,29 +164,17 @@ export default function XQFogParticles() {
       const opacity = fade * 0.22;
       if (opacity < 0.005) return;
 
-      // Particles tinted toward turquoise/cyan to match the shader
-      // fog palette. Slight per-particle variance via hueShift so
-      // the spill doesn't read as a single uniform color, but all
-      // variants stay in the cool blue-cyan range — no more warm
-      // magenta variant that read as purple blinks.
-      const warm = p.hueShift > 0.5;
-      const inner = warm
-        ? `rgba(150, 210, 230, ${opacity * 0.65})`
-        : `rgba(140, 190, 240, ${opacity * 0.65})`;
-      const mid = warm
-        ? `rgba(110, 170, 200, ${opacity * 0.28})`
-        : `rgba(100, 150, 210, ${opacity * 0.28})`;
-      const outer = `rgba(40, 80, 110, 0)`;
-
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-      grad.addColorStop(0, inner);
-      grad.addColorStop(0.5, mid);
-      grad.addColorStop(1, outer);
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
+      // Tint variance via two pre-baked sprites — both in the cool
+      // blue-cyan range to match the shader fog palette.
+      const sprite = p.hueShift > 0.5 ? spriteWarm : spriteCool;
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(
+        sprite,
+        p.x - p.size,
+        p.y - p.size,
+        p.size * 2,
+        p.size * 2,
+      );
     };
 
     const frame = () => {
@@ -170,11 +192,16 @@ export default function XQFogParticles() {
         }
         draw(p, fade);
       }
+      ctx.globalAlpha = 1;
 
       raf = window.requestAnimationFrame(frame);
     };
 
-    frame();
+    // Reduced motion: no drifting particles — the WebGL fog already
+    // renders a static ground in that mode.
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      frame();
+    }
 
     return () => {
       window.cancelAnimationFrame(raf);
