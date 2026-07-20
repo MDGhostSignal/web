@@ -276,7 +276,7 @@ export default function Art19Page() {
         <span className={styles.toolLinkIcon}>◐</span>
         <span>
           <strong>Signal Fidelity CPM Calculator</strong>
-          <span className={styles.toolLinkSub}>Ballpark a CPM from match, position, type & length</span>
+          <span className={styles.toolLinkSub}>Ballpark a CPM from position, type & length</span>
         </span>
         <span className={styles.toolLinkArrow}>→</span>
       </Link>

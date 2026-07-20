@@ -252,7 +252,7 @@ const CATEGORIES: Category[] = [
       {
         path: "/admin/art19/cpm",
         name: "Signal Fidelity CPM Calculator",
-        description: "Retro audio-console UI for ballpark-CPM estimation (Jack's spec).",
+        description: "Ballpark-CPM estimation from benchmark, position, type & length (Jack's spec).",
         tags: ["internal", "auth-gated"],
       },
       {

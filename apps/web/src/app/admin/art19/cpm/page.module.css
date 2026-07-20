@@ -1,515 +1,239 @@
-/* Signal Fidelity CPM Calculator — retro audio-console aesthetic.
- * Self-contained styling (no --admin-* spacing tokens) so the panel
- * reads as a hardware unit, not an admin form. Colors lean on the
- * amber/orange spectrum of vintage VU meters with a brushed-graphite
- * chassis. */
+/* Signal Fidelity CPM Calculator — standard admin look.
+ * Everything themes through the --admin-* tokens (see
+ * components/admin/tokens.css), so dark + light flip together with
+ * the rest of the admin tree — no per-theme overrides needed here.
+ * Card / chip / kpi shapes mirror the ART19 dashboard this tool
+ * lives under. */
 
 .page {
-  padding: 24px 28px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+  padding: var(--admin-space-6);
   max-width: 1080px;
   margin: 0 auto;
 }
 
-/* ===== The console chassis ===== */
-
-.console {
-  margin-top: 24px;
-  background:
-    linear-gradient(180deg, #1f2329 0%, #16191e 60%, #0e1115 100%);
-  border: 1px solid #2a2f37;
-  border-radius: 18px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
-    0 30px 60px -30px rgba(0, 0, 0, 0.8);
-  overflow: hidden;
-}
-
-.consoleBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background:
-    linear-gradient(180deg, #2a2f37 0%, #1c2026 100%);
-  border-bottom: 1px solid #0a0d11;
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.consoleLeds {
-  display: flex;
-  gap: 8px;
-}
-
-.led {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #2a2f37;
-  border: 1px solid #0a0d11;
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.6);
-}
-
-.ledOn {
-  background: radial-gradient(circle at 35% 35%, #ffd078 0%, #ffb454 40%, #c97a18 100%);
-  box-shadow:
-    0 0 8px rgba(255, 180, 84, 0.7),
-    inset 0 1px 1px rgba(255, 255, 255, 0.5);
-  border-color: #5a3608;
-}
-
-.consoleStamp {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.consoleStampLabel {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  letter-spacing: 2.4px;
-  color: #ffb454;
-  text-transform: uppercase;
-}
-
-.consoleStampModel {
-  font-family: "Courier New", monospace;
-  font-size: 9px;
-  letter-spacing: 1.6px;
-  color: #6a727b;
-  text-transform: uppercase;
-}
-
-.consoleBody {
-  padding: 28px 32px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-/* ===== Controls (sliders) ===== */
+/* ===== Controls ===== */
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--admin-space-4);
 }
 
 .control {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 18px;
-  background:
-    linear-gradient(180deg, #181c22 0%, #11141a 100%);
-  border: 1px solid #2a2f37;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4) 18px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
 }
 
 .controlHead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--admin-space-3);
 }
 
 .controlLabel {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  letter-spacing: 1.6px;
-  color: #9aa0a8;
+  font-size: 11.5px;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-semibold);
 }
 
 .controlReadout {
-  font-family: "Courier New", monospace;
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffb454;
-  text-shadow: 0 0 8px rgba(255, 180, 84, 0.4);
-  letter-spacing: 0.5px;
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-lg);
+  font-weight: var(--admin-weight-bold);
+  color: var(--admin-accent);
 }
 
 .controlUnit,
 .controlSuffix {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
   opacity: 0.7;
   margin: 0 2px;
 }
 
-/* Range slider — chrome-bezel thumb on a thin amber-glow track. */
+/* Range slider — accent thumb on a surface track. */
 .slider {
   appearance: none;
   width: 100%;
   height: 6px;
-  background: linear-gradient(90deg, #0a0d11 0%, #16191e 100%);
-  border: 1px solid #2a2f37;
-  border-radius: 4px;
+  background: var(--admin-surface-3);
+  border-radius: 3px;
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .slider::-webkit-slider-thumb {
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 30%, #e6e9ee 0%, #a8aeb6 50%, #4a4f57 100%);
-  border: 1px solid #2a2f37;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.6),
-    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  background: var(--admin-accent);
+  border: 2px solid var(--admin-bg-elevated);
+  box-shadow: var(--admin-shadow-sm);
   cursor: pointer;
+  transition: transform var(--admin-transition-fast);
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 
 .slider::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 30%, #e6e9ee 0%, #a8aeb6 50%, #4a4f57 100%);
-  border: 1px solid #2a2f37;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.6),
-    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  background: var(--admin-accent);
+  border: 2px solid var(--admin-bg-elevated);
+  box-shadow: var(--admin-shadow-sm);
   cursor: pointer;
+  transition: transform var(--admin-transition-fast);
 }
 
-/* ===== Segmented toggles (hardware-style buttons) ===== */
-
-.toggleRow {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 20px;
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
 }
 
-.segmented {
-  padding: 16px 18px;
-  background:
-    linear-gradient(180deg, #181c22 0%, #11141a 100%);
-  border: 1px solid #2a2f37;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-}
+/* ===== Segmented toggles — chip pattern from the ART19 filters ===== */
 
-.segmentedLabel {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  letter-spacing: 1.6px;
-  color: #9aa0a8;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.segmentedGroup {
+.chipGroup {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 8px;
+  gap: var(--admin-space-2);
 }
 
-.segmentedBtn {
-  padding: 12px 14px;
-  background:
-    linear-gradient(180deg, #2a2f37 0%, #1c2026 100%);
-  border: 1px solid #0a0d11;
-  border-radius: 6px;
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2.2px;
-  color: #9aa0a8;
+.chip {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  font-size: 12.5px;
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-secondary);
   cursor: pointer;
-  transition: all 160ms ease;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: background var(--admin-transition-fast),
+    color var(--admin-transition-fast),
+    border-color var(--admin-transition-fast);
 }
 
-.segmentedBtn:hover {
-  color: #d0d4da;
-  background:
-    linear-gradient(180deg, #323840 0%, #20242b 100%);
+.chip:hover {
+  background: var(--admin-surface-2);
+  color: var(--admin-text-primary);
 }
 
-.segmentedBtnActive {
-  background:
-    linear-gradient(180deg, #ffb454 0%, #c97a18 100%);
-  color: #1a0f04;
-  border-color: #6a3c10;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    0 0 12px rgba(255, 180, 84, 0.35);
+.chipActive {
+  background: var(--admin-accent);
+  color: var(--admin-bg);
+  border-color: var(--admin-accent);
+  font-weight: var(--admin-weight-semibold);
 }
 
-/* ===== LED output display ===== */
+.chipActive:hover {
+  background: var(--admin-accent-strong);
+  border-color: var(--admin-accent-strong);
+  color: var(--admin-bg);
+}
+
+/* ===== Result row — output card + breakdown side by side ===== */
+
+.resultRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--admin-space-4);
+  align-items: stretch;
+}
 
 .output {
-  padding: 22px 24px;
-  background:
-    linear-gradient(180deg, #0a0d11 0%, #050709 100%);
-  border: 1px solid #1a1d22;
-  border-radius: 10px;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.8),
-    inset 0 0 60px rgba(255, 180, 84, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--admin-space-1);
+  padding: var(--admin-space-6) var(--admin-space-8);
+  background: var(--admin-accent-softer);
+  border: 1px solid var(--admin-border-focus);
+  border-radius: var(--admin-radius-lg);
   text-align: center;
 }
 
 .outputLabel {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  letter-spacing: 2.4px;
-  color: #6a727b;
+  font-size: 11.5px;
   text-transform: uppercase;
-  margin-bottom: 10px;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-semibold);
 }
 
-.outputDisplay {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  font-family: "Courier New", monospace;
-  color: #ffb454;
-  text-shadow:
-    0 0 12px rgba(255, 180, 84, 0.6),
-    0 0 24px rgba(255, 180, 84, 0.25);
+.outputValue {
+  font-size: 44px;
+  font-weight: var(--admin-weight-bold);
+  color: var(--admin-accent);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
-.outputCurrency {
-  font-size: 28px;
-  font-weight: 700;
-  opacity: 0.8;
+.outputHint {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
 }
 
-.outputNumber {
-  font-size: 56px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  line-height: 1;
-}
-
-.outputRange {
-  margin-top: 12px;
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  color: #6a727b;
-  letter-spacing: 0.5px;
-}
-
-.outputRangeValue {
-  color: #d0d4da;
-  font-weight: 600;
-}
-
-.outputBand {
-  margin-left: 6px;
-  opacity: 0.6;
-}
-
-/* ===== Breakdown rows (signal chain) ===== */
+/* ===== Breakdown card (signal chain) ===== */
 
 .breakdown {
-  padding: 16px 18px;
-  background:
-    linear-gradient(180deg, #181c22 0%, #11141a 100%);
-  border: 1px solid #2a2f37;
-  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-4) 18px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
 }
 
 .breakdownTitle {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  letter-spacing: 1.6px;
-  color: #9aa0a8;
+  font-size: 11.5px;
   text-transform: uppercase;
-  margin-bottom: 4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #2a2f37;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-semibold);
+  padding-bottom: var(--admin-space-2);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .breakdownRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: "Courier New", monospace;
-  font-size: 12px;
+  font-size: var(--admin-text-base);
 }
 
 .breakdownName {
-  color: #9aa0a8;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
+  color: var(--admin-text-secondary);
 }
 
 .breakdownValue {
-  color: #ffb454;
-  font-weight: 700;
+  font-family: var(--admin-font-mono);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ===== Mobile ===== */
 
 @media (max-width: 760px) {
-  .controls {
+  .resultRow {
     grid-template-columns: 1fr;
   }
 
-  .toggleRow {
-    grid-template-columns: 1fr;
+  .outputValue {
+    font-size: 34px;
   }
-
-  .outputNumber {
-    font-size: 42px;
-  }
-}
-
-/* ===== Light theme ============================================
- * Re-skins the retro audio-tool aesthetic for light mode. Instead
- * of brushed-graphite + amber LEDs we go "modern Hi-Fi" — clean
- * off-white chassis, soft champagne-amber accents that read on a
- * bright bg, dark-on-white type. Amber output text stays as the
- * brand-aligned highlight color (matches --admin-accent) but loses
- * the glow so it doesn't smear on a light background.
- * Toggled by [data-theme="light"] on either the documentElement or
- * any .admin-root ancestor — matches the existing admin pattern. */
-
-:global([data-theme="light"]) .console {
-  background: linear-gradient(180deg, #ffffff 0%, #f4f4f6 100%);
-  border-color: #d8dade;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.06),
-    0 24px 50px -28px rgba(0, 0, 0, 0.2);
-}
-
-:global([data-theme="light"]) .consoleBar {
-  background: linear-gradient(180deg, #f4f4f6 0%, #e8e9ed 100%);
-  border-bottom-color: #d8dade;
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.5);
-}
-
-:global([data-theme="light"]) .led {
-  background: #d8dade;
-  border-color: rgba(0, 0, 0, 0.15);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
-}
-
-:global([data-theme="light"]) .ledOn {
-  background: radial-gradient(circle at 35% 35%, #ffd078 0%, #fbad25 50%, #c97a18 100%);
-  box-shadow:
-    0 0 6px rgba(251, 173, 37, 0.55),
-    inset 0 1px 1px rgba(255, 255, 255, 0.7);
-  border-color: #c97a18;
-}
-
-:global([data-theme="light"]) .consoleStampLabel {
-  color: #c97a18;
-}
-
-:global([data-theme="light"]) .consoleStampModel {
-  color: #8a8e96;
-}
-
-:global([data-theme="light"]) .control,
-:global([data-theme="light"]) .segmented,
-:global([data-theme="light"]) .breakdown {
-  background: linear-gradient(180deg, #fafafc 0%, #f0f1f4 100%);
-  border-color: #d8dade;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.04);
-}
-
-:global([data-theme="light"]) .controlLabel,
-:global([data-theme="light"]) .segmentedLabel,
-:global([data-theme="light"]) .breakdownTitle,
-:global([data-theme="light"]) .breakdownName {
-  color: #5a5e66;
-}
-
-:global([data-theme="light"]) .breakdownTitle {
-  border-bottom-color: #d8dade;
-}
-
-:global([data-theme="light"]) .controlReadout {
-  color: #c97a18;
-  text-shadow: none;
-}
-
-:global([data-theme="light"]) .slider {
-  background: linear-gradient(90deg, #e2e3e7 0%, #ecedf0 100%);
-  border-color: #c8cad0;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
-}
-
-:global([data-theme="light"]) .slider::-webkit-slider-thumb {
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e4e6ea 60%, #9ea2a8 100%);
-  border-color: #b4b8be;
-}
-
-:global([data-theme="light"]) .slider::-moz-range-thumb {
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e4e6ea 60%, #9ea2a8 100%);
-  border-color: #b4b8be;
-}
-
-:global([data-theme="light"]) .segmentedBtn {
-  background: linear-gradient(180deg, #ffffff 0%, #edeef1 100%);
-  border-color: #d2d4d9;
-  color: #5a5e66;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 1px 1px rgba(0, 0, 0, 0.04);
-}
-
-:global([data-theme="light"]) .segmentedBtn:hover {
-  background: linear-gradient(180deg, #fbfbfd 0%, #e2e4e9 100%);
-  color: #2a2e35;
-}
-
-:global([data-theme="light"]) .segmentedBtnActive {
-  background: linear-gradient(180deg, #fbad25 0%, #c97a18 100%);
-  color: #1a0f04;
-  border-color: #a86314;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-    0 0 8px rgba(251, 173, 37, 0.35);
-}
-
-:global([data-theme="light"]) .output {
-  background: linear-gradient(180deg, #1a1d22 0%, #0e1115 100%);
-  border-color: #2a2f37;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.55),
-    inset 0 0 60px rgba(255, 180, 84, 0.06);
-}
-
-/* Output panel stays dark even in light mode — the LCD/LED metaphor
- * only reads on a dark face. (Compare a real Hi-Fi unit: light
- * chrome chassis with a black display window). Text colors stay the
- * same as dark theme for the same reason. */
-
-:global([data-theme="light"]) .outputLabel,
-:global([data-theme="light"]) .outputRange {
-  color: #8a8e96;
-}
-
-:global([data-theme="light"]) .outputRangeValue {
-  color: #e4e6ea;
-}
-
-:global([data-theme="light"]) .breakdownValue {
-  color: #c97a18;
 }
