@@ -37,6 +37,193 @@ import styles from "./page.module.css";
  * Auth: gated by the same shared-password cookie as /admin/* — see the
  * "/admin2" entry in proxy.ts.
  */
+// === Side-by-side nav comparison (annotation mock, not live nav) ===
+
+type Cluster =
+  | "monitor"
+  | "revenue"
+  | "people"
+  | "matching"
+  | "content"
+  | "meta";
+
+type MockEntry = {
+  label: string;
+  cluster: Cluster;
+  /** Has children in the real nav (renders a chevron). */
+  expandable?: boolean;
+  /** Annotation pill, e.g. "stranded" / "CPM buried". */
+  flag?: "stranded" | "buried" | "new";
+  /** Rendered as indented sub-rows (V2's Campaigns). */
+  subItems?: Array<{ label: string; flag?: "new" }>;
+};
+
+const CLUSTER_LABELS: Record<Cluster, string> = {
+  monitor: "Monitor",
+  revenue: "Revenue",
+  people: "People",
+  matching: "Matching",
+  content: "Content",
+  meta: "Meta",
+};
+
+const NAV_CURRENT: MockEntry[] = [
+  { label: "Dashboard", cluster: "monitor" },
+  { label: "Contacts", cluster: "people" },
+  { label: "Marketplace", cluster: "matching", expandable: true },
+  { label: "RQ Responses", cluster: "matching" },
+  { label: "XQ Responses", cluster: "matching" },
+  { label: "Tasks", cluster: "people", flag: "stranded" },
+  { label: "Marketing", cluster: "content", expandable: true },
+  { label: "Finance", cluster: "revenue" },
+  { label: "Campaigns", cluster: "revenue", flag: "buried" },
+  { label: "Contracts", cluster: "revenue" },
+  { label: "Alerts", cluster: "monitor", flag: "stranded" },
+  { label: "Studio Approvals", cluster: "people", flag: "stranded" },
+  { label: "Pages", cluster: "meta" },
+];
+
+/** V2 groups render with a cluster tag + separator between groups. */
+const NAV_V2_GROUPS: Array<{ tag: string; items: MockEntry[] }> = [
+  {
+    tag: "Monitor",
+    items: [
+      { label: "Dashboard", cluster: "monitor" },
+      { label: "Alerts", cluster: "monitor" },
+    ],
+  },
+  {
+    tag: "Revenue",
+    items: [
+      {
+        label: "Campaigns",
+        cluster: "revenue",
+        expandable: true,
+        subItems: [
+          { label: "Overview" },
+          { label: "CPM Calculator", flag: "new" },
+        ],
+      },
+      { label: "Finance", cluster: "revenue" },
+      { label: "Contracts", cluster: "revenue" },
+    ],
+  },
+  {
+    tag: "People",
+    items: [
+      { label: "Contacts", cluster: "people" },
+      { label: "Tasks", cluster: "people" },
+      { label: "Studio Approvals", cluster: "people" },
+    ],
+  },
+  {
+    tag: "Matching",
+    items: [
+      { label: "Marketplace", cluster: "matching", expandable: true },
+      { label: "XQ Responses", cluster: "matching" },
+      { label: "RQ Responses", cluster: "matching" },
+    ],
+  },
+  {
+    tag: "Content · Meta",
+    items: [
+      { label: "Marketing", cluster: "content", expandable: true },
+      { label: "Pages", cluster: "meta" },
+    ],
+  },
+];
+
+const FLAG_TEXT = {
+  stranded: "stranded",
+  buried: "CPM buried",
+  new: "now visible",
+} as const;
+
+function MockRow({ entry }: { entry: MockEntry }) {
+  return (
+    <>
+      <div className={styles.mockRow}>
+        <span
+          className={`${styles.clusterDot} ${styles[`cluster_${entry.cluster}`]}`}
+        />
+        <span className={styles.mockLabel}>{entry.label}</span>
+        {entry.flag ? (
+          <span
+            className={`${styles.mockFlag} ${entry.flag === "new" ? styles.mockFlagNew : ""}`}
+          >
+            {FLAG_TEXT[entry.flag]}
+          </span>
+        ) : null}
+        {entry.expandable ? (
+          <span className={styles.mockChevron} aria-hidden="true">
+            {entry.subItems ? "▴" : "▾"}
+          </span>
+        ) : null}
+      </div>
+      {entry.subItems?.map((sub) => (
+        <div key={sub.label} className={styles.mockSubRow}>
+          <span className={styles.mockSubDot} />
+          <span className={styles.mockLabel}>{sub.label}</span>
+          {sub.flag ? (
+            <span className={`${styles.mockFlag} ${styles.mockFlagNew}`}>
+              {FLAG_TEXT[sub.flag]}
+            </span>
+          ) : null}
+        </div>
+      ))}
+    </>
+  );
+}
+
+function NavComparison() {
+  return (
+    <section aria-label="Current vs proposed navigation order">
+      <div className={styles.legend}>
+        {(Object.keys(CLUSTER_LABELS) as Cluster[]).map((c) => (
+          <span key={c} className={styles.legendItem}>
+            <span className={`${styles.clusterDot} ${styles[`cluster_${c}`]}`} />
+            {CLUSTER_LABELS[c]}
+          </span>
+        ))}
+      </div>
+
+      <div className={styles.compare}>
+        <div>
+          <h3 className={styles.compareTitle}>
+            Current <span className={styles.compareHint}>— clusters interleaved</span>
+          </h3>
+          <div className={styles.mockRail}>
+            {NAV_CURRENT.map((entry) => (
+              <MockRow key={entry.label} entry={entry} />
+            ))}
+          </div>
+        </div>
+        <div>
+          <h3 className={styles.compareTitle}>
+            Proposed V2{" "}
+            <span className={styles.compareHint}>— clusters contiguous</span>
+          </h3>
+          <div className={styles.mockRail}>
+            {NAV_V2_GROUPS.map((group) => (
+              <div key={group.tag} className={styles.mockGroup}>
+                <div className={styles.mockGroupTag}>{group.tag}</div>
+                {group.items.map((entry) => (
+                  <MockRow key={entry.label} entry={entry} />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <p className={styles.compareNote}>
+        Colored dots mark each item&apos;s task cluster — they annotate this
+        comparison and are not part of the proposed UI.
+      </p>
+    </section>
+  );
+}
+
 export default function AdminNavV2Preview() {
   const router = useRouter();
 
@@ -122,8 +309,10 @@ export default function AdminNavV2Preview() {
       <div className={styles.page}>
         <PageHeader
           title="Navigation V2 — preview"
-          subtitle="The sidebar on the left shows the proposed order. Same thirteen destinations, no renames, no route changes — just re-sorted into task clusters."
+          subtitle="The sidebar on the left shows the proposed order. Same thirteen destinations, no renames, no route changes — just re-sorted into task clusters. Below: both orders side by side."
         />
+
+        <NavComparison />
 
         <div className={styles.cards}>
           <div className={styles.card}>
@@ -157,8 +346,7 @@ export default function AdminNavV2Preview() {
               Heads up: the rest of the admin still runs the current nav,
               so navigating away exits this preview. Come back to{" "}
               <code className={styles.code}>/admin2</code> to see the V2
-              order again, or compare side-by-side with the mockup page
-              shared in the team thread.
+              order again, or scan the side-by-side comparison above.
             </p>
           </div>
         </div>

@@ -9,6 +9,171 @@
   margin: 0 auto;
 }
 
+/* ===== Side-by-side nav comparison ===== */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-2) var(--admin-space-4);
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  margin-bottom: var(--admin-space-4);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+.clusterDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Cluster colors lean on existing admin semantic tokens; matching
+ * reuses the ART19 "programmatic" purple. Accessed via
+ * styles[`cluster_${c}`] in page.tsx — dynamic bracket pattern, see
+ * the orphan-CSS note in AGENTS.md before deleting any of these. */
+.cluster_monitor { background: var(--admin-info); }
+.cluster_revenue { background: var(--admin-accent); }
+.cluster_people { background: var(--admin-success); }
+.cluster_matching { background: #7752c9; }
+.cluster_content { background: var(--admin-type-brand); }
+.cluster_meta { background: var(--admin-text-muted); }
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-5);
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compareTitle {
+  margin: 0 0 var(--admin-space-2);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-primary);
+  font-weight: var(--admin-weight-bold);
+}
+
+.compareHint {
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-medium);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Mock rail — mirrors the real AdminSidebar metrics (40px rows,
+ * 32px sub-rows) on an elevated card so it reads as "a sidebar". */
+.mockRail {
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-sm);
+  padding: var(--admin-space-2);
+}
+
+.mockGroup + .mockGroup {
+  margin-top: var(--admin-space-2);
+  padding-top: var(--admin-space-2);
+  border-top: 1px dashed var(--admin-border);
+}
+
+.mockGroupTag {
+  padding: 0 var(--admin-space-3) var(--admin-space-1);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.mockRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  height: 40px;
+  padding: 0 var(--admin-space-3);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text-secondary);
+  font-weight: var(--admin-weight-medium);
+  font-size: var(--admin-text-md);
+}
+
+.mockSubRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  height: 32px;
+  padding: 0 var(--admin-space-3) 0 32px;
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-medium);
+}
+
+.mockSubDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.mockLabel {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mockChevron {
+  color: var(--admin-text-muted);
+  font-size: 10px;
+}
+
+.mockFlag {
+  font-size: 10px;
+  font-weight: var(--admin-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--admin-radius-pill);
+  color: var(--admin-text-muted);
+  border: 1px dashed var(--admin-border-strong);
+  flex-shrink: 0;
+}
+
+.mockFlagNew {
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+  border: none;
+}
+
+.compareNote {
+  margin: var(--admin-space-3) 0 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+}
+
+/* ===== Explainer cards ===== */
+
 .cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
