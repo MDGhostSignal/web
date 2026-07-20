@@ -59,6 +59,32 @@ disclosure below the result row:
   reminding that multipliers are placeholders pending calibration.
 - All `--admin-*` token-driven, no per-theme overrides needed.
 
+## 4 · Nav V2 — proposal artifact + /admin2 preview shell
+
+Martin asked whether the admin nav order has a better logical
+structure (trigger: the CPM calculator is invisible under Campaigns).
+Assessment: clusters exist but are interleaved; three items stranded
+(Tasks, Alerts, Studio Approvals); revenue block buried at 8–10.
+
+- **Proposal artifact** (private, for the team):
+  https://claude.ai/code/artifact/25ceba92-cb38-4895-a4bf-8e5e292b9eb8
+  — side-by-side rails (current vs V2), cluster color-coding,
+  rationale cards.
+- **`/admin2` preview shell** (production): renders the real
+  `AdminShell` with the proposed V2 order — monitor (Dashboard,
+  Alerts) → revenue (Campaigns w/ Overview + CPM Calculator
+  sub-items, Finance, Contracts) → people (Contacts, Tasks, Studio
+  Approvals) → matching (Marketplace, XQ, RQ) → content/meta
+  (Marketing, Pages). Content pane = what-changed + how-to-evaluate
+  cards. Sidebar links are live but navigate into the V1 admin.
+- Auth: `/admin2` added to the proxy matcher — same shared-password
+  cookie gate as `/admin/*`.
+- `.stylelintignore`: added `src/app/admin2/` under the admin
+  exemption.
+- **Temporary route** — once the team picks an order, port the array
+  into `admin/layout.tsx` and delete `src/app/admin2/` + the proxy
+  matcher entry.
+
 ## Files touched
 
 - `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +

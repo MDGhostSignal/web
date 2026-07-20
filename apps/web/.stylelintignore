@@ -5,7 +5,9 @@
 
 # Admin tree: --admin-space-* tokens + pragmatic micro-pixel values
 # (1–10px) for chrome tuning below the public spacing scale.
+# /admin2 is the temporary Nav V2 preview shell — same conventions.
 src/app/admin/
+src/app/admin2/
 src/components/admin/
 
 # Studio — client-facing brand/creator surface. Self-contained

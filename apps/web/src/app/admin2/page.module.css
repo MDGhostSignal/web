@@ -1,0 +1,67 @@
+/* Nav V2 preview page — standard admin token styling. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-5);
+  padding: var(--admin-space-6);
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-4);
+}
+
+@media (max-width: 760px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-4) 18px;
+}
+
+.cardTitle {
+  margin: 0 0 var(--admin-space-2);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-muted);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.cardList {
+  margin: 0;
+  padding-left: var(--admin-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+  font-size: var(--admin-text-base);
+  line-height: 1.6;
+  color: var(--admin-text-secondary);
+}
+
+.cardList strong,
+.cardText strong {
+  color: var(--admin-text-primary);
+}
+
+.cardText {
+  margin: 0;
+  font-size: var(--admin-text-base);
+  line-height: 1.6;
+  color: var(--admin-text-secondary);
+}
+
+.code {
+  font-family: var(--admin-font-mono);
+  font-size: var(--admin-text-sm);
+  color: var(--admin-accent);
+}

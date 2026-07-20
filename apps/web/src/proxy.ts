@@ -126,6 +126,10 @@ export async function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
+    // Nav V2 preview shell — same shared-password gate as /admin/*.
+    // Temporary route; remove alongside src/app/admin2/ once the team
+    // picks a nav order.
+    "/admin2",
     // Studio — client-facing brand/creator surface with per-user
     // Supabase Auth (distinct from the admin shared-cookie gate).
     "/studio/:path*",
