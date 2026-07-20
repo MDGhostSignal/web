@@ -518,11 +518,11 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
               <ScrollFadeUp index={3} duration={1.6}>
                 <p className={styles.bodyCallout}>
-                  What do we mean by shared conviction? Check out our RQ assessment to find out.
+                  What do we mean by shared conviction? Check out our XQ and RQ assessments to find out.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={4} duration={1.6} className={styles.elevatedCtaWrapper}>
-                <Link href="/rq-quiz" className={styles.whitepaperButton}>
+                <Link href="/xq-quiz" className={styles.whitepaperButton}>
                   Find my match
                 </Link>
               </ScrollFadeUp>
@@ -667,17 +667,18 @@ export default function WhatIsThisPage() {
                   </div>
                   <article className={styles.assessmentCard}>
                     <p className={styles.assessmentLabel}>
-                      Values Blueprint
+                      Conviction Quotient
                     </p>
                     <p className={styles.assessmentAvailability}>
                       Free &middot; Open to everyone
                     </p>
                     <p className={styles.assessmentBody}>
-                      A three-minute audit that uncovers the internal
-                      compass of your business. Codify your non-negotiables
-                      and your operating style across eight archetypes &mdash;
-                      and walk away with a Values Blueprint that gives
-                      brands and creators absolute clarity on who they are.
+                      A brief-but-thorough audit that uncovers the
+                      internal compass of your business. Codify your
+                      non-negotiables and your operating style across
+                      eight archetypes &mdash; and gain a Values
+                      Blueprint that will give you, brand or creator,
+                      absolute clarity on who they are.
                     </p>
                   </article>
                 </ScrollFadeUp>
@@ -706,9 +707,9 @@ export default function WhatIsThisPage() {
               </div>
               <ScrollFadeUp index={4} duration={1.6}>
                 <p className={styles.teaserBodyEmphatic}>
-                  Together, the XQ and RQ give brands and creators a
-                  renewed sense of purpose, rich clarity, and the data
-                  needed for frictionless, high-value partnerships.
+                  Together, the XQ and RQ helps brands and creators
+                  codify their values and clarify partners for highest
+                  alignment and trust.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={5} duration={1.6}>

@@ -118,6 +118,27 @@ admin-sider practice (Ant Design trigger, Supabase Studio):
 - Visible label now tracks state: "Collapse" expanded / "Expand"
   collapsed (aria-label already did; the chevron flip is unchanged).
 
+## 7 · /what-is-this — Jeremy's copy updates (7/20 doc)
+
+Four changes from Jeremy's update doc, one overridden by Martin
+mid-task:
+
+- "Check out our RQ assessment" → "our XQ and RQ assessments".
+- "Find my match" CTA: Jeremy's doc said link it to the
+  "What kind of signal do you transmit?" section; **Martin overrode —
+  it now points to /xq-quiz** (was /rq-quiz).
+- XQ card label "Values Blueprint" → "Conviction Quotient"; new XQ
+  paragraph ("brief-but-thorough audit … gain a Values Blueprint …
+  you, brand or creator").
+- Emphatic closer → "Together, the XQ and RQ helps brands and
+  creators codify their values and clarify partners for highest
+  alignment and trust." (Kept verbatim incl. "RQ helps" — flag to
+  Jeremy if grammar bothers anyone.)
+
+Also committed the pre-existing uncommitted token cleanup in
+`page.module.css` (raw px → --gs-* calc pattern, 2 decls) as its own
+chore commit — it predated today but passed all gates.
+
 ## Files touched
 
 - `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +
