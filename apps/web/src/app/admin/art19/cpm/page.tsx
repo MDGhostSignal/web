@@ -161,11 +161,135 @@ export default function CpmCalculatorPage() {
           <BreakdownRow name="Length" value={fmtMult(result.mults.length)} />
         </div>
       </div>
+
+      <HowItWorks />
     </div>
   );
 }
 
 // === Small sub-components ===
+
+/**
+ * Expandable how-to panel for first-time users (written for Mike).
+ * Multiplier tables render from the formula constants above, so
+ * tuning the constants updates this documentation automatically.
+ */
+function HowItWorks() {
+  const positionRows: Array<[string, number]> = [
+    ["Pre-roll", POSITION_MULT.pre],
+    ["Mid-roll", POSITION_MULT.mid],
+    ["Post-roll", POSITION_MULT.post],
+  ];
+  const typeRows: Array<[string, number]> = [
+    ["Host-read", TYPE_MULT.host],
+    ["Spot", TYPE_MULT.spot],
+  ];
+
+  return (
+    <details className={styles.help}>
+      <summary className={styles.helpSummary}>
+        <span className={styles.helpIcon} aria-hidden="true">
+          ?
+        </span>
+        How this calculator works
+        <span className={styles.helpChevron} aria-hidden="true">
+          ▾
+        </span>
+      </summary>
+
+      <div className={styles.helpBody}>
+        <p>
+          This tool produces a <strong>ballpark CPM</strong> (cost per 1,000
+          impressions) for a podcast ad deal. It is an estimating aid for
+          quick conversations — not a rate card and not a quote.
+        </p>
+
+        <h4 className={styles.helpHeading}>Using it</h4>
+        <ol className={styles.helpList}>
+          <li>
+            Set the <strong>Industry Benchmark</strong> slider to the going
+            CPM for comparable shows in the genre — this is the starting
+            number everything else adjusts.
+          </li>
+          <li>
+            Set the <strong>Ad Length</strong> slider to the spot duration in
+            seconds.
+          </li>
+          <li>
+            Pick the <strong>Position</strong> (where the ad sits in the
+            episode) and the <strong>Read Type</strong> (host-read vs. a
+            produced spot).
+          </li>
+          <li>
+            Read the result — the big amber number is the estimate, and the
+            range below it is a ±{Math.round(CONFIDENCE_BAND * 100)}%
+            confidence band. Quote the range, not the single number.
+          </li>
+        </ol>
+
+        <h4 className={styles.helpHeading}>The math</h4>
+        <p>
+          The benchmark is multiplied by three factors. The{" "}
+          <strong>Signal chain</strong> card shows each factor for the
+          current settings, so you can see exactly why the estimate is what
+          it is.
+        </p>
+        <div className={styles.helpTables}>
+          <table className={styles.helpTable}>
+            <caption className={styles.helpTableCaption}>Position</caption>
+            <tbody>
+              {positionRows.map(([name, mult]) => (
+                <tr key={name}>
+                  <td>{name}</td>
+                  <td className={styles.helpTableValue}>{fmtMult(mult)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className={styles.helpTable}>
+            <caption className={styles.helpTableCaption}>Read type</caption>
+            <tbody>
+              {typeRows.map(([name, mult]) => (
+                <tr key={name}>
+                  <td>{name}</td>
+                  <td className={styles.helpTableValue}>{fmtMult(mult)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className={styles.helpTable}>
+            <caption className={styles.helpTableCaption}>
+              Length (interpolated between)
+            </caption>
+            <tbody>
+              {LENGTH_CURVE.map(([seconds, mult]) => (
+                <tr key={seconds}>
+                  <td>{seconds}s</td>
+                  <td className={styles.helpTableValue}>{fmtMult(mult)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Example: a $25 benchmark, mid-roll, host-read, 30s →{" "}
+          <span className={styles.helpMono}>
+            $25 × {POSITION_MULT.mid.toFixed(2)} × {TYPE_MULT.host.toFixed(2)}{" "}
+            × 1.00 = {fmtMoney(25 * POSITION_MULT.mid * TYPE_MULT.host)}
+          </span>
+          .
+        </p>
+
+        <p className={styles.helpCaveat}>
+          The multiplier values are placeholder defaults until we calibrate
+          them against real campaign data — treat estimates as
+          conversation-starters, and sanity-check against recent comparable
+          deals in the ART19 Campaigns dashboard.
+        </p>
+      </div>
+    </details>
+  );
+}
 
 function Slider({
   label,

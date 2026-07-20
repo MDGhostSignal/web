@@ -43,6 +43,22 @@ Stale references updated elsewhere:
 - `admin/pages/page.tsx` — catalog description no longer says
   "Retro audio-console UI".
 
+## 3 · CPM calculator — expandable "How this works" panel
+
+Follow-up request: onboarding help for Mike, who may use the tool
+without knowing it. Added a collapsed-by-default `<details>`
+disclosure below the result row:
+
+- Plain-language intro (what it is / is not — "not a rate card"),
+  a 4-step usage walkthrough, the multiplicative formula, and a
+  worked example.
+- Multiplier tables (position / read type / length curve) render
+  **directly from the formula constants**, so tuning the constants
+  updates the documentation automatically — no drift.
+- Amber "?" icon chip + rotating chevron; warn-soft caveat box
+  reminding that multipliers are placeholders pending calibration.
+- All `--admin-*` token-driven, no per-theme overrides needed.
+
 ## Files touched
 
 - `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +
