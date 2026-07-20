@@ -346,17 +346,18 @@
 }
 
 /* =============================================================================
-   Collapse toggle bar — pinned to the top of the sidebar, above the nav list
-   (desktop only). Lives outside `.nav` so the nav can scroll independently
-   while the toggle stays visible at all times. Mobile drawer hides the bar
-   entirely (the drawer has its own close button + collapsed mode is
-   desktop-only).
+   Collapse toggle bar — pinned to the bottom of the sidebar, below the nav
+   list (desktop only). Lives outside `.nav` so the nav can scroll
+   independently while the toggle stays visible at all times (`.nav` has
+   flex: 1, so this footer sits at the bottom edge). Mobile drawer hides
+   the bar entirely (the drawer has its own close button + collapsed mode
+   is desktop-only).
    ============================================================================= */
 
 .toggleBar {
   flex-shrink: 0;
   padding: var(--admin-space-3);
-  border-bottom: 1px solid var(--admin-border);
+  border-top: 1px solid var(--admin-border);
 }
 
 .collapseBtn {

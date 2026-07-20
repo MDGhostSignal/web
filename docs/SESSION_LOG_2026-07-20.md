@@ -105,6 +105,19 @@ condition unchanged (pointer leaves the sidebar). Comments/prop docs
 updated in `AdminSidebar.tsx` + `AdminShell.tsx`. Applies to both
 /admin and /admin2 (shared AdminShell).
 
+## 6 · Collapse toggle → bottom-pinned + state-tracking label
+
+Follow-on from §5: with hover-anywhere peek, the top toggle read as
+the first nav item while being the least-used control. Per standard
+admin-sider practice (Ant Design trigger, Supabase Studio):
+
+- `toggleBar` moved below `<nav>` in `AdminSidebar.tsx` — `.nav` has
+  `flex: 1`, so the bar pins to the bottom edge with no extra layout
+  work (the flex-column comment says this was its original design).
+- `.toggleBar` border-bottom → border-top.
+- Visible label now tracks state: "Collapse" expanded / "Expand"
+  collapsed (aria-label already did; the chevron flip is unchanged).
+
 ## Files touched
 
 - `apps/web/src/app/admin/art19/cpm/page.tsx` (match removal +

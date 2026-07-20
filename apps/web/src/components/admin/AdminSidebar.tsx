@@ -139,10 +139,27 @@ export function AdminSidebar({
           </button>
         </div>
 
-        {/* Desktop-only collapse/expand toggle, pinned to the top of
-            the sidebar above the nav list. Hidden on mobile (the drawer
-            has its own close button in the header). Keyboard shortcut:
-            Ctrl/Cmd + B. */}
+        <nav className={styles.nav}>
+          <ul className={styles.list}>
+            {nav.map((item) => (
+              <NavRow
+                key={item.href}
+                item={item}
+                pathname={pathname}
+                searchParams={searchParamsString}
+                collapsed={visualCollapsed}
+              />
+            ))}
+          </ul>
+        </nav>
+
+        {/* Desktop-only collapse/expand toggle, pinned to the bottom of
+            the sidebar below the nav list (standard admin-sider
+            placement — it's a preference, not a destination, so it
+            stays out of the top scanning path). Label tracks state;
+            hover-peek reveals it before the click when collapsed.
+            Hidden on mobile (the drawer has its own close button in
+            the header). Keyboard shortcut: Ctrl/Cmd + B. */}
         <div className={styles.toggleBar}>
           <button
             type="button"
@@ -164,23 +181,11 @@ export function AdminSidebar({
             >
               <IconChevron className={styles.iconSm} />
             </span>
-            <span className={styles.collapseLabel}>Collapse</span>
+            <span className={styles.collapseLabel}>
+              {collapsed ? "Expand" : "Collapse"}
+            </span>
           </button>
         </div>
-
-        <nav className={styles.nav}>
-          <ul className={styles.list}>
-            {nav.map((item) => (
-              <NavRow
-                key={item.href}
-                item={item}
-                pathname={pathname}
-                searchParams={searchParamsString}
-                collapsed={visualCollapsed}
-              />
-            ))}
-          </ul>
-        </nav>
       </aside>
     </>
   );
