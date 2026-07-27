@@ -118,6 +118,8 @@ export async function loadBrandCampaignsData(
 export type StudioOrgProfile = {
   kind: "brand" | "creator";
   name: string;
+  /** Card-face one-liner (docs/STUDIO_LITE_TAGLINE.sql). */
+  tagline: string | null;
   description: string | null;
   /** Brand logo_url / creator avatar_url — set via the studio image
    *  upload route, served from the public Storage bucket. */
@@ -138,21 +140,28 @@ export async function loadStudioOrgProfile(member: {
   creatorId: string | null;
 }): Promise<StudioOrgProfile | null> {
   if (member.kind === "brand" && member.brandId) {
-    const res = await supabaseRest<
-      Array<{
-        name: string | null;
-        description: string | null;
-        logo_url: string | null;
-        website: string | null;
-      }>
-    >(
-      `brands?select=name,description,logo_url,website&id=eq.${encodeURIComponent(member.brandId)}`,
+    type Row = {
+      name: string | null;
+      description: string | null;
+      tagline?: string | null;
+      logo_url: string | null;
+      website: string | null;
+    };
+    // Tagline-less fallback until STUDIO_LITE_TAGLINE.sql runs.
+    let res = await supabaseRest<Row[]>(
+      `brands?select=name,description,tagline,logo_url,website&id=eq.${encodeURIComponent(member.brandId)}`,
     );
+    if (!res.ok) {
+      res = await supabaseRest<Row[]>(
+        `brands?select=name,description,logo_url,website&id=eq.${encodeURIComponent(member.brandId)}`,
+      );
+    }
     const row = res.ok && res.data?.length ? res.data[0] : null;
     if (!row) return null;
     return {
       kind: "brand",
       name: row.name ?? "(Unnamed brand)",
+      tagline: row.tagline ?? null,
       description: row.description,
       imageUrl: row.logo_url,
       website: row.website,
@@ -161,22 +170,28 @@ export async function loadStudioOrgProfile(member: {
     };
   }
   if (member.kind === "creator" && member.creatorId) {
-    const res = await supabaseRest<
-      Array<{
-        name: string | null;
-        description: string | null;
-        avatar_url: string | null;
-        podcast_url: string | null;
-        newsletter_url: string | null;
-      }>
-    >(
-      `creators?select=name,description,avatar_url,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
+    type Row = {
+      name: string | null;
+      description: string | null;
+      tagline?: string | null;
+      avatar_url: string | null;
+      podcast_url: string | null;
+      newsletter_url: string | null;
+    };
+    let res = await supabaseRest<Row[]>(
+      `creators?select=name,description,tagline,avatar_url,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
     );
+    if (!res.ok) {
+      res = await supabaseRest<Row[]>(
+        `creators?select=name,description,avatar_url,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
+      );
+    }
     const row = res.ok && res.data?.length ? res.data[0] : null;
     if (!row) return null;
     return {
       kind: "creator",
       name: row.name ?? "(Unnamed creator)",
+      tagline: row.tagline ?? null,
       description: row.description,
       imageUrl: row.avatar_url,
       website: null,
@@ -207,8 +222,12 @@ export type MarketplaceBrand = {
   name: string;
   slug: string | null;
   description: string | null;
+  /** Short one-liner shown on the card face (docs/STUDIO_LITE_TAGLINE.sql). */
+  tagline: string | null;
   logoUrl: string | null;
   website: string | null;
+  /** Year the brand row was created — "Member Since" on the card. */
+  sinceYear: number | null;
   /** Primary contact's XQ archetype, when known. */
   contactArchetype: string | null;
   matchScore: number | null;
@@ -233,8 +252,10 @@ type BrandRow = {
   name: string;
   slug: string | null;
   description: string | null;
+  tagline?: string | null;
   logo_url: string | null;
   website: string | null;
+  created_at: string | null;
   members: Array<{ xq_archetype: string | null }>;
 };
 
@@ -269,21 +290,33 @@ function firstArchetype(rows: Array<{ xq_archetype: string | null }>): string | 
 export async function loadMarketplaceBrands(
   viewerArchetype: string | null,
 ): Promise<MarketplaceBrand[]> {
-  const res = await supabaseRest<BrandRow[]>(
+  // Try the full select first; fall back without `tagline` when the
+  // STUDIO_LITE_TAGLINE.sql migration hasn't run yet.
+  let res = await supabaseRest<BrandRow[]>(
     "brands?" +
-      "select=id,name,slug,description,logo_url,website,members(xq_archetype)&" +
+      "select=id,name,slug,description,tagline,logo_url,website,created_at,members(xq_archetype)&" +
       "order=name.asc",
   );
+  if (!res.ok) {
+    res = await supabaseRest<BrandRow[]>(
+      "brands?" +
+        "select=id,name,slug,description,logo_url,website,created_at,members(xq_archetype)&" +
+        "order=name.asc",
+    );
+  }
   if (!res.ok || !res.data) return [];
   return res.data.map((b) => {
     const contactArchetype = firstArchetype(b.members ?? []);
+    const since = b.created_at ? new Date(b.created_at).getFullYear() : NaN;
     return {
       id: b.id,
       name: b.name,
       slug: b.slug,
       description: b.description,
+      tagline: b.tagline ?? null,
       logoUrl: b.logo_url,
       website: b.website,
+      sinceYear: Number.isFinite(since) ? since : null,
       contactArchetype,
       matchScore: archetypeAxisMatch(viewerArchetype, contactArchetype),
     };

@@ -27,6 +27,8 @@ export function ProfileForm({
   const fileRef = useRef<HTMLInputElement>(null);
   const [firstName, setFirstName] = useState(member.firstName ?? "");
   const [lastName, setLastName] = useState(member.lastName ?? "");
+  const [orgName, setOrgName] = useState(org?.name ?? "");
+  const [tagline, setTagline] = useState(org?.tagline ?? "");
   const [description, setDescription] = useState(org?.description ?? "");
   const [website, setWebsite] = useState(org?.website ?? "");
   const [podcastUrl, setPodcastUrl] = useState(org?.podcastUrl ?? "");
@@ -75,10 +77,14 @@ export function ProfileForm({
     try {
       const body: Record<string, string> = { firstName, lastName };
       if (member.kind === "creator") {
+        body.orgName = orgName;
+        body.tagline = tagline;
         body.description = description;
         body.podcastUrl = podcastUrl;
         body.newsletterUrl = newsletterUrl;
       } else if (member.kind === "brand") {
+        body.orgName = orgName;
+        body.tagline = tagline;
         body.description = description;
         body.website = website;
       }
@@ -111,15 +117,43 @@ export function ProfileForm({
       <form className={styles.form} onSubmit={onSubmit}>
         {hasOrg && (
           <div className={styles.field}>
-            <span className={styles.label}>
-              {isCreator ? "Show" : "Brand"}
+            <label className={styles.label} htmlFor="profile-org-name">
+              {isCreator ? "Show name" : "Brand name"}
+            </label>
+            <input
+              id="profile-org-name"
+              className={styles.input}
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
+              maxLength={120}
+            />
+            <span className={styles.fieldHint}>
+              The name on your card, as the network sees it.
             </span>
-            <div className={styles.orgNameRow}>
-              <strong>{org.name}</strong>
-              <span className={styles.orgNameHint}>
-                Name changes go through the GhostSignal team.
-              </span>
-            </div>
+          </div>
+        )}
+
+        {hasOrg && (
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="profile-tagline">
+              Short description
+            </label>
+            <input
+              id="profile-tagline"
+              className={styles.input}
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              maxLength={140}
+              placeholder={
+                isCreator
+                  ? "One line that sells the show — shown on your card."
+                  : "One line on what you do — shown on your card."
+              }
+            />
+            <span className={styles.fieldHint}>
+              The one-liner on your roster card. Keep it sharp — 140
+              characters max.
+            </span>
           </div>
         )}
 

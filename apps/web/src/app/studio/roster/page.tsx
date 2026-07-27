@@ -15,7 +15,7 @@ import {
 
 import { StudioHeader } from "../StudioHeader";
 import { StudioNotices } from "../StudioNotices";
-import { BrandProfileCard } from "./BrandProfileCard";
+import { BrandCardBrowser, type RosterBrandCard } from "./BrandCardBrowser";
 import styles from "../studio.module.css";
 
 /** /studio/roster — who's on the network.
@@ -73,6 +73,19 @@ export default async function StudioRosterPage() {
   });
   const pickCount = ordered.filter((b) => recPosition.has(b.id)).length;
 
+  const cards: RosterBrandCard[] = ordered.map((b) => ({
+    id: b.id,
+    name: b.name,
+    tagline: b.tagline,
+    description: b.description,
+    website: b.website,
+    logoUrl: b.logoUrl,
+    sinceYear: b.sinceYear,
+    archetype: b.contactArchetype,
+    matchScore: b.matchScore,
+    recommended: recPosition.has(b.id),
+  }));
+
   return (
     <RosterShell
       member={member}
@@ -80,22 +93,14 @@ export default async function StudioRosterPage() {
       title="Brand roster"
       subtitle={
         pickCount > 0
-          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the row, marked ✦ GhostSignal Pick.`
-          : "Every brand on the network. Scroll the row to browse."
+          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the row, marked ✦ GS Pick. Click any card for the full story.`
+          : "Every brand on the network. Click any card for the full story."
       }
     >
-      {ordered.length === 0 ? (
+      {cards.length === 0 ? (
         <EmptyRoster side="brands" />
       ) : (
-        <div className={styles.deckRow}>
-          {ordered.map((b) => (
-            <BrandProfileCard
-              key={b.id}
-              brand={b}
-              recommended={recPosition.has(b.id)}
-            />
-          ))}
-        </div>
+        <BrandCardBrowser brands={cards} />
       )}
     </RosterShell>
   );

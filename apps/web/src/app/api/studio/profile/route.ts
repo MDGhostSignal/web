@@ -64,8 +64,14 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    // Org name is editable ("customize all the fields on the card")
+    // but never clearable — an empty submission keeps the current name.
+    const orgName = cleanText(body.orgName, 120) || undefined;
+
     if (member.kind === "creator") {
       const patch = compact({
+        name: orgName,
+        tagline: cleanText(body.tagline, 140),
         description: cleanText(body.description, 2000),
         podcast_url: cleanUrl(body.podcastUrl, "Podcast URL"),
         newsletter_url: cleanUrl(body.newsletterUrl, "Newsletter URL"),
@@ -75,6 +81,8 @@ export async function PATCH(req: NextRequest) {
       }
     } else if (member.kind === "brand") {
       const patch = compact({
+        name: orgName,
+        tagline: cleanText(body.tagline, 140),
         description: cleanText(body.description, 2000),
         website: cleanUrl(body.website, "Website"),
       });
