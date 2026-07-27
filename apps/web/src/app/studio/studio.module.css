@@ -714,3 +714,91 @@
   font-size: 12px;
   color: var(--studio-text-muted);
 }
+
+/* ============================================================
+ * Roster page (/studio/roster)
+ * ============================================================ */
+
+.rosterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.rosterCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  box-shadow: var(--studio-shadow-soft, none);
+}
+
+.rosterCardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rosterAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--studio-border);
+}
+
+.rosterInitial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: var(--studio-accent-soft, rgba(124, 88, 214, 0.08));
+  color: var(--studio-accent);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rosterName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+}
+
+.rosterMeta {
+  font-size: 12px;
+  color: var(--studio-text-secondary);
+  text-decoration: none;
+}
+
+a.rosterMeta:hover {
+  color: var(--studio-accent);
+  text-decoration: underline;
+}
+
+.rosterDesc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--studio-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rosterChip {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border: 1px solid rgba(124, 88, 214, 0.35);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #6a45c7;
+  background: rgba(124, 88, 214, 0.04);
+}
