@@ -50,6 +50,18 @@ still owed by Martin/team.
 - Supabase MCP is connected **read-only** — the migration was NOT
   applied. Verified live `creators` columns match the schema docs.
 
+## Deployed + live-verified (same day)
+
+Merged fast-forward to main (`de31289`), pushed; Vercel deploy live
+~2 min later. Probed production:
+
+- `PATCH /api/studio/profile` unauth → `401 {"ok":false,"error":"Unauthorized."}`
+  (requireApprovedMember + studioError shapes confirmed live).
+- `/studio/profile`, `/studio/roster` unauth → 307 to `/studio/login`.
+- `/studio` landing → 200; `/studio/marketplace` behavior unchanged.
+- Not yet verified: the signed-in happy path (profile save, roster
+  render) — needs a real member session in the browser.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
