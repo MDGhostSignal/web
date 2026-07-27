@@ -189,6 +189,17 @@ all on the intro stage, now fixed:
   that fills the page width; 8 cards initially + Show-more button in
   batches of 8. No scrollbars anywhere.
 
+## Roster = home, avatar = profile entry, card preview (`2120423`)
+
+- `/studio` + legacy redirects → `/studio/roster` (standard view).
+- Profile tab removed; header avatar circle is the only profile
+  entry, now showing the uploaded logo (initial fallback) + dot.
+- `/studio/profile` renders a live preview of the member's own
+  roster card (`RosterCardFace` extracted with a non-interactive
+  mode); `StudioOrgProfile.sinceYear` added for Member Since.
+- `StudioNotices` now receives the org row from the page (one org
+  query per request).
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
