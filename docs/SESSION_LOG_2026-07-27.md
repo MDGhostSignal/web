@@ -200,6 +200,19 @@ all on the intro stage, now fixed:
 - `StudioNotices` now receives the org row from the page (one org
   query per request).
 
+## Personal card for org-less members (`2c94f15`)
+
+Martin is signed in as a private person (member_type other) and saw
+only name fields on /studio/profile. Now: any member WITHOUT a
+linked brand/creator row (other, or unlinked brand/creator) gets a
+personal card from their own members row — descriptive text
+(`members.bio`), card `tagline`, image upload → `members.avatar_url`
+(`member-avatars/` path, same as the admin avatar route), and the
+live roster-card preview. `docs/STUDIO_LITE_MEMBER_CARD.sql` adds
+members.tagline + members.bio (**Martin must run before personal
+saves work**; reads are fallback-tolerant). `loadStudioOrgProfile`
+gained kind="member"; ProfileForm visibility now keys off card kind.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
