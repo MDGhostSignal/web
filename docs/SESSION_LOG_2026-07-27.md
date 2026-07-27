@@ -237,6 +237,15 @@ via `POST /api/studio/contact-requests`. No admin UI for requests
 yet — review via Supabase table editor; admin surface is a natural
 follow-up alongside the GS-picks picker.
 
+## Profile: summary vs edit panels (`54a7a89`)
+
+Two visually distinct panels replace the loose layout: tinted
+surface-2 "Profile summary" (roster-card preview + XQ/RQ tiles,
+labeled as the on-save-updating preview) vs bordered surface-1
+"✎ Edit your details" with the save flow. Form fills its panel via a
+responsive two-column `.formGrid` (`.fieldWide` items span the row);
+the 560px `.profileFormWrap` cap removed.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
