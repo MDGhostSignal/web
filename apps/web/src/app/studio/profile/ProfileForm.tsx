@@ -76,17 +76,17 @@ export function ProfileForm({
     setSaving(true);
     try {
       const body: Record<string, string> = { firstName, lastName };
-      if (member.kind === "creator") {
-        body.orgName = orgName;
+      if (org) {
         body.tagline = tagline;
         body.description = description;
-        body.podcastUrl = podcastUrl;
-        body.newsletterUrl = newsletterUrl;
-      } else if (member.kind === "brand") {
-        body.orgName = orgName;
-        body.tagline = tagline;
-        body.description = description;
-        body.website = website;
+        if (org.kind === "creator") {
+          body.orgName = orgName;
+          body.podcastUrl = podcastUrl;
+          body.newsletterUrl = newsletterUrl;
+        } else if (org.kind === "brand") {
+          body.orgName = orgName;
+          body.website = website;
+        }
       }
       const res = await fetch("/api/studio/profile", {
         method: "PATCH",
@@ -110,12 +110,14 @@ export function ProfileForm({
   }
 
   const hasOrg = org !== null;
-  const isCreator = hasOrg && org.kind === "creator";
+  const isCreator = org?.kind === "creator";
+  const isBrand = org?.kind === "brand";
+  const isPersonal = org?.kind === "member";
 
   return (
     <div className={styles.profileFormWrap}>
       <form className={styles.form} onSubmit={onSubmit}>
-        {hasOrg && (
+        {(isCreator || isBrand) && (
           <div className={styles.field}>
             <label className={styles.label} htmlFor="profile-org-name">
               {isCreator ? "Show name" : "Brand name"}
@@ -161,7 +163,11 @@ export function ProfileForm({
         {hasOrg && (
           <div className={styles.field}>
             <span className={styles.label}>
-              {isCreator ? "Show image" : "Brand logo"}
+              {isCreator
+                ? "Show image"
+                : isPersonal
+                  ? "Profile image"
+                  : "Brand logo"}
             </span>
             <div className={styles.uploadRow}>
               {imageUrl ? (
@@ -239,7 +245,9 @@ export function ProfileForm({
             <label className={styles.label} htmlFor="profile-description">
               {isCreator
                 ? "What is your show about, and who listens?"
-                : "What does your brand stand for?"}
+                : isPersonal
+                  ? "Descriptive text — who are you?"
+                  : "What does your brand stand for?"}
             </label>
             <textarea
               id="profile-description"
@@ -250,7 +258,9 @@ export function ProfileForm({
               placeholder={
                 isCreator
                   ? "Your show's premise, your audience, and what makes it distinct. This is the description partners read on your card."
-                  : "Your values, your products, and the partnerships you're looking for. This is the description creators read on your card."
+                  : isPersonal
+                    ? "Who you are and what you do in the network. This is the description others read on your card."
+                    : "Your values, your products, and the partnerships you're looking for. This is the description creators read on your card."
               }
             />
             <span className={styles.fieldHint}>
@@ -260,7 +270,7 @@ export function ProfileForm({
           </div>
         )}
 
-        {hasOrg && !isCreator && (
+        {isBrand && (
           <div className={styles.field}>
             <label className={styles.label} htmlFor="profile-website">
               Website

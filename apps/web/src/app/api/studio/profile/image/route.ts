@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import {
-  requireApprovedMember,
-  scopedUpdate,
-  StudioAuthError,
-} from "@/lib/studio-auth";
+import { requireApprovedMember, scopedUpdate } from "@/lib/studio-auth";
 import { studioError } from "@/lib/studio-route";
 import { supabaseRest } from "@/lib/supabase-admin";
 import {
@@ -42,15 +38,22 @@ export async function POST(req: NextRequest) {
   try {
     const member = await requireApprovedMember();
 
-    const table = member.kind === "brand" ? "brands" : "creators";
-    const column = member.kind === "brand" ? "logo_url" : "avatar_url";
-    const orgId = member.kind === "brand" ? member.brandId : member.creatorId;
-    if (member.kind === "other" || !orgId) {
-      throw new StudioAuthError(
-        "No brand or creator record is linked to this account.",
-        409,
-      );
-    }
+    // Linked org row → brand logo / creator avatar. No linked org
+    // (private person, or link not made yet) → the member's own
+    // avatar_url, same path convention as the admin avatar route.
+    const linkedOrgId =
+      member.kind === "brand"
+        ? member.brandId
+        : member.kind === "creator"
+          ? member.creatorId
+          : null;
+    const table = linkedOrgId
+      ? member.kind === "brand"
+        ? ("brands" as const)
+        : ("creators" as const)
+      : ("members" as const);
+    const column = table === "brands" ? "logo_url" : "avatar_url";
+    const orgId = linkedOrgId ?? member.id;
 
     let form: FormData;
     try {
@@ -90,9 +93,11 @@ export async function POST(req: NextRequest) {
 
     const ext = MIME_TO_EXT[file.type];
     const newPath =
-      member.kind === "brand"
+      table === "brands"
         ? `brand-logos/${orgId}.${ext}`
-        : `creator-avatars/${orgId}.${ext}`;
+        : table === "creators"
+          ? `creator-avatars/${orgId}.${ext}`
+          : `member-avatars/${orgId}.${ext}`;
     const bytes = new Uint8Array(await file.arrayBuffer());
 
     const upload = await uploadObject(newPath, bytes, file.type, {

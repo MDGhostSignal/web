@@ -44,7 +44,7 @@ export default async function StudioProfilePage() {
             ? "How your show presents to brands across the marketplace."
             : member.kind === "brand"
             ? "How your brand presents to creators across the marketplace."
-            : "Your contact details."}
+            : "Your personal card on the network, and your contact details."}
         </p>
 
         {/* Live preview of the member's own roster card — exactly the

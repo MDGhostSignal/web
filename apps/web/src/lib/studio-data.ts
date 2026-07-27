@@ -116,7 +116,9 @@ export async function loadBrandCampaignsData(
  * ============================================================ */
 
 export type StudioOrgProfile = {
-  kind: "brand" | "creator";
+  /** "member" = personal card from the members row — used by
+   *  private-person accounts and org members whose link isn't made. */
+  kind: "brand" | "creator" | "member";
   name: string;
   /** Card-face one-liner (docs/STUDIO_LITE_TAGLINE.sql). */
   tagline: string | null;
@@ -133,10 +135,13 @@ export type StudioOrgProfile = {
   newsletterUrl: string | null;
 };
 
-/** Load the brand/creator row the member is linked to, for display +
- *  editing on /studio/profile. Returns null for members with no
- *  linked org row (kind "other", or a link the CRM hasn't made yet). */
+/** Load the card profile the member edits on /studio/profile: their
+ *  linked brand/creator row, or — for private-person accounts and
+ *  org members whose link isn't made yet — a personal card from
+ *  their own members row (kind "member"). Returns null only when
+ *  even the members-row read fails. */
 export async function loadStudioOrgProfile(member: {
+  id: string;
   kind: "brand" | "creator" | "other";
   brandId: string | null;
   creatorId: string | null;
@@ -207,7 +212,44 @@ export async function loadStudioOrgProfile(member: {
       newsletterUrl: row.newsletter_url,
     };
   }
-  return null;
+
+  // Personal card from the members row. Fallback select until
+  // STUDIO_LITE_MEMBER_CARD.sql adds tagline/bio.
+  type MemberRow = {
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    tagline?: string | null;
+    bio?: string | null;
+    avatar_url: string | null;
+    created_at: string | null;
+  };
+  let res = await supabaseRest<MemberRow[]>(
+    `members?select=first_name,last_name,email,tagline,bio,avatar_url,created_at&id=eq.${encodeURIComponent(member.id)}`,
+  );
+  if (!res.ok) {
+    res = await supabaseRest<MemberRow[]>(
+      `members?select=first_name,last_name,email,avatar_url,created_at&id=eq.${encodeURIComponent(member.id)}`,
+    );
+  }
+  const row = res.ok && res.data?.length ? res.data[0] : null;
+  if (!row) return null;
+  const name =
+    `${row.first_name?.trim() ?? ""} ${row.last_name?.trim() ?? ""}`.trim() ||
+    row.email ||
+    "Studio member";
+  const since = row.created_at ? new Date(row.created_at).getFullYear() : NaN;
+  return {
+    kind: "member",
+    name,
+    tagline: row.tagline ?? null,
+    sinceYear: Number.isFinite(since) ? since : null,
+    description: row.bio ?? null,
+    imageUrl: row.avatar_url,
+    website: null,
+    podcastUrl: null,
+    newsletterUrl: null,
+  };
 }
 
 /* ============================================================

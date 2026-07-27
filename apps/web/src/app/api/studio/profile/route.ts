@@ -68,7 +68,11 @@ export async function PATCH(req: NextRequest) {
     // but never clearable — an empty submission keeps the current name.
     const orgName = cleanText(body.orgName, 120) || undefined;
 
-    if (member.kind === "creator") {
+    const hasLinkedOrg =
+      (member.kind === "creator" && member.creatorId !== null) ||
+      (member.kind === "brand" && member.brandId !== null);
+
+    if (member.kind === "creator" && member.creatorId) {
       const patch = compact({
         name: orgName,
         tagline: cleanText(body.tagline, 140),
@@ -79,7 +83,7 @@ export async function PATCH(req: NextRequest) {
       if (Object.keys(patch).length > 0) {
         await scopedUpdate(member, "creators", patch);
       }
-    } else if (member.kind === "brand") {
+    } else if (member.kind === "brand" && member.brandId) {
       const patch = compact({
         name: orgName,
         tagline: cleanText(body.tagline, 140),
@@ -94,6 +98,14 @@ export async function PATCH(req: NextRequest) {
     const memberPatch = compact({
       first_name: cleanText(body.firstName, 80),
       last_name: cleanText(body.lastName, 80),
+      // Personal card (no linked org row): tagline + descriptive text
+      // live on the members row itself. Requires STUDIO_LITE_MEMBER_CARD.sql.
+      ...(hasLinkedOrg
+        ? {}
+        : {
+            tagline: cleanText(body.tagline, 140),
+            bio: cleanText(body.description, 2000),
+          }),
     });
     if (Object.keys(memberPatch).length > 0) {
       await scopedUpdate(member, "members", memberPatch);
