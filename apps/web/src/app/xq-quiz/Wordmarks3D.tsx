@@ -287,13 +287,19 @@ export function XQ3DWordmark() {
             fill="url(#xq-shimmer-band)"
             transform="rotate(28)"
           />
+          {/* repeatCount is finite on purpose: SMIL isn't GPU-composited,
+              so an indefinite sweep repaints this filtered/clipped SVG on
+              the main thread ~60fps forever (three wordmark instances on
+              the intro). Three passes give the load-in its shine, then
+              the page settles idle. */}
           <animateTransform
             attributeName="transform"
             type="translate"
             from="-100 500"
             to="900 -200"
             dur="4.2s"
-            repeatCount="indefinite"
+            repeatCount="3"
+            fill="freeze"
           />
         </g>
       </g>
@@ -522,13 +528,16 @@ export function RQ3DWordmark() {
             height="340"
             fill="url(#rq-sweep-band)"
           />
+          {/* Finite for the same main-thread-repaint reason as the XQ
+              shimmer above. */}
           <animateTransform
             attributeName="transform"
             type="translate"
             from="-200 0"
-            to="900 0"
+            to="1000 0"
             dur="3.6s"
-            repeatCount="indefinite"
+            repeatCount="3"
+            fill="freeze"
           />
         </g>
       </g>
