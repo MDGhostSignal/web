@@ -144,6 +144,40 @@ name (`ARCHETYPES`) + a 3-dot values-fit meter from `matchScore`.
 Flat: no outline/shadow/3D. Interim `.flatCard*` styles deleted with
 their usage. Row layout (horizontal snap scroll) unchanged.
 
+## Welcome-card roster + editable card fields (`319537e`)
+
+Martin pointed at admin's `mmIdCard`/`mmWelcomeCard` (digital twin of
+the physical Welcome Box card) as the roster card design. Built
+`roster/BrandCardBrowser.tsx` (client): row of black 1.6:1 welcome
+cards — stripes/shine/logo/wordmark construction copied from the
+admin module into studio-scoped `.wc*` classes — showing name,
+Member Since (from `brands.created_at`), and a NEW short-description
+`tagline`; clicking a card opens a detail panel (full description,
+website, archetype name+tagline, values-fit dots, GS-pick note).
+`docs/STUDIO_LITE_TAGLINE.sql` adds `tagline` to brands+creators
+(**Martin must run**; every loader has a tagline-less fallback select
+so it's deploy-safe). Profile: org NAME now editable (was read-only)
++ tagline field; PATCH whitelist extended (name never clearable).
+Interim `BrandProfileCard` deleted.
+
+## XQ-quiz perf fix — the 4e4f1be leftovers (`a460b0c`)
+
+Martin: /what-is-this → XQ quiz link → machine slows badly, worst on
+mobile. Investigation (agent, verified against `git show 4e4f1be`):
+the July 20 fix covered the WebGL layers only. Remaining culprits,
+all on the intro stage, now fixed:
+1. `.xq-intro-phase` `backdrop-filter: blur(4px)` × 2 cards live-
+   re-blurring the 60fps fog every frame → replaced with solid dark
+   tint (`rgba(12,14,20,.6)`).
+2. `.xq-constellations` full-viewport `mix-blend-mode: screen` over
+   animating fog + per-child `blur(0.4px)` → child blur removed;
+   whole layer `display: none` on `pointer: coarse` (also silences
+   100+ infinite star/spark animations on phones).
+3. SMIL wordmark shimmer sweeps (`repeatCount="indefinite"`, main-
+   thread repaint, 3 intro instances) → `repeatCount="3"` +
+   `fill="freeze"`; RQ endpoint 900→1000 so the frozen band clears
+   the viewBox (remove would have snapped a visible stripe back).
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
