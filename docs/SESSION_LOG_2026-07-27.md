@@ -223,6 +223,20 @@ then a compact result summary (XQ: archetype-accent code chip, name,
 tagline, top non-negotiables; RQ: code, name, signal clarity,
 undertone, note). Summaries via existing loadStudioXq/RqSummary.
 
+## Roster pop-up + intro requests (`c9b2bc7`)
+
+Card click → modal (keyed per brand; Esc/backdrop/X close; plain
+rgba scrim, no backdrop-filter per the perf lesson): full
+description, website, archetype read + values fit, and the brand
+contact's XQ/RQ summaries fetched on demand via new
+`GET /api/studio/roster/brands/[brandId]` (approved members only,
+press-E dossier pattern). "Request an intro" files into new
+`studio_contact_requests` (docs/STUDIO_LITE_CONTACT_REQUESTS.sql —
+**Martin must run**; unique member+brand; member_id session-forced)
+via `POST /api/studio/contact-requests`. No admin UI for requests
+yet — review via Supabase table editor; admin surface is a natural
+follow-up alongside the GS-picks picker.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
