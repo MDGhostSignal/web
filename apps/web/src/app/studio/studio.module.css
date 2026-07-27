@@ -670,7 +670,7 @@
  * ============================================================ */
 
 .profileFormWrap {
-  max-width: 560px;
+  width: 100%;
 }
 
 .textarea {
@@ -1292,6 +1292,71 @@ a.rosterMeta:hover {
 .cardPreviewWrap {
   max-width: 380px;
   margin-bottom: 8px;
+}
+
+/* Two panels: summary (tinted, display-only) vs edit (bordered white
+ * surface with the save flow) — visually distinct roles. */
+.summaryPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+  background: var(--studio-surface-2);
+  border-radius: 16px;
+  align-self: start;
+}
+
+.editPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 16px;
+}
+
+.panelHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+}
+
+.editPanel .panelTitle::before {
+  content: "✎ ";
+  color: var(--studio-accent);
+}
+
+.panelHint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--studio-text-muted);
+}
+
+/* Editable-field grid — two-ish columns on wide screens, description
+ * and other .fieldWide items spanning the full row. */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px 20px;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.submitStart {
+  justify-self: start;
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
 /* Profile image upload */

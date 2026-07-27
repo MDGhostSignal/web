@@ -56,46 +56,55 @@ export default async function StudioProfilePage() {
             : "Your personal card on the network, and your contact details."}
         </p>
 
-        {/* Two-column layout: card preview + XQ/RQ tiles on the left,
-            the profile questionnaire filling the remaining width. */}
+        {/* Two visually distinct panels: the read-only profile summary
+            (roster-card preview + assessment tiles) and the editable
+            form. */}
         <div className={styles.profileLayout}>
-          <div className={styles.profileSide}>
-            {/* Live preview of the member's own roster card — exactly
-                the face other members see. Server-rendered, so it
-                refreshes after every profile save / image upload. */}
+          <section
+            className={styles.summaryPanel}
+            aria-label="Profile summary"
+          >
+            <div className={styles.panelHeading}>
+              <h2 className={styles.panelTitle}>Profile summary</h2>
+              <p className={styles.panelHint}>
+                Preview — how the network sees you. Updates when you
+                save.
+              </p>
+            </div>
+
             {org && (
-              <section>
-                <h3 className={styles.sectionTitle}>Your roster card</h3>
-                <div className={styles.cardPreviewWrap}>
-                  <RosterCardFace
-                    brand={{
-                      id: "preview",
-                      name: org.name,
-                      tagline: org.tagline,
-                      description: org.description,
-                      website: org.website,
-                      logoUrl: org.imageUrl,
-                      sinceYear: org.sinceYear,
-                      archetype: member.xqArchetype,
-                      matchScore: null,
-                      recommended: false,
-                    }}
-                  />
-                </div>
-                <p className={styles.fieldHint}>
-                  This is how your card appears on the network roster —
-                  edits update it once saved.
-                </p>
-              </section>
+              <div className={styles.cardPreviewWrap}>
+                <RosterCardFace
+                  brand={{
+                    id: "preview",
+                    name: org.name,
+                    tagline: org.tagline,
+                    description: org.description,
+                    website: org.website,
+                    logoUrl: org.imageUrl,
+                    sinceYear: org.sinceYear,
+                    archetype: member.xqArchetype,
+                    matchScore: null,
+                    recommended: false,
+                  }}
+                />
+              </div>
             )}
 
             {/* XQ / RQ tiles — persistent fill-me reminders until each
                 assessment exists, then compact result summaries. */}
             <XqTile summary={xqSummary} />
             <RqTile summary={rqSummary} />
-          </div>
+          </section>
 
-          <div className={styles.profileMain}>
+          <section className={styles.editPanel} aria-label="Edit your profile">
+            <div className={styles.panelHeading}>
+              <h2 className={styles.panelTitle}>Edit your details</h2>
+              <p className={styles.panelHint}>
+                Fill out the fields and save — your card and the roster
+                update immediately.
+              </p>
+            </div>
             <ProfileForm
               member={{
                 kind: member.kind,
@@ -104,7 +113,7 @@ export default async function StudioProfilePage() {
               }}
               org={org}
             />
-          </div>
+          </section>
         </div>
       </main>
     </>

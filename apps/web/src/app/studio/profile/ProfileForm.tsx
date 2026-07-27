@@ -116,7 +116,7 @@ export function ProfileForm({
 
   return (
     <div className={styles.profileFormWrap}>
-      <form className={styles.form} onSubmit={onSubmit}>
+      <form className={styles.formGrid} onSubmit={onSubmit}>
         {(isCreator || isBrand) && (
           <div className={styles.field}>
             <label className={styles.label} htmlFor="profile-org-name">
@@ -161,7 +161,7 @@ export function ProfileForm({
 
         {/* Image / logo ------------------------------------------- */}
         {hasOrg && (
-          <div className={styles.field}>
+          <div className={`${styles.field} ${styles.fieldWide}`}>
             <span className={styles.label}>
               {isCreator
                 ? "Show image"
@@ -241,7 +241,7 @@ export function ProfileForm({
 
         {/* Story ---------------------------------------------------- */}
         {hasOrg && (
-          <div className={styles.field}>
+          <div className={`${styles.field} ${styles.fieldWide}`}>
             <label className={styles.label} htmlFor="profile-description">
               {isCreator
                 ? "What is your show about, and who listens?"
@@ -317,12 +317,20 @@ export function ProfileForm({
           </>
         )}
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && (
+          <div className={`${styles.error} ${styles.fieldWide}`}>{error}</div>
+        )}
         {saved && !error && (
-          <div className={styles.formSaved}>Profile saved.</div>
+          <div className={`${styles.formSaved} ${styles.fieldWide}`}>
+            Profile saved.
+          </div>
         )}
 
-        <button className={styles.submit} type="submit" disabled={saving}>
+        <button
+          className={`${styles.submit} ${styles.fieldWide} ${styles.submitStart}`}
+          type="submit"
+          disabled={saving}
+        >
           {saving ? "Saving…" : "Save profile"}
         </button>
       </form>
