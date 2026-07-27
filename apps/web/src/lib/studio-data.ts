@@ -120,6 +120,8 @@ export type StudioOrgProfile = {
   name: string;
   /** Card-face one-liner (docs/STUDIO_LITE_TAGLINE.sql). */
   tagline: string | null;
+  /** Year the org row was created — "Member Since" on the card. */
+  sinceYear: number | null;
   description: string | null;
   /** Brand logo_url / creator avatar_url — set via the studio image
    *  upload route, served from the public Storage bucket. */
@@ -146,22 +148,25 @@ export async function loadStudioOrgProfile(member: {
       tagline?: string | null;
       logo_url: string | null;
       website: string | null;
+      created_at: string | null;
     };
     // Tagline-less fallback until STUDIO_LITE_TAGLINE.sql runs.
     let res = await supabaseRest<Row[]>(
-      `brands?select=name,description,tagline,logo_url,website&id=eq.${encodeURIComponent(member.brandId)}`,
+      `brands?select=name,description,tagline,logo_url,website,created_at&id=eq.${encodeURIComponent(member.brandId)}`,
     );
     if (!res.ok) {
       res = await supabaseRest<Row[]>(
-        `brands?select=name,description,logo_url,website&id=eq.${encodeURIComponent(member.brandId)}`,
+        `brands?select=name,description,logo_url,website,created_at&id=eq.${encodeURIComponent(member.brandId)}`,
       );
     }
     const row = res.ok && res.data?.length ? res.data[0] : null;
     if (!row) return null;
+    const since = row.created_at ? new Date(row.created_at).getFullYear() : NaN;
     return {
       kind: "brand",
       name: row.name ?? "(Unnamed brand)",
       tagline: row.tagline ?? null,
+      sinceYear: Number.isFinite(since) ? since : null,
       description: row.description,
       imageUrl: row.logo_url,
       website: row.website,
@@ -177,21 +182,24 @@ export async function loadStudioOrgProfile(member: {
       avatar_url: string | null;
       podcast_url: string | null;
       newsletter_url: string | null;
+      created_at: string | null;
     };
     let res = await supabaseRest<Row[]>(
-      `creators?select=name,description,tagline,avatar_url,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
+      `creators?select=name,description,tagline,avatar_url,podcast_url,newsletter_url,created_at&id=eq.${encodeURIComponent(member.creatorId)}`,
     );
     if (!res.ok) {
       res = await supabaseRest<Row[]>(
-        `creators?select=name,description,avatar_url,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
+        `creators?select=name,description,avatar_url,podcast_url,newsletter_url,created_at&id=eq.${encodeURIComponent(member.creatorId)}`,
       );
     }
     const row = res.ok && res.data?.length ? res.data[0] : null;
     if (!row) return null;
+    const since = row.created_at ? new Date(row.created_at).getFullYear() : NaN;
     return {
       kind: "creator",
       name: row.name ?? "(Unnamed creator)",
       tagline: row.tagline ?? null,
+      sinceYear: Number.isFinite(since) ? since : null,
       description: row.description,
       imageUrl: row.avatar_url,
       website: null,

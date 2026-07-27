@@ -50,7 +50,7 @@ export function BrandCardBrowser({ brands }: { brands: RosterBrandCard[] }) {
     <>
       <div className={styles.wcGrid}>
         {visible.map((b) => (
-          <WelcomeCard
+          <RosterCardFace
             key={b.id}
             brand={b}
             active={b.id === selectedId}
@@ -74,23 +74,21 @@ export function BrandCardBrowser({ brands }: { brands: RosterBrandCard[] }) {
   );
 }
 
-function WelcomeCard({
+/** The card face itself. With `onSelect` it renders as the roster's
+ *  interactive button; without, as a static preview element (used on
+ *  /studio/profile so members see their own card as the network
+ *  does). */
+export function RosterCardFace({
   brand,
-  active,
+  active = false,
   onSelect,
 }: {
   brand: RosterBrandCard;
-  active: boolean;
-  onSelect: () => void;
+  active?: boolean;
+  onSelect?: () => void;
 }) {
-  return (
-    <button
-      type="button"
-      className={`${styles.wcCard} ${styles.rosterCard} ${active ? styles.wcCardActive : ""}`}
-      onClick={onSelect}
-      aria-expanded={active}
-      aria-label={`${brand.name} — ${active ? "hide" : "show"} details`}
-    >
+  const face = (
+    <>
       {brand.logoUrl ? (
         <Image
           src={brand.logoUrl}
@@ -119,6 +117,23 @@ function WelcomeCard({
           <span className={styles.wcTagline}>{brand.tagline}</span>
         )}
       </span>
+    </>
+  );
+
+  const className = `${styles.wcCard} ${styles.rosterCard} ${active ? styles.wcCardActive : ""}`;
+
+  if (!onSelect) {
+    return <div className={className}>{face}</div>;
+  }
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={onSelect}
+      aria-expanded={active}
+      aria-label={`${brand.name} — ${active ? "hide" : "show"} details`}
+    >
+      {face}
     </button>
   );
 }

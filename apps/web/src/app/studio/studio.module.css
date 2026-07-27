@@ -873,6 +873,13 @@ a.rosterMeta:hover {
   background: var(--studio-accent-hover);
 }
 
+.headerAvatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
 .headerAvatarDot {
   position: absolute;
   top: -1px;
@@ -1191,6 +1198,12 @@ a.rosterMeta:hover {
 
 .bpFitDotOn {
   background: var(--bp-accent);
+}
+
+/* Roster card preview on /studio/profile */
+.cardPreviewWrap {
+  max-width: 380px;
+  margin-bottom: 8px;
 }
 
 /* Profile image upload */

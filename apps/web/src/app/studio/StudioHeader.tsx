@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
@@ -14,9 +15,11 @@ export function StudioHeader({
   profile,
 }: {
   activeTab: "dashboard" | "marketplace" | "roster" | "world" | "profile";
-  /** Circular profile shortcut in the header trail. `attention` shows
-   *  a dot when onboarding is incomplete (XQ/RQ/profile gaps). */
-  profile?: { initial: string; attention: boolean };
+  /** Circular profile shortcut in the header trail — the only route
+   *  to /studio/profile in lite mode (no Profile tab). Shows the
+   *  uploaded logo when there is one, else the member's initial;
+   *  `attention` shows a dot when onboarding is incomplete. */
+  profile?: { initial: string; imageUrl: string | null; attention: boolean };
 }) {
   return (
     <header className={styles.dashHeader}>
@@ -44,17 +47,13 @@ export function StudioHeader({
           </>
         )}
         <Link
-          href="/studio/profile"
-          className={`${styles.headerNavTab} ${activeTab === "profile" ? styles.headerNavTabActive : ""}`}
-        >
-          Profile
-        </Link>
-        <Link
           href="/studio/roster"
           className={`${styles.headerNavTab} ${activeTab === "roster" ? styles.headerNavTabActive : ""}`}
         >
           Roster
         </Link>
+        {/* No Profile tab — the avatar circle in the trail is the way
+            to /studio/profile. */}
         {!STUDIO_LITE_ONLY && (
           <Link
             href="/studio/world"
@@ -71,7 +70,18 @@ export function StudioHeader({
             className={styles.headerAvatar}
             aria-label="Review and edit your profile"
           >
-            {profile.initial}
+            {profile.imageUrl ? (
+              <Image
+                src={profile.imageUrl}
+                alt=""
+                width={32}
+                height={32}
+                className={styles.headerAvatarImg}
+                unoptimized
+              />
+            ) : (
+              profile.initial
+            )}
             {profile.attention && (
               <span className={styles.headerAvatarDot} aria-hidden="true" />
             )}

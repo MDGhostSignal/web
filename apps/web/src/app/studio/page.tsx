@@ -42,8 +42,8 @@ export default async function StudioDashboardPage() {
   }
   if (!member.isApproved) redirect("/studio/pending");
   // Lite mode: the legacy dashboard below (show stats + XQ/RQ cards)
-  // is unrouted — Profile is the workspace home.
-  if (STUDIO_LITE_ONLY) redirect("/studio/profile");
+  // is unrouted — the Roster is the workspace's standard view.
+  if (STUDIO_LITE_ONLY) redirect("/studio/roster");
 
   // Load the right slice of data based on what kind of member they are.
   // Both queries scope by id; no cross-tenant data is reachable.

@@ -29,7 +29,7 @@ import styles from "../studio.module.css";
  *  XQ archetype). */
 export default async function StudioMarketplacePage() {
   // Legacy surface — unrouted while Studio Lite is the live shape.
-  if (STUDIO_LITE_ONLY) redirect("/studio/profile");
+  if (STUDIO_LITE_ONLY) redirect("/studio/roster");
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");

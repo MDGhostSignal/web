@@ -10,7 +10,9 @@ import {
   loadBrandRecommendations,
   loadMarketplaceBrands,
   loadMarketplaceCreators,
+  loadStudioOrgProfile,
   type MarketplaceCreator,
+  type StudioOrgProfile,
 } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
@@ -31,13 +33,15 @@ export default async function StudioRosterPage() {
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");
 
-  const headerProfile = profileBadge(member);
+  const org = await loadStudioOrgProfile(member);
+  const headerProfile = profileBadge(member, org);
 
   if (member.kind === "brand") {
     const creators = await loadMarketplaceCreators(member.xqArchetype);
     return (
       <RosterShell
         member={member}
+        org={org}
         headerProfile={headerProfile}
         title="Creator roster"
         subtitle="Every show on the GhostSignal network."
@@ -89,6 +93,7 @@ export default async function StudioRosterPage() {
   return (
     <RosterShell
       member={member}
+      org={org}
       headerProfile={headerProfile}
       title="Brand roster"
       subtitle={
@@ -110,25 +115,27 @@ export default async function StudioRosterPage() {
  * Shell + shared pieces
  * ============================================================ */
 
-/** Header avatar shortcut: member initial + attention dot while any
- *  onboarding gap is open (XQ, RQ — profile gaps surface via the
- *  notices, which run their own org query). */
-function profileBadge(member: StudioMember) {
+/** Header avatar shortcut: uploaded logo when there is one, else the
+ *  member initial; attention dot while any onboarding gap is open. */
+function profileBadge(member: StudioMember, org: StudioOrgProfile | null) {
   return {
     initial: member.displayName.trim().charAt(0).toUpperCase() || "?",
+    imageUrl: org?.imageUrl ?? null,
     attention: !member.xqSubmissionId || !member.rqSubmissionId,
   };
 }
 
 function RosterShell({
   member,
+  org,
   headerProfile,
   title,
   subtitle,
   children,
 }: {
   member: StudioMember;
-  headerProfile: { initial: string; attention: boolean };
+  org: StudioOrgProfile | null;
+  headerProfile: { initial: string; imageUrl: string | null; attention: boolean };
   title: string;
   subtitle: string;
   children: React.ReactNode;
@@ -137,7 +144,7 @@ function RosterShell({
     <>
       <StudioHeader activeTab="roster" profile={headerProfile} />
       <main className={styles.dashMain}>
-        <StudioNotices member={member} />
+        <StudioNotices member={member} org={org} />
         <h1 className={styles.dashWelcome}>{title}</h1>
         <p className={styles.dashSubtitle}>{subtitle}</p>
         {children}

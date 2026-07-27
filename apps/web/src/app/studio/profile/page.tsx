@@ -9,6 +9,7 @@ import { loadStudioOrgProfile } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
 import { StudioNotices } from "../StudioNotices";
+import { RosterCardFace } from "../roster/BrandCardBrowser";
 import { ProfileForm } from "./ProfileForm";
 
 import styles from "../studio.module.css";
@@ -31,11 +32,12 @@ export default async function StudioProfilePage() {
         activeTab="profile"
         profile={{
           initial: member.displayName.trim().charAt(0).toUpperCase() || "?",
+          imageUrl: org?.imageUrl ?? null,
           attention: !member.xqSubmissionId || !member.rqSubmissionId,
         }}
       />
       <main className={styles.dashMain}>
-        <StudioNotices member={member} />
+        <StudioNotices member={member} org={org} />
         <h1 className={styles.dashWelcome}>Your profile</h1>
         <p className={styles.dashSubtitle}>
           {member.kind === "creator"
@@ -44,6 +46,36 @@ export default async function StudioProfilePage() {
             ? "How your brand presents to creators across the marketplace."
             : "Your contact details."}
         </p>
+
+        {/* Live preview of the member's own roster card — exactly the
+            face other members see. Server-rendered, so it refreshes
+            after every profile save / image upload. */}
+        {org && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Your roster card</h3>
+            <div className={styles.cardPreviewWrap}>
+              <RosterCardFace
+                brand={{
+                  id: "preview",
+                  name: org.name,
+                  tagline: org.tagline,
+                  description: org.description,
+                  website: org.website,
+                  logoUrl: org.imageUrl,
+                  sinceYear: org.sinceYear,
+                  archetype: member.xqArchetype,
+                  matchScore: null,
+                  recommended: false,
+                }}
+              />
+            </div>
+            <p className={styles.fieldHint}>
+              This is how your card appears on the network roster —
+              edits below update it once saved.
+            </p>
+          </section>
+        )}
+
         <ProfileForm
           member={{
             kind: member.kind,

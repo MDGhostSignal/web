@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 
 export default async function StudioWorldPage() {
   // Legacy surface — unrouted while Studio Lite is the live shape.
-  if (STUDIO_LITE_ONLY) redirect("/studio/profile");
+  if (STUDIO_LITE_ONLY) redirect("/studio/roster");
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");

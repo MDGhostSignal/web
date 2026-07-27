@@ -1,18 +1,25 @@
 import Link from "next/link";
 
 import type { StudioMember } from "@/lib/studio-auth";
-import { loadStudioOrgProfile } from "@/lib/studio-data";
+import type { StudioOrgProfile } from "@/lib/studio-data";
 
 import styles from "./studio.module.css";
 
 /**
  * Per-sign-in nudges shown at the top of every lite studio page.
- * Server component — recomputed on each request, so the notices
- * appear every visit until the underlying gap is closed (XQ taken,
- * RQ taken, profile completed). Deliberately not dismissible.
+ * Recomputed on each request, so the notices appear every visit
+ * until the underlying gap is closed (XQ taken, RQ taken, profile
+ * completed). Deliberately not dismissible. The org row comes from
+ * the page (which already loads it for the header avatar) so it's
+ * fetched once per request.
  */
-export async function StudioNotices({ member }: { member: StudioMember }) {
-  const org = await loadStudioOrgProfile(member);
+export function StudioNotices({
+  member,
+  org,
+}: {
+  member: StudioMember;
+  org: StudioOrgProfile | null;
+}) {
 
   const notices: Array<{
     key: string;
