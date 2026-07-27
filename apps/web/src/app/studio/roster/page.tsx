@@ -91,8 +91,8 @@ export default async function StudioRosterPage() {
       title="Brand roster"
       subtitle={
         pickCount > 0
-          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GhostSignal Pick. Flick through the rest with the arrows or the rail.`
-          : "Every brand on the network, one card at a time. Flick through with the arrows or the rail."
+          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GhostSignal Pick. Flick through the rest with the arrows.`
+          : "Every brand on the network, one card at a time. Flick through with the arrows."
       }
     >
       {candidates.length === 0 ? (
@@ -101,6 +101,7 @@ export default async function StudioRosterPage() {
         <XDeckSection
           viewer={viewer}
           candidates={candidates}
+          compact
           eyebrow="The network"
           title={
             pickCount > 0
