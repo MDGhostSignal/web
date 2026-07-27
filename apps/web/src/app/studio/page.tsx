@@ -18,9 +18,12 @@ import {
   type CreatorShowData,
 } from "@/lib/studio-data";
 
+import { STUDIO_LITE_ONLY } from "@/lib/studio-lite";
+
 import { RqProfileCard } from "./RqProfileCard";
 import { XqProfileCard } from "./XqProfileCard";
 import { StudioLanding } from "./StudioLanding";
+import { StudioLiteLanding } from "./StudioLiteLanding";
 
 import styles from "./studio.module.css";
 import { StudioHeader } from "./StudioHeader";
@@ -34,8 +37,13 @@ export default async function StudioDashboardPage() {
   // (i.e. prospective brands or creators who land at /studio cold)
   // see the marketing front door. The "Sign in" CTA in the landing
   // routes them on to /studio/login when they're actually a member.
-  if (!member) return <StudioLanding />;
+  if (!member) {
+    return STUDIO_LITE_ONLY ? <StudioLiteLanding /> : <StudioLanding />;
+  }
   if (!member.isApproved) redirect("/studio/pending");
+  // Lite mode: the legacy dashboard below (show stats + XQ/RQ cards)
+  // is unrouted — Profile is the workspace home.
+  if (STUDIO_LITE_ONLY) redirect("/studio/profile");
 
   // Load the right slice of data based on what kind of member they are.
   // Both queries scope by id; no cross-tenant data is reachable.

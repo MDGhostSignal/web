@@ -1,0 +1,452 @@
+/* Studio Lite landing — quiet-precision editorial. Signature element
+ * is the CSS-only morse strip (dot-dash rhythm from the GhostSignal
+ * brand language); everything else is restraint: oversized display
+ * type, ghost-numbered panels, generous air. Themed entirely through
+ * --studio-* tokens so light/dark both hold. */
+
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      1100px 520px at 85% -10%,
+      var(--studio-accent-soft),
+      transparent 65%
+    ),
+    radial-gradient(
+      900px 480px at -10% 30%,
+      var(--studio-accent-soft),
+      transparent 70%
+    ),
+    var(--studio-bg);
+  color: var(--studio-text-primary);
+}
+
+/* --- Morse strip (signature element) ------------------------------ */
+
+.morse {
+  height: 3px;
+  width: 220px;
+  color: var(--studio-accent);
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 5px,
+    transparent 5px 13px,
+    currentColor 13px 33px,
+    transparent 33px 41px,
+    currentColor 41px 46px,
+    transparent 46px 58px
+  );
+  border-radius: 2px;
+}
+
+/* --- Topbar ------------------------------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 40px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.brandName {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brandTag {
+  padding: 2px 9px;
+  border: 1px solid var(--studio-accent);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.linkSubtle {
+  font-size: 13px;
+  color: var(--studio-text-secondary);
+  text-decoration: none;
+}
+
+.linkSubtle:hover {
+  color: var(--studio-accent);
+}
+
+/* --- Buttons ------------------------------------------------------ */
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 26px;
+  background: linear-gradient(180deg, #8d6ce2 0%, #7c58d6 100%);
+  color: #ffffff;
+  border: 1px solid #6a45c7;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.btnPrimary:hover {
+  filter: brightness(1.06);
+}
+
+.btnPrimary:active {
+  transform: translateY(1px);
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 26px;
+  background: transparent;
+  color: var(--studio-text-primary);
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.btnGhost:hover {
+  border-color: var(--studio-accent);
+  background: var(--studio-accent-soft);
+}
+
+/* --- Hero --------------------------------------------------------- */
+
+.hero {
+  padding: 96px 40px 120px;
+}
+
+.heroInner {
+  max-width: 880px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.heroEyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(44px, 7.5vw, 92px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.heroTitleAccent {
+  background: linear-gradient(
+    100deg,
+    var(--studio-accent) 0%,
+    var(--studio-accent-strong) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.heroLede {
+  margin: 0;
+  max-width: 560px;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--studio-text-secondary);
+}
+
+.heroActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* --- Load-in rise (CSS only, reduced-motion safe) ----------------- */
+
+@keyframes liteRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise1,
+.rise2,
+.rise3,
+.rise4 {
+  animation: liteRise 700ms cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+
+.rise2 {
+  animation-delay: 90ms;
+}
+
+.rise3 {
+  animation-delay: 180ms;
+}
+
+.rise4 {
+  animation-delay: 270ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise1,
+  .rise2,
+  .rise3,
+  .rise4 {
+    animation: none;
+  }
+}
+
+/* --- Sections ----------------------------------------------------- */
+
+.section {
+  padding: 40px 40px 88px;
+}
+
+.sectionInner {
+  max-width: 1040px;
+  margin-inline: auto;
+}
+
+.sectionEyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.sectionTitle {
+  margin: 0 0 40px;
+  font-size: clamp(28px, 3.6vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+/* --- Numbered panels ---------------------------------------------- */
+
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.panel {
+  position: relative;
+  padding: 34px 30px 30px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 16px;
+  box-shadow: var(--studio-shadow-card);
+  overflow: hidden;
+}
+
+/* Second panel steps down — a deliberate off-grid beat so the pair
+ * doesn't read as a symmetric feature-card cliché. Collapses on
+ * narrow screens where the columns stack anyway. */
+@media (min-width: 720px) {
+  .panelOffset {
+    margin-top: 44px;
+  }
+}
+
+.panelIndex {
+  position: absolute;
+  top: -18px;
+  right: 10px;
+  font-size: 118px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--studio-accent-soft);
+  user-select: none;
+}
+
+.panelTitle {
+  position: relative;
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.panelBody {
+  position: relative;
+  margin: 0;
+  max-width: 400px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--studio-text-secondary);
+}
+
+/* --- Handled-for-you band ----------------------------------------- */
+
+.handledBand {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.1fr) minmax(260px, 1fr);
+  gap: 48px;
+  padding: 44px 40px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: 20px;
+}
+
+@media (max-width: 719px) {
+  .handledBand {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+.handledIntro {
+  display: flex;
+  flex-direction: column;
+}
+
+.handledTitle {
+  margin: 0 0 14px;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+.handledLede {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--studio-text-secondary);
+}
+
+.handledList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.handledItem {
+  padding: 16px 0;
+  border-top: 1px solid var(--studio-border-strong);
+}
+
+.handledItem:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.handledItemLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.handledItemBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+}
+
+.roadmapNote {
+  margin: 28px 4px 0;
+  font-size: 13px;
+  color: var(--studio-text-muted);
+}
+
+/* --- Closing ------------------------------------------------------ */
+
+.closingSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  padding: 72px 40px 120px;
+  text-align: center;
+}
+
+.closingTitle {
+  margin: 0;
+  max-width: 640px;
+  font-size: clamp(28px, 3.6vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+.closingActions {
+  display: flex;
+  gap: 12px;
+}
+
+/* --- Small screens ------------------------------------------------ */
+
+@media (max-width: 560px) {
+  .topbar {
+    padding: 18px 20px;
+  }
+
+  .linkSubtle {
+    display: none;
+  }
+
+  .hero {
+    padding: 64px 20px 80px;
+  }
+
+  .section {
+    padding: 24px 20px 64px;
+  }
+
+  .handledBand {
+    padding: 28px 22px;
+  }
+
+  .heroActions,
+  .closingActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .closingSection {
+    padding: 48px 20px 88px;
+  }
+}

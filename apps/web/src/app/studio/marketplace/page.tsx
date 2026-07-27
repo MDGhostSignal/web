@@ -17,6 +17,7 @@ import {
   type MarketplaceCreator,
 } from "@/lib/studio-data";
 import { loadCurrentStudioMember } from "@/lib/studio-auth";
+import { STUDIO_LITE_ONLY } from "@/lib/studio-lite";
 
 import { StudioHeader } from "../StudioHeader";
 import styles from "../studio.module.css";
@@ -28,6 +29,8 @@ import styles from "../studio.module.css";
  *  brands + creators tables (joined with members for the contact's
  *  XQ archetype). */
 export default async function StudioMarketplacePage() {
+  // Legacy surface — unrouted while Studio Lite is the live shape.
+  if (STUDIO_LITE_ONLY) redirect("/studio/profile");
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");

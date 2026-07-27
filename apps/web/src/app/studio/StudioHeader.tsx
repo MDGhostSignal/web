@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
+import { STUDIO_LITE_ONLY } from "@/lib/studio-lite";
 
 import styles from "./studio.module.css";
 import { SignOutButton } from "./SignOutButton";
@@ -20,17 +21,29 @@ export function StudioHeader({
         <span className={styles.brandTag}>Studio</span>
       </div>
       <nav className={styles.headerNav}>
+        {/* Legacy tabs (dashboard/marketplace/world) hide in lite mode;
+            their pages also redirect, so no deep link resurrects them. */}
+        {!STUDIO_LITE_ONLY && (
+          <>
+            <Link
+              href="/studio"
+              className={`${styles.headerNavTab} ${activeTab === "dashboard" ? styles.headerNavTabActive : ""}`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/studio/marketplace"
+              className={`${styles.headerNavTab} ${activeTab === "marketplace" ? styles.headerNavTabActive : ""}`}
+            >
+              Marketplace
+            </Link>
+          </>
+        )}
         <Link
-          href="/studio"
-          className={`${styles.headerNavTab} ${activeTab === "dashboard" ? styles.headerNavTabActive : ""}`}
+          href="/studio/profile"
+          className={`${styles.headerNavTab} ${activeTab === "profile" ? styles.headerNavTabActive : ""}`}
         >
-          Dashboard
-        </Link>
-        <Link
-          href="/studio/marketplace"
-          className={`${styles.headerNavTab} ${activeTab === "marketplace" ? styles.headerNavTabActive : ""}`}
-        >
-          Marketplace
+          Profile
         </Link>
         <Link
           href="/studio/roster"
@@ -38,18 +51,14 @@ export function StudioHeader({
         >
           Roster
         </Link>
-        <Link
-          href="/studio/world"
-          className={`${styles.headerNavTab} ${activeTab === "world" ? styles.headerNavTabActive : ""}`}
-        >
-          World
-        </Link>
-        <Link
-          href="/studio/profile"
-          className={`${styles.headerNavTab} ${activeTab === "profile" ? styles.headerNavTabActive : ""}`}
-        >
-          Profile
-        </Link>
+        {!STUDIO_LITE_ONLY && (
+          <Link
+            href="/studio/world"
+            className={`${styles.headerNavTab} ${activeTab === "world" ? styles.headerNavTabActive : ""}`}
+          >
+            World
+          </Link>
+        )}
       </nav>
       <div className={styles.headerTrail}>
         <ThemeToggle />

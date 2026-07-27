@@ -5,6 +5,7 @@ import {
   loadCurrentStudioMember,
 } from "@/lib/studio-auth";
 import { loadStudioXqSummary } from "@/lib/studio-data";
+import { STUDIO_LITE_ONLY } from "@/lib/studio-lite";
 import WorldClient from "@/app/world/WorldClient";
 
 import styles from "./world.module.css";
@@ -25,6 +26,8 @@ import { StudioHeader } from "../StudioHeader";
 export const dynamic = "force-dynamic";
 
 export default async function StudioWorldPage() {
+  // Legacy surface — unrouted while Studio Lite is the live shape.
+  if (STUDIO_LITE_ONLY) redirect("/studio/profile");
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");
