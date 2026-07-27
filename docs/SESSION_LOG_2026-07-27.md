@@ -132,6 +132,18 @@ Second spec round from Martin, all shipped:
   profile-initial shortcut with an attention dot while XQ or RQ is
   missing — Martin's "nav bar icon to review/edit profile".
 
+## Brand profile card v2 (`5f0547a`)
+
+Martin: new design, no Tinder/swipe mechanic, borrow from the
+marketplace card. Built `roster/BrandProfileCard.tsx`: identity band
+tinted by the contact's archetype accent (`CHARACTERS` from
+`lib/xq/characters` via inline `--bp-accent`/`--bp-accent-soft` CSS
+vars, studio-accent fallback for unclassified) holding the logo +
+GS Pick pill; name/website/description body; footer with archetype
+name (`ARCHETYPES`) + a 3-dot values-fit meter from `matchScore`.
+Flat: no outline/shadow/3D. Interim `.flatCard*` styles deleted with
+their usage. Row layout (horizontal snap scroll) unchanged.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
