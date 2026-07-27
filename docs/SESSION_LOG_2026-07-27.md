@@ -62,6 +62,27 @@ Merged fast-forward to main (`de31289`), pushed; Vercel deploy live
 - Not yet verified: the signed-in happy path (profile save, roster
   render) — needs a real member session in the browser.
 
+## Studio Lite becomes the live shape (later same day, `ac61d9d`)
+
+Per Martin: legacy studio surfaces disabled on live, landing redesigned
+around the lite feature set.
+
+- `lib/studio-lite.ts` — `STUDIO_LITE_ONLY = true`. Single flag;
+  flip to false to restore the full studio. No legacy code deleted.
+- Gating while on: `/studio` (signed-in) → redirect `/studio/profile`
+  (Profile is the lite home); `/studio/marketplace` + `/studio/world`
+  → redirect `/studio/profile`; header nav = Profile + Roster only.
+- New `StudioLiteLanding` (+ module CSS) replaces the legacy marketing
+  landing for signed-out visitors: CSS-only morse-strip motif,
+  ghost-numbered Profile/Roster panels, "matching stays human" band.
+  Only promises what lite ships. `--studio-*` tokens, light/dark safe,
+  reduced-motion safe.
+- Live-verified post-deploy: new copy serving at `/studio`, zero
+  legacy markers (X-Deck/World/Harvest Moon absent from HTML),
+  marketplace/world/profile/roster all 307 → login unauth, login 200.
+- Not curl-verifiable: signed-in redirects (marketplace/world →
+  profile) — needs a browser session; Martin to spot-check.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
