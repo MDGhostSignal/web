@@ -246,6 +246,18 @@ labeled as the on-save-updating preview) vs bordered surface-1
 responsive two-column `.formGrid` (`.fieldWide` items span the row);
 the 560px `.profileFormWrap` cap removed.
 
+## Empty-state preview + theme confusion resolved (`1c871de`→`e6783aa`)
+
+Built a static replica of /studio/profile pre-XQ/RQ (artifact + a
+temporary /previews/profile-empty.html on prod + local server) for
+Martin's review. He approved the design but asked why prod "doesn't
+look like this" — answer: his browser carried the shared admin/studio
+dark-theme preference; the preview rendered light. Same tokens, dark
+surfaces mute the purple washes. Confirmed resolved; temp file
+deleted, local server stopped. Noted option (not built): decouple
+studio theming from admin if CRM work darkening the member view ever
+bothers him.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
