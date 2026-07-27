@@ -904,51 +904,91 @@ a.rosterMeta:hover {
   scroll-snap-type: x proximity;
 }
 
-.flatCard {
-  flex: 0 0 250px;
+/* Brand profile card — archetype-tinted identity band + flat body.
+ * --bp-accent / --bp-accent-soft arrive inline per card from
+ * lib/xq/characters; fall back to the studio accent. */
+.bpCard {
+  flex: 0 0 290px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 22px 20px;
   background: var(--studio-surface-2);
-  border-radius: 14px;
+  border-radius: 16px;
+  overflow: hidden;
   scroll-snap-align: start;
 }
 
-.flatCardPicked {
-  background: var(--studio-accent-soft);
+.bpBand {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 18px 0;
+  height: 92px;
+  background: linear-gradient(180deg, var(--bp-accent-soft), transparent 92%);
 }
 
-.flatCardBadge {
-  font-size: 11px;
+.bpLogo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  background: var(--studio-surface-1);
+}
+
+.bpLogoFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: var(--studio-surface-1);
+  color: var(--bp-accent);
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--studio-accent);
 }
 
-.flatCardName {
+.bpPick {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bp-accent);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bpBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 18px 16px;
+  flex: 1;
+}
+
+.bpName {
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
   color: var(--studio-text-primary);
 }
 
-.flatCardLink {
+.bpSite {
   font-size: 12px;
   color: var(--studio-text-secondary);
   text-decoration: none;
 }
 
-.flatCardLink:hover {
-  color: var(--studio-accent);
+.bpSite:hover {
+  color: var(--bp-accent);
   text-decoration: underline;
 }
 
-.flatCardDesc {
-  margin: 0;
+.bpDesc {
+  margin: 4px 0 0;
   font-size: 13px;
   line-height: 1.55;
   color: var(--studio-text-secondary);
@@ -956,6 +996,56 @@ a.rosterMeta:hover {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.bpFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 18px 16px;
+}
+
+.bpArchetype {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+}
+
+.bpArchetypeDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--bp-accent);
+}
+
+.bpFit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bpFitLabel {
+  margin-right: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+}
+
+.bpFitDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--studio-border-strong);
+}
+
+.bpFitDotOn {
+  background: var(--bp-accent);
 }
 
 /* Profile image upload */

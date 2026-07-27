@@ -10,12 +10,12 @@ import {
   loadBrandRecommendations,
   loadMarketplaceBrands,
   loadMarketplaceCreators,
-  type MarketplaceBrand,
   type MarketplaceCreator,
 } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
 import { StudioNotices } from "../StudioNotices";
+import { BrandProfileCard } from "./BrandProfileCard";
 import styles from "../studio.module.css";
 
 /** /studio/roster — who's on the network.
@@ -89,7 +89,7 @@ export default async function StudioRosterPage() {
       ) : (
         <div className={styles.deckRow}>
           {ordered.map((b) => (
-            <FlatBrandCard
+            <BrandProfileCard
               key={b.id}
               brand={b}
               recommended={recPosition.has(b.id)}
@@ -150,45 +150,6 @@ function EmptyRoster({ side }: { side: "brands" | "creators" }) {
         As {side} join the network, they&apos;ll appear here.
       </div>
     </div>
-  );
-}
-
-/** Flat brand card — deliberately plain: tinted surface, no border,
- *  no shadow, no transparency layers. The pick badge is the only
- *  accent moment. */
-function FlatBrandCard({
-  brand,
-  recommended,
-}: {
-  brand: MarketplaceBrand;
-  recommended: boolean;
-}) {
-  return (
-    <article
-      className={`${styles.flatCard} ${recommended ? styles.flatCardPicked : ""}`}
-    >
-      {recommended && (
-        <span className={styles.flatCardBadge}>✦ GhostSignal Pick</span>
-      )}
-      <RosterAvatar url={brand.logoUrl} name={brand.name} size={64} />
-      <h3 className={styles.flatCardName}>{brand.name}</h3>
-      {brand.website && (
-        <a
-          className={styles.flatCardLink}
-          href={brand.website}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {brand.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-        </a>
-      )}
-      {brand.description && (
-        <p className={styles.flatCardDesc}>{brand.description}</p>
-      )}
-      {brand.contactArchetype && (
-        <span className={styles.rosterChip}>{brand.contactArchetype}</span>
-      )}
-    </article>
   );
 }
 
