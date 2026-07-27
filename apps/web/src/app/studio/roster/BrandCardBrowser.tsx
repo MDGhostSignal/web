@@ -69,13 +69,11 @@ function WelcomeCard({
   return (
     <button
       type="button"
-      className={`${styles.wcCard} ${active ? styles.wcCardActive : ""}`}
+      className={`${styles.wcCard} ${styles.rosterCard} ${active ? styles.wcCardActive : ""}`}
       onClick={onSelect}
       aria-expanded={active}
       aria-label={`${brand.name} — ${active ? "hide" : "show"} details`}
     >
-      <span className={styles.wcStripes} aria-hidden="true" />
-
       {brand.logoUrl ? (
         <Image
           src={brand.logoUrl}

@@ -715,7 +715,7 @@
   gap: 16px;
 }
 
-.rosterCard {
+.creatorCard {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -726,7 +726,7 @@
   box-shadow: var(--studio-shadow-soft, none);
 }
 
-.rosterCardHead {
+.creatorCardHead {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -958,36 +958,11 @@ a.rosterMeta:hover {
   border-radius: inherit;
 }
 
-/* Five diagonal stripes — orange / purple / teal / pink / yellow,
- * matching the physical welcome card. */
-.wcStripes {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    transparent 50%,
-    #fa7b3f 50%,
-    #fa7b3f 53%,
-    transparent 53%,
-    transparent 56%,
-    #b388f0 56%,
-    #b388f0 59%,
-    transparent 59%,
-    transparent 62%,
-    #4dc9ae 62%,
-    #4dc9ae 65%,
-    transparent 65%,
-    transparent 68%,
-    #fa88b0 68%,
-    #fa88b0 71%,
-    transparent 71%,
-    transparent 74%,
-    #ffb836 74%,
-    #ffb836 77%,
-    transparent 77%
-  );
+/* Roster variant of the welcome card: pure black body, no stripe
+ * graphic — the GhostSignal stripes stay reserved for the actual
+ * membership card; roster cards are the quiet edition. */
+.rosterCard {
+  background: #000000;
 }
 
 .wcLogo {

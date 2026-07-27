@@ -172,8 +172,8 @@ function CreatorCard({ creator }: { creator: MarketplaceCreator }) {
     .join(" · ");
 
   return (
-    <article className={styles.rosterCard}>
-      <div className={styles.rosterCardHead}>
+    <article className={styles.creatorCard}>
+      <div className={styles.creatorCardHead}>
         <RosterAvatar url={creator.avatarUrl} name={creator.name} size={56} />
         <div>
           <div className={styles.rosterName}>{creator.name}</div>
