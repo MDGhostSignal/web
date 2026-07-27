@@ -11,8 +11,12 @@ import { SignOutButton } from "./SignOutButton";
  *  top so the nav follows scroll. */
 export function StudioHeader({
   activeTab,
+  profile,
 }: {
   activeTab: "dashboard" | "marketplace" | "roster" | "world" | "profile";
+  /** Circular profile shortcut in the header trail. `attention` shows
+   *  a dot when onboarding is incomplete (XQ/RQ/profile gaps). */
+  profile?: { initial: string; attention: boolean };
 }) {
   return (
     <header className={styles.dashHeader}>
@@ -61,6 +65,18 @@ export function StudioHeader({
         )}
       </nav>
       <div className={styles.headerTrail}>
+        {profile && (
+          <Link
+            href="/studio/profile"
+            className={styles.headerAvatar}
+            aria-label="Review and edit your profile"
+          >
+            {profile.initial}
+            {profile.attention && (
+              <span className={styles.headerAvatarDot} aria-hidden="true" />
+            )}
+          </Link>
+        )}
         <ThemeToggle />
         <SignOutButton />
       </div>

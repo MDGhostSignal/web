@@ -119,6 +119,9 @@ export type StudioOrgProfile = {
   kind: "brand" | "creator";
   name: string;
   description: string | null;
+  /** Brand logo_url / creator avatar_url — set via the studio image
+   *  upload route, served from the public Storage bucket. */
+  imageUrl: string | null;
   /** Brand only. */
   website: string | null;
   /** Creator only — requires docs/STUDIO_LITE_PROFILE.sql. */
@@ -136,9 +139,14 @@ export async function loadStudioOrgProfile(member: {
 }): Promise<StudioOrgProfile | null> {
   if (member.kind === "brand" && member.brandId) {
     const res = await supabaseRest<
-      Array<{ name: string | null; description: string | null; website: string | null }>
+      Array<{
+        name: string | null;
+        description: string | null;
+        logo_url: string | null;
+        website: string | null;
+      }>
     >(
-      `brands?select=name,description,website&id=eq.${encodeURIComponent(member.brandId)}`,
+      `brands?select=name,description,logo_url,website&id=eq.${encodeURIComponent(member.brandId)}`,
     );
     const row = res.ok && res.data?.length ? res.data[0] : null;
     if (!row) return null;
@@ -146,6 +154,7 @@ export async function loadStudioOrgProfile(member: {
       kind: "brand",
       name: row.name ?? "(Unnamed brand)",
       description: row.description,
+      imageUrl: row.logo_url,
       website: row.website,
       podcastUrl: null,
       newsletterUrl: null,
@@ -156,11 +165,12 @@ export async function loadStudioOrgProfile(member: {
       Array<{
         name: string | null;
         description: string | null;
+        avatar_url: string | null;
         podcast_url: string | null;
         newsletter_url: string | null;
       }>
     >(
-      `creators?select=name,description,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
+      `creators?select=name,description,avatar_url,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
     );
     const row = res.ok && res.data?.length ? res.data[0] : null;
     if (!row) return null;
@@ -168,6 +178,7 @@ export async function loadStudioOrgProfile(member: {
       kind: "creator",
       name: row.name ?? "(Unnamed creator)",
       description: row.description,
+      imageUrl: row.avatar_url,
       website: null,
       podcastUrl: row.podcast_url,
       newsletterUrl: row.newsletter_url,

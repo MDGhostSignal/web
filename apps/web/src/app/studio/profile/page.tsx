@@ -8,6 +8,7 @@ import { loadCurrentStudioMember } from "@/lib/studio-auth";
 import { loadStudioOrgProfile } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
+import { StudioNotices } from "../StudioNotices";
 import { ProfileForm } from "./ProfileForm";
 
 import styles from "../studio.module.css";
@@ -26,8 +27,15 @@ export default async function StudioProfilePage() {
 
   return (
     <>
-      <StudioHeader activeTab="profile" />
+      <StudioHeader
+        activeTab="profile"
+        profile={{
+          initial: member.displayName.trim().charAt(0).toUpperCase() || "?",
+          attention: !member.xqSubmissionId || !member.rqSubmissionId,
+        }}
+      />
       <main className={styles.dashMain}>
+        <StudioNotices member={member} />
         <h1 className={styles.dashWelcome}>Your profile</h1>
         <p className={styles.dashSubtitle}>
           {member.kind === "creator"

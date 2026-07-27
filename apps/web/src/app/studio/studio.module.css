@@ -802,3 +802,219 @@ a.rosterMeta:hover {
   color: #6a45c7;
   background: rgba(124, 88, 214, 0.04);
 }
+
+/* ============================================================
+ * Studio Lite: notices, header avatar, flat card row, upload
+ * ============================================================ */
+
+.noticeStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--studio-accent-soft);
+  border-radius: 10px;
+}
+
+.noticeDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--studio-accent);
+}
+
+.noticeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.noticeTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+}
+
+.noticeText {
+  font-size: 12.5px;
+  color: var(--studio-text-secondary);
+}
+
+.noticeCta {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--studio-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.noticeCta:hover {
+  text-decoration: underline;
+}
+
+.headerAvatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--studio-accent-soft);
+  color: var(--studio-accent);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+
+.headerAvatar:hover {
+  background: var(--studio-accent-hover);
+}
+
+.headerAvatarDot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--studio-danger);
+  border: 2px solid var(--studio-bg);
+}
+
+/* Flat brand row — one horizontal, snap-scrolling row of plain
+ * cards. Deliberately no outline, no shadow, no translucency. */
+.deckRow {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 2px 16px;
+  scroll-snap-type: x proximity;
+}
+
+.flatCard {
+  flex: 0 0 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 22px 20px;
+  background: var(--studio-surface-2);
+  border-radius: 14px;
+  scroll-snap-align: start;
+}
+
+.flatCardPicked {
+  background: var(--studio-accent-soft);
+}
+
+.flatCardBadge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.flatCardName {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+}
+
+.flatCardLink {
+  font-size: 12px;
+  color: var(--studio-text-secondary);
+  text-decoration: none;
+}
+
+.flatCardLink:hover {
+  color: var(--studio-accent);
+  text-decoration: underline;
+}
+
+.flatCardDesc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Profile image upload */
+.uploadRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.uploadPreview {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.uploadPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background: var(--studio-accent-soft);
+  color: var(--studio-accent);
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.uploadControls {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.uploadBtn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  cursor: pointer;
+  transition: border-color 160ms ease;
+}
+
+.uploadBtn:hover {
+  border-color: var(--studio-accent);
+}
+
+.uploadBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: var(--studio-text-muted);
+  line-height: 1.45;
+}

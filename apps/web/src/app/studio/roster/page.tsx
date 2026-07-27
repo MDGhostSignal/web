@@ -4,41 +4,41 @@ import { redirect } from "next/navigation";
 /** Roster is auth-scoped — no static output possible. */
 export const dynamic = "force-dynamic";
 
-import { XDeckSection } from "@/app/x-deck/XDeckSection";
-import type { ArchetypeCode } from "@/lib/xq/constants";
-import type { MatchCandidate, ViewerProfile } from "@/lib/match/types";
-import { archetypeToAxis, brandToCandidate } from "@/lib/match/candidates";
-import { loadCurrentStudioMember } from "@/lib/studio-auth";
+import { loadCurrentStudioMember, type StudioMember } from "@/lib/studio-auth";
 import {
   formatListens,
   loadBrandRecommendations,
   loadMarketplaceBrands,
   loadMarketplaceCreators,
+  type MarketplaceBrand,
   type MarketplaceCreator,
 } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
+import { StudioNotices } from "../StudioNotices";
 import styles from "../studio.module.css";
 
 /** /studio/roster — who's on the network.
  *
- *  Brand roster (creator/other viewers): a full character-card deck —
- *  flick through every brand one card at a time, thumbnail rail for
- *  navigation. The GhostSignal team's hand-picked recommendations for
- *  this member (up to four, from studio_brand_recommendations) lead
- *  the deck and carry the "✦ GhostSignal Pick" badge.
+ *  Brand roster (creator/other viewers): one horizontal row of flat,
+ *  simplified cards — no outline, no 3D coverflow, no heavy shadow
+ *  work. The GhostSignal team's hand-picked recommendations for this
+ *  member lead the row with the "✦ GhostSignal Pick" badge.
  *
- *  Creator roster (brand viewers): the scannable directory grid,
- *  unchanged pending its own design pass. */
+ *  Creator roster (brand viewers): the scannable directory grid. */
 export default async function StudioRosterPage() {
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");
 
+  const headerProfile = profileBadge(member);
+
   if (member.kind === "brand") {
     const creators = await loadMarketplaceCreators(member.xqArchetype);
     return (
       <RosterShell
+        member={member}
+        headerProfile={headerProfile}
         title="Creator roster"
         subtitle="Every show on the GhostSignal network."
       >
@@ -55,8 +55,8 @@ export default async function StudioRosterPage() {
     );
   }
 
-  // Brand roster — deck view. Recommendations load in parallel with
-  // the roster; the loader returns [] if the table isn't there yet.
+  // Brand roster — flat card row. Recommendations load in parallel;
+  // the loader returns [] if the table isn't there yet.
   const [brands, recommendations] = await Promise.all([
     loadMarketplaceBrands(member.xqArchetype),
     loadBrandRecommendations(member.id),
@@ -71,44 +71,31 @@ export default async function StudioRosterPage() {
     if (ra !== rb) return ra - rb;
     return a.name.localeCompare(b.name);
   });
-  const candidates: MatchCandidate[] = ordered.map((b) => ({
-    ...brandToCandidate(b),
-    rarity: recPosition.has(b.id) ? ("recommended" as const) : null,
-  }));
-  const pickCount = candidates.filter((c) => c.rarity === "recommended").length;
-
-  const viewer: ViewerProfile = {
-    name: member.displayName,
-    organization: member.displayName,
-    memberType: member.kind === "other" ? "creator" : member.kind,
-    archetype: (member.xqArchetype as ArchetypeCode) ?? "X-S-L",
-    axisVector: archetypeToAxis(member.xqArchetype),
-    nonNegotiables: [],
-  };
+  const pickCount = ordered.filter((b) => recPosition.has(b.id)).length;
 
   return (
     <RosterShell
+      member={member}
+      headerProfile={headerProfile}
       title="Brand roster"
       subtitle={
         pickCount > 0
-          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GhostSignal Pick. Flick through the rest with the arrows.`
-          : "Every brand on the network, one card at a time. Flick through with the arrows."
+          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the row, marked ✦ GhostSignal Pick.`
+          : "Every brand on the network. Scroll the row to browse."
       }
     >
-      {candidates.length === 0 ? (
+      {ordered.length === 0 ? (
         <EmptyRoster side="brands" />
       ) : (
-        <XDeckSection
-          viewer={viewer}
-          candidates={candidates}
-          compact
-          eyebrow="The network"
-          title={
-            pickCount > 0
-              ? "Recommended for you, then the full roster"
-              : "The full brand roster"
-          }
-        />
+        <div className={styles.deckRow}>
+          {ordered.map((b) => (
+            <FlatBrandCard
+              key={b.id}
+              brand={b}
+              recommended={recPosition.has(b.id)}
+            />
+          ))}
+        </div>
       )}
     </RosterShell>
   );
@@ -118,19 +105,34 @@ export default async function StudioRosterPage() {
  * Shell + shared pieces
  * ============================================================ */
 
+/** Header avatar shortcut: member initial + attention dot while any
+ *  onboarding gap is open (XQ, RQ — profile gaps surface via the
+ *  notices, which run their own org query). */
+function profileBadge(member: StudioMember) {
+  return {
+    initial: member.displayName.trim().charAt(0).toUpperCase() || "?",
+    attention: !member.xqSubmissionId || !member.rqSubmissionId,
+  };
+}
+
 function RosterShell({
+  member,
+  headerProfile,
   title,
   subtitle,
   children,
 }: {
+  member: StudioMember;
+  headerProfile: { initial: string; attention: boolean };
   title: string;
   subtitle: string;
   children: React.ReactNode;
 }) {
   return (
     <>
-      <StudioHeader activeTab="roster" />
+      <StudioHeader activeTab="roster" profile={headerProfile} />
       <main className={styles.dashMain}>
+        <StudioNotices member={member} />
         <h1 className={styles.dashWelcome}>{title}</h1>
         <p className={styles.dashSubtitle}>{subtitle}</p>
         {children}
@@ -151,6 +153,45 @@ function EmptyRoster({ side }: { side: "brands" | "creators" }) {
   );
 }
 
+/** Flat brand card — deliberately plain: tinted surface, no border,
+ *  no shadow, no transparency layers. The pick badge is the only
+ *  accent moment. */
+function FlatBrandCard({
+  brand,
+  recommended,
+}: {
+  brand: MarketplaceBrand;
+  recommended: boolean;
+}) {
+  return (
+    <article
+      className={`${styles.flatCard} ${recommended ? styles.flatCardPicked : ""}`}
+    >
+      {recommended && (
+        <span className={styles.flatCardBadge}>✦ GhostSignal Pick</span>
+      )}
+      <RosterAvatar url={brand.logoUrl} name={brand.name} size={64} />
+      <h3 className={styles.flatCardName}>{brand.name}</h3>
+      {brand.website && (
+        <a
+          className={styles.flatCardLink}
+          href={brand.website}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {brand.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+        </a>
+      )}
+      {brand.description && (
+        <p className={styles.flatCardDesc}>{brand.description}</p>
+      )}
+      {brand.contactArchetype && (
+        <span className={styles.rosterChip}>{brand.contactArchetype}</span>
+      )}
+    </article>
+  );
+}
+
 function CreatorCard({ creator }: { creator: MarketplaceCreator }) {
   const meta = [
     creator.showTitle,
@@ -167,7 +208,7 @@ function CreatorCard({ creator }: { creator: MarketplaceCreator }) {
   return (
     <article className={styles.rosterCard}>
       <div className={styles.rosterCardHead}>
-        <RosterAvatar url={creator.avatarUrl} name={creator.name} />
+        <RosterAvatar url={creator.avatarUrl} name={creator.name} size={56} />
         <div>
           <div className={styles.rosterName}>{creator.name}</div>
           {meta && <div className={styles.rosterMeta}>{meta}</div>}
@@ -185,21 +226,34 @@ function CreatorCard({ creator }: { creator: MarketplaceCreator }) {
 
 /** Logo/avatar with an initial-letter fallback — no placeholder-photo
  *  services on the roster; this surface is about legitimacy. */
-function RosterAvatar({ url, name }: { url: string | null; name: string }) {
+function RosterAvatar({
+  url,
+  name,
+  size,
+}: {
+  url: string | null;
+  name: string;
+  size: number;
+}) {
   if (url) {
     return (
       <Image
         src={url}
         alt={name}
-        width={56}
-        height={56}
+        width={size}
+        height={size}
         className={styles.rosterAvatar}
+        style={{ width: size, height: size }}
         unoptimized
       />
     );
   }
   return (
-    <div className={styles.rosterInitial} aria-hidden>
+    <div
+      className={styles.rosterInitial}
+      style={{ width: size, height: size }}
+      aria-hidden
+    >
       {name.trim().charAt(0).toUpperCase() || "?"}
     </div>
   );
