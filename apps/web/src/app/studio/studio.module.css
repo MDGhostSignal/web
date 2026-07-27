@@ -884,14 +884,34 @@ a.rosterMeta:hover {
   border: 2px solid var(--studio-bg);
 }
 
-/* Flat brand row — one horizontal, snap-scrolling row of plain
- * cards. Deliberately no outline, no shadow, no translucency. */
-.deckRow {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding: 4px 2px 16px;
-  scroll-snap-type: x proximity;
+/* Roster card grid — fills the available page width with as many
+ * cards as fit (aspect-ratio keeps them card-shaped); the list
+ * extends via the Show-more button, never a scrollbar. */
+.wcGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  padding: 4px 2px;
+}
+
+.wcShowMore {
+  align-self: flex-start;
+  margin-top: 16px;
+  padding: 10px 22px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--studio-text-primary);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.wcShowMore:hover {
+  border-color: var(--studio-accent);
+  background: var(--studio-accent-soft);
 }
 
 /* Welcome-card business card — digital twin of the physical Welcome
@@ -901,7 +921,7 @@ a.rosterMeta:hover {
  * themes — the physical card is black. */
 .wcCard {
   position: relative;
-  flex: 0 0 320px;
+  width: 100%;
   aspect-ratio: 1.6 / 1;
   padding: 0;
   border: none;
@@ -1016,7 +1036,7 @@ a.rosterMeta:hover {
 .wcText {
   position: absolute;
   left: 8%;
-  right: 38%;
+  right: 8%;
   bottom: 9%;
   z-index: 3;
   display: flex;
@@ -1049,16 +1069,6 @@ a.rosterMeta:hover {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.wcWordmark {
-  position: absolute;
-  bottom: 8%;
-  right: 6%;
-  width: 26%;
-  height: auto;
-  z-index: 3;
-  object-fit: contain;
 }
 
 /* Detail panel — the extensive view under the row when a card is

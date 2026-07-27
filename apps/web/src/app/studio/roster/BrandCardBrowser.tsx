@@ -34,14 +34,22 @@ export type RosterBrandCard = {
  * archetype read, values fit) lives in the detail panel that opens
  * when a card is selected.
  */
+/** Cards revealed initially / added per "Show more" click. Two-ish
+ *  rows on a typical desktop grid — the grid fills the width, and
+ *  the list extends by button instead of any scrollbar. */
+const PAGE_SIZE = 8;
+
 export function BrandCardBrowser({ brands }: { brands: RosterBrandCard[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const selected = brands.find((b) => b.id === selectedId) ?? null;
+  const visible = brands.slice(0, visibleCount);
+  const hiddenCount = brands.length - visible.length;
 
   return (
     <>
-      <div className={styles.deckRow}>
-        {brands.map((b) => (
+      <div className={styles.wcGrid}>
+        {visible.map((b) => (
           <WelcomeCard
             key={b.id}
             brand={b}
@@ -52,6 +60,15 @@ export function BrandCardBrowser({ brands }: { brands: RosterBrandCard[] }) {
           />
         ))}
       </div>
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          className={styles.wcShowMore}
+          onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+        >
+          Show {Math.min(hiddenCount, PAGE_SIZE)} more of {hiddenCount}
+        </button>
+      )}
       {selected && <BrandDetail brand={selected} />}
     </>
   );
@@ -102,16 +119,6 @@ function WelcomeCard({
           <span className={styles.wcTagline}>{brand.tagline}</span>
         )}
       </span>
-
-      <Image
-        src="/images/brand/gs-brandmark-hor-white.png"
-        alt=""
-        width={140}
-        height={28}
-        className={styles.wcWordmark}
-        aria-hidden="true"
-        unoptimized
-      />
     </button>
   );
 }
