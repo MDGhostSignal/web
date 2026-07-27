@@ -213,6 +213,16 @@ members.tagline + members.bio (**Martin must run before personal
 saves work**; reads are fallback-tolerant). `loadStudioOrgProfile`
 gained kind="member"; ProfileForm visibility now keys off card kind.
 
+## Profile full-width layout + XQ/RQ tiles (`29eb434`)
+
+Two-column grid on /studio/profile (preview + tiles left, form
+right, stacks <960px). New `profile/QuizTiles.tsx`: per-assessment
+tile — persistent "Fill out your XQ/RQ" reminder (pulsing dot,
+reduced-motion safe, CTA to the quiz) until a submission exists,
+then a compact result summary (XQ: archetype-accent code chip, name,
+tagline, top non-negotiables; RQ: code, name, signal clarity,
+undertone, note). Summaries via existing loadStudioXq/RqSummary.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
