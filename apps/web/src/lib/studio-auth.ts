@@ -98,6 +98,64 @@ export type StudioMember = {
   rqSubmissionId: string | null;
 };
 
+/** Thrown by the studio write-path helpers; carries the HTTP status
+ *  a route should respond with. Route handlers convert it via
+ *  `studioError()` in lib/studio-route.ts. */
+export class StudioAuthError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "StudioAuthError";
+  }
+}
+
+/** Load the member and hard-fail if missing or unapproved. Every
+ *  /api/studio/* route that reads or writes member data should call
+ *  this first — the proxy only checks *authentication*, so the
+ *  approval gate lives here. */
+export async function requireApprovedMember(): Promise<StudioMember> {
+  const member = await loadCurrentStudioMember();
+  if (!member) throw new StudioAuthError("Unauthorized.", 401);
+  if (!member.isApproved) {
+    throw new StudioAuthError("Account pending approval.", 403);
+  }
+  return member;
+}
+
+/** Update a row the caller owns. Because all studio DB access runs
+ *  under the service role (RLS on members/brands/creators has no
+ *  policies), this scoping IS the security boundary for member
+ *  writes: the target row id always comes from the session-derived
+ *  member, never from request input. Routes must pass only field
+ *  values through `patch` — never a row id.
+ *
+ *  - "members"  → the caller's own members row
+ *  - "brands"   → the caller's linked brand (409 if none)
+ *  - "creators" → the caller's linked creator (409 if none) */
+export async function scopedUpdate(
+  member: StudioMember,
+  table: "members" | "brands" | "creators",
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const targetId =
+    table === "members"
+      ? member.id
+      : table === "brands"
+        ? member.brandId
+        : member.creatorId;
+  if (!targetId) {
+    throw new StudioAuthError(
+      `No ${table === "members" ? "member" : table.slice(0, -1)} record is linked to this account.`,
+      409,
+    );
+  }
+  const admin = createStudioAdminClient();
+  const { error } = await admin.from(table).update(patch).eq("id", targetId);
+  if (error) throw new StudioAuthError(error.message, 500);
+}
+
 /** Load the currently-signed-in member from the database. Returns
  *  null when no auth session is active OR when the auth user isn't
  *  yet linked to a member row (shouldn't happen after registration,
