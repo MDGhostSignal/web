@@ -178,6 +178,17 @@ all on the intro stage, now fixed:
    `fill="freeze"`; RQ endpoint 900→1000 so the frozen band clears
    the viewBox (remove would have snapped a visible stripe back).
 
+## Roster card polish rounds (`b736383`, `a5bd0dc`)
+
+- `.rosterCard` variant class per Martin: pure black card body, no
+  GhostSignal stripe graphic (stripes stay on the admin membership
+  card). Creator grid card renamed `creatorCard` to free the name.
+- GS wordmark removed from the card face; card text spans full width.
+- Layout: horizontal snap-scroll row (bottom scrollbar) replaced by a
+  responsive auto-fill grid (`minmax(280px,1fr)`, aspect-ratio cards)
+  that fills the page width; 8 cards initially + Show-more button in
+  batches of 8. No scrollbars anywhere.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
