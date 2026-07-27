@@ -107,6 +107,31 @@ highlighted.
   `lib/match/candidates.ts` (marketplace now imports them).
 - Creator roster (brand viewers) keeps the directory grid for now.
 
+## Flat roster row + onboarding + nudges (`bc7b937`, `f8ce2e4`)
+
+Second spec round from Martin, all shipped:
+
+- **Roster simplified** (two steps): first `compact` on the deck, then
+  a full replacement — the brand roster is now ONE horizontal
+  snap-scrolling row of flat cards (`.deckRow`/`.flatCard`): tinted
+  surface, no outline/shadow/transparency/3D. GS Picks lead the row on
+  accent-tinted cards. XDeckSection no longer used by the roster (the
+  shared x-deck styles were deliberately left untouched — public
+  /what-is-this still embeds them).
+- **Onboarding profile**: form reframed as a questionnaire (question
+  labels + hints; fields stay within existing brands/creators columns
+  per Martin's "use existing structure") + **image/logo upload** —
+  `POST /api/studio/profile/image`, mirroring the admin
+  `/api/members/:id/avatar` pattern: shared public `marketing-assets`
+  bucket, `brand-logos/<id>.<ext>` / `creator-avatars/<id>.<ext>`,
+  target row session-derived via `scopedUpdate`. Brand/creator choice
+  at registration already existed.
+- **Sign-in nudges**: `StudioNotices` (server component, every
+  request, not dismissible) on profile + roster: take the XQ / take
+  the RQ / finish your profile. Header now has a circular
+  profile-initial shortcut with an attention dot while XQ or RQ is
+  missing — Martin's "nav bar icon to review/edit profile".
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
