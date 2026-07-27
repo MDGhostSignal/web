@@ -52,9 +52,10 @@ still owed by Martin/team.
 
 ## Open issues / next steps
 
-- **BLOCKER before merge/deploy: run `docs/STUDIO_LITE_PROFILE.sql`**
-  (Supabase SQL editor) — `loadStudioOrgProfile` selects the two new
-  columns and will error until they exist.
+- ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
+  same day** (Martin ran it; live probe confirmed both columns exist
+  as nullable text and select cleanly on real creator rows). Branch
+  is merge-ready.
 - **Deliberately NOT built** pending Martin's real Studio Lite spec:
   ad-type preferences, brand copy space, invitation/approval emails,
   onboarding stepper, collab-request brokerage — the phantom thread's
