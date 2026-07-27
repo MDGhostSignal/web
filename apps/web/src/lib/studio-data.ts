@@ -311,6 +311,36 @@ export async function loadMarketplaceCreators(
   });
 }
 
+/* ============================================================
+ * Team-curated brand recommendations
+ * ============================================================ */
+
+export type BrandRecommendation = {
+  brandId: string;
+  position: number;
+  note: string | null;
+};
+
+/** The GhostSignal team's hand-picked brands for this member, best
+ *  first, capped at 4. Tolerant by design: if the table doesn't exist
+ *  yet (migration not run) or the query fails, returns [] and the
+ *  roster simply renders without picks. */
+export async function loadBrandRecommendations(
+  memberId: string,
+): Promise<BrandRecommendation[]> {
+  const res = await supabaseRest<
+    Array<{ brand_id: string; position: number | null; note: string | null }>
+  >(
+    `studio_brand_recommendations?select=brand_id,position,note&member_id=eq.${encodeURIComponent(memberId)}&order=position.asc&limit=4`,
+  );
+  if (!res.ok || !res.data) return [];
+  return res.data.map((r) => ({
+    brandId: r.brand_id,
+    position: Number(r.position ?? 1),
+    note: r.note,
+  }));
+}
+
 /** Format helpers — used by the Studio dashboard. */
 export function formatListens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;

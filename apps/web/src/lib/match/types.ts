@@ -24,9 +24,10 @@ export type AxisVector = {
 export type MemberType = "creator" | "brand" | "other";
 
 /** Optional rarity tier surfaced as a visual flourish on the card —
- *  founding members get a distinguishing glyph; everyone else has no
- *  tier marker. Pure visual; nothing functional gates on this. */
-export type CardRarity = "founding" | "featured" | null;
+ *  founding members get a distinguishing glyph; "recommended" marks a
+ *  hand-picked GhostSignal-team recommendation for the viewing member.
+ *  Pure visual; nothing functional gates on this. */
+export type CardRarity = "founding" | "featured" | "recommended" | null;
 
 /** A single candidate in the deck — either a creator being shown to a
  *  brand viewer, or vice versa. */

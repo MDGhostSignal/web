@@ -518,6 +518,11 @@
   color: #c3b4dc;
   letter-spacing: 1.6px;
 }
+.cardRarityRecommended {
+  color: #9b7ee6;
+  letter-spacing: 1.6px;
+  text-shadow: 0 0 12px rgba(155, 126, 230, 0.55);
+}
 
 .cardInner {
   position: absolute;

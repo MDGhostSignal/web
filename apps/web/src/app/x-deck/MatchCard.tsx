@@ -185,6 +185,11 @@ export function MatchCard({
             {candidate.rarity === "featured" && (
               <span className={styles.cardRarityFeatured}>◇ Featured</span>
             )}
+            {candidate.rarity === "recommended" && (
+              <span className={styles.cardRarityRecommended}>
+                ✦ GhostSignal Pick
+              </span>
+            )}
             {!candidate.rarity && <span>&nbsp;</span>}
           </span>
           <span>

@@ -4,66 +4,149 @@ import { redirect } from "next/navigation";
 /** Roster is auth-scoped — no static output possible. */
 export const dynamic = "force-dynamic";
 
+import { XDeckSection } from "@/app/x-deck/XDeckSection";
+import type { ArchetypeCode } from "@/lib/xq/constants";
+import type { MatchCandidate, ViewerProfile } from "@/lib/match/types";
+import { archetypeToAxis, brandToCandidate } from "@/lib/match/candidates";
 import { loadCurrentStudioMember } from "@/lib/studio-auth";
 import {
   formatListens,
+  loadBrandRecommendations,
   loadMarketplaceBrands,
   loadMarketplaceCreators,
-  type MarketplaceBrand,
   type MarketplaceCreator,
 } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
 import styles from "../studio.module.css";
 
-/** /studio/roster — the plain-directory view of the other side of
- *  the marketplace. Same data and same side-selection rule as
- *  /studio/marketplace (brands see creators, everyone else sees
- *  brands), but rendered as a scannable grid instead of the
- *  one-at-a-time deck: this is the "who's on the network" roster,
- *  the deck is the matching flow. */
+/** /studio/roster — who's on the network.
+ *
+ *  Brand roster (creator/other viewers): a full character-card deck —
+ *  flick through every brand one card at a time, thumbnail rail for
+ *  navigation. The GhostSignal team's hand-picked recommendations for
+ *  this member (up to four, from studio_brand_recommendations) lead
+ *  the deck and carry the "✦ GhostSignal Pick" badge.
+ *
+ *  Creator roster (brand viewers): the scannable directory grid,
+ *  unchanged pending its own design pass. */
 export default async function StudioRosterPage() {
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");
 
-  const showCreators = member.kind === "brand";
-  const [brands, creators] = showCreators
-    ? [[], await loadMarketplaceCreators(member.xqArchetype)]
-    : [await loadMarketplaceBrands(member.xqArchetype), []];
-  const count = showCreators ? creators.length : brands.length;
+  if (member.kind === "brand") {
+    const creators = await loadMarketplaceCreators(member.xqArchetype);
+    return (
+      <RosterShell
+        title="Creator roster"
+        subtitle="Every show on the GhostSignal network."
+      >
+        {creators.length === 0 ? (
+          <EmptyRoster side="creators" />
+        ) : (
+          <div className={styles.rosterGrid}>
+            {creators.map((c) => (
+              <CreatorCard key={c.id} creator={c} />
+            ))}
+          </div>
+        )}
+      </RosterShell>
+    );
+  }
 
+  // Brand roster — deck view. Recommendations load in parallel with
+  // the roster; the loader returns [] if the table isn't there yet.
+  const [brands, recommendations] = await Promise.all([
+    loadMarketplaceBrands(member.xqArchetype),
+    loadBrandRecommendations(member.id),
+  ]);
+
+  const recPosition = new Map(
+    recommendations.map((r) => [r.brandId, r.position]),
+  );
+  const ordered = [...brands].sort((a, b) => {
+    const ra = recPosition.get(a.id) ?? Number.POSITIVE_INFINITY;
+    const rb = recPosition.get(b.id) ?? Number.POSITIVE_INFINITY;
+    if (ra !== rb) return ra - rb;
+    return a.name.localeCompare(b.name);
+  });
+  const candidates: MatchCandidate[] = ordered.map((b) => ({
+    ...brandToCandidate(b),
+    rarity: recPosition.has(b.id) ? ("recommended" as const) : null,
+  }));
+  const pickCount = candidates.filter((c) => c.rarity === "recommended").length;
+
+  const viewer: ViewerProfile = {
+    name: member.displayName,
+    organization: member.displayName,
+    memberType: member.kind === "other" ? "creator" : member.kind,
+    archetype: (member.xqArchetype as ArchetypeCode) ?? "X-S-L",
+    axisVector: archetypeToAxis(member.xqArchetype),
+    nonNegotiables: [],
+  };
+
+  return (
+    <RosterShell
+      title="Brand roster"
+      subtitle={
+        pickCount > 0
+          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GhostSignal Pick. Flick through the rest with the arrows or the rail.`
+          : "Every brand on the network, one card at a time. Flick through with the arrows or the rail."
+      }
+    >
+      {candidates.length === 0 ? (
+        <EmptyRoster side="brands" />
+      ) : (
+        <XDeckSection
+          viewer={viewer}
+          candidates={candidates}
+          eyebrow="The network"
+          title={
+            pickCount > 0
+              ? "Recommended for you, then the full roster"
+              : "The full brand roster"
+          }
+        />
+      )}
+    </RosterShell>
+  );
+}
+
+/* ============================================================
+ * Shell + shared pieces
+ * ============================================================ */
+
+function RosterShell({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
   return (
     <>
       <StudioHeader activeTab="roster" />
       <main className={styles.dashMain}>
-        <h1 className={styles.dashWelcome}>
-          {showCreators ? "Creator roster" : "Brand roster"}
-        </h1>
-        <p className={styles.dashSubtitle}>
-          {showCreators
-            ? "Every show on the GhostSignal network. For value-ranked matching, use the Marketplace deck."
-            : "Brands partnering through GhostSignal. For value-ranked matching, use the Marketplace deck."}
-        </p>
-
-        {count === 0 ? (
-          <div className={styles.dashCard}>
-            <div className={styles.dashCardLabel}>Roster</div>
-            <div className={styles.dashCardValue}>Nobody here yet</div>
-            <div className={styles.dashCardHint}>
-              As {showCreators ? "creators" : "brands"} join the network,
-              they&apos;ll appear here.
-            </div>
-          </div>
-        ) : (
-          <div className={styles.rosterGrid}>
-            {showCreators
-              ? creators.map((c) => <CreatorCard key={c.id} creator={c} />)
-              : brands.map((b) => <BrandCard key={b.id} brand={b} />)}
-          </div>
-        )}
+        <h1 className={styles.dashWelcome}>{title}</h1>
+        <p className={styles.dashSubtitle}>{subtitle}</p>
+        {children}
       </main>
     </>
+  );
+}
+
+function EmptyRoster({ side }: { side: "brands" | "creators" }) {
+  return (
+    <div className={styles.dashCard}>
+      <div className={styles.dashCardLabel}>Roster</div>
+      <div className={styles.dashCardValue}>Nobody here yet</div>
+      <div className={styles.dashCardHint}>
+        As {side} join the network, they&apos;ll appear here.
+      </div>
+    </div>
   );
 }
 
@@ -94,35 +177,6 @@ function CreatorCard({ creator }: { creator: MarketplaceCreator }) {
       )}
       {creator.contactArchetype && (
         <span className={styles.rosterChip}>{creator.contactArchetype}</span>
-      )}
-    </article>
-  );
-}
-
-function BrandCard({ brand }: { brand: MarketplaceBrand }) {
-  return (
-    <article className={styles.rosterCard}>
-      <div className={styles.rosterCardHead}>
-        <RosterAvatar url={brand.logoUrl} name={brand.name} />
-        <div>
-          <div className={styles.rosterName}>{brand.name}</div>
-          {brand.website && (
-            <a
-              className={styles.rosterMeta}
-              href={brand.website}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {brand.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-            </a>
-          )}
-        </div>
-      </div>
-      {brand.description && (
-        <p className={styles.rosterDesc}>{brand.description}</p>
-      )}
-      {brand.contactArchetype && (
-        <span className={styles.rosterChip}>{brand.contactArchetype}</span>
       )}
     </article>
   );
