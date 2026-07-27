@@ -83,12 +83,41 @@ around the lite feature set.
 - Not curl-verifiable: signed-in redirects (marketplace/world →
   profile) — needs a browser session; Martin to spot-check.
 
+## Brand roster → character-card deck with GS picks (`e6230f8`)
+
+Martin's first real Studio Lite spec item: the brand roster should be
+full flickable character cards (Tinder-ish browsing), with **four
+brands recommended by the GhostSignal team to the signed-in member**
+highlighted.
+
+- New table `studio_brand_recommendations` (member_id → brand_id,
+  position-ordered, optional note) — `docs/STUDIO_LITE_RECOMMENDATIONS.sql`.
+  **Martin must run it** (MCP read-only). Until then the roster
+  renders with no picks — `loadBrandRecommendations` is tolerant by
+  design, so deploy order was safe. No admin UI yet: team inserts
+  picks via the Supabase SQL editor (INSERT template in the SQL doc).
+- Brand roster (creator/other viewers) now renders `XDeckSection`
+  (full layout WITH thumbnail rail — deliberate departure from the
+  June "pure deck" marketplace ruling because roster is a navigate-
+  everything directory, not a matching flow). Picks lead the deck,
+  ordered by `position`, then the rest alphabetically.
+- New `CardRarity` value `"recommended"` → "✦ GhostSignal Pick" badge
+  (accent + glow) in `MatchCard` / `x-deck.module.css`.
+- Candidate mappers extracted from the legacy marketplace page into
+  `lib/match/candidates.ts` (marketplace now imports them).
+- Creator roster (brand viewers) keeps the directory grid for now.
+
 ## Open issues / next steps
 
 - ~~BLOCKER: run `docs/STUDIO_LITE_PROFILE.sql`~~ — **done + verified
   same day** (Martin ran it; live probe confirmed both columns exist
   as nullable text and select cleanly on real creator rows). Branch
   is merge-ready.
+- **Martin: run `docs/STUDIO_LITE_RECOMMENDATIONS.sql`**, then insert
+  the first picks (4 rows per member). Roster works without it but
+  shows no GS Picks until then.
+- **Admin UI for setting picks** — natural follow-up (e.g. a picker on
+  the member row in admin/studio-approvals or the members tab).
 - **Deliberately NOT built** pending Martin's real Studio Lite spec:
   ad-type preferences, brand copy space, invitation/approval emails,
   onboarding stepper, collab-request brokerage — the phantom thread's
