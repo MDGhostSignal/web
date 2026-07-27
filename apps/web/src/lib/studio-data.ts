@@ -112,6 +112,71 @@ export async function loadBrandCampaignsData(
 }
 
 /* ============================================================
+ * Org profile (member-editable via /studio/profile)
+ * ============================================================ */
+
+export type StudioOrgProfile = {
+  kind: "brand" | "creator";
+  name: string;
+  description: string | null;
+  /** Brand only. */
+  website: string | null;
+  /** Creator only — requires docs/STUDIO_LITE_PROFILE.sql. */
+  podcastUrl: string | null;
+  newsletterUrl: string | null;
+};
+
+/** Load the brand/creator row the member is linked to, for display +
+ *  editing on /studio/profile. Returns null for members with no
+ *  linked org row (kind "other", or a link the CRM hasn't made yet). */
+export async function loadStudioOrgProfile(member: {
+  kind: "brand" | "creator" | "other";
+  brandId: string | null;
+  creatorId: string | null;
+}): Promise<StudioOrgProfile | null> {
+  if (member.kind === "brand" && member.brandId) {
+    const res = await supabaseRest<
+      Array<{ name: string | null; description: string | null; website: string | null }>
+    >(
+      `brands?select=name,description,website&id=eq.${encodeURIComponent(member.brandId)}`,
+    );
+    const row = res.ok && res.data?.length ? res.data[0] : null;
+    if (!row) return null;
+    return {
+      kind: "brand",
+      name: row.name ?? "(Unnamed brand)",
+      description: row.description,
+      website: row.website,
+      podcastUrl: null,
+      newsletterUrl: null,
+    };
+  }
+  if (member.kind === "creator" && member.creatorId) {
+    const res = await supabaseRest<
+      Array<{
+        name: string | null;
+        description: string | null;
+        podcast_url: string | null;
+        newsletter_url: string | null;
+      }>
+    >(
+      `creators?select=name,description,podcast_url,newsletter_url&id=eq.${encodeURIComponent(member.creatorId)}`,
+    );
+    const row = res.ok && res.data?.length ? res.data[0] : null;
+    if (!row) return null;
+    return {
+      kind: "creator",
+      name: row.name ?? "(Unnamed creator)",
+      description: row.description,
+      website: null,
+      podcastUrl: row.podcast_url,
+      newsletterUrl: row.newsletter_url,
+    };
+  }
+  return null;
+}
+
+/* ============================================================
  * Marketplace browse
  * ============================================================
  *

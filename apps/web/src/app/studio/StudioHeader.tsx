@@ -11,7 +11,7 @@ import { SignOutButton } from "./SignOutButton";
 export function StudioHeader({
   activeTab,
 }: {
-  activeTab: "dashboard" | "marketplace" | "world";
+  activeTab: "dashboard" | "marketplace" | "world" | "profile";
 }) {
   return (
     <header className={styles.dashHeader}>
@@ -37,6 +37,12 @@ export function StudioHeader({
           className={`${styles.headerNavTab} ${activeTab === "world" ? styles.headerNavTabActive : ""}`}
         >
           World
+        </Link>
+        <Link
+          href="/studio/profile"
+          className={`${styles.headerNavTab} ${activeTab === "profile" ? styles.headerNavTabActive : ""}`}
+        >
+          Profile
         </Link>
       </nav>
       <div className={styles.headerTrail}>
