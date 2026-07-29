@@ -108,16 +108,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         },
         { href: "/admin/alerts", label: "Alerts", icon: <IconAlerts /> },
         {
-          // Parent links to Approvals — the gate everything else
-          // depends on. Same pattern as Marketing: distinct child
-          // routes, sidebar expands via path-prefix matching.
-          href: "/admin/studio-approvals",
+          // Parent links to Members — the everyday Studio surface
+          // since open signup made Approvals a fallback. Same pattern
+          // as Marketing: distinct child routes, sidebar expands via
+          // path-prefix matching.
+          href: "/admin/studio-members",
           label: "Studio",
           icon: <IconLeads />,
           children: [
-            { href: "/admin/studio-approvals", label: "Approvals" },
+            { href: "/admin/studio-members", label: "Members" },
             { href: "/admin/studio-picks", label: "GS Picks" },
             { href: "/admin/studio-requests", label: "Intro Requests" },
+            { href: "/admin/studio-approvals", label: "Approvals" },
           ],
         },
         { href: "/admin/pages", label: "Pages", icon: <IconDashboard /> },

@@ -208,6 +208,12 @@ const CATEGORIES: Category[] = [
         tags: ["internal", "auth-gated"],
       },
       {
+        path: "/admin/studio-members",
+        name: "Studio Members",
+        description: "Everyone with an active Studio account — joined date, kind, XQ/RQ status, full dossier on click.",
+        tags: ["internal", "auth-gated"],
+      },
+      {
         path: "/admin/studio-picks",
         name: "Studio GS Picks",
         description: "Curate the GhostSignal Pick brands leading each member's roster deck.",

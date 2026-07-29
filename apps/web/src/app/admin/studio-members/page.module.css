@@ -1,0 +1,349 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.error {
+  padding: 12px 16px;
+  background: var(--admin-destructive-soft);
+  border: 1px solid var(--admin-destructive-border);
+  border-radius: 8px;
+  color: var(--admin-error-text);
+  font-size: 13px;
+}
+
+.empty {
+  padding: 36px 28px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  text-align: center;
+  color: var(--admin-text-secondary);
+}
+
+.empty strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  margin-bottom: 6px;
+}
+
+.empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* --- Table --------------------------------------------------- */
+
+.tableWrap {
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--admin-text-primary);
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: top;
+}
+
+.table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-2);
+  border-bottom: 1px solid var(--admin-border-strong);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background: var(--admin-surface-hover);
+}
+
+.memberBtn {
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.memberBtn:hover {
+  text-decoration: underline;
+}
+
+.dim {
+  color: var(--admin-text-muted);
+}
+
+.dimSmall {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+/* --- Detail modal --------------------------------------------- */
+
+.detailLoading {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.detailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detailHeading {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.factGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+
+.factWide {
+  grid-column: 1 / -1;
+}
+
+.factLabel {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.factValue {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--admin-text-primary);
+  line-height: 1.5;
+}
+
+.notTaken {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px dashed var(--admin-border-strong);
+  border-radius: 8px;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+}
+
+/* Org card */
+
+.orgCard {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+}
+
+.orgLogo {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--admin-border-strong);
+  background: var(--admin-surface-1);
+  flex-shrink: 0;
+}
+
+.orgBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.orgName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+.orgTagline {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--admin-text-secondary);
+}
+
+.orgDesc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+}
+
+.orgLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.extLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-accent);
+  text-decoration: none;
+}
+
+.extLink:hover {
+  text-decoration: underline;
+}
+
+/* Quiz blocks */
+
+.quizBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+}
+
+.quizHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quizCode {
+  font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  border: 1px solid var(--admin-accent);
+}
+
+.quizName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+.quizTagline {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--admin-text-secondary);
+  line-height: 1.55;
+}
+
+.valueRow {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.valuePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.valuePill {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-border-strong);
+  background: var(--admin-surface-1);
+  font-size: 12px;
+  color: var(--admin-text-primary);
+}
+
+.rqAxis {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.rqAxisHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.rqAxisName {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--admin-text-primary);
+}
+
+.rqAxisProse {
+  margin: 0;
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+}
+
+.detailFootnote {
+  margin: 0;
+  font-size: 11px;
+  color: var(--admin-text-muted);
+}
+
+.detailFootnote code {
+  font-size: 11px;
+}
