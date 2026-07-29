@@ -97,10 +97,43 @@ New live smoke test following the test-alerts.mjs conventions —
 Admin routes are cookie-gated with no bearer path, so happy paths are
 exercised at the PostgREST layer (the exact writes the routes make).
 
+## Open signup — approval gate removed (`46979f0`, per Martin)
+
+Studio registration is now standard self-serve: email confirmation is
+the only gate, no co-founder approval.
+
+- `/api/studio/register` sets `activated_at` immediately on both the
+  fresh-insert and link-to-existing-CRM-row paths. Security note:
+  linking to an existing row still requires proving control of that
+  inbox (route verifies the auth user's email matches + Supabase
+  won't grant a session until the confirmation link is clicked).
+- Copy rewrite (no request/invitation language): register page
+  ("Create your account" / "Check your email"; success routes to
+  /studio not /studio/pending), login page (approval-wait footer
+  removed), StudioLiteLanding ("Apply for access" → /get-in-touch
+  replaced by "Create your account" → /studio/register in hero +
+  closing; closing title now "Take your place on the network.").
+- `/admin/studio-approvals` reframed as a fallback activation queue
+  (new sign-ups never appear there); /admin/pages descriptions synced.
+- Legacy `StudioLanding` + `/studio/pending` untouched (flag-flip
+  restore path; pending now only reachable by de-activated accounts).
+- **Backfill**: the one member stuck in the old pending state
+  (mikesense@globalcounselingnetwork.com, Global Counseling Network,
+  brand) was activated via service-role PATCH at 16:33 UTC.
+- `requireApprovedMember` / `isApproved` deliberately kept — with
+  auto-activation they pass for all new members, and `activated_at`
+  remains a kill switch (null it to lock an account out).
+
+Validation: typecheck clean, ESLint 0 errors. Live copy verified
+post-deploy (see below / probe results in session).
+
 ## Open issues / next steps
 
 - Martin: set the first GS Picks via /admin/studio-picks and
   spot-check both new admin pages signed-in.
+- End-to-end signup flow (fresh email → confirmation click →
+  /auth/callback → roster) worth one real-inbox test — not
+  curl-verifiable.
 - `test-studio-profile.mjs` (profile PATCH snapshot → mutate → restore)
   still worth writing.
 - Studio Lite feature work beyond this still pending Martin's real spec
