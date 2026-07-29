@@ -72,13 +72,36 @@ saved. Everything reads degrade gracefully by design.
   rendering of the two new pages — Martin to spot-check in the browser.
   Both will show their "Migration pending" notice until the SQL runs.
 
+## Migrations run + verified (later same day)
+
+Martin ran all four migrations in the Supabase SQL editor. Verified
+live: both tables exist (RLS on, both unique constraints present) and
+all four columns exist. Everything that was failing for members
+(intro requests, tagline + personal-card saves) now works.
+
+## E2E script (`apps/web/scripts/test-studio-picks.mjs`)
+
+New live smoke test following the test-alerts.mjs conventions —
+19/19 checks passed on first run:
+
+1. Schema probes for all five migration artifacts.
+2. Unauth gate checks against prod (admin picks PUT, admin requests
+   PATCH, member contact-requests POST → all 401).
+3. GS Picks lifecycle with sentinel-tagged rows only (insert 2 →
+   roster-loader query returns position order → duplicate rejected by
+   unique constraint → cleanup in `finally`).
+4. Intro-request lifecycle (insert → status defaults 'new' →
+   duplicate 409 → flip to 'done' → admin join query resolves →
+   cleanup in `finally`).
+
+Admin routes are cookie-gated with no bearer path, so happy paths are
+exercised at the PostgREST layer (the exact writes the routes make).
+
 ## Open issues / next steps
 
-- **BLOCKER — Martin: run the four migrations above** in the Supabase
-  SQL editor (all additive + idempotent). Then set the first GS Picks
-  via /admin/studio-picks and spot-check both new pages signed-in.
-- After migrations: E2E scripts worth writing
-  (`apps/web/scripts/test-studio-picks.mjs` snapshot → mutate → restore,
-  and the earlier-noted `test-studio-profile.mjs`).
+- Martin: set the first GS Picks via /admin/studio-picks and
+  spot-check both new admin pages signed-in.
+- `test-studio-profile.mjs` (profile PATCH snapshot → mutate → restore)
+  still worth writing.
 - Studio Lite feature work beyond this still pending Martin's real spec
   (phantom-thread "requirements" remain void).
