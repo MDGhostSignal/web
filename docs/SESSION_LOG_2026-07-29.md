@@ -208,6 +208,25 @@ optional note) → new `POST /api/admin/studio/invite`:
   STUDIO_EMAIL_TEMPLATES.md.
 - Preview with sample note sent to Martin via Resend for design review.
 
+## ART19 Migration guide tab (`65d4690`, per Martin)
+
+Source: `assets/GS-RSS-Migration-003-290426.pdf` (v1 04.29, the
+"moving galleries" metaphor). New `/studio/migration` + "ART19
+Migration" tab in StudioHeader (visible in lite mode).
+
+- One wide page, built for the keep-it-open-in-a-second-tab workflow:
+  four steps side by side on wide screens (4→2→1 columns via CSS
+  grid), per-step accent colors echoing the PDF's rules, time chips
+  separating "your time" from platform processing time.
+- Checklist items are real checkboxes persisted in localStorage via
+  useSyncExternalStore (repo lint forbids setState-in-effect; this is
+  also hydration-safe and syncs across tabs) + overall progress card.
+- Step 1's IAB v2.2 line rendered as an FYI note (not checkable);
+  step 4's PDF copy-paste typo ("account.and get familiar…") cleaned.
+- Help band → mailto:hello@ghostsignal.cloud. /admin/pages entry
+  added. Content changes to the guide are code edits in
+  `apps/web/src/app/studio/migration/MigrationGuide.tsx` (STEPS array).
+
 ## Open issues / next steps
 
 - **Martin: paste the email templates** from
