@@ -347,3 +347,80 @@
 .detailFootnote code {
   font-size: 11px;
 }
+
+/* --- Invite modal --------------------------------------------- */
+
+.inviteForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inviteNameRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .inviteNameRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inviteField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inviteInput,
+.inviteTextarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.inviteTextarea {
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.5;
+}
+
+.inviteInput:focus,
+.inviteTextarea:focus {
+  outline: none;
+  border-color: var(--admin-border-strong);
+}
+
+.inviteActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.inviteSent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inviteSentLead {
+  margin: 0;
+  font-size: 14px;
+  color: var(--admin-text-primary);
+  line-height: 1.6;
+}
+
+.inviteSentHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+}

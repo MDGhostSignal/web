@@ -215,6 +215,21 @@ Body (HTML):
 </html>
 ```
 
+## Invite email (code-managed — nothing to paste)
+
+The team-initiated Studio invite ("+ Invite member" on
+/admin/studio-members) is NOT a Supabase template. It's sent through
+Resend by `apps/web/src/app/api/admin/studio/invite/route.ts`, using
+the same visual system as the templates above (wordmark + STUDIO pill,
+morse strip, studio palette, bgcolor CTA). Design changes to it ship
+with normal deploys.
+
+Contents: personalized greeting, the workspace pitch, an optional
+"A note from the team" block (the modal's Additional-information
+field, purple-edged callout), CTA → /studio/register, and a
+use-this-email-address hint so the register flow unifies the account
+with the prepared CRM row.
+
 ## Notes
 
 - `{{ .Data.first_name }}` is empty for accounts created before

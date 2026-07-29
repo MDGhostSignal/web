@@ -1,6 +1,7 @@
 import { PageHeader, Badge } from "@/components/admin";
 import { supabaseRest } from "@/lib/supabase-admin";
 
+import { InviteMemberButton } from "./InviteMemberButton";
 import { MembersTable } from "./MembersTable";
 import styles from "./page.module.css";
 
@@ -43,6 +44,7 @@ export default async function StudioMembersPage() {
             </Badge>
           </>
         }
+        actions={<InviteMemberButton />}
       />
 
       {fetchError && <div className={styles.error}>{fetchError}</div>}
