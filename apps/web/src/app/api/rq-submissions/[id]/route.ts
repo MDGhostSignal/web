@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { postToGoogleSheetsWebhook } from "@/lib/googleSheetsWebhook";
 import type { SubmissionPayload } from "../types";
 import { sendNotificationEmail, sendUserSummaryEmail } from "../emails";
+import { linkRqSubmissionToMember } from "../link-member";
 
 const TABLE_NAME = process.env.RQ_SUBMISSIONS_TABLE ?? "rq_submissions";
 const EMAIL_TO = process.env.RQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
@@ -178,7 +179,9 @@ export async function PATCH(
     );
   }
 
-  // Completion-stage side-effects.
+  // Completion-stage side-effects. Member link first — this PATCH is
+  // the moment the submission gains its scored rq_code.
+  await linkRqSubmissionToMember(id, payload.basics?.email, payload.result?.rq ?? null);
   const emailResult = await sendNotificationEmail(payload);
   const userEmailResult = await sendUserSummaryEmail(payload);
   const sheetsResult = await postToGoogleSheetsWebhook(payload);

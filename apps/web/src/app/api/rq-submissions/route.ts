@@ -6,6 +6,7 @@ import {
   sendNotificationEmail,
   sendUserSummaryEmail,
 } from "./emails";
+import { linkRqSubmissionToMember } from "./link-member";
 
 const TABLE_NAME = process.env.RQ_SUBMISSIONS_TABLE ?? "rq_submissions";
 const EMAIL_TO = process.env.RQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
@@ -250,6 +251,16 @@ export async function POST(request: Request) {
       },
       { status: 201 },
       origin,
+    );
+  }
+
+  // Complete: link to Member by email (if exactly one match) so Studio
+  // + admin surfaces show the result instead of prompting a retake.
+  if (typeof insertedId === "string") {
+    await linkRqSubmissionToMember(
+      insertedId,
+      payload.basics?.email,
+      payload.result?.rq ?? null,
     );
   }
 

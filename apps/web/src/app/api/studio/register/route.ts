@@ -36,6 +36,75 @@ type Body = {
   orgName: string;
 };
 
+type QuizLinks = {
+  xq_submission_id?: string | null;
+  xq_archetype?: string | null;
+  rq_submission_id?: string | null;
+  rq_code?: string | null;
+};
+
+/**
+ * Identity unification: if this email already took the XQ and/or RQ
+ * quiz before registering, adopt the latest scored submission onto the
+ * member row. The member then sees their result in Studio instead of
+ * a "fill out your XQ/RQ" prompt — no retake.
+ *
+ * Email is the join key on purpose: registration just proved control
+ * of this inbox via Supabase's confirmation flow, which is a stronger
+ * claim than any typed name match. Existing links are never
+ * overwritten. Best-effort — a failure here must not fail signup.
+ */
+async function adoptQuizSubmissions(
+  admin: ReturnType<typeof createStudioAdminClient>,
+  memberId: string,
+  email: string,
+  current: QuizLinks,
+): Promise<void> {
+  try {
+    const patch: Record<string, unknown> = {};
+
+    if (!current.xq_submission_id) {
+      const { data } = await admin
+        .from("xq_submissions")
+        .select("id, xq_code")
+        .ilike("email", email)
+        .not("xq_code", "is", null)
+        .order("submitted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.id) {
+        patch.xq_submission_id = data.id;
+        if (data.xq_code && !current.xq_archetype) {
+          patch.xq_archetype = data.xq_code;
+        }
+      }
+    }
+
+    if (!current.rq_submission_id) {
+      const { data } = await admin
+        .from("rq_submissions")
+        .select("id, rq_code")
+        .ilike("email", email)
+        .not("rq_code", "is", null)
+        .order("submitted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.id) {
+        patch.rq_submission_id = data.id;
+        if (data.rq_code && !current.rq_code) {
+          patch.rq_code = data.rq_code;
+        }
+      }
+    }
+
+    if (Object.keys(patch).length > 0) {
+      await admin.from("members").update(patch).eq("id", memberId);
+    }
+  } catch (err) {
+    console.warn("[studio/register] quiz adoption skipped:", err);
+  }
+}
+
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as Body;
   if (!body.authUserId) {
@@ -74,7 +143,9 @@ export async function POST(req: NextRequest) {
   // server-side under the service role so RLS doesn't block reads.
   const { data: existing } = await admin
     .from("members")
-    .select("id, auth_user_id, member_type, organization, activated_at")
+    .select(
+      "id, auth_user_id, member_type, organization, activated_at, xq_submission_id, xq_archetype, rq_submission_id, rq_code",
+    )
     .ilike("email", email)
     .maybeSingle();
 
@@ -101,6 +172,7 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", existing.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await adoptQuizSubmissions(admin, existing.id, email, existing);
     return NextResponse.json({ ok: true, memberId: existing.id, mode: "linked" });
   }
 
@@ -127,5 +199,6 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+  await adoptQuizSubmissions(admin, inserted.id, email, {});
   return NextResponse.json({ ok: true, memberId: inserted.id, mode: "created" });
 }

@@ -145,6 +145,9 @@ function RosterShell({
       <StudioHeader activeTab="roster" profile={headerProfile} />
       <main className={styles.dashMain}>
         <StudioNotices member={member} org={org} />
+        <p className={styles.dashGreeting}>
+          Welcome back, {member.firstName?.trim() || member.displayName}.
+        </p>
         <h1 className={styles.dashWelcome}>{title}</h1>
         <p className={styles.dashSubtitle}>{subtitle}</p>
         {children}

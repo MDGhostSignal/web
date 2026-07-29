@@ -51,6 +51,16 @@ export default function RegisterPage() {
           // where nothing consumes the code and the user sees nothing.
           // The URL must also be in Supabase's Redirect URLs allowlist.
           emailRedirectTo: `${window.location.origin}/auth/callback`,
+          // Lands in auth.users.raw_user_meta_data, which the Supabase
+          // email templates read as {{ .Data.* }} — this is what lets
+          // the confirmation email greet the person by name. Template
+          // snippets: docs/STUDIO_EMAIL_TEMPLATES.md.
+          data: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            organization: orgName.trim(),
+            member_kind: kind,
+          },
         },
       });
       if (authError) {

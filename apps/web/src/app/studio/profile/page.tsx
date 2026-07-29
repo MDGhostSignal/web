@@ -47,6 +47,9 @@ export default async function StudioProfilePage() {
       />
       <main className={styles.dashMain}>
         <StudioNotices member={member} org={org} />
+        <p className={styles.dashGreeting}>
+          Welcome back, {member.firstName?.trim() || member.displayName}.
+        </p>
         <h1 className={styles.dashWelcome}>Your profile</h1>
         <p className={styles.dashSubtitle}>
           {member.kind === "creator"

@@ -378,6 +378,17 @@
   padding: 28px 100px 60px;
 }
 
+/* Personal one-liner above the page title — first name from the
+ * member row, so every visit opens addressed to the person. */
+.dashGreeting {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
 .dashWelcome {
   margin: 0 0 6px;
   font-size: 26px;
