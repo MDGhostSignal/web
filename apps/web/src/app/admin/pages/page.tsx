@@ -172,6 +172,12 @@ const CATEGORIES: Category[] = [
         tags: ["client", "auth-gated"],
       },
       {
+        path: "/studio/migration",
+        name: "Studio ART19 Migration",
+        description: "Member-facing RSS-migration guide (the GS-RSS-Migration PDF as a wide working checklist).",
+        tags: ["client", "auth-gated"],
+      },
+      {
         path: "/studio/marketplace",
         name: "Studio Marketplace",
         description: "Cross-side discovery deck. Brands flick through creators; creators flick through brands.",

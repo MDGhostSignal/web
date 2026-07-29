@@ -14,7 +14,13 @@ export function StudioHeader({
   activeTab,
   profile,
 }: {
-  activeTab: "dashboard" | "marketplace" | "roster" | "world" | "profile";
+  activeTab:
+    | "dashboard"
+    | "marketplace"
+    | "roster"
+    | "world"
+    | "profile"
+    | "migration";
   /** Circular profile shortcut in the header trail — the only route
    *  to /studio/profile in lite mode (no Profile tab). Shows the
    *  uploaded logo when there is one, else the member's initial;
@@ -51,6 +57,12 @@ export function StudioHeader({
           className={`${styles.headerNavTab} ${activeTab === "roster" ? styles.headerNavTabActive : ""}`}
         >
           Roster
+        </Link>
+        <Link
+          href="/studio/migration"
+          className={`${styles.headerNavTab} ${activeTab === "migration" ? styles.headerNavTabActive : ""}`}
+        >
+          ART19 Migration
         </Link>
         {/* No Profile tab — the avatar circle in the trail is the way
             to /studio/profile. */}

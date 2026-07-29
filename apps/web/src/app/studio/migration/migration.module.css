@@ -1,0 +1,382 @@
+/* /studio/migration — ART19 RSS-migration guide.
+ *
+ * Wide working layout: the four steps sit side by side on big screens
+ * (the page is meant to share the screen with the old host's dashboard
+ * in another tab), collapsing 4 → 2 → 1 columns as space shrinks.
+ * Per-step accent colors echo the PDF's colored rules via the
+ * --step-accent custom property set inline per step. */
+
+.guide {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* --- Intro ------------------------------------------------------- */
+
+.intro {
+  display: flex;
+  gap: 28px;
+  align-items: stretch;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.introText {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--studio-text-primary);
+  line-height: 1.2;
+}
+
+.lede {
+  margin: 0;
+  font-size: 15px;
+  color: var(--studio-text-secondary);
+  line-height: 1.7;
+}
+
+.ledeSub {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--studio-text-muted);
+  line-height: 1.7;
+}
+
+.progressCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 220px;
+  padding: 20px 24px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+}
+
+.progressCount {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--studio-text-primary);
+  line-height: 1;
+}
+
+.progressTotal {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--studio-text-muted);
+}
+
+.progressLabel {
+  font-size: 13px;
+  color: var(--studio-text-secondary);
+}
+
+.progressBar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--studio-accent);
+  transition: width 240ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressFill {
+    transition: none;
+  }
+}
+
+/* --- Steps grid --------------------------------------------------- */
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+@media (max-width: 1280px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 22px 24px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-top: 4px solid var(--step-accent);
+  border-radius: 14px;
+}
+
+.step[data-done="true"] {
+  border-color: var(--step-accent);
+}
+
+.stepHead {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--step-accent);
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--step-accent);
+}
+
+.stepHeadText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+  line-height: 1.25;
+}
+
+.stepDoneMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--step-accent);
+  color: var(--studio-text-inverse);
+  font-size: 12px;
+  font-weight: 800;
+  vertical-align: 2px;
+}
+
+.stepTiming {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.timeChip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--studio-text-secondary);
+  white-space: nowrap;
+}
+
+.stepLede {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--studio-text-secondary);
+  line-height: 1.6;
+}
+
+.stepLedeBig {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--step-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1.6;
+}
+
+/* --- Checklist ---------------------------------------------------- */
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Push the note (when present) to the card bottom so step cards in
+   * a row keep their checklists top-aligned. */
+  flex: 1;
+}
+
+.check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.check:hover {
+  border-color: var(--studio-border-strong);
+  background: var(--studio-surface-hover);
+}
+
+.checkDone {
+  border-color: var(--step-accent);
+}
+
+.checkInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.checkInput:focus-visible + .checkBox {
+  outline: 2px solid var(--studio-accent);
+  outline-offset: 2px;
+}
+
+.checkBox {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--studio-border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--studio-text-inverse);
+  background: transparent;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.checkDone .checkBox {
+  background: var(--step-accent);
+  border-color: var(--step-accent);
+}
+
+.checkText {
+  font-size: 13.5px;
+  color: var(--studio-text-primary);
+  line-height: 1.6;
+}
+
+.checkDone .checkText {
+  color: var(--studio-text-muted);
+}
+
+.checkText strong {
+  color: inherit;
+}
+
+.stepNote {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--step-accent);
+  border-radius: 8px;
+  background: var(--studio-surface-2);
+  font-size: 12.5px;
+  color: var(--studio-text-secondary);
+  line-height: 1.65;
+}
+
+/* --- Help band ---------------------------------------------------- */
+
+.helpBand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 24px 28px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+}
+
+.helpTitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--studio-text-primary);
+}
+
+.helpBody {
+  margin: 0;
+  max-width: 640px;
+  font-size: 13.5px;
+  color: var(--studio-text-secondary);
+  line-height: 1.65;
+}
+
+.helpCta {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 24px;
+  background: var(--studio-accent);
+  border: 1px solid var(--studio-accent-strong);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 160ms ease;
+}
+
+.helpCta:hover {
+  filter: brightness(1.08);
+}
