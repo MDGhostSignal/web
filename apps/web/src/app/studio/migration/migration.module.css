@@ -1,37 +1,51 @@
 /* /studio/migration — ART19 RSS-migration guide.
  *
- * Wide working layout: the four steps sit side by side on big screens
- * (the page is meant to share the screen with the old host's dashboard
- * in another tab), collapsing 4 → 2 → 1 columns as space shrinks.
- * Per-step accent colors echo the PDF's colored rules via the
- * --step-accent custom property set inline per step. */
+ * One-screen desktop layout: compact header row (intro + progress +
+ * help cards) above the four steps side by side. Densities are tuned
+ * so the whole board fits a typical desktop viewport without
+ * scrolling; columns collapse 4 → 2 → 1 as space shrinks (scrolling
+ * returns on smaller screens, by design). Per-step accent colors echo
+ * the PDF's colored rules via the --step-accent custom property. */
+
+.main {
+  max-width: none;
+  margin: 0;
+  padding: 18px 40px 28px;
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 16px 20px 24px;
+  }
+}
 
 .guide {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 18px;
 }
 
-/* --- Intro ------------------------------------------------------- */
+/* --- Header row --------------------------------------------------- */
 
 .intro {
   display: flex;
-  gap: 28px;
+  gap: 16px;
   align-items: stretch;
   justify-content: space-between;
   flex-wrap: wrap;
 }
 
 .introText {
-  max-width: 720px;
+  flex: 1 1 420px;
+  max-width: 760px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .eyebrow {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.4px;
   text-transform: uppercase;
@@ -40,7 +54,7 @@
 
 .title {
   margin: 0;
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--studio-text-primary);
@@ -49,50 +63,50 @@
 
 .lede {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--studio-text-secondary);
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
-.ledeSub {
-  margin: 0;
-  font-size: 13.5px;
-  color: var(--studio-text-muted);
-  line-height: 1.7;
+.sideCards {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .progressCard {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
-  min-width: 220px;
-  padding: 20px 24px;
+  gap: 5px;
+  min-width: 180px;
+  padding: 14px 18px;
   background: var(--studio-surface-1);
   border: 1px solid var(--studio-border);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .progressCount {
-  font-size: 34px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--studio-text-primary);
   line-height: 1;
 }
 
 .progressTotal {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--studio-text-muted);
 }
 
 .progressLabel {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--studio-text-secondary);
 }
 
 .progressBar {
-  height: 6px;
+  height: 5px;
   border-radius: 999px;
   background: var(--studio-surface-2);
   border: 1px solid var(--studio-border);
@@ -112,6 +126,56 @@
   }
 }
 
+/* Help card — lives in the header row so the way to reach the team is
+ * visible before anyone starts, not after they've scrolled past the
+ * whole move. */
+.helpCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  max-width: 250px;
+  padding: 14px 18px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+}
+
+.helpTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--studio-text-primary);
+}
+
+.helpBody {
+  margin: 0;
+  font-size: 12px;
+  color: var(--studio-text-secondary);
+  line-height: 1.5;
+}
+
+.helpCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: 3px;
+  padding: 7px 16px;
+  background: var(--studio-accent);
+  border: 1px solid var(--studio-accent-strong);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 160ms ease;
+}
+
+.helpCta:hover {
+  filter: brightness(1.08);
+}
+
 /* --- Steps grid --------------------------------------------------- */
 
 .steps {
@@ -120,11 +184,11 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
   align-items: stretch;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1180px) {
   .steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -139,12 +203,12 @@
 .step {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px 22px 24px;
+  gap: 10px;
+  padding: 16px 16px 18px;
   background: var(--studio-surface-1);
   border: 1px solid var(--studio-border);
   border-top: 4px solid var(--step-accent);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .step[data-done="true"] {
@@ -153,20 +217,20 @@
 
 .stepHead {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   align-items: flex-start;
 }
 
 .stepNumber {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--step-accent);
-  border-radius: 12px;
-  font-size: 20px;
+  border-radius: 10px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--step-accent);
 }
@@ -174,13 +238,13 @@
 .stepHeadText {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
 }
 
 .stepTitle {
   margin: 0;
-  font-size: 18px;
+  font-size: 15.5px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--studio-text-primary);
@@ -191,13 +255,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-left: 8px;
+  width: 17px;
+  height: 17px;
+  margin-left: 7px;
   border-radius: 50%;
   background: var(--step-accent);
   color: var(--studio-text-inverse);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   vertical-align: 2px;
 }
@@ -205,15 +269,15 @@
 .stepTiming {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .timeChip {
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
   background: var(--studio-surface-2);
   border: 1px solid var(--studio-border);
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--studio-text-secondary);
   white-space: nowrap;
@@ -221,20 +285,20 @@
 
 .stepLede {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--studio-text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .stepLedeBig {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--step-accent);
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 /* --- Checklist ---------------------------------------------------- */
@@ -245,7 +309,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
   /* Push the note (when present) to the card bottom so step cards in
    * a row keep their checklists top-aligned. */
   flex: 1;
@@ -253,12 +317,12 @@
 
 .check {
   display: flex;
-  gap: 12px;
+  gap: 9px;
   align-items: flex-start;
-  padding: 12px 14px;
+  padding: 9px 11px;
   background: var(--studio-surface-2);
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease;
 }
@@ -288,15 +352,15 @@
 
 .checkBox {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   margin-top: 1px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 2px solid var(--studio-border-strong);
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 5px;
+  font-size: 10px;
   font-weight: 800;
   color: var(--studio-text-inverse);
   background: transparent;
@@ -309,9 +373,9 @@
 }
 
 .checkText {
-  font-size: 13.5px;
+  font-size: 12px;
   color: var(--studio-text-primary);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .checkDone .checkText {
@@ -324,59 +388,11 @@
 
 .stepNote {
   margin: 0;
-  padding: 12px 14px;
+  padding: 8px 11px;
   border-left: 3px solid var(--step-accent);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--studio-surface-2);
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--studio-text-secondary);
-  line-height: 1.65;
-}
-
-/* --- Help band ---------------------------------------------------- */
-
-.helpBand {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding: 24px 28px;
-  background: var(--studio-surface-1);
-  border: 1px solid var(--studio-border);
-  border-radius: 14px;
-}
-
-.helpTitle {
-  margin: 0 0 6px;
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--studio-text-primary);
-}
-
-.helpBody {
-  margin: 0;
-  max-width: 640px;
-  font-size: 13.5px;
-  color: var(--studio-text-secondary);
-  line-height: 1.65;
-}
-
-.helpCta {
-  display: inline-flex;
-  align-items: center;
-  padding: 11px 24px;
-  background: var(--studio-accent);
-  border: 1px solid var(--studio-accent-strong);
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: filter 160ms ease;
-}
-
-.helpCta:hover {
-  filter: brightness(1.08);
+  line-height: 1.55;
 }

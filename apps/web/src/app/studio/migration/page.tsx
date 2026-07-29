@@ -10,7 +10,7 @@ import { loadStudioOrgProfile } from "@/lib/studio-data";
 import { StudioHeader } from "../StudioHeader";
 import { MigrationGuide } from "./MigrationGuide";
 
-import styles from "../studio.module.css";
+import styles from "./migration.module.css";
 
 /**
  * /studio/migration — the ART19 RSS-migration guide, browser edition
@@ -36,7 +36,10 @@ export default async function StudioMigrationPage() {
           attention: !member.xqSubmissionId || !member.rqSubmissionId,
         }}
       />
-      <main className={styles.dashMain}>
+      {/* Own main wrapper (not .dashMain): slimmer gutters + vertical
+          padding so the four-step board fits a desktop screen without
+          scrolling. */}
+      <main className={styles.main}>
         <MigrationGuide firstName={member.firstName} />
       </main>
     </>

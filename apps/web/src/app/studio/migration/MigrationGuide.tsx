@@ -246,7 +246,7 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
 
   return (
     <div className={styles.guide}>
-      {/* --- Intro ------------------------------------------------ */}
+      {/* --- Compact header row ----------------------------------- */}
       <header className={styles.intro}>
         <div className={styles.introText}>
           <p className={styles.eyebrow}>Member guide · RSS migration</p>
@@ -254,42 +254,50 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
             Moving your show to ART19{firstName ? `, ${firstName}` : ""}.
           </h1>
           <p className={styles.lede}>
-            Moving your show is a significant transition — like moving artwork
-            from one gallery to another, and in the movement we want everything
-            protected. We&apos;re on hand throughout; this map walks you
-            through the move step by step.
-          </p>
-          <p className={styles.ledeSub}>
-            ART19 (an Amazon company) is the hosting platform behind the
-            GhostSignal network — it&apos;s where your show and its ads will
-            live. Keep this page open in one browser tab and your current host
-            in another, and tick things off as you go — your checkmarks are
-            saved on this device.
+            Like moving artwork between galleries — everything protected, us
+            on hand throughout. ART19 (an Amazon company) is where your show
+            and its ads will live. Keep this tab open next to your current
+            host and tick things off as you go — checkmarks save on this
+            device.
           </p>
         </div>
-        <div className={styles.progressCard} aria-live="polite">
-          <span className={styles.progressCount}>
-            {doneCount}
-            <span className={styles.progressTotal}>/{TOTAL_ITEMS}</span>
-          </span>
-          <span className={styles.progressLabel}>
-            {doneCount === 0
-              ? "steps to your new home"
-              : doneCount === TOTAL_ITEMS
-                ? "all done — welcome home 🎉"
-                : "checked off"}
-          </span>
-          <div
-            className={styles.progressBar}
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={TOTAL_ITEMS}
-            aria-valuenow={doneCount}
-          >
+
+        <div className={styles.sideCards}>
+          <div className={styles.progressCard} aria-live="polite">
+            <span className={styles.progressCount}>
+              {doneCount}
+              <span className={styles.progressTotal}>/{TOTAL_ITEMS}</span>
+            </span>
+            <span className={styles.progressLabel}>
+              {doneCount === 0
+                ? "steps to your new home"
+                : doneCount === TOTAL_ITEMS
+                  ? "all done — welcome home 🎉"
+                  : "checked off"}
+            </span>
             <div
-              className={styles.progressFill}
-              style={{ width: `${(doneCount / TOTAL_ITEMS) * 100}%` }}
-            />
+              className={styles.progressBar}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={TOTAL_ITEMS}
+              aria-valuenow={doneCount}
+            >
+              <div
+                className={styles.progressFill}
+                style={{ width: `${(doneCount / TOTAL_ITEMS) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className={styles.helpCard}>
+            <span className={styles.helpTitle}>Stuck at any step?</span>
+            <p className={styles.helpBody}>
+              A human from the team walks you through it — or does the fiddly
+              bits with you.
+            </p>
+            <a className={styles.helpCta} href="mailto:hello@ghostsignal.cloud">
+              Email the team
+            </a>
           </div>
         </div>
       </header>
@@ -362,20 +370,6 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
         })}
       </ol>
 
-      {/* --- Help band -------------------------------------------- */}
-      <footer className={styles.helpBand}>
-        <div>
-          <h2 className={styles.helpTitle}>Stuck at any step?</h2>
-          <p className={styles.helpBody}>
-            We mean the &ldquo;on hand throughout&rdquo; part — a human from
-            the team walks you through anything unclear, or does the fiddly
-            bits with you.
-          </p>
-        </div>
-        <a className={styles.helpCta} href="mailto:hello@ghostsignal.cloud">
-          Email the team
-        </a>
-      </footer>
     </div>
   );
 }
