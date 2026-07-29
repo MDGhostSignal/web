@@ -226,6 +226,11 @@ Migration" tab in StudioHeader (visible in lite mode).
 - Help band → mailto:hello@ghostsignal.cloud. /admin/pages entry
   added. Content changes to the guide are code edits in
   `apps/web/src/app/studio/migration/MigrationGuide.tsx` (STEPS array).
+- Layout v2 (`d11733f`, per Martin): one-screen desktop layout — help
+  card moved from the bottom band into the header row (next to the
+  progress card, visible before starting), copy tightened, own `.main`
+  wrapper with 40px gutters, denser cards; 4→2 col breakpoint at
+  1180px.
 
 ## Open issues / next steps
 
