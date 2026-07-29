@@ -208,6 +208,18 @@ const CATEGORIES: Category[] = [
         tags: ["internal", "auth-gated"],
       },
       {
+        path: "/admin/studio-picks",
+        name: "Studio GS Picks",
+        description: "Curate the GhostSignal Pick brands leading each member's roster deck.",
+        tags: ["internal", "auth-gated"],
+      },
+      {
+        path: "/admin/studio-requests",
+        name: "Studio Intro Requests",
+        description: "Triage queue for member → brand brokered-intro requests.",
+        tags: ["internal", "auth-gated"],
+      },
+      {
         path: "/admin/tasks",
         name: "Tasks",
         description: "Shared task queue for the four co-founders.",

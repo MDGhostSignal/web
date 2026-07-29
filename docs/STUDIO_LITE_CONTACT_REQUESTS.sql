@@ -3,8 +3,9 @@
 -- =============================================================================
 -- The roster's brand pop-up has a "Request an intro" action. It files
 -- a row here; the GhostSignal team picks it up and brokers the intro
--- (no automated matching/messaging — matching stays human). No admin
--- UI yet: review via the Supabase table editor / SQL until one lands.
+-- (no automated matching/messaging — matching stays human). Admin UI:
+-- /admin/studio-requests (Studio → Intro Requests) lists rows and
+-- flips status via PATCH /api/admin/studio/requests/[id].
 --
 -- One open request per (member, brand) — a second click surfaces
 -- "already requested" instead of piling up duplicates.

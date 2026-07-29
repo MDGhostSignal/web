@@ -1,0 +1,404 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.notice {
+  padding: 12px 16px;
+  background: var(--admin-warn-soft);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: 8px;
+  color: var(--admin-text-primary);
+  font-size: 13px;
+}
+
+.notice code {
+  font-size: 12px;
+}
+
+.error {
+  padding: 12px 16px;
+  background: var(--admin-destructive-soft);
+  border: 1px solid var(--admin-destructive-border);
+  border-radius: 8px;
+  color: var(--admin-error-text);
+  font-size: 13px;
+}
+
+.saved {
+  padding: 10px 14px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface-2);
+  color: var(--admin-text-secondary);
+  font-size: 13px;
+}
+
+.empty {
+  padding: 36px 28px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  text-align: center;
+  color: var(--admin-text-secondary);
+}
+
+.empty strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  margin-bottom: 6px;
+}
+
+.empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* --- Two-pane split ---------------------------------------------- */
+
+.split {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Member pane ------------------------------------------------- */
+
+.memberPane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.memberFilter {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: 13px;
+}
+
+.memberFilter:focus {
+  outline: none;
+  border-color: var(--admin-border-strong);
+}
+
+.memberList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.memberListEmpty {
+  padding: 16px 12px;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.memberRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "name badges"
+    "meta badges";
+  row-gap: 2px;
+  column-gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-md);
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
+}
+
+.memberRow:hover {
+  background: var(--admin-surface-hover);
+}
+
+.memberRowActive {
+  background: var(--admin-surface-2);
+  border-color: var(--admin-border-strong);
+}
+
+.memberName {
+  grid-area: name;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.memberMeta {
+  grid-area: meta;
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberBadges {
+  grid-area: badges;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* --- Editor pane ------------------------------------------------- */
+
+.editorPane {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 18px;
+  min-height: 320px;
+}
+
+.editorHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editorTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.editorHint {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.noPicks {
+  margin: 0;
+  padding: 20px 16px;
+  border: 1px dashed var(--admin-border-strong);
+  border-radius: 8px;
+  color: var(--admin-text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.pickList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pickRow {
+  display: grid;
+  grid-template-columns: 28px minmax(140px, 200px) 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .pickRow {
+    grid-template-columns: 28px 1fr auto;
+  }
+
+  .pickNote {
+    grid-column: 2 / -1;
+  }
+}
+
+.pickPos {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border-strong);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+.pickBrand {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickNote {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: 12px;
+}
+
+.pickNote:focus {
+  outline: none;
+  border-color: var(--admin-border-strong);
+}
+
+.pickActions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.iconBtn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base),
+    color var(--admin-transition-base);
+}
+
+.iconBtn:hover:not(:disabled) {
+  background: var(--admin-surface-hover);
+  border-color: var(--admin-border-strong);
+  color: var(--admin-text-primary);
+}
+
+.iconBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.iconBtnDanger:hover:not(:disabled) {
+  background: var(--admin-destructive-soft);
+  border-color: var(--admin-destructive-border);
+  color: var(--admin-error-text);
+}
+
+/* --- Editor footer ----------------------------------------------- */
+
+.editorFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.footSpacer {
+  flex: 1;
+}
+
+.addSelect {
+  max-width: 260px;
+  padding: 8px 12px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.addSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    color var(--admin-transition-base);
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  background: var(--admin-surface-hover);
+  color: var(--admin-text-primary);
+}
+
+/* Save button — same reasoning as studio-approvals' .approveBtn:
+ * hardcoded bright green in both themes because the success TOKEN
+ * flips to a dark text-legible value in light mode, which reads as a
+ * near-black blob when used as a button background. */
+.saveBtn {
+  padding: 7px 16px;
+  background: #50ff96;
+  border: 1px solid #50ff96;
+  border-radius: var(--admin-radius-md);
+  color: #0a1d12;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base),
+    transform var(--admin-transition-base),
+    box-shadow var(--admin-transition-base);
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: #76ffae;
+  border-color: #76ffae;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(80, 255, 150, 0.28);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

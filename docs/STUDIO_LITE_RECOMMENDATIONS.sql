@@ -6,8 +6,9 @@
 -- "GhostSignal Pick". The four-pick count is editorial convention —
 -- the loader takes the top 4 by position; the table doesn't enforce it.
 --
--- Until an admin UI exists, rows are inserted via the Supabase
--- dashboard / SQL editor:
+-- Admin UI: /admin/studio-picks (Studio → GS Picks) manages rows via
+-- replace-all saves through PUT /api/admin/studio/picks. Manual SQL
+-- still works if ever needed:
 --   INSERT INTO studio_brand_recommendations (member_id, brand_id, position)
 --   VALUES ('<member uuid>', '<brand uuid>', 1);
 --
