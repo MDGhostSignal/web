@@ -1,6 +1,43 @@
 # Session Log — 2026-07-29
 
-## Focus
+## Day summary (TL;DR)
+
+A full Admin-CRM × Studio-Lite day, all shipped to prod and
+live-verified, each feature spec'd by Martin in sequence:
+
+1. **Admin "Studio" sidebar group** — GS Picks curation desk +
+   intro-request triage queue (`e303504`).
+2. **Four pending migrations run by Martin + verified**; e2e
+   `test-studio-picks.mjs` 19/19 (`8dcce40`).
+3. **Open self-serve signup** — email confirmation is the only gate,
+   no co-founder approval; landing/register/login copy de-invitationed;
+   one stuck registrant backfill-activated (`46979f0`).
+4. **Personalized signup + identity unification** — signUp metadata
+   for name-greeting auth emails, quiz-history adoption at
+   registration, RQ→member auto-link gap closed, in-app greetings;
+   e2e `test-studio-signup.mjs` 11/11; DB trigger suite discovered
+   (`e951a54`).
+5. **Branded auth email templates v2** (Supabase dashboard paste
+   pending) + **/admin/studio-members** directory with click-through
+   dossier (`0f661d1`, `a554e2e`).
+6. **Manual Studio invite** — modal on Members + code-managed branded
+   invite email via Resend (`2f03d0d`).
+7. **ART19 Migration guide** — /studio/migration tab from the
+   GS-RSS-Migration PDF; one-screen layout v2 with the help card in
+   the header (`65d4690`, `d11733f`).
+
+Test emails sent via Resend for design review: confirm+reset previews
+to Martin (2×), invite preview to Martin (2×), and all three designs
+to Jack at jack@ghostsignal.cloud (address confirmed by Martin; note
+Jack's Studio member row uses jackwharding@icloud.com — flagged).
+Artifact preview of the email designs published (claude.ai artifact).
+
+Validation on every feature commit: typecheck, ESLint (0 errors),
+Stylelint clean; unauth gate probes against prod after each deploy.
+
+---
+
+## Focus (first task)
 
 Admin CRM × Studio Lite: built the two admin-side follow-ups flagged in
 the 07-27 log — the GS Picks curation desk and the intro-request triage
