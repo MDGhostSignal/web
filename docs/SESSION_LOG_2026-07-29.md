@@ -127,14 +127,62 @@ the only gate, no co-founder approval.
 Validation: typecheck clean, ESLint 0 errors. Live copy verified
 post-deploy (see below / probe results in session).
 
+## Personalized signup + quiz-history unification (`e951a54`, per Martin)
+
+Third spec round: name personalization everywhere + unify signups
+with existing quiz/CRM identity so nobody is asked to retake the
+XQ/RQ.
+
+- **Auth-email personalization**: register passes
+  `data: { first_name, last_name, organization, member_kind }` to
+  `signUp` → templates greet via `{{ .Data.first_name }}`.
+  `docs/STUDIO_EMAIL_TEMPLATES.md` has recommended Confirm-signup +
+  reset templates. **Martin must paste them in the Supabase dashboard
+  (Auth → Emails)** — templates aren't repo-managed.
+- **Adoption at signup** (`adoptQuizSubmissions` in
+  /api/studio/register, both created + linked paths): latest scored
+  XQ + RQ submissions matched by email → member row gets
+  xq_submission_id/xq_archetype + rq_submission_id/rq_code (existing
+  links never overwritten; best-effort, can't fail signup). Email is
+  the join key on purpose — signup just proved control of the inbox,
+  stronger than any typed-name match.
+- **RQ → member auto-link gap closed**: XQ's submit route already
+  back-linked to members; RQ never did (known gap noted in
+  LifecycleStepper). New shared `linkRqSubmissionToMember`
+  (api/rq-submissions/link-member.ts) fires on both completion paths —
+  direct complete POST and the incomplete→complete PATCH upgrade
+  (the RQ quiz's usual path). Exactly-one-email-match rule mirrors XQ.
+- **In-app greeting**: roster + profile now open with
+  "Welcome back, {first name}." (`.dashGreeting`).
+- **Backfill check**: no existing studio member needed adoption
+  (all already linked or no matching submissions) — verified by query.
+- New e2e `scripts/test-studio-signup.mjs`: sentinel XQ submission +
+  pre-confirmed auth user → real POST to the deployed register route →
+  asserts activated_at + adoption + null-RQ → deletes everything it
+  created (members row, auth user, submission). **11/11 passed against
+  prod post-deploy.**
+- **Discovery via the e2e** (`mode=linked` on a fresh email): the DB
+  has a trigger suite on xq/rq_submissions + members —
+  `*_ensure_member` (quiz submission auto-creates a members row),
+  `*_link_member`, `members_link_submissions`, `*_dedupe`. So
+  quiz↔member linking also exists at the DB layer; the app-level
+  adoption + RQ link added today are belt-and-braces (fill only null
+  links, worst case rewrite identical values). Future sessions:
+  check pg_trigger before assuming a linking gap.
+
 ## Open issues / next steps
 
+- **Martin: paste the email templates** from
+  docs/STUDIO_EMAIL_TEMPLATES.md into Supabase → Auth → Emails.
 - Martin: set the first GS Picks via /admin/studio-picks and
-  spot-check both new admin pages signed-in.
-- End-to-end signup flow (fresh email → confirmation click →
-  /auth/callback → roster) worth one real-inbox test — not
-  curl-verifiable.
+  spot-check the new admin pages + the roster greeting signed-in.
+- One real-inbox signup test (confirmation click → /auth/callback →
+  roster) still worth doing — the e2e simulates confirmation via the
+  admin API, not the actual email link.
 - `test-studio-profile.mjs` (profile PATCH snapshot → mutate → restore)
   still worth writing.
+- Possible follow-up: prefill quiz basics (name/email/org) when a
+  signed-in member opens /xq-quiz or /rq-quiz — quizzes don't read
+  URL params today.
 - Studio Lite feature work beyond this still pending Martin's real spec
   (phantom-thread "requirements" remain void).
