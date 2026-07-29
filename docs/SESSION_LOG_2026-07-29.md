@@ -170,6 +170,25 @@ XQ/RQ.
   links, worst case rewrite identical values). Future sessions:
   check pg_trigger before assuming a linking gap.
 
+## Branded auth emails + Studio Members directory (later same day)
+
+- **Branded email templates v2** (`0f661d1`): both Supabase auth
+  templates redesigned in the Studio design system — wordmark + STUDIO
+  pill lockup, morse accent strip, studio palette, Outlook-safe bgcolor
+  CTA button, plain-link fallback, trust footer. Snippets in
+  docs/STUDIO_EMAIL_TEMPLATES.md; artifact preview published; both
+  previews sent to Martin via Resend (design approved). **Templates go
+  live only when Martin pastes v2 into Supabase → Auth → Emails**
+  (v1 plain-text is what's live there now).
+- **/admin/studio-members** (`a554e2e`): directory of every activated
+  Studio account — org, kind badge, joined date, XQ/RQ completion
+  badges (archetype/RQ code shown when done). Row click → dossier
+  modal via new GET /api/admin/studio/members/[id]: contact facts,
+  org card (reuses loadStudioOrgProfile), full XQ (axes + value
+  buckets) + RQ (clarity/undertone/per-axis + prose) summaries.
+  Members is now the Studio group's lead child and parent target;
+  Approvals moved to the bottom.
+
 ## Open issues / next steps
 
 - **Martin: paste the email templates** from
