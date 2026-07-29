@@ -8,17 +8,32 @@ data: { first_name, last_name, organization, member_kind }
 ```
 
 Supabase's auth email templates read that metadata as `{{ .Data.* }}`,
-so every auth email (confirmation, password reset, etc.) can greet the
+so every auth email (confirmation, password reset, etc.) greets the
 person by name. **The templates live in the Supabase dashboard, not in
 this repo** — apply them at:
 
 > Supabase Dashboard → Authentication → Emails (templates)
 
-Site-URL note: the register page sets `emailRedirectTo` to
-`/auth/callback`; keep `{{ .ConfirmationURL }}` as-is in the template —
-it already carries that redirect.
+## Design notes (v2, branded)
 
-## Confirm signup (recommended template)
+The HTML below mirrors the Studio surface's design system
+(`apps/web/src/app/studio/studio-tokens.css` + the Lite landing):
+
+- Wordmark lockup: **GhostSignal** (17px / 800 / tight tracking) +
+  the bordered uppercase **STUDIO** pill.
+- The morse-code accent strip from the landing hero
+  (repeating-gradient on `#7c58d6`; clients without gradient support
+  degrade to a solid accent bar).
+- Studio light palette: page `#f4f6fb`, card `#ffffff`, borders
+  `#e6e8ee`, text `#0e1119` / `#5a5e66` / muted `#6a727b`, accent
+  `#7c58d6` (border `#6a45c7`).
+- Table-based layout + inline styles only (email-client safe); the
+  CTA is a `bgcolor` table cell so Outlook renders a solid button.
+- Keep `{{ .ConfirmationURL }}` exactly as written — it already
+  carries the `/auth/callback` redirect. The plain-link fallback line
+  under the button is intentional (some clients block styled links).
+
+## Confirm signup
 
 Subject:
 
@@ -29,39 +44,182 @@ Subject:
 Body (HTML):
 
 ```html
-<h2>{{ if .Data.first_name }}Hi {{ .Data.first_name }},{{ else }}Hi,{{ end }}</h2>
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; background-color: #f4f6fb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f4f6fb" style="background-color: #f4f6fb;">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px; background-color: #ffffff; border: 1px solid #e6e8ee; border-radius: 14px;">
 
-<p>
-  Welcome to GhostSignal Studio{{ if .Data.organization }} — great to
-  have {{ .Data.organization }} on the network{{ end }}. One click and
-  your account is live:
-</p>
+          <!-- Wordmark lockup -->
+          <tr>
+            <td style="padding: 28px 36px 0;">
+              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GhostSignal</span>
+              <span style="display: inline-block; margin-left: 8px; padding: 2px 9px; border: 1px solid #7c58d6; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #7c58d6; vertical-align: 2px;">Studio</span>
+            </td>
+          </tr>
 
-<p><a href="{{ .ConfirmationURL }}">Confirm your email</a></p>
+          <!-- Morse accent strip -->
+          <tr>
+            <td style="padding: 18px 36px 0;">
+              <div style="height: 3px; width: 220px; border-radius: 2px; background-color: #7c58d6; background-image: repeating-linear-gradient(90deg, #7c58d6 0 5px, #ffffff 5px 13px, #7c58d6 13px 33px, #ffffff 33px 41px, #7c58d6 41px 46px, #ffffff 46px 58px);"></div>
+            </td>
+          </tr>
 
-<p>
-  After confirming, sign in and your workspace is ready — your profile,
-  the roster, and your GhostSignal picks.
-</p>
+          <!-- Greeting + copy -->
+          <tr>
+            <td style="padding: 24px 36px 0;">
+              <h1 style="margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #0e1119; line-height: 1.3;">
+                {{ if .Data.first_name }}Hi {{ .Data.first_name }},{{ else }}Hi,{{ end }}
+              </h1>
+              <p style="margin: 0; font-size: 15px; color: #5a5e66; line-height: 1.65;">
+                Welcome to GhostSignal Studio{{ if .Data.organization }} &mdash; great to have <strong style="color: #0e1119;">{{ .Data.organization }}</strong> on the network{{ end }}. One click and your account is live:
+              </p>
+            </td>
+          </tr>
 
-<p>— The GhostSignal team</p>
+          <!-- CTA button (bgcolor cell = Outlook-safe) -->
+          <tr>
+            <td style="padding: 24px 36px 0;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td bgcolor="#7c58d6" style="background-color: #7c58d6; border: 1px solid #6a45c7; border-radius: 10px;">
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 12px 26px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">Confirm your email</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 14px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
+                Button not working? Copy this link into your browser:<br>
+                <a href="{{ .ConfirmationURL }}" style="color: #7c58d6; word-break: break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- What's inside -->
+          <tr>
+            <td style="padding: 24px 36px 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f4f6fb" style="background-color: #f4f6fb; border: 1px solid #e6e8ee; border-radius: 10px;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; font-size: 13px; color: #5a5e66; line-height: 1.7;">
+                      After confirming, sign in and your workspace is ready &mdash;
+                      <strong style="color: #0e1119;">your profile</strong>, the
+                      <strong style="color: #0e1119;">network roster</strong>, and your
+                      <strong style="color: #0e1119;">GhostSignal picks</strong>.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 0 36px 28px; border-top: 1px solid #e6e8ee;">
+              <p style="margin: 18px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
+                &mdash; The GhostSignal team<br>
+                You&rsquo;re receiving this because this address was used to sign up for GhostSignal Studio. If that wasn&rsquo;t you, you can ignore this email.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 ```
 
-## Password reset (same pattern)
+## Reset password
+
+Subject:
+
+```
+{{ if .Data.first_name }}{{ .Data.first_name }}, reset your GhostSignal Studio password{{ else }}Reset your GhostSignal Studio password{{ end }}
+```
+
+Body (HTML):
 
 ```html
-<h2>{{ if .Data.first_name }}Hi {{ .Data.first_name }},{{ else }}Hi,{{ end }}</h2>
-<p>Follow this link to reset your GhostSignal Studio password:</p>
-<p><a href="{{ .ConfirmationURL }}">Reset password</a></p>
-<p>If you didn't request this, you can safely ignore this email.</p>
-<p>— The GhostSignal team</p>
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; background-color: #f4f6fb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f4f6fb" style="background-color: #f4f6fb;">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px; background-color: #ffffff; border: 1px solid #e6e8ee; border-radius: 14px;">
+
+          <!-- Wordmark lockup -->
+          <tr>
+            <td style="padding: 28px 36px 0;">
+              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GhostSignal</span>
+              <span style="display: inline-block; margin-left: 8px; padding: 2px 9px; border: 1px solid #7c58d6; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #7c58d6; vertical-align: 2px;">Studio</span>
+            </td>
+          </tr>
+
+          <!-- Morse accent strip -->
+          <tr>
+            <td style="padding: 18px 36px 0;">
+              <div style="height: 3px; width: 220px; border-radius: 2px; background-color: #7c58d6; background-image: repeating-linear-gradient(90deg, #7c58d6 0 5px, #ffffff 5px 13px, #7c58d6 13px 33px, #ffffff 33px 41px, #7c58d6 41px 46px, #ffffff 46px 58px);"></div>
+            </td>
+          </tr>
+
+          <!-- Greeting + copy -->
+          <tr>
+            <td style="padding: 24px 36px 0;">
+              <h1 style="margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #0e1119; line-height: 1.3;">
+                {{ if .Data.first_name }}Hi {{ .Data.first_name }},{{ else }}Hi,{{ end }}
+              </h1>
+              <p style="margin: 0; font-size: 15px; color: #5a5e66; line-height: 1.65;">
+                Follow the link below to set a new password for your GhostSignal Studio account:
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA button -->
+          <tr>
+            <td style="padding: 24px 36px 0;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td bgcolor="#7c58d6" style="background-color: #7c58d6; border: 1px solid #6a45c7; border-radius: 10px;">
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 12px 26px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">Reset password</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 14px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
+                Button not working? Copy this link into your browser:<br>
+                <a href="{{ .ConfirmationURL }}" style="color: #7c58d6; word-break: break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 36px 28px;">
+              <p style="margin: 0 0 18px; padding: 16px 20px; background-color: #f4f6fb; border: 1px solid #e6e8ee; border-radius: 10px; font-size: 13px; color: #5a5e66; line-height: 1.7;">
+                Didn&rsquo;t request this? You can safely ignore this email &mdash; your password stays unchanged.
+              </p>
+              <p style="margin: 0; padding-top: 18px; border-top: 1px solid #e6e8ee; font-size: 12px; color: #6a727b; line-height: 1.6;">
+                &mdash; The GhostSignal team
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 ```
 
 ## Notes
 
 - `{{ .Data.first_name }}` is empty for accounts created before
   2026-07-29 (no metadata was passed then) — the `{{ if }}` fallbacks
-  above keep those emails sensible.
+  keep those emails sensible.
 - Available metadata keys: `first_name`, `last_name`, `organization`,
   `member_kind` ("brand" | "creator").
 - Resend-driven app emails (Studio SMTP) are separate from these auth
