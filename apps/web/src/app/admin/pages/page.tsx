@@ -162,13 +162,13 @@ const CATEGORIES: Category[] = [
       {
         path: "/studio/register",
         name: "Studio Registration",
-        description: "Open self-serve sign-up. Co-founder approves before access.",
+        description: "Open self-serve sign-up — email confirmation is the only gate.",
         tags: ["public"],
       },
       {
         path: "/studio/pending",
         name: "Studio Pending",
-        description: "Holding screen for registered-but-not-yet-approved users.",
+        description: "Legacy holding screen — only reachable by manually de-activated accounts.",
         tags: ["client", "auth-gated"],
       },
       {
@@ -204,7 +204,7 @@ const CATEGORIES: Category[] = [
       {
         path: "/admin/studio-approvals",
         name: "Studio Approvals",
-        description: "Pending Studio registrations to approve / deny.",
+        description: "Fallback activation queue — new sign-ups self-activate after email confirmation.",
         tags: ["internal", "auth-gated"],
       },
       {

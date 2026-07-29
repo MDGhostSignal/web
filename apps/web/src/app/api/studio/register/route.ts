@@ -17,9 +17,15 @@ import { createStudioAdminClient } from "@/lib/studio-auth";
  * always failed. The admin-API check works in both modes.
  *
  * Idempotent — existing rows by email get their auth_user_id
- * attached; new emails get a fresh discern-phase row with
- * activated_at = NULL. Co-founder flips activated_at from
- * /admin/studio-approvals.
+ * attached; new emails get a fresh discern-phase row.
+ *
+ * Open signup (2026-07-29): activated_at is set immediately on both
+ * paths — the only gate is Supabase's email confirmation (the user
+ * can't sign in until they click the link, and /api/studio/register
+ * verifies the auth user's email matches, so linking to an existing
+ * CRM row still requires proving control of that inbox).
+ * /admin/studio-approvals remains as a manual fallback for any row
+ * that predates open signup.
  */
 type Body = {
   authUserId: string;
@@ -68,7 +74,7 @@ export async function POST(req: NextRequest) {
   // server-side under the service role so RLS doesn't block reads.
   const { data: existing } = await admin
     .from("members")
-    .select("id, auth_user_id, member_type, organization")
+    .select("id, auth_user_id, member_type, organization, activated_at")
     .ilike("email", email)
     .maybeSingle();
 
@@ -91,6 +97,7 @@ export async function POST(req: NextRequest) {
         last_name: body.lastName.trim(),
         organization: body.orgName.trim() || existing.organization,
         member_type: body.kind,
+        activated_at: existing.activated_at ?? new Date().toISOString(),
       })
       .eq("id", existing.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -109,6 +116,7 @@ export async function POST(req: NextRequest) {
       member_type: body.kind,
       phase: "discern",
       phase_entered_at: new Date().toISOString(),
+      activated_at: new Date().toISOString(),
       notes: "Self-registered via Studio.",
     })
     .select("id")

@@ -8,8 +8,11 @@ import styles from "./page.module.css";
 export const dynamic = "force-dynamic";
 
 /** Pending Studio registrations. Members with auth_user_id set
- *  (= they registered) but activated_at NULL (= no co-founder has
- *  approved yet). One Approve button per row → flips activated_at. */
+ *  (= they registered) but activated_at NULL. Since open signup
+ *  (2026-07-29) new registrations self-activate after email
+ *  confirmation, so this page is a fallback: it only shows rows that
+ *  predate open signup or were de-activated by hand. One Approve
+ *  button per row → flips activated_at. */
 export default async function StudioApprovalsPage() {
   const res = await supabaseRest<PendingRow[]>(
     "members?select=id,email,first_name,last_name,organization,member_type,xq_archetype,rq_code,created_at,auth_user_id&" +
@@ -25,7 +28,7 @@ export default async function StudioApprovalsPage() {
     <div className={styles.page}>
       <PageHeader
         title="Studio Approvals"
-        subtitle="Pending Studio registrations. Approve to grant access to the dashboard + marketplace."
+        subtitle="Fallback queue — new sign-ups self-activate after email confirmation, so only pre-open-signup or manually de-activated accounts appear here."
         count={
           <Badge variant={pending.length > 0 ? "warn" : "neutral"}>
             {pending.length} pending
@@ -38,7 +41,7 @@ export default async function StudioApprovalsPage() {
       {pending.length === 0 ? (
         <div className={styles.empty}>
           <strong>All caught up.</strong>
-          <p>No registrations waiting for approval right now. New sign-ups will appear here.</p>
+          <p>Nothing needs manual activation. New sign-ups activate themselves once they confirm their email.</p>
         </div>
       ) : (
         <ApprovalsTable rows={pending} />

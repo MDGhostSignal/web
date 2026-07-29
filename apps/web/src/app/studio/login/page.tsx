@@ -103,7 +103,7 @@ function LoginForm() {
               "You haven't clicked the email confirmation link yet.",
             ],
             footer:
-              "After confirming, your account still needs GhostSignal team approval before you can access the dashboard. We'll email you the moment that lands.",
+              "Once your email is confirmed you can sign in right away — there's no approval step.",
           });
           setSubmitting(false);
           return;
@@ -138,7 +138,7 @@ function LoginForm() {
           {justReset
             ? "Password updated. Sign in below with your new password."
             : justRegistered
-            ? "Registration received. Check your email for a confirmation link, then sign in below."
+            ? "Account created. Check your email for a confirmation link, then sign in below."
             : "Welcome back. Sign in to see your performance and the marketplace."}
         </p>
 
@@ -194,7 +194,7 @@ function LoginForm() {
         </form>
 
         <div className={styles.altLink}>
-          Don&apos;t have an account yet? <Link href="/studio/register">Request access</Link>
+          Don&apos;t have an account yet? <Link href="/studio/register">Sign up</Link>
         </div>
       </div>
     </main>

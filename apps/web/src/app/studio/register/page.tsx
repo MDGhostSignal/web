@@ -13,9 +13,10 @@ type Kind = "creator" | "brand";
 /**
  * Studio registration — open self-serve sign-up. Creates a Supabase
  * auth user, then hits /api/studio/register which creates (or matches
- * by email) a `members` row with the auth_user_id link and
- * activated_at = NULL. The user lands at /studio/pending until a
- * GhostSignal co-founder approves them from /admin/studio-approvals.
+ * by email) a `members` row with the auth_user_id link, activated
+ * immediately. The only gate is Supabase's email confirmation: the
+ * user clicks the link in their inbox, then signs in — no co-founder
+ * approval step.
  */
 type SuccessState = {
   email: string;
@@ -155,20 +156,20 @@ export default function RegisterPage() {
       <main className={styles.authPage}>
         <div className={styles.authCard} style={{ textAlign: "center" }}>
           <div className={styles.successIcon} aria-hidden="true">✓</div>
-          <h1 className={styles.title}>Request received</h1>
+          <h1 className={styles.title}>
+            {success.needsEmailConfirmation ? "Check your email" : "You're in"}
+          </h1>
           <p className={styles.subtitle}>
             {success.needsEmailConfirmation ? (
               <>
                 We sent a confirmation link to{" "}
                 <strong>{success.email}</strong>. Click it to verify
-                your email, then sign in.
+                your email, then sign in — that&apos;s it.
               </>
             ) : (
               <>
-                Your account is registered as{" "}
-                <strong>{success.email}</strong>. A GhostSignal
-                co-founder will approve your access shortly — you&apos;ll
-                see your dashboard the moment they do.
+                Your account <strong>{success.email}</strong> is ready.
+                Head into the workspace to set up your profile.
               </>
             )}
           </p>
@@ -179,11 +180,13 @@ export default function RegisterPage() {
               router.replace(
                 success.needsEmailConfirmation
                   ? "/studio/login?registered=1"
-                  : "/studio/pending",
+                  : "/studio",
               );
             }}
           >
-            {success.needsEmailConfirmation ? "Continue to sign in" : "Continue"}
+            {success.needsEmailConfirmation
+              ? "Continue to sign in"
+              : "Enter Studio"}
           </button>
         </div>
       </main>
@@ -197,10 +200,10 @@ export default function RegisterPage() {
           <span className={styles.brandName}>GhostSignal</span>
           <span className={styles.brandTag}>Studio</span>
         </div>
-        <h1 className={styles.title}>Request access</h1>
+        <h1 className={styles.title}>Create your account</h1>
         <p className={styles.subtitle}>
-          Register your brand or podcast. A GhostSignal co-founder will
-          approve your account, usually within a business day.
+          Sign up your brand or podcast. Confirm your email and
+          you&apos;re in — it takes about a minute.
         </p>
 
         {error && <div className={styles.error}>{error}</div>}
@@ -303,7 +306,7 @@ export default function RegisterPage() {
           </div>
 
           <button type="submit" className={styles.submit} disabled={submitting}>
-            {submitting ? "Submitting…" : "Request access"}
+            {submitting ? "Creating account…" : "Create account"}
           </button>
         </form>
 

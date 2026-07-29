@@ -48,11 +48,11 @@ export function StudioLiteLanding() {
             broker the partnerships that fit.
           </p>
           <div className={`${styles.heroActions} ${styles.rise4}`}>
-            <Link href="/studio/login" className={styles.btnPrimary}>
-              Sign in
+            <Link href="/studio/register" className={styles.btnPrimary}>
+              Create your account
             </Link>
-            <Link href="/get-in-touch" className={styles.btnGhost}>
-              Apply for access
+            <Link href="/studio/login" className={styles.btnGhost}>
+              Sign in
             </Link>
           </div>
         </div>
@@ -144,14 +144,14 @@ export function StudioLiteLanding() {
       <section className={styles.closingSection}>
         <div className={styles.morse} aria-hidden="true" />
         <h2 className={styles.closingTitle}>
-          Already a member, or think you should be?
+          Take your place on the network.
         </h2>
         <div className={styles.closingActions}>
-          <Link href="/studio/login" className={styles.btnPrimary}>
-            Sign in to Studio
+          <Link href="/studio/register" className={styles.btnPrimary}>
+            Create your account
           </Link>
-          <Link href="/get-in-touch" className={styles.btnGhost}>
-            Get in touch
+          <Link href="/studio/login" className={styles.btnGhost}>
+            Sign in to Studio
           </Link>
         </div>
       </section>
