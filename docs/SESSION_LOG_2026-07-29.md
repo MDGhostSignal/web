@@ -189,6 +189,25 @@ XQ/RQ.
   Members is now the Studio group's lead child and parent target;
   Approvals moved to the bottom.
 
+## Manual Studio invite (`2f03d0d`, per Martin)
+
+"+ Invite member" on /admin/studio-members → modal (email, first/last,
+optional note) → new `POST /api/admin/studio/invite`:
+
+- Ensures a CRM members row exists for the email (new contacts get a
+  discern-phase row, member_type "other" — they pick brand/creator at
+  registration; existing rows keep their data, gain an invite note in
+  `notes`). 409 if the person already has a Studio account. The
+  prepared row means link-by-email + quiz adoption unify everything
+  when they register.
+- Sends the studio-branded invite email via Resend (code-managed, NOT
+  a Supabase dashboard template — design ships with deploys): wordmark
+  lockup, morse strip, optional accent-edged "A note from the team"
+  callout (form's additional-information field, HTML-escaped), CTA →
+  /studio/register, use-this-email hint. Doc section added to
+  STUDIO_EMAIL_TEMPLATES.md.
+- Preview with sample note sent to Martin via Resend for design review.
+
 ## Open issues / next steps
 
 - **Martin: paste the email templates** from
