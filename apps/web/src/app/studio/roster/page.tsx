@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 /** Roster is auth-scoped — no static output possible. */
@@ -11,6 +12,7 @@ import {
   loadMarketplaceBrands,
   loadMarketplaceCreators,
   loadStudioOrgProfile,
+  studioOnboardingStatus,
   type MarketplaceCreator,
   type StudioOrgProfile,
 } from "@/lib/studio-data";
@@ -34,6 +36,17 @@ export default async function StudioRosterPage() {
   if (!member.isApproved) redirect("/studio/pending");
 
   const org = await loadStudioOrgProfile(member);
+
+  // First-login onboarding: while setup is incomplete (quizzes, image,
+  // description, creator RSS), the signed-in home is the welcome
+  // splash instead. "Skip for now" sets a 7-day cookie that keeps the
+  // roster reachable anyway.
+  const onboarding = studioOnboardingStatus(member, org);
+  if (!onboarding.complete) {
+    const jar = await cookies();
+    if (!jar.get("studio-welcome-skip")) redirect("/studio/welcome");
+  }
+
   const headerProfile = profileBadge(member, org);
 
   if (member.kind === "brand") {

@@ -133,6 +133,9 @@ export type StudioOrgProfile = {
   /** Creator only — requires docs/STUDIO_LITE_PROFILE.sql. */
   podcastUrl: string | null;
   newsletterUrl: string | null;
+  /** Creator only — show RSS feed for the ART19 import (internal;
+   *  requires docs/STUDIO_LITE_RSS.sql). */
+  rssUrl: string | null;
 };
 
 /** Load the card profile the member edits on /studio/profile: their
@@ -177,6 +180,7 @@ export async function loadStudioOrgProfile(member: {
       website: row.website,
       podcastUrl: null,
       newsletterUrl: null,
+      rssUrl: null,
     };
   }
   if (member.kind === "creator" && member.creatorId) {
@@ -187,11 +191,20 @@ export async function loadStudioOrgProfile(member: {
       avatar_url: string | null;
       podcast_url: string | null;
       newsletter_url: string | null;
+      rss_url?: string | null;
       created_at: string | null;
     };
+    // Fallback chain: full select → without rss_url (until
+    // STUDIO_LITE_RSS.sql runs) → without tagline either (until
+    // STUDIO_LITE_TAGLINE.sql runs).
     let res = await supabaseRest<Row[]>(
-      `creators?select=name,description,tagline,avatar_url,podcast_url,newsletter_url,created_at&id=eq.${encodeURIComponent(member.creatorId)}`,
+      `creators?select=name,description,tagline,avatar_url,podcast_url,newsletter_url,rss_url,created_at&id=eq.${encodeURIComponent(member.creatorId)}`,
     );
+    if (!res.ok) {
+      res = await supabaseRest<Row[]>(
+        `creators?select=name,description,tagline,avatar_url,podcast_url,newsletter_url,created_at&id=eq.${encodeURIComponent(member.creatorId)}`,
+      );
+    }
     if (!res.ok) {
       res = await supabaseRest<Row[]>(
         `creators?select=name,description,avatar_url,podcast_url,newsletter_url,created_at&id=eq.${encodeURIComponent(member.creatorId)}`,
@@ -210,6 +223,7 @@ export async function loadStudioOrgProfile(member: {
       website: null,
       podcastUrl: row.podcast_url,
       newsletterUrl: row.newsletter_url,
+      rssUrl: row.rss_url ?? null,
     };
   }
 
@@ -249,6 +263,62 @@ export async function loadStudioOrgProfile(member: {
     website: null,
     podcastUrl: null,
     newsletterUrl: null,
+    rssUrl: null,
+  };
+}
+
+/* ============================================================
+ * Onboarding status (/studio/welcome)
+ * ============================================================ */
+
+export type StudioOnboarding = {
+  xqDone: boolean;
+  rqDone: boolean;
+  hasImage: boolean;
+  hasDescription: boolean;
+  /** RSS is only asked of creators. */
+  needsRss: boolean;
+  hasRss: boolean;
+  complete: boolean;
+};
+
+/** What's still missing before this member's studio profile is set
+ *  up — drives the /studio/welcome splash and the roster's redirect
+ *  into it. A null org (transient read failure) reports complete so
+ *  a DB hiccup never traps anyone in onboarding. */
+export function studioOnboardingStatus(
+  member: {
+    kind: "brand" | "creator" | "other";
+    xqSubmissionId: string | null;
+    rqSubmissionId: string | null;
+  },
+  org: StudioOrgProfile | null,
+): StudioOnboarding {
+  const xqDone = member.xqSubmissionId !== null;
+  const rqDone = member.rqSubmissionId !== null;
+  if (!org) {
+    return {
+      xqDone,
+      rqDone,
+      hasImage: true,
+      hasDescription: true,
+      needsRss: false,
+      hasRss: true,
+      complete: true,
+    };
+  }
+  const hasImage = org.imageUrl !== null;
+  const hasDescription = (org.description ?? "").trim().length > 0;
+  const needsRss = member.kind === "creator";
+  const hasRss = !needsRss || (org.rssUrl ?? "").trim().length > 0;
+  return {
+    xqDone,
+    rqDone,
+    hasImage,
+    hasDescription,
+    needsRss,
+    hasRss,
+    complete: xqDone && rqDone && hasImage && hasDescription && hasRss,
   };
 }
 

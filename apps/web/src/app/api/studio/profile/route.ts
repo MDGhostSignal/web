@@ -72,6 +72,11 @@ export async function PATCH(req: NextRequest) {
       (member.kind === "creator" && member.creatorId !== null) ||
       (member.kind === "brand" && member.brandId !== null);
 
+    // Set when the creators.rss_url column is missing (until
+    // docs/STUDIO_LITE_RSS.sql runs) so the client can say the RSS
+    // value didn't stick instead of silently dropping it.
+    let pendingRss = false;
+
     if (member.kind === "creator" && member.creatorId) {
       const patch = compact({
         name: orgName,
@@ -79,9 +84,21 @@ export async function PATCH(req: NextRequest) {
         description: cleanText(body.description, 2000),
         podcast_url: cleanUrl(body.podcastUrl, "Podcast URL"),
         newsletter_url: cleanUrl(body.newsletterUrl, "Newsletter URL"),
+        rss_url: cleanUrl(body.rssUrl, "RSS feed URL"),
       });
       if (Object.keys(patch).length > 0) {
-        await scopedUpdate(member, "creators", patch);
+        try {
+          await scopedUpdate(member, "creators", patch);
+        } catch (err) {
+          if (!("rss_url" in patch)) throw err;
+          // Retry without rss_url — the rest of the save still lands.
+          const rest = { ...patch };
+          delete rest.rss_url;
+          pendingRss = true;
+          if (Object.keys(rest).length > 0) {
+            await scopedUpdate(member, "creators", rest);
+          }
+        }
       }
     } else if (member.kind === "brand" && member.brandId) {
       const patch = compact({
@@ -111,7 +128,7 @@ export async function PATCH(req: NextRequest) {
       await scopedUpdate(member, "members", memberPatch);
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, ...(pendingRss ? { pendingRss } : {}) });
   } catch (e) {
     return studioError(e);
   }

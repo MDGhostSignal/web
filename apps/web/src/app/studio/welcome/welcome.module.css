@@ -1,0 +1,406 @@
+/* /studio/welcome — first-login onboarding splash.
+ *
+ * One centered column on a softly purple-lit backdrop (two radial
+ * accent glows over --studio-bg — same family as the roster/migration
+ * surfaces, a notch warmer since this is the front door). Hero →
+ * quiz tiles side by side → the card form. All colors through
+ * --studio-* tokens, so light/dark both work. */
+
+.main {
+  min-height: calc(100dvh - 64px);
+  padding: 40px 24px 56px;
+  background:
+    radial-gradient(
+      520px 320px at 12% 0%,
+      var(--studio-accent-soft),
+      transparent 70%
+    ),
+    radial-gradient(
+      620px 380px at 95% 30%,
+      var(--studio-accent-soft),
+      transparent 72%
+    ),
+    var(--studio-bg);
+  display: flex;
+  justify-content: center;
+}
+
+.splash {
+  width: min(880px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* --- Hero ---------------------------------------------------------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 4px 2px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--studio-text-primary);
+}
+
+.lede {
+  margin: 0;
+  max-width: 620px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--studio-text-secondary);
+}
+
+.progressChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--studio-text-secondary);
+}
+
+.chipDone {
+  border-color: var(--studio-accent);
+  color: var(--studio-text-primary);
+}
+
+.chipMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--studio-text-inverse);
+}
+
+.chipDone .chipMark {
+  background: var(--studio-accent);
+  border-color: var(--studio-accent);
+}
+
+/* --- Quiz tiles ----------------------------------------------------- */
+
+.quizRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .quizRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quizTile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+  box-shadow: var(--studio-shadow-soft);
+}
+
+.quizTileDone {
+  border-color: var(--studio-accent);
+  background: linear-gradient(
+    180deg,
+    var(--studio-accent-soft),
+    var(--studio-surface-1) 70%
+  );
+}
+
+.quizTileName {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+}
+
+.quizTileBlurb {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--studio-text-secondary);
+  flex: 1;
+}
+
+.quizTileStatus {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+}
+
+.quizTileCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--studio-accent);
+  color: var(--studio-text-inverse);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.quizTileCta {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--studio-accent);
+  border: 1px solid var(--studio-accent-strong);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 160ms ease;
+}
+
+.quizTileCta:hover {
+  filter: brightness(1.08);
+}
+
+/* --- Card form ------------------------------------------------------ */
+
+.cardForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 24px 24px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 16px;
+  box-shadow: var(--studio-shadow-card);
+}
+
+.cardFormTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+}
+
+.uploadRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.uploadPreview {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--studio-border);
+}
+
+.uploadEmpty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--studio-accent-soft);
+  border: 1px dashed var(--studio-border-strong);
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--studio-accent);
+}
+
+.uploadText {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+
+.uploadBtn {
+  padding: 7px 15px;
+  border-radius: 8px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border-strong);
+  color: var(--studio-text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.uploadBtn:hover:not(:disabled) {
+  background: var(--studio-surface-hover);
+}
+
+.uploadBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+}
+
+.required {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--studio-accent-soft);
+  border: 1px solid var(--studio-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.fieldHint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--studio-text-muted);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  color: var(--studio-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: border-color 160ms ease;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--studio-text-muted);
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: 2px solid var(--studio-accent);
+  outline-offset: 1px;
+  border-color: var(--studio-accent);
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--studio-danger-soft);
+  border: 1px solid var(--studio-danger);
+  color: var(--studio-danger);
+  font-size: 12.5px;
+}
+
+.saved {
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--studio-success-soft);
+  border: 1px solid var(--studio-success);
+  color: var(--studio-success);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.saveBtn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: var(--studio-accent);
+  border: 1px solid var(--studio-accent-strong);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 160ms ease;
+}
+
+.saveBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.skipBtn {
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  color: var(--studio-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.skipBtn:hover {
+  color: var(--studio-text-secondary);
+}

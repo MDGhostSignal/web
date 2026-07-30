@@ -33,6 +33,7 @@ export function ProfileForm({
   const [website, setWebsite] = useState(org?.website ?? "");
   const [podcastUrl, setPodcastUrl] = useState(org?.podcastUrl ?? "");
   const [newsletterUrl, setNewsletterUrl] = useState(org?.newsletterUrl ?? "");
+  const [rssUrl, setRssUrl] = useState(org?.rssUrl ?? "");
   const [imageUrl, setImageUrl] = useState(org?.imageUrl ?? null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -83,6 +84,7 @@ export function ProfileForm({
           body.orgName = orgName;
           body.podcastUrl = podcastUrl;
           body.newsletterUrl = newsletterUrl;
+          body.rssUrl = rssUrl;
         } else if (org.kind === "brand") {
           body.orgName = orgName;
           body.website = website;
@@ -288,6 +290,23 @@ export function ProfileForm({
 
         {isCreator && (
           <>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="profile-rss-url">
+                Your show&apos;s RSS feed URL
+              </label>
+              <input
+                id="profile-rss-url"
+                className={styles.input}
+                value={rssUrl}
+                onChange={(e) => setRssUrl(e.target.value)}
+                placeholder="https://feeds.example.com/your-show"
+                inputMode="url"
+              />
+              <span className={styles.fieldHint}>
+                The feed your current host publishes — the team needs it
+                on record for the ART19 move.
+              </span>
+            </div>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="profile-podcast-url">
                 Where does your show live today?

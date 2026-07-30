@@ -5,6 +5,7 @@ import type { ArchetypeCode } from "@/lib/xq/constants";
 import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 
 import styles from "../studio.module.css";
+import welcomeStyles from "../welcome/welcome.module.css";
 
 /**
  * XQ / RQ status tiles on /studio/profile.
@@ -100,6 +101,9 @@ export function RqTile({ summary }: { summary: StudioRqSummary | null }) {
   );
 }
 
+/** Not-done state — same visual language as the /studio/welcome
+ *  splash quiz tiles (shared welcome.module.css classes), so the
+ *  reminder looks identical wherever the member meets it. */
 function TodoTile({
   title,
   body,
@@ -112,16 +116,10 @@ function TodoTile({
   cta: string;
 }) {
   return (
-    <section
-      className={`${styles.quizTile} ${styles.quizTileTodo}`}
-      aria-label={title}
-    >
-      <div className={styles.quizTileHead}>
-        <span className={styles.quizTodoDot} aria-hidden="true" />
-        <span className={styles.quizTileTitle}>{title}</span>
-      </div>
-      <p className={styles.quizTileBody}>{body}</p>
-      <Link href={href} className={styles.quizTileCta}>
+    <section className={welcomeStyles.quizTile} aria-label={title}>
+      <h3 className={welcomeStyles.quizTileName}>{title}</h3>
+      <p className={welcomeStyles.quizTileBlurb}>{body}</p>
+      <Link href={href} className={welcomeStyles.quizTileCta}>
         {cta} →
       </Link>
     </section>
