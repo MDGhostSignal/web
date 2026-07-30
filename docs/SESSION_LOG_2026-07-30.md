@@ -82,10 +82,13 @@ Studio Members page gained a safe "Remove from Studio" flow.
   Insert 6 ad markers: 2 pre, 2 mid at a break, 2 post), each with a
   wide framed screenshot; outro "And that's good to go — we handle
   everything else."
-- Screenshots pending from Martin: labeled gray placeholder PNGs live
-  at `apps/web/public/images/studio/art19-tutorial/step-{1-login,
-  2-publish,3-ad-markers}.png` — overwrite the files, zero code
-  change. Layout assumes ~16:9.
+- Real screenshots landed same evening (Martin's captures of the
+  GHOSTSignal Test Series account): wired as
+  `public/images/studio/art19-tutorial/step-{1-login,2-publish,
+  3-ad-markers}.webp` with true per-image dimensions (step 3 is
+  ~1107×907, squarer than the two ~1800×911 shots) and accurate alt
+  text; placeholder PNGs deleted. Content verified to match the step
+  order before wiring.
 
 ## 6. Studio onboarding splash (`/studio/welcome`)
 
@@ -140,13 +143,15 @@ Studio Members page gained a safe "Remove from Studio" flow.
   clean after items 4–7; welcome + roster + migration probed on the
   local dev server.
 
+## Closed same day
+
+- `docs/STUDIO_LITE_RSS.sql` applied to prod by Martin and verified
+  via information_schema — creators.rss_url live; the code's
+  column-missing fallbacks are dormant.
+- Real ART19 tutorial screenshots wired in (see section 5).
+
 ## Open issues / next steps
 
-- **Apply `docs/STUDIO_LITE_RSS.sql`** (adds creators.rss_url) —
-  until then creator RSS URLs can't be stored (PATCH degrades
-  gracefully, `pendingRss`).
-- Drop Martin's three real ART19 screenshots over the placeholder
-  PNGs in `public/images/studio/art19-tutorial/`.
 - Consider a self-serve "Forgot password?" flow on /studio/login —
   members will hit what Martin hit today.
 
