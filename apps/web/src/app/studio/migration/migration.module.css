@@ -1,35 +1,49 @@
 /* /studio/migration — ART19 RSS-migration guide.
  *
  * One-screen desktop layout: compact header row (intro + progress +
- * help cards) above the four steps side by side. Densities are tuned
- * so the whole board fits a typical desktop viewport without
- * scrolling; columns collapse 4 → 2 → 1 as space shrinks (scrolling
- * returns on smaller screens, by design). Per-step accent colors echo
- * the PDF's colored rules via the --step-accent custom property. */
+ * help cards) above the four steps side by side. The board fills the
+ * viewport below the 64px studio header — step cards stretch into the
+ * leftover vertical space instead of leaving a dead band at the
+ * bottom. Columns collapse 4 → 2 → 1 as space shrinks (scrolling
+ * returns on smaller screens, by design).
+ *
+ * Step identity: all four steps use GhostSignal brand purple, walking
+ * from a light lavender (step 1) to a deep violet (step 4) so the
+ * sequence itself reads as a progression. Each card carries its shade
+ * via three custom properties set per :nth-child — --step-accent
+ * (solid), --step-tint (background wash), --step-line (border) — with
+ * dark-theme overrides. No colored top bars: the shade shows up as a
+ * gradient wash, a tinted border, a filled number badge, and a large
+ * watermark numeral. */
 
 .main {
   max-width: none;
   margin: 0;
-  padding: 18px 40px 28px;
+  padding: 24px 48px 40px;
+  min-height: calc(100dvh - 64px);
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 900px) {
   .main {
     padding: 16px 20px 24px;
+    min-height: 0;
   }
 }
 
 .guide {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
+  flex: 1;
 }
 
 /* --- Header row --------------------------------------------------- */
 
 .intro {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: stretch;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -40,7 +54,8 @@
   max-width: 760px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
+  justify-content: center;
 }
 
 .eyebrow {
@@ -54,7 +69,7 @@
 
 .title {
   margin: 0;
-  font-size: 24px;
+  font-size: 25px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--studio-text-primary);
@@ -63,14 +78,14 @@
 
 .lede {
   margin: 0;
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--studio-text-secondary);
   line-height: 1.6;
 }
 
 .sideCards {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: stretch;
   flex-wrap: wrap;
 }
@@ -79,16 +94,16 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
-  min-width: 180px;
-  padding: 14px 18px;
+  gap: 6px;
+  min-width: 190px;
+  padding: 16px 20px;
   background: var(--studio-surface-1);
   border: 1px solid var(--studio-border);
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .progressCount {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--studio-text-primary);
   line-height: 1;
@@ -133,12 +148,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
-  max-width: 250px;
-  padding: 14px 18px;
+  gap: 6px;
+  max-width: 260px;
+  padding: 16px 20px;
   background: var(--studio-surface-1);
   border: 1px solid var(--studio-border);
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .helpTitle {
@@ -184,8 +199,10 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 18px;
   align-items: stretch;
+  flex: 1;
+  counter-reset: step;
 }
 
 @media (max-width: 1180px) {
@@ -200,15 +217,89 @@
   }
 }
 
+/* Brand-purple ramp, light lavender → deep violet. Light theme. */
+.step:nth-child(1) {
+  --step-accent: #9a79dd;
+  --step-tint: rgba(154, 121, 221, 0.1);
+  --step-line: rgba(154, 121, 221, 0.38);
+}
+
+.step:nth-child(2) {
+  --step-accent: #8460d6;
+  --step-tint: rgba(132, 96, 214, 0.1);
+  --step-line: rgba(132, 96, 214, 0.38);
+}
+
+.step:nth-child(3) {
+  --step-accent: #6e46cd;
+  --step-tint: rgba(110, 70, 205, 0.1);
+  --step-line: rgba(110, 70, 205, 0.38);
+}
+
+.step:nth-child(4) {
+  --step-accent: #5731ae;
+  --step-tint: rgba(87, 49, 174, 0.1);
+  --step-line: rgba(87, 49, 174, 0.38);
+}
+
+/* Dark theme: same walk, lifted so every shade stays legible on the
+ * dark surfaces (deep violets vanish against #161a23). */
+:global(.studio-root[data-theme="dark"]) .step:nth-child(1) {
+  --step-accent: #cdbcf4;
+  --step-tint: rgba(205, 188, 244, 0.09);
+  --step-line: rgba(205, 188, 244, 0.3);
+}
+
+:global(.studio-root[data-theme="dark"]) .step:nth-child(2) {
+  --step-accent: #b49ded;
+  --step-tint: rgba(180, 157, 237, 0.09);
+  --step-line: rgba(180, 157, 237, 0.3);
+}
+
+:global(.studio-root[data-theme="dark"]) .step:nth-child(3) {
+  --step-accent: #9b7ee6;
+  --step-tint: rgba(155, 126, 230, 0.09);
+  --step-line: rgba(155, 126, 230, 0.3);
+}
+
+:global(.studio-root[data-theme="dark"]) .step:nth-child(4) {
+  --step-accent: #8060dc;
+  --step-tint: rgba(128, 96, 220, 0.11);
+  --step-line: rgba(128, 96, 220, 0.34);
+}
+
 .step {
+  counter-increment: step;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px 16px 18px;
-  background: var(--studio-surface-1);
-  border: 1px solid var(--studio-border);
-  border-top: 4px solid var(--step-accent);
-  border-radius: 12px;
+  gap: 13px;
+  padding: 20px 20px 22px;
+  background: linear-gradient(
+    180deg,
+    var(--step-tint) 0%,
+    var(--studio-surface-1) 62%
+  );
+  border: 1px solid var(--step-line);
+  border-radius: 16px;
+}
+
+/* Oversized ghost numeral in the corner — each tile's shade at
+ * watermark strength, so the cards read differently at a glance
+ * without any solid colored chrome. */
+.step::after {
+  content: counter(step);
+  position: absolute;
+  top: -22px;
+  right: 4px;
+  font-size: 128px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--step-accent);
+  opacity: 0.08;
+  pointer-events: none;
+  user-select: none;
 }
 
 .step[data-done="true"] {
@@ -217,34 +308,38 @@
 
 .stepHead {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
+  position: relative;
 }
 
+/* Filled badge — the one solid swatch of the step's shade. White
+ * numeral in light mode; --studio-text-inverse flips it to a dark
+ * numeral in dark mode, where the badge purples are light. */
 .stepNumber {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--step-accent);
-  border-radius: 10px;
-  font-size: 16px;
+  background: var(--step-accent);
+  border-radius: 11px;
+  font-size: 17px;
   font-weight: 800;
-  color: var(--step-accent);
+  color: var(--studio-text-inverse);
 }
 
 .stepHeadText {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
 }
 
 .stepTitle {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 16.5px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--studio-text-primary);
@@ -269,14 +364,14 @@
 .stepTiming {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 
 .timeChip {
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
-  background: var(--studio-surface-2);
-  border: 1px solid var(--studio-border);
+  background: var(--step-tint);
+  border: 1px solid var(--step-line);
   font-size: 10.5px;
   font-weight: 600;
   color: var(--studio-text-secondary);
@@ -285,20 +380,20 @@
 
 .stepLede {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--studio-text-secondary);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .stepLedeBig {
   margin: 0;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--step-accent);
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* --- Checklist ---------------------------------------------------- */
@@ -309,7 +404,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 10px;
   /* Push the note (when present) to the card bottom so step cards in
    * a row keep their checklists top-aligned. */
   flex: 1;
@@ -317,12 +412,12 @@
 
 .check {
   display: flex;
-  gap: 9px;
+  gap: 10px;
   align-items: flex-start;
-  padding: 9px 11px;
+  padding: 11px 13px;
   background: var(--studio-surface-2);
   border: 1px solid var(--studio-border);
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease;
 }
@@ -333,7 +428,8 @@
 }
 
 .checkDone {
-  border-color: var(--step-accent);
+  border-color: var(--step-line);
+  background: var(--step-tint);
 }
 
 .checkInput {
@@ -352,8 +448,8 @@
 
 .checkBox {
   flex-shrink: 0;
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   margin-top: 1px;
   display: inline-flex;
   align-items: center;
@@ -373,9 +469,9 @@
 }
 
 .checkText {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-primary);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .checkDone .checkText {
@@ -388,11 +484,11 @@
 
 .stepNote {
   margin: 0;
-  padding: 8px 11px;
+  padding: 10px 12px;
   border-left: 3px solid var(--step-accent);
-  border-radius: 7px;
-  background: var(--studio-surface-2);
-  font-size: 11px;
+  border-radius: 8px;
+  background: var(--step-tint);
+  font-size: 11.5px;
   color: var(--studio-text-secondary);
   line-height: 1.55;
 }

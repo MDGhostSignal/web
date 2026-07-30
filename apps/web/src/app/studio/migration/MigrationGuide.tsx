@@ -21,8 +21,6 @@ type StepItem = {
 type Step = {
   n: number;
   title: string;
-  /** Per-step accent, echoing the PDF's colored rules. */
-  accent: string;
   timing: string[];
   lede: string;
   big?: boolean;
@@ -34,7 +32,6 @@ const STEPS: Step[] = [
   {
     n: 1,
     title: "Pre-move Cataloging",
-    accent: "#e8a33d",
     timing: ["Your time: 30–60 min"],
     lede: "Before the move, we preserve the story so far.",
     items: [
@@ -74,7 +71,6 @@ const STEPS: Step[] = [
   {
     n: 2,
     title: "Keys To New Gallery",
-    accent: "#ef5da8",
     timing: ["Your time: ~30 min", "Import completes in: 24–72 h"],
     lede: "We bring your show into the GhostSignal network, hosted on ART19.",
     items: [
@@ -110,7 +106,6 @@ const STEPS: Step[] = [
   {
     n: 3,
     title: "Changing Addresses",
-    accent: "#26a69a",
     timing: ["Your time: ~15 min", "Apps learn the address in: 24–72 h"],
     lede: "The big step — your existing feed starts pointing to its new address.",
     big: true,
@@ -148,7 +143,6 @@ const STEPS: Step[] = [
   {
     n: 4,
     title: "Opening Day",
-    accent: "#9575cd",
     timing: ["Allow 24 h for full signal fidelity"],
     lede: "Once your address is changed, your new home is with GhostSignal on ART19!",
     items: [
@@ -310,7 +304,6 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
             <li
               key={step.n}
               className={styles.step}
-              style={{ "--step-accent": step.accent } as React.CSSProperties}
               data-done={stepDone ? "true" : "false"}
             >
               <div className={styles.stepHead}>
