@@ -1,0 +1,377 @@
+/* /studio/roster — brand deck.
+ *
+ * Baseball-card stack: one portrait card (classic 2.5" × 3.5" ratio)
+ * front and center, the next two peeking out above it, everything
+ * else hidden underneath. Depth is drawn with transform/opacity only
+ * (see BrandDeck.tsx); this file owns the card face itself plus the
+ * controls row.
+ *
+ * Card identity comes from the contact's XQ archetype — --card-accent
+ * / --card-accent-soft are set inline per card and play the role of
+ * team colors: the inner frame line, the logo disc, and the stat
+ * footer all pick them up. Everything else stays on neutral
+ * --studio-* surfaces so the deck reads minimal, not foil-chase. */
+
+/* Deck + (optional) story panel side by side, centered as a pair.
+ * The panel never overlays the deck — both stay fully visible and the
+ * deck stays flickable while the story is open. */
+.rosterRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 36px;
+}
+
+@media (max-width: 1100px) {
+  .rosterRow {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.deckBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: 30px; /* room for the two peeking cards above the pile */
+}
+
+/* --- Story panel --------------------------------------------------- */
+
+.panel {
+  position: relative;
+  width: min(460px, 100%);
+  margin-top: 30px; /* top-aligns with the front card, not the peeks */
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 26px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  box-shadow: var(--studio-shadow-soft);
+  animation: panel-in 220ms ease;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .panel {
+    margin-top: 0;
+    max-height: none;
+  }
+}
+
+.stage {
+  position: relative;
+  width: min(320px, 86vw);
+  aspect-ratio: 5 / 7;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  box-shadow: var(--studio-shadow-card);
+  cursor: grab;
+  touch-action: pan-y; /* vertical page scroll stays native on touch */
+  will-change: transform;
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+/* --- Card face ----------------------------------------------------- */
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+/* Thin inner frame in the archetype color — the one line that makes
+ * it a trading card rather than a tile. */
+.face::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid var(--card-accent);
+  opacity: 0.45;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* Standalone preview (profile page) — same face, but it must bring
+ * its own card chrome since there's no .card wrapper around it. */
+.faceStandalone {
+  position: relative;
+  inset: auto;
+  width: min(300px, 100%);
+  aspect-ratio: 5 / 7;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  box-shadow: var(--studio-shadow-soft);
+}
+
+.faceTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.faceLeague {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+}
+
+.facePick {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--card-accent-soft);
+  border: 1px solid var(--card-accent);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+  white-space: nowrap;
+}
+
+.faceHero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 8px 6px;
+  min-height: 0;
+}
+
+.faceDisc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--card-accent-soft);
+  margin-bottom: 4px;
+}
+
+.faceLogo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.faceInitial {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--card-accent);
+}
+
+.faceName {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--studio-text-primary);
+}
+
+.faceSince {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--card-accent);
+}
+
+.faceTagline {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--studio-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Stat footer — the baseball-card stat strip. */
+.faceStats {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--studio-border);
+}
+
+.faceStat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.faceStatLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+}
+
+.faceStatValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.faceFit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 15px;
+}
+
+.faceFitDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--card-accent);
+  opacity: 0.5;
+}
+
+.faceFitDotOn {
+  background: var(--card-accent);
+  opacity: 1;
+}
+
+/* --- Controls ------------------------------------------------------ */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  color: var(--studio-text-primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.arrow:hover:not(:disabled) {
+  background: var(--studio-surface-hover);
+  border-color: var(--studio-border-strong);
+}
+
+.arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.counter {
+  min-width: 62px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--studio-text-muted);
+}
+
+.openBtn {
+  margin-left: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--studio-accent);
+  border: 1px solid var(--studio-accent-strong);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 160ms ease;
+}
+
+.openBtn:hover {
+  filter: brightness(1.08);
+}
+
+.hint {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--studio-text-muted);
+}
+
+/* Keycap icons for the arrow-key hint. */
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border-strong);
+  box-shadow: 0 1px 0 var(--studio-border-strong);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--studio-text-secondary);
+}

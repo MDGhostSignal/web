@@ -17,15 +17,15 @@ import {
 
 import { StudioHeader } from "../StudioHeader";
 import { StudioNotices } from "../StudioNotices";
-import { BrandCardBrowser, type RosterBrandCard } from "./BrandCardBrowser";
+import { BrandDeck, type RosterBrandCard } from "./BrandDeck";
 import styles from "../studio.module.css";
 
 /** /studio/roster — who's on the network.
  *
- *  Brand roster (creator/other viewers): one horizontal row of flat,
- *  simplified cards — no outline, no 3D coverflow, no heavy shadow
- *  work. The GhostSignal team's hand-picked recommendations for this
- *  member lead the row with the "✦ GhostSignal Pick" badge.
+ *  Brand roster (creator/other viewers): a baseball-card deck you
+ *  flick through, one brand at a time. The GhostSignal team's
+ *  hand-picked recommendations lead the deck with the "✦ GS Pick"
+ *  badge.
  *
  *  Creator roster (brand viewers): the scannable directory grid. */
 export default async function StudioRosterPage() {
@@ -98,14 +98,14 @@ export default async function StudioRosterPage() {
       title="Brand roster"
       subtitle={
         pickCount > 0
-          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the row, marked ✦ GS Pick. Click any card for the full story.`
-          : "Every brand on the network. Click any card for the full story."
+          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GS Pick. Flick through the cards; tap one for the full story.`
+          : "Every brand on the network, one card at a time. Flick through the deck; tap a card for the full story."
       }
     >
       {cards.length === 0 ? (
         <EmptyRoster side="brands" />
       ) : (
-        <BrandCardBrowser brands={cards} />
+        <BrandDeck brands={cards} />
       )}
     </RosterShell>
   );

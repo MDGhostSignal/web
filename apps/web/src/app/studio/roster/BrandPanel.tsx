@@ -7,137 +7,9 @@ import { CHARACTERS } from "@/lib/xq/characters";
 import { ARCHETYPES, type ArchetypeCode } from "@/lib/xq/constants";
 import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 
+import type { RosterBrandCard } from "./BrandDeck";
 import styles from "../studio.module.css";
-
-/** Serializable card data the server page hands the browser. */
-export type RosterBrandCard = {
-  id: string;
-  name: string;
-  tagline: string | null;
-  description: string | null;
-  website: string | null;
-  logoUrl: string | null;
-  sinceYear: number | null;
-  archetype: string | null;
-  matchScore: number | null;
-  recommended: boolean;
-};
-
-/**
- * Brand roster browser — a grid of welcome-card business cards.
- * Clicking a card opens a pop-up with the brand's full story: the
- * complete description, website, archetype read, values fit, the
- * contact's XQ/RQ summaries (fetched on demand), and a "Request an
- * intro" action that files a GS-brokered contact request.
- */
-export function BrandCardBrowser({ brands }: { brands: RosterBrandCard[] }) {
-  const [selected, setSelected] = useState<RosterBrandCard | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const visible = brands.slice(0, visibleCount);
-  const hiddenCount = brands.length - visible.length;
-
-  return (
-    <>
-      <div className={styles.wcGrid}>
-        {visible.map((b) => (
-          <RosterCardFace
-            key={b.id}
-            brand={b}
-            active={selected?.id === b.id}
-            onSelect={() => setSelected(b)}
-          />
-        ))}
-      </div>
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          className={styles.wcShowMore}
-          onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
-        >
-          Show {Math.min(hiddenCount, PAGE_SIZE)} more of {hiddenCount}
-        </button>
-      )}
-      {selected && (
-        // Keyed by brand so switching cards remounts the modal with a
-        // fresh loading state instead of resetting it in an effect.
-        <BrandModal
-          key={selected.id}
-          brand={selected}
-          onClose={() => setSelected(null)}
-        />
-      )}
-    </>
-  );
-}
-
-/** Cards revealed initially / added per "Show more" click. */
-const PAGE_SIZE = 8;
-
-/** The card face itself. With `onSelect` it renders as the roster's
- *  interactive button; without, as a static preview element (used on
- *  /studio/profile so members see their own card as the network
- *  does). */
-export function RosterCardFace({
-  brand,
-  active = false,
-  onSelect,
-}: {
-  brand: RosterBrandCard;
-  active?: boolean;
-  onSelect?: () => void;
-}) {
-  const face = (
-    <>
-      {brand.logoUrl ? (
-        <Image
-          src={brand.logoUrl}
-          alt=""
-          width={72}
-          height={72}
-          className={styles.wcLogo}
-          unoptimized
-        />
-      ) : (
-        <span className={styles.wcLogoEmpty} aria-hidden="true">
-          {brand.name.trim().charAt(0).toUpperCase() || "?"}
-        </span>
-      )}
-
-      {brand.recommended && <span className={styles.wcPick}>✦ GS Pick</span>}
-
-      <span className={styles.wcText}>
-        <span className={styles.wcName}>{brand.name}</span>
-        {brand.sinceYear !== null && (
-          <span className={styles.wcSince}>Member Since {brand.sinceYear}</span>
-        )}
-        {brand.tagline && (
-          <span className={styles.wcTagline}>{brand.tagline}</span>
-        )}
-      </span>
-    </>
-  );
-
-  const className = `${styles.wcCard} ${styles.rosterCard} ${active ? styles.wcCardActive : ""}`;
-
-  if (!onSelect) {
-    return <div className={className}>{face}</div>;
-  }
-  return (
-    <button
-      type="button"
-      className={className}
-      onClick={onSelect}
-      aria-haspopup="dialog"
-      aria-label={`${brand.name} — show details`}
-    >
-      {face}
-    </button>
-  );
-}
-
-/* ============================================================
- * Pop-up
- * ============================================================ */
+import deckStyles from "./roster-deck.module.css";
 
 type QuizData =
   | "loading"
@@ -148,7 +20,15 @@ type RequestState =
   | { state: "idle" | "sending" | "sent" }
   | { state: "failed"; error: string };
 
-function BrandModal({
+/**
+ * Brand detail panel — docked to the right of the card deck (never
+ * over it): the complete description, website, archetype read, values
+ * fit, the contact's XQ/RQ summaries (fetched on demand), and a
+ * "Request an intro" action that files a GS-brokered contact request.
+ * Non-modal by design: the deck stays flickable while it's open, and
+ * the panel follows whichever card is on top. Escape or ✕ closes it.
+ */
+export function BrandPanel({
   brand,
   onClose,
 }: {
@@ -214,21 +94,17 @@ function BrandModal({
   const archetypeDef = code ? ARCHETYPES[code] : null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose} role="presentation">
-      <div
-        className={styles.modalDialog}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${brand.name} details`}
-        onClick={(e) => e.stopPropagation()}
-        style={
-          {
-            "--bp-accent": identity?.accent ?? "var(--studio-accent)",
-            "--bp-accent-soft":
-              identity?.accentSoft ?? "var(--studio-accent-soft)",
-          } as React.CSSProperties
-        }
-      >
+    <aside
+      className={deckStyles.panel}
+      aria-label={`${brand.name} details`}
+      style={
+        {
+          "--bp-accent": identity?.accent ?? "var(--studio-accent)",
+          "--bp-accent-soft":
+            identity?.accentSoft ?? "var(--studio-accent-soft)",
+        } as React.CSSProperties
+      }
+    >
         <button
           type="button"
           className={styles.modalClose}
@@ -404,7 +280,6 @@ function BrandModal({
             <div className={styles.error}>{request.error}</div>
           )}
         </footer>
-      </div>
-    </div>
+    </aside>
   );
 }

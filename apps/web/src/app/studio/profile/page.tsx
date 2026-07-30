@@ -13,7 +13,7 @@ import {
 
 import { StudioHeader } from "../StudioHeader";
 import { StudioNotices } from "../StudioNotices";
-import { RosterCardFace } from "../roster/BrandCardBrowser";
+import { BrandCardFace } from "../roster/BrandDeck";
 import { ProfileForm } from "./ProfileForm";
 import { RqTile, XqTile } from "./QuizTiles";
 
@@ -77,7 +77,8 @@ export default async function StudioProfilePage() {
 
             {org && (
               <div className={styles.cardPreviewWrap}>
-                <RosterCardFace
+                <BrandCardFace
+                  standalone
                   brand={{
                     id: "preview",
                     name: org.name,
