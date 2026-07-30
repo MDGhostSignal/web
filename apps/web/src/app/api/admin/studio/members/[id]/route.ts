@@ -81,3 +81,45 @@ export async function GET(
 
   return NextResponse.json({ ok: true, member: m, org, xq, rq });
 }
+
+/**
+ * DELETE /api/admin/studio/members/[id]
+ *
+ * Remove a member from Studio Lite. This is a deactivation, not a row
+ * delete: `activated_at` goes back to null, so the account drops off
+ * /admin/studio-members, and the member's next request lands on
+ * /studio/pending (isApproved gates every studio page and every
+ * foundation write helper). The CRM row, quiz links, auth account,
+ * picks, and request history all stay intact — re-activating via
+ * /admin/studio-approvals (or re-inviting) restores access unchanged.
+ */
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  if (!UUID_RE.test(id)) {
+    return NextResponse.json({ error: "Invalid member id." }, { status: 400 });
+  }
+
+  const res = await supabaseRest<Array<{ id: string }>>(
+    `members?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ activated_at: null }),
+      prefer: "return=representation",
+    },
+  );
+
+  if (!res.ok) {
+    return NextResponse.json(
+      { error: `Remove failed (${res.status}): ${res.detail.slice(0, 200)}` },
+      { status: 500 },
+    );
+  }
+  if (!res.data || res.data.length === 0) {
+    return NextResponse.json({ error: "Member not found." }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

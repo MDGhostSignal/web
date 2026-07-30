@@ -1,8 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { Badge, Modal, typeVariant } from "@/components/admin";
+import { Badge, Button, Modal, typeVariant } from "@/components/admin";
 import type { StudioOrgProfile, StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 
 import type { StudioMemberRow } from "./page";
@@ -141,6 +142,8 @@ const XQ_AXIS_LABEL: Record<string, string> = {
   L: "Leverage",
 };
 
+type RemovalState = "idle" | "armed" | "removing" | { error: string };
+
 function MemberDetailModal({
   row,
   onClose,
@@ -148,7 +151,32 @@ function MemberDetailModal({
   row: StudioMemberRow;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [state, setState] = useState<LoadState>({ kind: "loading" });
+  const [removal, setRemoval] = useState<RemovalState>("idle");
+
+  async function removeMember() {
+    setRemoval("removing");
+    try {
+      const res = await fetch(`/api/admin/studio/members/${row.id}`, {
+        method: "DELETE",
+      });
+      const body = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+      if (res.ok && body?.ok) {
+        onClose();
+        router.refresh();
+      } else {
+        setRemoval({ error: body?.error ?? `HTTP ${res.status}` });
+      }
+    } catch (err) {
+      setRemoval({
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -198,6 +226,48 @@ function MemberDetailModal({
         <div className={styles.error}>Couldn&apos;t load: {state.message}</div>
       )}
       {state.kind === "ready" && <DossierBody row={row} d={state.data} />}
+
+      {/* Remove = deactivate (activated_at → null), never a CRM row
+          delete. Two-step confirm; reversible via Approvals/re-invite. */}
+      <footer className={styles.removeRow}>
+        {removal === "idle" ? (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setRemoval("armed")}
+          >
+            Remove from Studio
+          </Button>
+        ) : (
+          <>
+            <span className={styles.removeWarn}>
+              Remove {displayName(row)} from the Studio? They lose access
+              immediately. Their CRM record, quiz results, and history stay
+              — you can re-activate them any time via Approvals or a fresh
+              invite.
+            </span>
+            <Button
+              variant="destructiveSolid"
+              size="sm"
+              onClick={removeMember}
+              disabled={removal === "removing"}
+            >
+              {removal === "removing" ? "Removing…" : "Yes, remove"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRemoval("idle")}
+              disabled={removal === "removing"}
+            >
+              Cancel
+            </Button>
+            {typeof removal === "object" && (
+              <span className={styles.error}>{removal.error}</span>
+            )}
+          </>
+        )}
+      </footer>
     </Modal>
   );
 }
