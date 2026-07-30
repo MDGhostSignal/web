@@ -1,15 +1,24 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import styles from "./migration.module.css";
 
 /**
- * The four-step ART19 migration map from the GS-RSS-Migration PDF,
- * rendered as a wide working checklist. Steps sit side by side on a
- * big screen so the whole move is visible at once; checkmarks persist
- * in localStorage so the page survives tab-switching to the old host
- * mid-migration.
+ * Two vertical parts:
+ *
+ * 1. The four-step ART19 migration map from the GS-RSS-Migration PDF,
+ *    rendered as a wide working checklist. Steps sit side by side on
+ *    a big screen so the whole move is visible at once; checkmarks
+ *    persist in localStorage so the page survives tab-switching to
+ *    the old host mid-migration.
+ * 2. The ART19 platform tutorial — the three-screen publishing
+ *    routine (login → publish → ad markers), each step with a real
+ *    screenshot from the platform so members know exactly where to
+ *    click. Screenshot files live in
+ *    public/images/studio/art19-tutorial/ — replacing a file there
+ *    updates the page with no code change.
  */
 
 type StepItem = {
@@ -178,6 +187,52 @@ const STEPS: Step[] = [
   },
 ];
 
+/** The ART19 platform tutorial — publishing in three screens. */
+const TUTORIAL_STEPS: Array<{
+  n: number;
+  title: string;
+  body: React.ReactNode;
+  image: string;
+  alt: string;
+}> = [
+  {
+    n: 1,
+    title: "Log in",
+    body: (
+      <>
+        From the platform landing page, hit{" "}
+        <strong>&ldquo;New Episode&rdquo;</strong> in the top-right corner.
+      </>
+    ),
+    image: "/images/studio/art19-tutorial/step-1-login.png",
+    alt: "ART19 landing page after login, with the New Episode button highlighted in the top-right corner.",
+  },
+  {
+    n: 2,
+    title: "Publish your episode",
+    body: (
+      <>
+        <strong>Upload your audio file</strong>, give the episode its name,
+        fill in the details — and publish.
+      </>
+    ),
+    image: "/images/studio/art19-tutorial/step-2-publish.png",
+    alt: "ART19 episode publishing form with the file upload and episode name fields.",
+  },
+  {
+    n: 3,
+    title: "Insert ad markers",
+    body: (
+      <>
+        Insert <strong>6 markers</strong>: 2 pre-roll at the beginning, 2
+        mid-roll at a convenient break, and 2 post-roll at the end.
+      </>
+    ),
+    image: "/images/studio/art19-tutorial/step-3-ad-markers.png",
+    alt: "ART19 ad marker editor showing pre-roll, mid-roll, and post-roll marker positions on the episode timeline.",
+  },
+];
+
 const STORAGE_KEY = "studio-art19-migration-v1";
 const CHANGE_EVENT = "studio-migration-checks";
 const TOTAL_ITEMS = STEPS.reduce((sum, s) => sum + s.items.length, 0);
@@ -243,7 +298,7 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
       {/* --- Compact header row ----------------------------------- */}
       <header className={styles.intro}>
         <div className={styles.introText}>
-          <p className={styles.eyebrow}>Member guide · RSS migration</p>
+          <p className={styles.eyebrow}>Member guide · ART19 migration</p>
           <h1 className={styles.title}>
             Moving your show to ART19{firstName ? `, ${firstName}` : ""}.
           </h1>
@@ -363,6 +418,50 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
         })}
       </ol>
 
+      {/* --- Part 2: the platform tutorial ------------------------ */}
+      <section
+        className={styles.tutorial}
+        aria-labelledby="art19-tutorial-title"
+      >
+        <header className={styles.tutorialHead}>
+          <p className={styles.eyebrow}>Member guide · ART19 platform tutorial</p>
+          <h2 id="art19-tutorial-title" className={styles.tutorialTitle}>
+            Once you&apos;ve moved in: publishing on ART19.
+          </h2>
+          <p className={styles.lede}>
+            The whole routine is three screens. These are actual screenshots
+            from the platform, so you know exactly where to click.
+          </p>
+        </header>
+
+        <ol className={styles.tutorialSteps}>
+          {TUTORIAL_STEPS.map((step) => (
+            <li key={step.n} className={styles.tutorialStep}>
+              <div className={styles.tutorialStepText}>
+                <span className={styles.tutorialStepNumber} aria-hidden="true">
+                  {step.n}
+                </span>
+                <h3 className={styles.tutorialStepTitle}>{step.title}</h3>
+                <p className={styles.tutorialStepBody}>{step.body}</p>
+              </div>
+              <figure className={styles.tutorialShot}>
+                <Image
+                  src={step.image}
+                  alt={step.alt}
+                  width={1600}
+                  height={900}
+                  className={styles.tutorialShotImg}
+                  sizes="(max-width: 900px) 100vw, 780px"
+                />
+              </figure>
+            </li>
+          ))}
+        </ol>
+
+        <p className={styles.tutorialOutro}>
+          And that&apos;s good to go — <strong>we handle everything else.</strong>
+        </p>
+      </section>
     </div>
   );
 }

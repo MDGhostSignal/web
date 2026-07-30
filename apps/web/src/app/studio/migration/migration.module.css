@@ -492,3 +492,119 @@
   color: var(--studio-text-secondary);
   line-height: 1.55;
 }
+
+/* --- Part 2: platform tutorial ------------------------------------ */
+
+/* Lives below the fold, under the one-screen migration board — a
+ * calmer, vertical read: three numbered steps, each with a real
+ * platform screenshot. */
+.tutorial {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-top: 34px;
+  padding-top: 34px;
+  border-top: 1px solid var(--studio-border);
+}
+
+.tutorialHead {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-width: 760px;
+}
+
+.tutorialTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--studio-text-primary);
+  line-height: 1.2;
+}
+
+.tutorialSteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.tutorialStep {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 780px);
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .tutorialStep {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.tutorialStepText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tutorialStepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--studio-accent);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.tutorialStepTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+}
+
+.tutorialStepBody {
+  margin: 0;
+  font-size: 13px;
+  color: var(--studio-text-secondary);
+  line-height: 1.6;
+}
+
+.tutorialStepBody strong {
+  color: var(--studio-text-primary);
+}
+
+.tutorialShot {
+  margin: 0;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--studio-surface-2);
+  box-shadow: var(--studio-shadow-soft);
+}
+
+.tutorialShotImg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tutorialOutro {
+  margin: 0;
+  font-size: 14px;
+  color: var(--studio-text-secondary);
+}
+
+.tutorialOutro strong {
+  color: var(--studio-text-primary);
+}

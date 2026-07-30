@@ -20,7 +20,9 @@ export function StudioHeader({
     | "roster"
     | "world"
     | "profile"
-    | "migration";
+    | "migration"
+    /** Onboarding splash — no nav tab highlights. */
+    | "welcome";
   /** Circular profile shortcut in the header trail — the only route
    *  to /studio/profile in lite mode (no Profile tab). Shows the
    *  uploaded logo when there is one, else the member's initial;
@@ -62,7 +64,7 @@ export function StudioHeader({
           href="/studio/migration"
           className={`${styles.headerNavTab} ${activeTab === "migration" ? styles.headerNavTabActive : ""}`}
         >
-          ART19 Migration
+          Migration and Tutorial
         </Link>
         {/* No Profile tab — the avatar circle in the trail is the way
             to /studio/profile. */}
