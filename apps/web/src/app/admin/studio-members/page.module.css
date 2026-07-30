@@ -38,6 +38,32 @@
   font-size: 13px;
 }
 
+/* Row-level remove action with inline are-you-sure. */
+.actionsCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.confirmGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirmText {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+  white-space: normal;
+  max-width: 220px;
+  text-align: left;
+  line-height: 1.35;
+}
+
+.rowError {
+  font-size: 12px;
+  color: var(--admin-error-text);
+}
+
 /* Danger zone at the modal foot — remove-from-Studio flow. */
 .removeRow {
   display: flex;

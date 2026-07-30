@@ -14,8 +14,44 @@ import styles from "./page.module.css";
  * ============================================================ */
 
 export function MembersTable({ rows }: { rows: StudioMemberRow[] }) {
+  const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<{ id: string; message: string } | null>(
+    null,
+  );
   const openRow = rows.find((r) => r.id === openId) ?? null;
+
+  // Same endpoint as the dossier modal: deactivation only
+  // (activated_at → null) — the member's brand/creator row stays in
+  // the marketplace pool, and the CRM record survives untouched.
+  async function removeRow(id: string) {
+    setRemovingId(id);
+    setRowError(null);
+    try {
+      const res = await fetch(`/api/admin/studio/members/${id}`, {
+        method: "DELETE",
+      });
+      const body = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+      if (res.ok && body?.ok) {
+        setConfirmId(null);
+        router.refresh();
+      } else {
+        setRowError({ id, message: body?.error ?? `HTTP ${res.status}` });
+      }
+    } catch (err) {
+      setRowError({
+        id,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setRemovingId(null);
+    }
+  }
 
   return (
     <>
@@ -29,6 +65,7 @@ export function MembersTable({ rows }: { rows: StudioMemberRow[] }) {
               <th>Joined</th>
               <th>XQ</th>
               <th>RQ</th>
+              <th aria-label="Actions" />
             </tr>
           </thead>
           <tbody>
@@ -76,6 +113,55 @@ export function MembersTable({ rows }: { rows: StudioMemberRow[] }) {
                     </Badge>
                   ) : (
                     <Badge variant="neutral">not yet</Badge>
+                  )}
+                </td>
+                {/* Row click opens the dossier — everything in this
+                    cell stops propagation so Remove never opens it. */}
+                <td
+                  className={styles.actionsCell}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {confirmId === r.id ? (
+                    <span className={styles.confirmGroup}>
+                      <span className={styles.confirmText}>
+                        Remove from Studio? Their marketplace card stays.
+                      </span>
+                      <Button
+                        variant="destructiveSolid"
+                        size="sm"
+                        onClick={() => removeRow(r.id)}
+                        disabled={removingId === r.id}
+                      >
+                        {removingId === r.id ? "Removing…" : "Yes, remove"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setConfirmId(null);
+                          setRowError(null);
+                        }}
+                        disabled={removingId === r.id}
+                      >
+                        Cancel
+                      </Button>
+                      {rowError?.id === r.id && (
+                        <span className={styles.rowError}>
+                          {rowError.message}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setConfirmId(r.id);
+                        setRowError(null);
+                      }}
+                    >
+                      Remove
+                    </Button>
                   )}
                 </td>
               </tr>
