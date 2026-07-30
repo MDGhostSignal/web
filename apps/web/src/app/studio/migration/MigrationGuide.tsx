@@ -187,12 +187,17 @@ const STEPS: Step[] = [
   },
 ];
 
-/** The ART19 platform tutorial — publishing in three screens. */
+/** The ART19 platform tutorial — publishing in three screens.
+ *  Screenshots are real platform captures (GHOSTSignal Test Series);
+ *  width/height are each file's true pixel size so the frames keep
+ *  the right aspect ratio before the image loads. */
 const TUTORIAL_STEPS: Array<{
   n: number;
   title: string;
   body: React.ReactNode;
   image: string;
+  width: number;
+  height: number;
   alt: string;
 }> = [
   {
@@ -204,8 +209,10 @@ const TUTORIAL_STEPS: Array<{
         <strong>&ldquo;New Episode&rdquo;</strong> in the top-right corner.
       </>
     ),
-    image: "/images/studio/art19-tutorial/step-1-login.png",
-    alt: "ART19 landing page after login, with the New Episode button highlighted in the top-right corner.",
+    image: "/images/studio/art19-tutorial/step-1-login.webp",
+    width: 1801,
+    height: 911,
+    alt: "ART19 Content dashboard after login, with the New Episode button in the top-right corner.",
   },
   {
     n: 2,
@@ -216,8 +223,10 @@ const TUTORIAL_STEPS: Array<{
         fill in the details — and publish.
       </>
     ),
-    image: "/images/studio/art19-tutorial/step-2-publish.png",
-    alt: "ART19 episode publishing form with the file upload and episode name fields.",
+    image: "/images/studio/art19-tutorial/step-2-publish.webp",
+    width: 1804,
+    height: 911,
+    alt: "ART19 New Episode form with the audio upload dropzone and the title and description fields.",
   },
   {
     n: 3,
@@ -228,8 +237,10 @@ const TUTORIAL_STEPS: Array<{
         mid-roll at a convenient break, and 2 post-roll at the end.
       </>
     ),
-    image: "/images/studio/art19-tutorial/step-3-ad-markers.png",
-    alt: "ART19 ad marker editor showing pre-roll, mid-roll, and post-roll marker positions on the episode timeline.",
+    image: "/images/studio/art19-tutorial/step-3-ad-markers.webp",
+    width: 1107,
+    height: 907,
+    alt: "ART19 Audio & Ad Insertion editor with the episode waveform and pre-roll, mid-roll, and post-roll markers.",
   },
 ];
 
@@ -448,8 +459,8 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
                 <Image
                   src={step.image}
                   alt={step.alt}
-                  width={1600}
-                  height={900}
+                  width={step.width}
+                  height={step.height}
                   className={styles.tutorialShotImg}
                   sizes="(max-width: 900px) 100vw, 780px"
                 />
