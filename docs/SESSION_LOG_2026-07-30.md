@@ -62,6 +62,72 @@ Studio Members page gained a safe "Remove from Studio" flow.
 - Files: `apps/web/src/app/admin/studio-members/{MembersTable.tsx,page.module.css}`,
   `apps/web/src/app/api/admin/studio/members/[id]/route.ts`
 
+## 4. Admin: row-level remove on the members list
+
+- The studio-members table gained an actions column: per-row "Remove"
+  button with an inline are-you-sure step ("Remove from Studio? Their
+  marketplace card stays." → Yes/Cancel, errors inline, row click
+  isolated). Same DELETE endpoint as the dossier flow — deactivation
+  only. Verified the marketplace loaders (`loadMarketplaceBrands/
+  Creators`) read brands/creators directly with no activation filter,
+  so removed members keep their marketplace pool presence.
+
+## 5. Migration page → "Migration and Tutorial"
+
+- Studio nav tab renamed to **Migration and Tutorial**.
+- New tutorial section vertically below the migration board (below the
+  fold, board still fills the first screen): "Once you've moved in:
+  publishing on ART19." — three numbered steps (Log in / hit New
+  Episode top-right · Publish episode / upload + name + details ·
+  Insert 6 ad markers: 2 pre, 2 mid at a break, 2 post), each with a
+  wide framed screenshot; outro "And that's good to go — we handle
+  everything else."
+- Screenshots pending from Martin: labeled gray placeholder PNGs live
+  at `apps/web/public/images/studio/art19-tutorial/step-{1-login,
+  2-publish,3-ad-markers}.png` — overwrite the files, zero code
+  change. Layout assumes ~16:9.
+
+## 6. Studio onboarding splash (`/studio/welcome`)
+
+- First-login setup gate: the roster redirects incomplete members to
+  the new welcome splash. Complete = XQ done + RQ done + image +
+  description + (creators) RSS feed URL. Completing the last item
+  auto-redirects into the roster; "Skip for now" sets a
+  `studio-welcome-skip` cookie (7 days) the roster honors.
+- Splash (welcome.module.css, studio tokens, purple radial backdrop):
+  hero with progress chips, XQ/RQ quiz tiles (live DB state, ✓ +
+  archetype/code when done, window-focus refresh flips them), card
+  form with image upload, per-kind placeholder description textarea,
+  and — creators only — the RSS feed URL field ("required" pill;
+  operationally important: the feed the team imports into ART19).
+- All writes reuse the member-scoped APIs. PATCH /api/studio/profile
+  accepts `rssUrl`; new column via `docs/STUDIO_LITE_RSS.sql`
+  (**Martin-run, still to apply**) — until then reads fall back and
+  the PATCH retries without rss_url, returning `pendingRss` which the
+  splash surfaces. RSS also editable on /studio/profile.
+- `studioOnboardingStatus()` in studio-data.ts; null org (read
+  failure) counts as complete so a DB hiccup never traps anyone.
+- `?preview=1` skips the completeness redirect for inspection.
+- Files: `studio/welcome/{page.tsx,WelcomeSplash.tsx,welcome.module.css}`,
+  `lib/studio-data.ts`, `api/studio/profile/route.ts`,
+  `studio/profile/ProfileForm.tsx`, `studio/roster/page.tsx`,
+  `studio/StudioHeader.tsx`, `docs/STUDIO_LITE_RSS.sql`
+
+## 7. Profile quiz tiles restyled
+
+- /studio/profile's XQ/RQ "fill me out" reminder tiles now use the
+  same visual language as the welcome splash quiz tiles (shared
+  welcome.module.css classes) — one look for the reminder wherever a
+  member meets it. Done-state summaries unchanged.
+
+## 8. Account ops
+
+- Reset the studio password for Martin's test creator account
+  (heymatvond@gmail.com) via the Supabase auth admin API after
+  invalid-credentials failures (auth logs showed the attempts came
+  from the prod site login; account was healthy). Verified the new
+  password authenticates; Martin advised to rotate it.
+
 ## Validation
 
 - `npm run typecheck` — clean
@@ -70,7 +136,19 @@ Studio Members page gained a safe "Remove from Studio" flow.
 - `npm run assets:audit` — OK, 53 referenced assets exist
 - Live-inspected on local dev server (roster, profile, migration all 200)
 
+- (evening batch) typecheck / lint / lint:css / assets:audit re-run
+  clean after items 4–7; welcome + roster + migration probed on the
+  local dev server.
+
 ## Open issues / next steps
+
+- **Apply `docs/STUDIO_LITE_RSS.sql`** (adds creators.rss_url) —
+  until then creator RSS URLs can't be stored (PATCH degrades
+  gracefully, `pendingRss`).
+- Drop Martin's three real ART19 screenshots over the placeholder
+  PNGs in `public/images/studio/art19-tutorial/`.
+- Consider a self-serve "Forgot password?" flow on /studio/login —
+  members will hit what Martin hit today.
 
 - Orphaned `wc*` grid classes remain in `studio.module.css`
   (`wcGrid`, `wcShowMore`, `wcCard`, `wcLogo`, `wcPick`, `wcText`,
