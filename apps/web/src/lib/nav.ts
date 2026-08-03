@@ -12,9 +12,11 @@ export const navLinks = [
   { href: "/snowdrift", label: "SNOWDRIFT" },
   { href: "/xq-quiz", label: "XQ Quiz" },
   // `cta: true` → rendered as the primary call-to-action button (solid
-  // pill) rather than a plain nav link. Keep this as the last entry so
-  // it sits at the right edge of the nav row.
+  // pill) rather than a plain nav link. Keep these as the last entries
+  // so they sit at the right edge of the nav row; CTA pills also stay
+  // visible when the header collapses on scroll.
   { href: "/get-in-touch", label: "Get In Touch", cta: true },
+  { href: "/studio", label: "Sign In", cta: true },
 ] as const;
 
 export type NavLink = (typeof navLinks)[number];

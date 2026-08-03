@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 import { loadCurrentStudioMember, type StudioMember } from "@/lib/studio-auth";
+import { STUDIO_ROSTER_HIDDEN } from "@/lib/studio-lite";
 import {
   formatListens,
   loadBrandRecommendations,
@@ -31,6 +32,9 @@ import styles from "../studio.module.css";
  *
  *  Creator roster (brand viewers): the scannable directory grid. */
 export default async function StudioRosterPage() {
+  // Roster pause: hidden from the nav and unrouted, but not deleted.
+  if (STUDIO_ROSTER_HIDDEN) redirect("/studio/profile");
+
   const member = await loadCurrentStudioMember();
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");

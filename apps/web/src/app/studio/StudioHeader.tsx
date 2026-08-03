@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
-import { STUDIO_LITE_ONLY } from "@/lib/studio-lite";
+import { STUDIO_LITE_ONLY, STUDIO_ROSTER_HIDDEN } from "@/lib/studio-lite";
 
 import styles from "./studio.module.css";
 import { SignOutButton } from "./SignOutButton";
@@ -54,17 +54,21 @@ export function StudioHeader({
             </Link>
           </>
         )}
-        <Link
-          href="/studio/roster"
-          className={`${styles.headerNavTab} ${activeTab === "roster" ? styles.headerNavTabActive : ""}`}
-        >
-          Roster
-        </Link>
+        {/* Roster is paused, not removed — its page also redirects
+            while STUDIO_ROSTER_HIDDEN is on. */}
+        {!STUDIO_ROSTER_HIDDEN && (
+          <Link
+            href="/studio/roster"
+            className={`${styles.headerNavTab} ${activeTab === "roster" ? styles.headerNavTabActive : ""}`}
+          >
+            Roster
+          </Link>
+        )}
         <Link
           href="/studio/migration"
           className={`${styles.headerNavTab} ${activeTab === "migration" ? styles.headerNavTabActive : ""}`}
         >
-          Migration and Tutorial
+          ART19 Migration and Tutorial
         </Link>
         {/* No Profile tab — the avatar circle in the trail is the way
             to /studio/profile. */}

@@ -97,11 +97,12 @@ export function SiteHeader({
     document.body.classList.remove("is-head-active");
 
     const linkEls = Array.from(linksWrap.querySelectorAll<HTMLElement>("[data-sh-link]"));
-    const keepLinkEl =
-      linksWrap.querySelector<HTMLElement>('[data-sh-link][data-sh-key="/get-in-touch"]') ??
-      linksWrap.querySelector<HTMLElement>('[data-sh-link][data-sh-key="/get-in-touch/"]') ??
-      null;
-    const hideLinkEls = keepLinkEl ? linkEls.filter((el) => el !== keepLinkEl) : linkEls;
+    const keepLinkEls = Array.from(
+      linksWrap.querySelectorAll<HTMLElement>('[data-sh-link][data-sh-role="keep"]'),
+    );
+    const hideLinkEls = keepLinkEls.length
+      ? linkEls.filter((el) => !keepLinkEls.includes(el))
+      : linkEls;
     const mq = window.matchMedia("(max-width: 991px)");
 
     // All GSAP instances created in this callback will be reverted by useGsapContext.
@@ -303,7 +304,7 @@ export function SiteHeader({
                   className={className}
                   data-sh-link
                   data-sh-key={l.href}
-                  data-sh-role={l.href === "/get-in-touch" ? "keep" : "hide"}
+                  data-sh-role={isCta ? "keep" : "hide"}
                 >
                   {l.label}
                 </Link>

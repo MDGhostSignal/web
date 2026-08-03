@@ -18,7 +18,7 @@ import {
   type CreatorShowData,
 } from "@/lib/studio-data";
 
-import { STUDIO_LITE_ONLY } from "@/lib/studio-lite";
+import { STUDIO_LITE_ONLY, STUDIO_ROSTER_HIDDEN } from "@/lib/studio-lite";
 
 import { RqProfileCard } from "./RqProfileCard";
 import { XqProfileCard } from "./XqProfileCard";
@@ -42,8 +42,10 @@ export default async function StudioDashboardPage() {
   }
   if (!member.isApproved) redirect("/studio/pending");
   // Lite mode: the legacy dashboard below (show stats + XQ/RQ cards)
-  // is unrouted — the Roster is the workspace's standard view.
-  if (STUDIO_LITE_ONLY) redirect("/studio/roster");
+  // is unrouted — the Roster is the workspace's standard view, unless
+  // the roster is paused, in which case Profile is home.
+  if (STUDIO_LITE_ONLY)
+    redirect(STUDIO_ROSTER_HIDDEN ? "/studio/profile" : "/studio/roster");
 
   // Load the right slice of data based on what kind of member they are.
   // Both queries scope by id; no cross-tenant data is reachable.
