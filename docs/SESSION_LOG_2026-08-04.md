@@ -141,6 +141,12 @@
   Mail. Viable route documented = baked animated GIF (frame 1 = the
   static starry card as Outlook fallback). Martin: skip for now.
 
+### Landing lede — Martin's final copy (fourth push)
+- Hero lede replaced with: "The GHOSTSignal Studio is where members
+  set up their profile, complete the XQ/RQ alignment quiz, and manage
+  account details—the essential first step to building partnerships
+  you can be proud of."
+
 ### Validation (late afternoon)
 - typecheck / lint clean; preview endpoint verified: new welcome copy
   + 0 lowercase GhostSignal in the rendered invite email; /studio

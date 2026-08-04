@@ -44,7 +44,10 @@ export function StudioLiteLanding() {
           </h1>
           <div className={`${styles.morse} ${styles.rise3}`} aria-hidden="true" />
           <p className={`${styles.heroLede} ${styles.rise3}`}>
-            Studio is the GHOSTSignal members&rsquo; workspace.
+            The GHOSTSignal Studio is where members set up their
+            profile, complete the XQ/RQ alignment quiz, and manage
+            account details&mdash;the essential first step to building
+            partnerships you can be proud of.
           </p>
           <div className={`${styles.heroActions} ${styles.rise4}`}>
             <Link href="/studio/login" className={styles.btnPrimary}>
