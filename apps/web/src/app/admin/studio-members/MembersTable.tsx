@@ -209,6 +209,11 @@ type Dossier = {
     avatar_url: string | null;
     tagline: string | null;
     bio: string | null;
+    nl_ads_interest: boolean | null;
+    nl_provider: string | null;
+    nl_open_rate: string | null;
+    nl_frequency: string | null;
+    nl_subscribers: string | null;
   };
   org: StudioOrgProfile | null;
   xq: StudioXqSummary | null;
@@ -373,6 +378,22 @@ function DossierBody({ row, d }: { row: StudioMemberRow; d: Dossier }) {
           {m.tagline && <Fact label="Card tagline" value={m.tagline} wide />}
           {m.bio && <Fact label="Bio" value={m.bio} wide />}
         </dl>
+      </section>
+
+      {/* --- Newsletter advertising ---------------------------- */}
+      <section className={styles.detailSection}>
+        <h3 className={styles.detailHeading}>Newsletter advertising</h3>
+        {m.nl_ads_interest ? (
+          <dl className={styles.factGrid}>
+            <Fact label="Interested" value="Yes" />
+            <Fact label="Provider" value={m.nl_provider} />
+            <Fact label="Open rate" value={m.nl_open_rate} />
+            <Fact label="Frequency" value={m.nl_frequency} />
+            <Fact label="Subscribers" value={m.nl_subscribers} />
+          </dl>
+        ) : (
+          <p className={styles.notTaken}>No interest registered.</p>
+        )}
       </section>
 
       {/* --- Org card ------------------------------------------ */}

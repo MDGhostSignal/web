@@ -223,6 +223,14 @@ export type Member = {
    *  (select=*,creators(rss_url)) — the show's RSS feed, shown in the
    *  contacts CRM. Absent on writes and on the embed-less fallback. */
   creators?: { rss_url: string | null } | null;
+  /** Newsletter-advertising opt-in captured at Studio registration /
+   *  profile (docs/STUDIO_NL_ADVERTISING.sql). Read-only in the CRM;
+   *  sanitizePayload strips these on writes. */
+  nl_ads_interest?: boolean | null;
+  nl_provider?: string | null;
+  nl_open_rate?: string | null;
+  nl_frequency?: string | null;
+  nl_subscribers?: string | null;
   phase: MemberPhase;
   phase_entered_at: string;
   owner: string | null;

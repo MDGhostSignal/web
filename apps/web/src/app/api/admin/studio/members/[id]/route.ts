@@ -47,10 +47,15 @@ export async function GET(
     xq_archetype: string | null;
     rq_submission_id: string | null;
     rq_code: string | null;
+    nl_ads_interest: boolean | null;
+    nl_provider: string | null;
+    nl_open_rate: string | null;
+    nl_frequency: string | null;
+    nl_subscribers: string | null;
   };
 
   const res = await supabaseRest<MemberRow[]>(
-    "members?select=id,email,first_name,last_name,organization,member_type,phase,created_at,activated_at,avatar_url,tagline,bio,brand_id,creator_id,xq_submission_id,xq_archetype,rq_submission_id,rq_code&" +
+    "members?select=id,email,first_name,last_name,organization,member_type,phase,created_at,activated_at,avatar_url,tagline,bio,brand_id,creator_id,xq_submission_id,xq_archetype,rq_submission_id,rq_code,nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers&" +
       `id=eq.${encodeURIComponent(id)}`,
   );
   if (!res.ok) {

@@ -1477,6 +1477,30 @@ function ContactCard({ member }: { member: Member }) {
             </dd>
           </div>
         )}
+        <div>
+          <dt>Newsletter ads</dt>
+          <dd>{member.nl_ads_interest ? "Interested" : "—"}</dd>
+        </div>
+        {member.nl_ads_interest && (
+          <>
+            <div>
+              <dt>NL provider</dt>
+              <dd>{member.nl_provider || "—"}</dd>
+            </div>
+            <div>
+              <dt>NL open rate</dt>
+              <dd>{member.nl_open_rate || "—"}</dd>
+            </div>
+            <div>
+              <dt>NL frequency</dt>
+              <dd>{member.nl_frequency || "—"}</dd>
+            </div>
+            <div>
+              <dt>NL subscribers</dt>
+              <dd>{member.nl_subscribers || "—"}</dd>
+            </div>
+          </>
+        )}
       </dl>
     </section>
   );
