@@ -27,6 +27,16 @@ function base(props: Props) {
   };
 }
 
+/** Outreach — paper plane (cold email prospecting). */
+export function IconOutreach(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M21 3 3 10.5l7 2.5" />
+      <path d="M21 3 13.5 21 10 13l11-10z" />
+    </svg>
+  );
+}
+
 /** ART19 — microphone with broadcast waves (podcast platform). */
 export function IconArt19(props: Props) {
   return (

@@ -256,7 +256,40 @@
   intake columns: nl_ads_interest/provider/open_rate/frequency/
   subscribers + pod_provider/monthly_listens/frequency.
 
+## Night session — Cold Outreach tab (new big feature, Mike's)
+
+- New top-level /admin/outreach tab (scaffolded via the new-admin-tab
+  skill; placed right after Contacts — brand onboarding is the
+  current company focus; new paper-plane IconOutreach).
+- Composer modal: name / email / personal message → POST
+  /api/admin/outreach files a cold_outreach row then sends via
+  Resend; duplicate-email guard (409 + "Send anyway" confirm); Resend
+  failure marks the row status 'failed'. "Preview email" renders the
+  exact send-side HTML (POST /api/admin/outreach/preview, sandboxed
+  iframe) — same UX as the studio invite modal.
+- List view: DataTable (Name / Email / Message / Status badge /
+  Sent), sortable, refetches after each send.
+- Email template: lib/cold-outreach-email.ts — branded shell
+  (wordmark, morse strip, purple CTA → /for-brands, courtesy
+  opt-out line) around Mike's personal message; subject + pitch box
+  are marked PLACEHOLDER — final copy is the next step.
+- Schema: docs/OUTREACH_SUPABASE_SCHEMA.sql (cold_outreach table,
+  RLS on, indices) — NOT yet run; the tab shows a one-time-setup
+  hint and the send API refuses cleanly until it exists.
+- Proxy matcher: /api/admin/outreach/:path* (cookie gate).
+- Smoke-tested on dev: 401 unauth, tableMissing tolerance, preview
+  rendering (greeting/message/line breaks/pitch/CTA), clean refusal
+  on send without the table, page renders.
+- new-admin-tab skill updated: effect-fetch guidance now warns about
+  the react-hooks/set-state-in-effect lint rule (async IIFE +
+  refresh-counter pattern).
+
 ## Open issues / next steps
+- RUN docs/OUTREACH_SUPABASE_SCHEMA.sql — the Outreach tab needs the
+  cold_outreach table before Mike can send.
+- Cold-outreach email copy: subject + pitch box in
+  lib/cold-outreach-email.ts are placeholders — write the real email
+  next (Martin: "the email itself we will build next").
 - Reset-password Supabase template: re-paste from
   docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).
 - Snowdrift snowfall GIF for the invite/confirm emails — parked;

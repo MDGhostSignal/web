@@ -17,6 +17,7 @@ import {
   IconLeads,
   IconMarketing,
   IconMarketplace,
+  IconOutreach,
   IconRQ,
   IconTasks,
   IconXQ,
@@ -60,6 +61,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       nav={[
         { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
         { href: "/admin/contacts", label: "Contacts", icon: <IconLeads /> },
+        {
+          // Cold-email brand prospecting (Mike). High in the order on
+          // purpose — onboarding brands is the current company focus.
+          href: "/admin/outreach",
+          label: "Outreach",
+          icon: <IconOutreach />,
+        },
         {
           href: "/admin/marketplace",
           label: "Marketplace",

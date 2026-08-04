@@ -49,7 +49,7 @@ Create the following. Use admin tokens throughout (`--admin-*`, raw px — NOT t
 - `"use client"` directive
 - `PageHeader` with title derived from the slug (e.g. `leads-pipeline` → `Leads Pipeline`) + the purpose sentence as the description
 - A `LoadState` discriminated union (`loading | error | ready`) — established pattern across admin pages
-- For (a/b/c): a `useEffect` that fetches the API route, renders `<Loading />`, `<ErrorCard />`, `<EmptyState />`, or the data view
+- For (a/b/c): a `useEffect` that fetches the API route, renders `<Loading />`, `<ErrorCard />`, `<EmptyState />`, or the data view. The effect body MUST be an async IIFE with a `cancelled` cleanup flag, setState only after `await` — calling a component-scope loader function synchronously from the effect trips the repo's `react-hooks/set-state-in-effect` lint error. For refetch-after-mutation, bump a `refresh` counter in the effect deps instead of exposing the loader.
 - For (d): just `<EmptyState />` with a "Coming soon" message
 - Imports the local CSS module
 

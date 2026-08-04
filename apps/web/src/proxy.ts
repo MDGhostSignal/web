@@ -176,6 +176,9 @@ export const config = {
     // Studio approval — admin co-founders flip activated_at to grant
     // access. Cookie-gated like the rest of /api/admin/*.
     "/api/admin/studio/:path*",
+    // Cold-email outreach (list, send, preview) — Mike's brand
+    // prospecting tab. Cookie-gated; sends go through Resend.
+    "/api/admin/outreach/:path*",
     // ART19 read endpoints — /sync is allowlisted above; reads are
     // cookie-gated so only signed-in admins can see show/episode data.
     "/api/admin/art19/summary",
