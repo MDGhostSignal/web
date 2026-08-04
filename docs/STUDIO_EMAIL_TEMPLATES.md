@@ -104,9 +104,9 @@ Body (HTML):
                   <td style="padding: 16px 20px;">
                     <p style="margin: 0; font-size: 13px; color: #5a5e66; line-height: 1.7;">
                       After confirming, sign in and your workspace is ready &mdash;
-                      <strong style="color: #0e1119;">your profile</strong>, the
-                      <strong style="color: #0e1119;">network roster</strong>, and your
-                      <strong style="color: #0e1119;">GHOSTSignal picks</strong>.
+                      set up <strong style="color: #0e1119;">your profile</strong>, complete the
+                      <strong style="color: #0e1119;">XQ/RQ alignment quizzes</strong>, and manage your
+                      <strong style="color: #0e1119;">account details</strong>. (Setup takes &asymp; 20 mins)
                     </p>
                   </td>
                 </tr>
@@ -121,6 +121,25 @@ Body (HTML):
                 &mdash; The GHOSTSignal team<br>
                 You&rsquo;re receiving this because this address was used to sign up for GHOSTSignal Studio. If that wasn&rsquo;t you, you can ignore this email.
               </p>
+            </td>
+          </tr>
+
+          <!-- Snowdrift ad — same compact starry card as the invite email -->
+          <tr>
+            <td style="padding: 0 36px 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#0a0a0d" style="background-color: #0a0a0d; background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle at 60% 70%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.12) 1px, transparent 1px), radial-gradient(circle at 40% 80%, rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(circle at 90% 50%, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle at 10% 60%, rgba(255,255,255,0.1) 1px, transparent 1px); border-radius: 10px;">
+                <tr>
+                  <td align="center" style="padding: 20px 24px 22px;">
+                    <img src="https://www.ghostsignal.cloud/images/brand/snowdrift-logo-white.png" alt="Snowdrift" width="80" style="display: block; margin: 0 auto 10px;">
+                    <p style="margin: 0 0 12px; font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.6;">
+                      Snowdrift is a <span style="white-space: nowrap;"><span style="font-weight: 700; color: #ffffff;">GHOST</span><span style="font-weight: 300; color: #ffffff;">Signal</span></span> transmission &mdash; thoughts for a community of world makers.
+                    </p>
+                    <a href="https://snowdriftghostsignal.substack.com/" target="_blank" style="display: inline-block; padding: 9px 18px; background: rgba(255,255,255,0.08); color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                      Subscribe to the Snowdrift Newsletter
+                    </a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
@@ -224,11 +243,15 @@ the same visual system as the templates above (wordmark + STUDIO pill,
 morse strip, studio palette, bgcolor CTA). Design changes to it ship
 with normal deploys.
 
-Contents: personalized greeting, the workspace pitch, an optional
-"A note from the team" block (the modal's Additional-information
-field, purple-edged callout), CTA → /studio/register, and a
-use-this-email-address hint so the register flow unifies the account
-with the prepared CRM row.
+Contents (invite-only era, 2026-08-04): personalized greeting, the
+welcome paragraph (template default from
+`lib/studio-invite-email.ts#defaultInviteWelcome`, replaceable per
+invite in the CRM modal), an optional "A note from the team" block
+(purple-edged callout), CTA → `/studio/register?invite=<signed
+token>` (the only way past the invite-only gate; prefills the form,
+locks email + member type, expires in 30 days), a personal-link hint
+box, and the compact Snowdrift ad. Previewable exactly as sent via
+the modal's "Preview email" button.
 
 ## Notes
 
