@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { createStudioAdminClient } from "@/lib/studio-auth";
+import { verifyStudioInvite } from "@/lib/studio-invite";
+import { STUDIO_INVITE_ONLY } from "@/lib/studio-lite";
 
 /**
  * POST /api/studio/register
@@ -34,6 +36,8 @@ type Body = {
   lastName: string;
   kind: "brand" | "creator";
   orgName: string;
+  /** Signed invite token — required while STUDIO_INVITE_ONLY is on. */
+  inviteToken?: string;
 };
 
 type QuizLinks = {
@@ -114,6 +118,29 @@ export async function POST(req: NextRequest) {
   if (!email) {
     return NextResponse.json({ error: "Email required." }, { status: 400 });
   }
+
+  // Invite-only era: registration requires a valid signed invite whose
+  // email matches, and the member type the team picked in the CRM wins
+  // over whatever the client sent.
+  if (STUDIO_INVITE_ONLY) {
+    const invite = body.inviteToken
+      ? verifyStudioInvite(body.inviteToken)
+      : null;
+    if (!invite) {
+      return NextResponse.json(
+        { error: "Studio is invite-only — registration needs a valid invite link." },
+        { status: 403 },
+      );
+    }
+    if (invite.email.toLowerCase() !== email.toLowerCase()) {
+      return NextResponse.json(
+        { error: "This invite was issued for a different email address." },
+        { status: 403 },
+      );
+    }
+    body.kind = invite.kind;
+  }
+
   if (body.kind !== "brand" && body.kind !== "creator") {
     return NextResponse.json({ error: "Invalid kind." }, { status: 400 });
   }

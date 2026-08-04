@@ -37,6 +37,15 @@
   --studio-danger: #b22222;
   --studio-danger-soft: rgba(178, 34, 34, 0.08);
 
+  /* Client-portfolio color coding — the two sides of the network.
+   * Brands read cool (blue), creators read warm (ember). Both are
+   * deliberately distinct from the purple chrome accent so the
+   * coding survives next to buttons/eyebrows. */
+  --studio-brand-accent: #2563c7;
+  --studio-brand-accent-soft: rgba(37, 99, 199, 0.12);
+  --studio-creator-accent: #c65a1e;
+  --studio-creator-accent-soft: rgba(198, 90, 30, 0.12);
+
   /* Elevation */
   --studio-shadow-card: 0 24px 60px -28px rgba(15, 23, 42, 0.15);
   --studio-shadow-soft: 0 8px 24px -12px rgba(15, 23, 42, 0.1);
@@ -74,6 +83,12 @@
   --studio-warning-soft: rgba(255, 200, 87, 0.18);
   --studio-danger: #ff6b6b;
   --studio-danger-soft: rgba(255, 107, 107, 0.16);
+
+  /* Client-portfolio coding — same hues, lifted for dark surfaces */
+  --studio-brand-accent: #6ea8ff;
+  --studio-brand-accent-soft: rgba(110, 168, 255, 0.16);
+  --studio-creator-accent: #ff9e64;
+  --studio-creator-accent-soft: rgba(255, 158, 100, 0.18);
 
   /* Elevation — softer, deeper shadows on dark */
   --studio-shadow-card: 0 24px 60px -28px rgba(0, 0, 0, 0.55);

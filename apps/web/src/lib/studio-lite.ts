@@ -19,3 +19,17 @@ export const STUDIO_LITE_ONLY = true;
  * roster back exactly as it was.
  */
 export const STUDIO_ROSTER_HIDDEN = true;
+
+/**
+ * Invite-only switch (2026-08-04).
+ *
+ * While true, public self-serve registration is closed: /studio/register
+ * only opens for a valid signed `?invite=` token from the admin
+ * "+ Invite member" email (see lib/studio-invite.ts) — the proxy
+ * bounces everyone else to /studio/login, the page verifies the token
+ * server-side and prefills/locks the form from it, and
+ * POST /api/studio/register returns 403 without a matching token. The
+ * login page drops its "Sign up" link. Nothing is deleted — flip to
+ * false to reopen self-serve signup exactly as it was.
+ */
+export const STUDIO_INVITE_ONLY = true;

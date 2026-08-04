@@ -5,6 +5,7 @@ import {
   verifyAdminCookie,
 } from "@/lib/admin-auth";
 import { createStudioServerClient } from "@/lib/studio-auth";
+import { STUDIO_INVITE_ONLY } from "@/lib/studio-lite";
 
 /**
  * Gate internal tooling behind the shared-password auth cookie.
@@ -73,11 +74,16 @@ export async function proxy(req: NextRequest) {
   // session. Everything else under /studio/* requires a Supabase session.
   // Approved (member row has activated_at IS NOT NULL) users see the
   // surface; pending users get the "waiting for approval" holding page.
+  // While STUDIO_INVITE_ONLY is on, /studio/register loses its public
+  // exemption unless the URL carries an ?invite= token from the team's
+  // invite email — the proxy only checks presence; the page verifies
+  // the signature server-side and bounces bad tokens to /studio/login.
   if (pathname.startsWith("/studio")) {
     if (
       pathname === "/studio" ||
       pathname === "/studio/login" ||
-      pathname === "/studio/register"
+      (pathname === "/studio/register" &&
+        (!STUDIO_INVITE_ONLY || req.nextUrl.searchParams.has("invite")))
     ) {
       return NextResponse.next();
     }

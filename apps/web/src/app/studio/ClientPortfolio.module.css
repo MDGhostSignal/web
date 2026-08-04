@@ -1,0 +1,277 @@
+/* Client portfolio — public click-through deck on the Studio Lite
+ * landing. Brands and creators share one stacked deck; each card is
+ * color-coded by side through the tone classes, which set --pk-* to
+ * the matching --studio-{brand,creator}-accent tokens. All cards stay
+ * mounted (buried ones fade out) so the front-to-back cycle animates
+ * instead of popping. */
+
+.portfolio {
+  display: grid;
+  grid-template-columns: minmax(300px, 460px) minmax(240px, 1fr);
+  gap: 56px;
+  align-items: center;
+}
+
+@media (max-width: 719px) {
+  .portfolio {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+/* --- Color coding ------------------------------------------------- */
+
+.brandTone {
+  --pk-accent: var(--studio-brand-accent);
+  --pk-soft: var(--studio-brand-accent-soft);
+}
+
+.creatorTone {
+  --pk-accent: var(--studio-creator-accent);
+  --pk-soft: var(--studio-creator-accent-soft);
+}
+
+/* --- Deck --------------------------------------------------------- */
+
+.deck {
+  position: relative;
+  height: 404px;
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  padding: 26px 28px 24px;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  box-shadow: var(--studio-shadow-card);
+  color: var(--studio-text-primary);
+  cursor: pointer;
+  transition:
+    transform 380ms cubic-bezier(0.22, 0.7, 0.3, 1),
+    opacity 380ms ease;
+}
+
+.depth0 {
+  transform: none;
+}
+
+.depth1 {
+  transform: translateY(20px) scale(0.955) rotate(1.1deg);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.depth2 {
+  transform: translateY(38px) scale(0.91) rotate(-1.3deg);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.buried {
+  transform: translateY(50px) scale(0.88);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+
+/* --- Card anatomy ------------------------------------------------- */
+
+.cardMorse {
+  height: 3px;
+  width: 130px;
+  margin-bottom: 22px;
+  color: var(--pk-accent);
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 5px,
+    transparent 5px 13px,
+    currentColor 13px 33px,
+    transparent 33px 41px,
+    currentColor 41px 46px,
+    transparent 46px 58px
+  );
+  border-radius: 2px;
+}
+
+.cardHead {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.cardDisc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: var(--pk-soft);
+  overflow: hidden;
+}
+
+.cardLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardInitial {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--pk-accent);
+}
+
+.kindChip {
+  padding: 4px 12px;
+  border: 1px solid var(--pk-accent);
+  border-radius: 999px;
+  background: var(--pk-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--pk-accent);
+}
+
+.cardName {
+  margin-bottom: 10px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.cardBlurb {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--studio-text-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+.cardFootnote {
+  margin-top: auto;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+}
+
+/* --- Rail (legend + controls) ------------------------------------- */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.legend {
+  display: flex;
+  gap: 10px;
+}
+
+.legendChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid var(--pk-accent);
+  border-radius: 999px;
+  background: var(--pk-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--pk-accent);
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--pk-accent);
+}
+
+.railHint {
+  margin: 0;
+  max-width: 320px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--studio-text-secondary);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controlBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  appearance: none;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--studio-border-strong);
+  border-radius: 999px;
+  font-size: 16px;
+  color: var(--studio-text-primary);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.controlBtn:hover {
+  border-color: var(--studio-accent);
+  background: var(--studio-accent-soft);
+}
+
+.counter {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--studio-text-muted);
+}
+
+/* --- Small screens ------------------------------------------------ */
+
+@media (max-width: 560px) {
+  .deck {
+    height: 384px;
+  }
+
+  .card {
+    height: 344px;
+    padding: 22px 22px 20px;
+  }
+
+  .cardName {
+    font-size: 21px;
+  }
+}

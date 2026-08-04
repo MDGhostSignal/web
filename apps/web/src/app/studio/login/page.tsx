@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { createStudioBrowserClient } from "@/lib/studio-auth-client";
+import { STUDIO_INVITE_ONLY } from "@/lib/studio-lite";
 
 import styles from "../studio.module.css";
 
@@ -193,9 +194,17 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className={styles.altLink}>
-          Don&apos;t have an account yet? <Link href="/studio/register">Sign up</Link>
-        </div>
+        {STUDIO_INVITE_ONLY ? (
+          <div className={styles.altLink}>
+            Studio is invite-only &mdash; accounts are set up by the
+            GhostSignal team.
+          </div>
+        ) : (
+          <div className={styles.altLink}>
+            Don&apos;t have an account yet?{" "}
+            <Link href="/studio/register">Sign up</Link>
+          </div>
+        )}
       </div>
     </main>
   );

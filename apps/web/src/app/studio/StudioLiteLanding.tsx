@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+import {
+  loadMarketplaceBrands,
+  loadMarketplaceCreators,
+} from "@/lib/studio-data";
+
+import { ClientPortfolio, type PortfolioCard } from "./ClientPortfolio";
 import styles from "./StudioLiteLanding.module.css";
 
 /**
@@ -10,9 +16,44 @@ import styles from "./StudioLiteLanding.module.css";
  * workspace ships today: a member-managed profile, the network
  * roster, and GhostSignal-brokered matching. No X-Deck, no World.
  *
- * Server component — plain Link navigation only; all motion is CSS.
+ * Server component — plain Link navigation; motion is CSS except the
+ * one client island (ClientPortfolio, the click-through deck).
  */
-export function StudioLiteLanding() {
+
+/** Public showcase list: every brand + creator, alternated so the
+ *  two color codes read immediately. Card fields are deliberately
+ *  minimal — name, one-liner, logo — since this renders logged-out. */
+async function loadPortfolioCards(): Promise<PortfolioCard[]> {
+  const [brands, creators] = await Promise.all([
+    loadMarketplaceBrands(null),
+    loadMarketplaceCreators(null),
+  ]);
+  const brandCards: PortfolioCard[] = brands.map((b) => ({
+    id: `brand-${b.id}`,
+    kind: "brand",
+    name: b.name,
+    blurb: b.tagline ?? b.description,
+    imageUrl: b.logoUrl,
+  }));
+  const creatorCards: PortfolioCard[] = creators.map((c) => ({
+    id: `creator-${c.id}`,
+    kind: "creator",
+    name: c.name,
+    blurb: c.description ?? c.showTitle,
+    imageUrl: c.avatarUrl,
+  }));
+  const mixed: PortfolioCard[] = [];
+  const longest = Math.max(brandCards.length, creatorCards.length);
+  for (let i = 0; i < longest; i++) {
+    if (creatorCards[i]) mixed.push(creatorCards[i]);
+    if (brandCards[i]) mixed.push(brandCards[i]);
+  }
+  return mixed;
+}
+
+export async function StudioLiteLanding() {
+  const portfolio = await loadPortfolioCards();
+
   return (
     <main className={styles.page}>
       <header className={styles.topbar}>
@@ -42,16 +83,10 @@ export function StudioLiteLanding() {
           </h1>
           <div className={`${styles.morse} ${styles.rise3}`} aria-hidden="true" />
           <p className={`${styles.heroLede} ${styles.rise3}`}>
-            Studio is the GhostSignal members&rsquo; workspace, pared to
-            the essentials: keep your profile sharp, see every vetted
-            brand and show you share the air with, and let our team
-            broker the partnerships that fit.
+            Studio is the GhostSignal members&rsquo; workspace.
           </p>
           <div className={`${styles.heroActions} ${styles.rise4}`}>
-            <Link href="/studio/register" className={styles.btnPrimary}>
-              Create your account
-            </Link>
-            <Link href="/studio/login" className={styles.btnGhost}>
+            <Link href="/studio/login" className={styles.btnPrimary}>
               Sign in
             </Link>
           </div>
@@ -95,6 +130,17 @@ export function StudioLiteLanding() {
           </div>
         </div>
       </section>
+
+      {/* Client portfolio ------------------------------------------ */}
+      {portfolio.length > 0 && (
+        <section className={styles.section}>
+          <div className={styles.sectionInner}>
+            <p className={styles.sectionEyebrow}>Client portfolio</p>
+            <h2 className={styles.sectionTitle}>The company we keep.</h2>
+            <ClientPortfolio cards={portfolio} />
+          </div>
+        </section>
+      )}
 
       {/* Handled for you ------------------------------------------- */}
       <section className={styles.section}>
@@ -147,10 +193,7 @@ export function StudioLiteLanding() {
           Take your place on the network.
         </h2>
         <div className={styles.closingActions}>
-          <Link href="/studio/register" className={styles.btnPrimary}>
-            Create your account
-          </Link>
-          <Link href="/studio/login" className={styles.btnGhost}>
+          <Link href="/studio/login" className={styles.btnPrimary}>
             Sign in to Studio
           </Link>
         </div>

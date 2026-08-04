@@ -1,22 +1,41 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { signStudioInvite } from "@/lib/studio-invite";
+import {
+  defaultInviteWelcome,
+  inviteEmailHtml,
+} from "@/lib/studio-invite-email";
 import { supabaseRest } from "@/lib/supabase-admin";
 
 const REGISTER_URL = "https://www.ghostsignal.cloud/studio/register";
 
 /**
  * POST /api/admin/studio/invite
- * Body: { email, firstName, lastName, note? }
+ * Body: { email, firstName, lastName, kind, orgName, welcome?, note? }
  *
- * Team-initiated Studio invite. Two effects:
+ * `welcome` is the email's main welcome paragraph — the CRM form
+ * prefills it with the template text (defaultInviteWelcome) and the
+ * team can replace it with a personal message. Empty/omitted falls
+ * back to the template. Email HTML lives in lib/studio-invite-email.ts
+ * (shared with the /preview endpoint).
+ *
+ * Team-initiated Studio invite — the only door in while
+ * STUDIO_INVITE_ONLY is on. The team picks brand-or-creator and types
+ * the brand/show name + contact person here in the CRM; those details
+ * ride along in a signed invite token (lib/studio-invite.ts) so the
+ * register page opens for this person only, prefilled, with email +
+ * member type locked. Three effects:
  *  1. Ensures a members row exists for the email (creates a
- *     discern-phase row for brand-new contacts; existing CRM rows are
- *     left as they are apart from an invite note) — so when the person
- *     registers, the existing link-by-email + quiz-adoption logic
- *     unifies everything onto that row.
- *  2. Sends the studio-branded invite email via Resend pointing at
- *     /studio/register. The email is code-managed here (not a Supabase
- *     dashboard template) so design changes ship with deploys.
+ *     discern-phase row for brand-new contacts; existing CRM rows
+ *     keep their data, with blanks filled from the form) — so when
+ *     the person registers, the existing link-by-email +
+ *     quiz-adoption logic unifies everything onto that row.
+ *  2. Stamps the chosen member_type on the row (the invite selection
+ *     is authoritative — the register API enforces the token's kind).
+ *  3. Sends the studio-branded invite email via Resend pointing at
+ *     /studio/register?invite=<token>. The email is code-managed here
+ *     (not a Supabase dashboard template) so design changes ship with
+ *     deploys. Tokens expire after 30 days.
  *
  * People who already have a Studio account (auth_user_id set) get a
  * 409 instead of a confusing invite.
@@ -28,6 +47,9 @@ export async function POST(req: NextRequest) {
     email?: string;
     firstName?: string;
     lastName?: string;
+    kind?: string;
+    orgName?: string;
+    welcome?: string;
     note?: string;
   };
   try {
@@ -45,7 +67,23 @@ export async function POST(req: NextRequest) {
   if (!firstName) {
     return NextResponse.json({ error: "First name required." }, { status: 400 });
   }
+  const kind = body.kind === "brand" || body.kind === "creator" ? body.kind : null;
+  if (!kind) {
+    return NextResponse.json(
+      { error: "Member type (brand or creator) required." },
+      { status: 400 },
+    );
+  }
+  const orgName = body.orgName?.trim() ?? "";
+  if (!orgName) {
+    return NextResponse.json(
+      { error: kind === "creator" ? "Show name required." : "Brand name required." },
+      { status: 400 },
+    );
+  }
   const note = body.note?.trim().slice(0, 1000) || null;
+  const welcome =
+    body.welcome?.trim().slice(0, 2000) || defaultInviteWelcome(kind, orgName);
 
   const resendKey = process.env.RESEND_API_KEY;
   const resendFrom = process.env.RESEND_FROM;
@@ -62,10 +100,11 @@ export async function POST(req: NextRequest) {
     auth_user_id: string | null;
     first_name: string | null;
     last_name: string | null;
+    organization: string | null;
     notes: string | null;
   };
   const existingRes = await supabaseRest<ExistingRow[]>(
-    `members?select=id,auth_user_id,first_name,last_name,notes&email=ilike.${encodeURIComponent(email)}&limit=1`,
+    `members?select=id,auth_user_id,first_name,last_name,organization,notes&email=ilike.${encodeURIComponent(email)}&limit=1`,
   );
   if (!existingRes.ok) {
     return NextResponse.json(
@@ -82,7 +121,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const inviteStamp = `Invited to Studio via admin on ${new Date().toISOString().slice(0, 10)}${note ? ` — ${note}` : ""}`;
+  const inviteStamp = `Invited to Studio (${kind} — ${orgName}) via admin on ${new Date().toISOString().slice(0, 10)}${note ? ` — ${note}` : ""}`;
   let memberId: string;
   let mode: "created" | "existing";
 
@@ -91,10 +130,14 @@ export async function POST(req: NextRequest) {
     memberId = existing.id;
     const patch: Record<string, unknown> = {
       notes: existing.notes ? `${existing.notes}\n${inviteStamp}` : inviteStamp,
+      // The invite form's type choice is authoritative — the register
+      // API enforces the token's kind, so keep the CRM row in step.
+      member_type: kind,
     };
     // Fill blanks only — an existing CRM row's data wins over the form.
     if (!existing.first_name?.trim()) patch.first_name = firstName;
     if (!existing.last_name?.trim() && lastName) patch.last_name = lastName;
+    if (!existing.organization?.trim()) patch.organization = orgName;
     const upd = await supabaseRest(
       `members?id=eq.${encodeURIComponent(existing.id)}`,
       { method: "PATCH", body: JSON.stringify(patch), prefer: "return=minimal" },
@@ -113,7 +156,8 @@ export async function POST(req: NextRequest) {
         email,
         first_name: firstName,
         last_name: lastName,
-        member_type: "other", // they pick brand/creator at registration
+        member_type: kind,
+        organization: orgName,
         phase: "discern",
         phase_entered_at: new Date().toISOString(),
         notes: inviteStamp,
@@ -131,6 +175,11 @@ export async function POST(req: NextRequest) {
   }
 
   // --- 2 · Send the branded invite email ---------------------------
+  // The token is the key to the (otherwise closed) register page and
+  // carries the prefill payload the team just entered.
+  const token = signStudioInvite({ email, firstName, lastName, kind, orgName });
+  const inviteUrl = `${REGISTER_URL}?invite=${token}`;
+
   const sendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -141,7 +190,7 @@ export async function POST(req: NextRequest) {
       from: resendFrom,
       to: [email],
       subject: `${firstName}, you're invited to GhostSignal Studio`,
-      html: inviteEmailHtml(firstName, note),
+      html: inviteEmailHtml({ firstName, welcome, note, inviteUrl }),
     }),
   });
   if (!sendRes.ok) {
@@ -155,114 +204,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true, memberId, mode });
-}
-
-/* ---------------- Email ------------------------------------------ */
-
-function escapeHtml(s: string): string {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-/** Studio-branded invite — same visual system as the auth templates in
- *  docs/STUDIO_EMAIL_TEMPLATES.md: wordmark + STUDIO pill, morse
- *  accent strip, studio palette, Outlook-safe bgcolor CTA. */
-function inviteEmailHtml(firstName: string, note: string | null): string {
-  const name = escapeHtml(firstName);
-  const noteBlock = note
-    ? `
-          <tr>
-            <td style="padding: 24px 36px 0;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f4f6fb" style="background-color: #f4f6fb; border-left: 3px solid #7c58d6; border-radius: 8px;">
-                <tr>
-                  <td style="padding: 14px 18px;">
-                    <p style="margin: 0 0 4px; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #7c58d6;">A note from the team</p>
-                    <p style="margin: 0; font-size: 14px; color: #0e1119; line-height: 1.65;">${escapeHtml(note)}</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>`
-    : "";
-
-  return `<!DOCTYPE html>
-<html>
-<body style="margin: 0; padding: 0; background-color: #f4f6fb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f4f6fb" style="background-color: #f4f6fb;">
-    <tr>
-      <td align="center" style="padding: 40px 16px;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px; background-color: #ffffff; border: 1px solid #e6e8ee; border-radius: 14px;">
-
-          <tr>
-            <td style="padding: 28px 36px 0;">
-              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GhostSignal</span>
-              <span style="display: inline-block; margin-left: 8px; padding: 2px 9px; border: 1px solid #7c58d6; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #7c58d6; vertical-align: 2px;">Studio</span>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 18px 36px 0;">
-              <div style="height: 3px; width: 220px; border-radius: 2px; background-color: #7c58d6; background-image: repeating-linear-gradient(90deg, #7c58d6 0 5px, #ffffff 5px 13px, #7c58d6 13px 33px, #ffffff 33px 41px, #7c58d6 41px 46px, #ffffff 46px 58px);"></div>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 24px 36px 0;">
-              <h1 style="margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #0e1119; line-height: 1.3;">Hi ${name},</h1>
-              <p style="margin: 0; font-size: 15px; color: #5a5e66; line-height: 1.65;">
-                The GhostSignal team would like to invite you to <strong style="color: #0e1119;">Studio</strong> &mdash; the members&rsquo; workspace where brands and podcasts on our network keep their profile sharp, see who they share the air with, and let us broker the partnerships that fit.
-              </p>
-            </td>
-          </tr>
-          ${noteBlock}
-
-          <tr>
-            <td style="padding: 24px 36px 0;">
-              <table role="presentation" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td bgcolor="#7c58d6" style="background-color: #7c58d6; border: 1px solid #6a45c7; border-radius: 10px;">
-                    <a href="${REGISTER_URL}" style="display: inline-block; padding: 12px 26px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">Create your account</a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin: 14px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                Button not working? Copy this link into your browser:<br>
-                <a href="${REGISTER_URL}" style="color: #7c58d6; word-break: break-all;">${REGISTER_URL}</a>
-              </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 24px 36px 28px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f4f6fb" style="background-color: #f4f6fb; border: 1px solid #e6e8ee; border-radius: 10px;">
-                <tr>
-                  <td style="padding: 16px 20px;">
-                    <p style="margin: 0; font-size: 13px; color: #5a5e66; line-height: 1.7;">
-                      Signing up takes about a minute &mdash; use <strong style="color: #0e1119;">this email address</strong> so we can connect your account to what we already know about you. Confirm your email and you&rsquo;re in.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 0 36px 28px; border-top: 1px solid #e6e8ee;">
-              <p style="margin: 18px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                &mdash; The GhostSignal team<br>
-                You&rsquo;re receiving this because the GhostSignal team invited you to their members&rsquo; workspace. Not interested? You can simply ignore this email.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
 }
