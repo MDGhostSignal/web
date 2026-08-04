@@ -152,12 +152,50 @@
   + 0 lowercase GhostSignal in the rendered invite email; /studio
   clean except the site-wide og:site_name meta.
 
+## Evening session (final)
+
+### Landing lede iterations (pushed as they arrived)
+- 2bc429d: Martin's new hero lede ("The GHOSTSignal Studio is where
+  members set up their profile, complete the XQ/RQ alignment quiz,
+  and manage account details—…").
+- f217dea: "quiz" → "quizzes" (Martin sent "quizes"; corrected
+  spelling applied with his OK implied — flagged in chat). NOTE: the
+  invite email's welcome template still says "quiz" singular (Jack's
+  copy) — left on purpose, Martin aware.
+- Both verified live on prod after deploy.
+
+### Supabase confirm-signup template — studio visual system (d33d618)
+- docs/STUDIO_EMAIL_TEMPLATES.md "Confirm signup" refreshed: same
+  card system as the invite email (wordmark + STUDIO pill, morse
+  strip, purple Outlook-safe CTA), what's-inside box now pitches
+  profile / XQ-RQ alignment quizzes / account details with the
+  "(Setup takes ≈ 20 mins)" note (old roster/picks line removed),
+  GHOSTSignal casing throughout, compact Snowdrift starry ad added.
+- Invite-email section of the doc rewritten for the tokenized flow.
+- **Martin pasted subject + body into Supabase Dashboard →
+  Authentication → Emails → Confirm signup and saved** — the live
+  confirmation email now matches the studio UI. Reset-password
+  template in the doc is current but NOT yet re-pasted.
+
+### Preview emails sent (Resend, template placeholders resolved)
+- Confirm-signup preview → heymatvond@gmail.com (id 3d94c2c3…) and
+  jack@ghostsignal.cloud; sample data (greeting by name, org "The
+  Preview Show"), CTA pointed at /studio/login instead of a real
+  confirmation link. Approved by Martin ("Perfect").
+
+### Working-tree note
+- AGENTS.md / app/page.tsx / motion/index.ts show as modified with
+  whitespace-only diffs (trailing newline + CRLF from an editor
+  save) — not part of today's work, deliberately left uncommitted.
+
 ## Open issues / next steps
-- Real invites can be sent from /admin/studio-members once this push
-  is deployed (tokens already accepted on prod since the morning).
-- Supabase dashboard auth templates: re-paste from
-  docs/STUDIO_EMAIL_TEMPLATES.md to pick up GHOSTSignal casing.
-- Snowdrift snowfall GIF for the invite email — parked, approach
-  documented above.
+- Reset-password Supabase template: re-paste from
+  docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).
+- Snowdrift snowfall GIF for the invite/confirm emails — parked;
+  approach = baked animated GIF, frame 1 = static starry card.
+- Invite welcome copy says "quiz" singular vs landing "quizzes" —
+  align if Jack/Martin want.
 - Fuller Studio spec (ad prefs, brand copy space, brokerage) still
   pending Martin.
+- Whitespace-only edits to AGENTS.md / page.tsx / motion/index.ts
+  sitting in the working tree (see note above).
