@@ -231,11 +231,11 @@ export type Member = {
   nl_open_rate?: string | null;
   nl_frequency?: string | null;
   nl_subscribers?: string | null;
-  /** Podcast info from /studio/profile (docs/STUDIO_POD_INFO.sql). */
+  /** Podcast info from /studio/profile (docs/STUDIO_POD_INFO.sql +
+   *  STUDIO_POD_LISTENS.sql). */
   pod_provider?: string | null;
-  pod_downloads?: string | null;
+  pod_monthly_listens?: string | null;
   pod_frequency?: string | null;
-  pod_audience?: string | null;
   phase: MemberPhase;
   phase_entered_at: string;
   owner: string | null;

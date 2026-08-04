@@ -184,9 +184,8 @@ export async function PATCH(req: NextRequest) {
     // profile form for creator-kind members; empty string clears.
     const podPatch = compact({
       pod_provider: cleanText(body.podProvider, 80),
-      pod_downloads: cleanText(body.podDownloads, 40),
+      pod_monthly_listens: cleanText(body.podMonthlyListens, 40),
       pod_frequency: cleanText(body.podFrequency, 60),
-      pod_audience: cleanText(body.podAudience, 40),
     });
 
     const memberPatch = compact({

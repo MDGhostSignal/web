@@ -215,9 +215,8 @@ type Dossier = {
     nl_frequency: string | null;
     nl_subscribers: string | null;
     pod_provider?: string | null;
-    pod_downloads?: string | null;
+    pod_monthly_listens?: string | null;
     pod_frequency?: string | null;
-    pod_audience?: string | null;
   };
   org: StudioOrgProfile | null;
   xq: StudioXqSummary | null;
@@ -388,15 +387,14 @@ function DossierBody({ row, d }: { row: StudioMemberRow; d: Dossier }) {
       {row.member_type === "creator" && (
         <section className={styles.detailSection}>
           <h3 className={styles.detailHeading}>Podcast info</h3>
-          {m.pod_provider ||
-          m.pod_downloads ||
-          m.pod_frequency ||
-          m.pod_audience ? (
+          {m.pod_provider || m.pod_monthly_listens || m.pod_frequency ? (
             <dl className={styles.factGrid}>
               <Fact label="Host" value={m.pod_provider} />
-              <Fact label="Avg downloads / episode" value={m.pod_downloads} />
+              <Fact
+                label="Avg listens / month"
+                value={m.pod_monthly_listens}
+              />
               <Fact label="Frequency" value={m.pod_frequency} />
-              <Fact label="Audience size" value={m.pod_audience} />
             </dl>
           ) : (
             <p className={styles.notTaken}>Nothing on record yet.</p>

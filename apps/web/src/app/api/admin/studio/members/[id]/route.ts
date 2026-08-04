@@ -53,14 +53,14 @@ export async function GET(
     nl_frequency: string | null;
     nl_subscribers: string | null;
     pod_provider?: string | null;
-    pod_downloads?: string | null;
+    pod_monthly_listens?: string | null;
     pod_frequency?: string | null;
-    pod_audience?: string | null;
   };
 
-  // Tolerant chain: pod_* columns arrive with docs/STUDIO_POD_INFO.sql.
+  // Tolerant chain: pod_* columns arrive with docs/STUDIO_POD_INFO.sql
+  // + STUDIO_POD_LISTENS.sql.
   let res = await supabaseRest<MemberRow[]>(
-    "members?select=id,email,first_name,last_name,organization,member_type,phase,created_at,activated_at,avatar_url,tagline,bio,brand_id,creator_id,xq_submission_id,xq_archetype,rq_submission_id,rq_code,nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers,pod_provider,pod_downloads,pod_frequency,pod_audience&" +
+    "members?select=id,email,first_name,last_name,organization,member_type,phase,created_at,activated_at,avatar_url,tagline,bio,brand_id,creator_id,xq_submission_id,xq_archetype,rq_submission_id,rq_code,nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers,pod_provider,pod_monthly_listens,pod_frequency&" +
       `id=eq.${encodeURIComponent(id)}`,
   );
   if (!res.ok) {

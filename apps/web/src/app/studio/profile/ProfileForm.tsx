@@ -36,9 +36,10 @@ export function ProfileForm({
   const [podcastUrl, setPodcastUrl] = useState(org?.podcastUrl ?? "");
   const [rssUrl, setRssUrl] = useState(org?.rssUrl ?? "");
   const [podProvider, setPodProvider] = useState(intake?.podProvider ?? "");
-  const [podDownloads, setPodDownloads] = useState(intake?.podDownloads ?? "");
+  const [podMonthlyListens, setPodMonthlyListens] = useState(
+    intake?.podMonthlyListens ?? "",
+  );
   const [podFrequency, setPodFrequency] = useState(intake?.podFrequency ?? "");
-  const [podAudience, setPodAudience] = useState(intake?.podAudience ?? "");
   const [nlInterest, setNlInterest] = useState(intake?.nlInterest ?? false);
   const [nlProvider, setNlProvider] = useState(intake?.nlProvider ?? "");
   const [nlOpenRate, setNlOpenRate] = useState(intake?.nlOpenRate ?? "");
@@ -98,9 +99,8 @@ export function ProfileForm({
       // always sent so clears persist.
       if (member.kind === "creator" || org?.kind === "creator") {
         body.podProvider = podProvider;
-        body.podDownloads = podDownloads;
+        body.podMonthlyListens = podMonthlyListens;
         body.podFrequency = podFrequency;
-        body.podAudience = podAudience;
       }
       if (org) {
         body.tagline = tagline;
@@ -377,15 +377,15 @@ export function ProfileForm({
               />
             </div>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-pod-downloads">
-                Average downloads per episode
+              <label className={styles.label} htmlFor="profile-pod-listens">
+                Average listens per month
               </label>
               <input
-                id="profile-pod-downloads"
+                id="profile-pod-listens"
                 className={styles.input}
-                value={podDownloads}
-                onChange={(e) => setPodDownloads(e.target.value)}
-                placeholder="e.g. 5,000"
+                value={podMonthlyListens}
+                onChange={(e) => setPodMonthlyListens(e.target.value)}
+                placeholder="e.g. 25,000"
               />
             </div>
             <div className={styles.field}>
@@ -398,18 +398,6 @@ export function ProfileForm({
                 value={podFrequency}
                 onChange={(e) => setPodFrequency(e.target.value)}
                 placeholder="e.g. weekly"
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-pod-audience">
-                Current audience size
-              </label>
-              <input
-                id="profile-pod-audience"
-                className={styles.input}
-                value={podAudience}
-                onChange={(e) => setPodAudience(e.target.value)}
-                placeholder="e.g. 20,000"
               />
             </div>
           </>

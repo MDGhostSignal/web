@@ -280,9 +280,8 @@ export type MemberIntake = {
   nlFrequency: string | null;
   nlSubscribers: string | null;
   podProvider: string | null;
-  podDownloads: string | null;
+  podMonthlyListens: string | null;
   podFrequency: string | null;
-  podAudience: string | null;
 };
 
 /** The member's intake answers from the members row. Tolerant select
@@ -298,12 +297,11 @@ export async function loadMemberIntake(
     nl_frequency: string | null;
     nl_subscribers: string | null;
     pod_provider?: string | null;
-    pod_downloads?: string | null;
+    pod_monthly_listens?: string | null;
     pod_frequency?: string | null;
-    pod_audience?: string | null;
   };
   let res = await supabaseRest<Row[]>(
-    `members?select=nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers,pod_provider,pod_downloads,pod_frequency,pod_audience&id=eq.${encodeURIComponent(memberId)}`,
+    `members?select=nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers,pod_provider,pod_monthly_listens,pod_frequency&id=eq.${encodeURIComponent(memberId)}`,
   );
   if (!res.ok) {
     res = await supabaseRest<Row[]>(
@@ -319,9 +317,8 @@ export async function loadMemberIntake(
     nlFrequency: r.nl_frequency,
     nlSubscribers: r.nl_subscribers,
     podProvider: r.pod_provider ?? null,
-    podDownloads: r.pod_downloads ?? null,
+    podMonthlyListens: r.pod_monthly_listens ?? null,
     podFrequency: r.pod_frequency ?? null,
-    podAudience: r.pod_audience ?? null,
   };
 }
 
