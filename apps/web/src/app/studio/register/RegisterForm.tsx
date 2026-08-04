@@ -53,6 +53,11 @@ export function RegisterForm({
   const [password, setPassword] = useState("");
   const [kind, setKind] = useState<Kind>(invite?.kind ?? "creator");
   const [orgName, setOrgName] = useState(invite?.orgName ?? "");
+  const [nlInterest, setNlInterest] = useState(false);
+  const [nlProvider, setNlProvider] = useState("");
+  const [nlOpenRate, setNlOpenRate] = useState("");
+  const [nlFrequency, setNlFrequency] = useState("");
+  const [nlSubscribers, setNlSubscribers] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<SuccessState | null>(null);
@@ -152,6 +157,15 @@ export function RegisterForm({
           kind,
           orgName,
           inviteToken: inviteToken ?? undefined,
+          ...(nlInterest
+            ? {
+                nlAdsInterest: true,
+                nlProvider,
+                nlOpenRate,
+                nlFrequency,
+                nlSubscribers,
+              }
+            : {}),
         }),
       });
       if (!res.ok) {
@@ -371,6 +385,76 @@ export function RegisterForm({
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
             />
+          </div>
+
+          {/* Newsletter-advertising opt-in — checking it reveals the
+              detail fields; everything lands on the CRM member row
+              (docs/STUDIO_NL_ADVERTISING.sql). */}
+          <div className={styles.optInField}>
+            <label className={styles.optInRow} htmlFor="nl-interest">
+              <input
+                id="nl-interest"
+                type="checkbox"
+                className={styles.optInCheckbox}
+                checked={nlInterest}
+                onChange={(e) => setNlInterest(e.target.checked)}
+              />
+              <span className={styles.optInText}>
+                I am interested in Email Newsletter Advertising
+              </span>
+            </label>
+            {nlInterest && (
+              <div className={styles.optInFields}>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="nl-provider">
+                    Current newsletter provider
+                  </label>
+                  <input
+                    id="nl-provider"
+                    className={styles.input}
+                    value={nlProvider}
+                    onChange={(e) => setNlProvider(e.target.value)}
+                    placeholder="e.g. Substack, beehiiv, Mailchimp"
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="nl-open-rate">
+                    Current NL open rate
+                  </label>
+                  <input
+                    id="nl-open-rate"
+                    className={styles.input}
+                    value={nlOpenRate}
+                    onChange={(e) => setNlOpenRate(e.target.value)}
+                    placeholder="e.g. 45%"
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="nl-frequency">
+                    NL frequency
+                  </label>
+                  <input
+                    id="nl-frequency"
+                    className={styles.input}
+                    value={nlFrequency}
+                    onChange={(e) => setNlFrequency(e.target.value)}
+                    placeholder="e.g. weekly"
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="nl-subscribers">
+                    Current subscriber size
+                  </label>
+                  <input
+                    id="nl-subscribers"
+                    className={styles.input}
+                    value={nlSubscribers}
+                    onChange={(e) => setNlSubscribers(e.target.value)}
+                    placeholder="e.g. 12,000"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <button type="submit" className={styles.submit} disabled={submitting}>

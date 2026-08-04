@@ -215,7 +215,28 @@
 - Verified: embed live on 79 linked contacts; 0/53 creators have
   rss_url yet (expected — nobody has saved one).
 
+## Evening session 3 — newsletter-ads capture
+
+### NL-advertising opt-in (Martin's ask, evolved mid-build)
+- Register page (invited flow): "I am interested in Email Newsletter
+  Advertising" checkbox → reveals provider / open rate / frequency /
+  subscriber-size inputs (`.optIn*` classes in studio.module.css).
+- Same block on /studio/profile (prefilled via `loadMemberNlAds`,
+  always-sent on save so unticks/clears persist).
+- Storage: 5 new members columns in docs/STUDIO_NL_ADVERTISING.sql —
+  **NOT yet run in prod (Martin to run)**; register + profile routes
+  retry without the NL fields until then (console.warn, never fails
+  the signup/save).
+- RSS display in CRM switched to spelled-out plain text (Martin's
+  ask): contacts card shows the raw URL (`.rssValue`, break-all) and
+  the studio dossier shows an "RSS <url>" line (`.rssLine`) instead
+  of a compact ↗ link.
+
 ## Open issues / next steps
+- RUN docs/STUDIO_NL_ADVERTISING.sql in the Supabase SQL editor —
+  until then NL answers are dropped with a server warning.
+- NL fields not yet displayed in the CRM (contacts/dossier) — likely
+  next ask once the migration is in.
 - Reset-password Supabase template: re-paste from
   docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).
 - Snowdrift snowfall GIF for the invite/confirm emails — parked;

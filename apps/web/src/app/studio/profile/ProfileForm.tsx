@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { StudioOrgProfile } from "@/lib/studio-data";
+import type { MemberNlAds, StudioOrgProfile } from "@/lib/studio-data";
 
 import styles from "../studio.module.css";
 
@@ -15,6 +15,7 @@ import styles from "../studio.module.css";
 export function ProfileForm({
   member,
   org,
+  nlAds,
 }: {
   member: {
     kind: "brand" | "creator" | "other";
@@ -22,6 +23,7 @@ export function ProfileForm({
     lastName: string | null;
   };
   org: StudioOrgProfile | null;
+  nlAds: MemberNlAds | null;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -34,6 +36,11 @@ export function ProfileForm({
   const [podcastUrl, setPodcastUrl] = useState(org?.podcastUrl ?? "");
   const [newsletterUrl, setNewsletterUrl] = useState(org?.newsletterUrl ?? "");
   const [rssUrl, setRssUrl] = useState(org?.rssUrl ?? "");
+  const [nlInterest, setNlInterest] = useState(nlAds?.interest ?? false);
+  const [nlProvider, setNlProvider] = useState(nlAds?.provider ?? "");
+  const [nlOpenRate, setNlOpenRate] = useState(nlAds?.openRate ?? "");
+  const [nlFrequency, setNlFrequency] = useState(nlAds?.frequency ?? "");
+  const [nlSubscribers, setNlSubscribers] = useState(nlAds?.subscribers ?? "");
   const [imageUrl, setImageUrl] = useState(org?.imageUrl ?? null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -76,7 +83,14 @@ export function ProfileForm({
     setSaved(false);
     setSaving(true);
     try {
-      const body: Record<string, string> = { firstName, lastName };
+      const body: Record<string, unknown> = { firstName, lastName };
+      // Newsletter-ads block — always sent, so unticking or clearing
+      // a field persists (docs/STUDIO_NL_ADVERTISING.sql columns).
+      body.nlAdsInterest = nlInterest;
+      body.nlProvider = nlProvider;
+      body.nlOpenRate = nlOpenRate;
+      body.nlFrequency = nlFrequency;
+      body.nlSubscribers = nlSubscribers;
       if (org) {
         body.tagline = tagline;
         body.description = description;
@@ -348,6 +362,75 @@ export function ProfileForm({
             </div>
           </>
         )}
+
+        {/* Newsletter-advertising opt-in — same block as the register
+            page; values live on the CRM member row. */}
+        <div className={`${styles.optInField} ${styles.fieldWide}`}>
+          <label className={styles.optInRow} htmlFor="profile-nl-interest">
+            <input
+              id="profile-nl-interest"
+              type="checkbox"
+              className={styles.optInCheckbox}
+              checked={nlInterest}
+              onChange={(e) => setNlInterest(e.target.checked)}
+            />
+            <span className={styles.optInText}>
+              I am interested in Email Newsletter Advertising
+            </span>
+          </label>
+          {nlInterest && (
+            <div className={styles.optInFields}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="profile-nl-provider">
+                  Current newsletter provider
+                </label>
+                <input
+                  id="profile-nl-provider"
+                  className={styles.input}
+                  value={nlProvider}
+                  onChange={(e) => setNlProvider(e.target.value)}
+                  placeholder="e.g. Substack, beehiiv, Mailchimp"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="profile-nl-open-rate">
+                  Current NL open rate
+                </label>
+                <input
+                  id="profile-nl-open-rate"
+                  className={styles.input}
+                  value={nlOpenRate}
+                  onChange={(e) => setNlOpenRate(e.target.value)}
+                  placeholder="e.g. 45%"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="profile-nl-frequency">
+                  NL frequency
+                </label>
+                <input
+                  id="profile-nl-frequency"
+                  className={styles.input}
+                  value={nlFrequency}
+                  onChange={(e) => setNlFrequency(e.target.value)}
+                  placeholder="e.g. weekly"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="profile-nl-subscribers">
+                  Current subscriber size
+                </label>
+                <input
+                  id="profile-nl-subscribers"
+                  className={styles.input}
+                  value={nlSubscribers}
+                  onChange={(e) => setNlSubscribers(e.target.value)}
+                  placeholder="e.g. 12,000"
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
         {error && (
           <div className={`${styles.error} ${styles.fieldWide}`}>{error}</div>

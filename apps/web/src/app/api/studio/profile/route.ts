@@ -168,6 +168,19 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    // Newsletter-ads block (docs/STUDIO_NL_ADVERTISING.sql) — only
+    // when the client sent it; boolean false persists an untick.
+    const nlPatch: Record<string, unknown> =
+      body.nlAdsInterest === undefined
+        ? {}
+        : compact({
+            nl_ads_interest: body.nlAdsInterest === true,
+            nl_provider: cleanText(body.nlProvider, 80),
+            nl_open_rate: cleanText(body.nlOpenRate, 40),
+            nl_frequency: cleanText(body.nlFrequency, 60),
+            nl_subscribers: cleanText(body.nlSubscribers, 40),
+          });
+
     const memberPatch = compact({
       first_name: cleanText(body.firstName, 80),
       last_name: cleanText(body.lastName, 80),
@@ -180,8 +193,20 @@ export async function PATCH(req: NextRequest) {
             bio: cleanText(body.description, 2000),
           }),
     });
-    if (Object.keys(memberPatch).length > 0) {
-      await scopedUpdate(member, "members", memberPatch);
+    if (Object.keys(memberPatch).length + Object.keys(nlPatch).length > 0) {
+      try {
+        await scopedUpdate(member, "members", { ...memberPatch, ...nlPatch });
+      } catch (err) {
+        // Pre-migration schema: retry without the NL columns so the
+        // rest of the save still lands.
+        if (Object.keys(nlPatch).length === 0) throw err;
+        console.warn(
+          "[studio/profile] NL fields skipped (run docs/STUDIO_NL_ADVERTISING.sql)",
+        );
+        if (Object.keys(memberPatch).length > 0) {
+          await scopedUpdate(member, "members", memberPatch);
+        }
+      }
     }
 
     return NextResponse.json({ ok: true, ...(pendingRss ? { pendingRss } : {}) });

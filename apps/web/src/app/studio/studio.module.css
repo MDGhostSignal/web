@@ -1581,3 +1581,46 @@ a.rosterMeta:hover {
   color: var(--studio-text-secondary);
   background: var(--studio-surface-1);
 }
+
+/* --- Newsletter-ads opt-in (register form) ------------------------ */
+
+.optInField {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.optInRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.optInCheckbox {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--studio-accent);
+  cursor: pointer;
+}
+
+.optInText {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--studio-text-primary);
+}
+
+.optInFields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 16px;
+  border-left: 2px solid var(--studio-accent-soft);
+}

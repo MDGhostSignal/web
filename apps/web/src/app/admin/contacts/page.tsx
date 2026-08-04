@@ -1468,13 +1468,9 @@ function ContactCard({ member }: { member: Member }) {
             <dt>RSS feed</dt>
             <dd>
               {member.creators?.rss_url ? (
-                <a
-                  href={member.creators.rss_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <span className={styles.rssValue}>
                   {member.creators.rss_url}
-                </a>
+                </span>
               ) : (
                 "—"
               )}

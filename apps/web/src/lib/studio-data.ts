@@ -268,6 +268,46 @@ export async function loadStudioOrgProfile(member: {
 }
 
 /* ============================================================
+ * Newsletter-advertising fields (docs/STUDIO_NL_ADVERTISING.sql)
+ * ============================================================ */
+
+export type MemberNlAds = {
+  interest: boolean;
+  provider: string | null;
+  openRate: string | null;
+  frequency: string | null;
+  subscribers: string | null;
+};
+
+/** The member's newsletter-ads opt-in + details from the members row.
+ *  Null when the migration hasn't run (or the read fails) — callers
+ *  render the block with empty defaults. */
+export async function loadMemberNlAds(
+  memberId: string,
+): Promise<MemberNlAds | null> {
+  const res = await supabaseRest<
+    Array<{
+      nl_ads_interest: boolean | null;
+      nl_provider: string | null;
+      nl_open_rate: string | null;
+      nl_frequency: string | null;
+      nl_subscribers: string | null;
+    }>
+  >(
+    `members?select=nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers&id=eq.${encodeURIComponent(memberId)}`,
+  );
+  if (!res.ok || !res.data?.[0]) return null;
+  const r = res.data[0];
+  return {
+    interest: r.nl_ads_interest === true,
+    provider: r.nl_provider,
+    openRate: r.nl_open_rate,
+    frequency: r.nl_frequency,
+    subscribers: r.nl_subscribers,
+  };
+}
+
+/* ============================================================
  * Onboarding status (/studio/welcome)
  * ============================================================ */
 

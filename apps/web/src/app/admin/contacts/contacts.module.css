@@ -1499,3 +1499,9 @@
     display: none;
   }
 }
+
+/* Spelled-out RSS feed URL on the contact card — plain readable
+ * text (not a link) so the address itself is visible. */
+.rssValue {
+  word-break: break-all;
+}

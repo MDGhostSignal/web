@@ -38,7 +38,30 @@ type Body = {
   orgName: string;
   /** Signed invite token — required while STUDIO_INVITE_ONLY is on. */
   inviteToken?: string;
+  /** Newsletter-advertising opt-in (register form checkbox). */
+  nlAdsInterest?: boolean;
+  nlProvider?: string;
+  nlOpenRate?: string;
+  nlFrequency?: string;
+  nlSubscribers?: string;
 };
+
+/** The newsletter-ads columns for the members row — only when the
+ *  register checkbox was ticked. Columns from
+ *  docs/STUDIO_NL_ADVERTISING.sql; callers retry without these if
+ *  the migration hasn't run so signup never fails over them. */
+function nlFieldsFrom(body: Body): Record<string, unknown> {
+  if (body.nlAdsInterest !== true) return {};
+  const clean = (v: unknown, max: number) =>
+    typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
+  return {
+    nl_ads_interest: true,
+    nl_provider: clean(body.nlProvider, 80),
+    nl_open_rate: clean(body.nlOpenRate, 40),
+    nl_frequency: clean(body.nlFrequency, 60),
+    nl_subscribers: clean(body.nlSubscribers, 40),
+  };
+}
 
 type QuizLinks = {
   xq_submission_id?: string | null;
@@ -187,39 +210,64 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       );
     }
-    const { error } = await admin
+    const basePatch = {
+      auth_user_id: body.authUserId,
+      first_name: body.firstName.trim() || existing.member_type,
+      last_name: body.lastName.trim(),
+      organization: body.orgName.trim() || existing.organization,
+      member_type: body.kind,
+      activated_at: existing.activated_at ?? new Date().toISOString(),
+    };
+    const nlFields = nlFieldsFrom(body);
+    let { error } = await admin
       .from("members")
-      .update({
-        auth_user_id: body.authUserId,
-        first_name: body.firstName.trim() || existing.member_type,
-        last_name: body.lastName.trim(),
-        organization: body.orgName.trim() || existing.organization,
-        member_type: body.kind,
-        activated_at: existing.activated_at ?? new Date().toISOString(),
-      })
+      .update({ ...basePatch, ...nlFields })
       .eq("id", existing.id);
+    if (error && Object.keys(nlFields).length > 0) {
+      console.warn(
+        "[studio/register] NL fields skipped (run docs/STUDIO_NL_ADVERTISING.sql):",
+        error.message,
+      );
+      ({ error } = await admin
+        .from("members")
+        .update(basePatch)
+        .eq("id", existing.id));
+    }
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     await adoptQuizSubmissions(admin, existing.id, email, existing);
     return NextResponse.json({ ok: true, memberId: existing.id, mode: "linked" });
   }
 
   // Brand-new registration — insert a fresh discern-phase member.
-  const { data: inserted, error } = await admin
+  const baseInsert = {
+    email,
+    auth_user_id: body.authUserId,
+    first_name: body.firstName.trim(),
+    last_name: body.lastName.trim(),
+    organization: body.orgName.trim(),
+    member_type: body.kind,
+    phase: "discern",
+    phase_entered_at: new Date().toISOString(),
+    activated_at: new Date().toISOString(),
+    notes: "Self-registered via Studio.",
+  };
+  const nlInsertFields = nlFieldsFrom(body);
+  let { data: inserted, error } = await admin
     .from("members")
-    .insert({
-      email,
-      auth_user_id: body.authUserId,
-      first_name: body.firstName.trim(),
-      last_name: body.lastName.trim(),
-      organization: body.orgName.trim(),
-      member_type: body.kind,
-      phase: "discern",
-      phase_entered_at: new Date().toISOString(),
-      activated_at: new Date().toISOString(),
-      notes: "Self-registered via Studio.",
-    })
+    .insert({ ...baseInsert, ...nlInsertFields })
     .select("id")
     .single();
+  if (error && Object.keys(nlInsertFields).length > 0) {
+    console.warn(
+      "[studio/register] NL fields skipped (run docs/STUDIO_NL_ADVERTISING.sql):",
+      error.message,
+    );
+    ({ data: inserted, error } = await admin
+      .from("members")
+      .insert(baseInsert)
+      .select("id")
+      .single());
+  }
   if (error || !inserted) {
     return NextResponse.json(
       { error: error?.message ?? "Insert failed." },

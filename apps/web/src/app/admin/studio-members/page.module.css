@@ -500,3 +500,24 @@
   color: var(--admin-text-secondary);
   line-height: 1.6;
 }
+
+/* Full spelled-out RSS URL in the dossier org card — deliberately
+ * plain text, not a compact link, so the team can read the feed
+ * address at a glance. */
+.rssLine {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--admin-text-primary);
+  word-break: break-all;
+}
+
+.rssLineLabel {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}

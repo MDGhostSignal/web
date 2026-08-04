@@ -411,8 +411,15 @@ function DossierBody({ row, d }: { row: StudioMemberRow; d: Dossier }) {
                 {d.org.newsletterUrl && (
                   <ExtLink href={d.org.newsletterUrl} label="Newsletter" />
                 )}
-                {d.org.rssUrl && <ExtLink href={d.org.rssUrl} label="RSS feed" />}
               </div>
+              {/* Spelled out on purpose (not a compact link) — the team
+                  reads this feed address off the screen for ART19. */}
+              {d.org.rssUrl && (
+                <p className={styles.rssLine}>
+                  <span className={styles.rssLineLabel}>RSS</span>
+                  {d.org.rssUrl}
+                </p>
+              )}
             </div>
           </div>
         ) : (
