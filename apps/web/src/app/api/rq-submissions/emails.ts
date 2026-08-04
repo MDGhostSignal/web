@@ -47,8 +47,8 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
     clarityTextColor = "#b22222";
   }
 
-  // Generate chart image URL - use Vercel deployment domain
-  const chartBaseUrl = "https://web-nine-fawn-27.vercel.app";
+  // Generate chart image URL - served by our own /api/rq-chart route
+  const chartBaseUrl = "https://www.ghostsignal.cloud";
   const chartUrl = `${chartBaseUrl}/api/rq-chart?vl=${details.values?.letter || "F"}&vs=${details.values?.score || 5}&al=${details.authenticity?.letter || "R"}&as=${details.authenticity?.score || 5}&hl=${details.horizon?.letter || "L"}&hs=${details.horizon?.score || 5}`;
 
   // Helper to get badge colors based on score
@@ -81,7 +81,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
           <!-- Header -->
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
-              <img src="https://web-nine-fawn-27.vercel.app/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
+              <img src="https://www.ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
               <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.4;">
                 <span style="display: block;">Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span></span>
                 <span style="display: block;">Resonance Quotient</span>
@@ -377,7 +377,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
                       mike@ghostsignal.cloud
                     </a>
                     <div style="margin-top: 16px;">
-                      <img src="https://web-nine-fawn-27.vercel.app/images/brand/GS-EmailSignatures-mikew.gif" alt="Mike" width="320" style="display: block; margin: 0 auto; border-radius: 8px;" />
+                      <img src="https://www.ghostsignal.cloud/images/brand/GS-EmailSignatures-mikew.gif" alt="Mike" width="320" style="display: block; margin: 0 auto; border-radius: 8px;" />
                     </div>
                   </td>
                 </tr>
@@ -391,7 +391,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center" style="padding-bottom: 16px;">
-                    <img src="https://web-nine-fawn-27.vercel.app/images/brand/snowdrift-logo-white.png" alt="Snowdrift" width="100" style="display: block; margin: 0 auto;" />
+                    <img src="https://www.ghostsignal.cloud/images/brand/snowdrift-logo-white.png" alt="Snowdrift" width="100" style="display: block; margin: 0 auto;" />
                   </td>
                 </tr>
                 <tr>

@@ -144,7 +144,7 @@ export async function sendUserSummaryEmail(
 
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
-              <img src="https://web-nine-fawn-27.vercel.app/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
+              <img src="https://www.ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
               <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.4;">
                 <span style="display: block;">Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span></span>
                 <span style="display: block;">Conviction Quotient</span>
@@ -240,7 +240,7 @@ export async function sendUserSummaryEmail(
                 mike@ghostsignal.cloud
               </a>
               <div style="margin-top: 16px;">
-                <img src="https://web-nine-fawn-27.vercel.app/images/brand/GS-EmailSignatures-mikew.gif" alt="Mike" width="320" style="display: block; margin: 0 auto; border-radius: 8px;" />
+                <img src="https://www.ghostsignal.cloud/images/brand/GS-EmailSignatures-mikew.gif" alt="Mike" width="320" style="display: block; margin: 0 auto; border-radius: 8px;" />
               </div>
             </td>
           </tr>
