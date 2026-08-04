@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 import { loadCurrentStudioMember } from "@/lib/studio-auth";
 import {
-  loadMemberNlAds,
+  loadMemberIntake,
   loadStudioOrgProfile,
   loadStudioRqSummary,
   loadStudioXqSummary,
@@ -30,11 +30,11 @@ export default async function StudioProfilePage() {
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");
 
-  const [org, xqSummary, rqSummary, nlAds] = await Promise.all([
+  const [org, xqSummary, rqSummary, intake] = await Promise.all([
     loadStudioOrgProfile(member),
     loadStudioXqSummary(member.xqSubmissionId),
     loadStudioRqSummary(member.rqSubmissionId),
-    loadMemberNlAds(member.id),
+    loadMemberIntake(member.id),
   ]);
 
   return (
@@ -118,7 +118,7 @@ export default async function StudioProfilePage() {
                 lastName: member.lastName,
               }}
               org={org}
-              nlAds={nlAds}
+              intake={intake}
             />
           </section>
         </div>

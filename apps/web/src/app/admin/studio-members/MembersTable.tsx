@@ -214,6 +214,10 @@ type Dossier = {
     nl_open_rate: string | null;
     nl_frequency: string | null;
     nl_subscribers: string | null;
+    pod_provider?: string | null;
+    pod_downloads?: string | null;
+    pod_frequency?: string | null;
+    pod_audience?: string | null;
   };
   org: StudioOrgProfile | null;
   xq: StudioXqSummary | null;
@@ -379,6 +383,26 @@ function DossierBody({ row, d }: { row: StudioMemberRow; d: Dossier }) {
           {m.bio && <Fact label="Bio" value={m.bio} wide />}
         </dl>
       </section>
+
+      {/* --- Podcast info -------------------------------------- */}
+      {row.member_type === "creator" && (
+        <section className={styles.detailSection}>
+          <h3 className={styles.detailHeading}>Podcast info</h3>
+          {m.pod_provider ||
+          m.pod_downloads ||
+          m.pod_frequency ||
+          m.pod_audience ? (
+            <dl className={styles.factGrid}>
+              <Fact label="Host" value={m.pod_provider} />
+              <Fact label="Avg downloads / episode" value={m.pod_downloads} />
+              <Fact label="Frequency" value={m.pod_frequency} />
+              <Fact label="Audience size" value={m.pod_audience} />
+            </dl>
+          ) : (
+            <p className={styles.notTaken}>Nothing on record yet.</p>
+          )}
+        </section>
+      )}
 
       {/* --- Newsletter advertising ---------------------------- */}
       <section className={styles.detailSection}>

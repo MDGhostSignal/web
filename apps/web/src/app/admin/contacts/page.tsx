@@ -1477,6 +1477,30 @@ function ContactCard({ member }: { member: Member }) {
             </dd>
           </div>
         )}
+        {member.member_type === "creator" &&
+          (member.pod_provider ||
+            member.pod_downloads ||
+            member.pod_frequency ||
+            member.pod_audience) && (
+            <>
+              <div>
+                <dt>Podcast host</dt>
+                <dd>{member.pod_provider || "—"}</dd>
+              </div>
+              <div>
+                <dt>Avg downloads / ep</dt>
+                <dd>{member.pod_downloads || "—"}</dd>
+              </div>
+              <div>
+                <dt>Podcast frequency</dt>
+                <dd>{member.pod_frequency || "—"}</dd>
+              </div>
+              <div>
+                <dt>Audience size</dt>
+                <dd>{member.pod_audience || "—"}</dd>
+              </div>
+            </>
+          )}
         <div>
           <dt>Newsletter ads</dt>
           <dd>{member.nl_ads_interest ? "Interested" : "—"}</dd>

@@ -232,11 +232,23 @@
   the studio dossier shows an "RSS <url>" line (`.rssLine`) instead
   of a compact ↗ link.
 
+### Follow-ups shipped same evening
+- STUDIO_NL_ADVERTISING.sql run by Martin, verified (columns +
+  sentinel-row write/readback/delete).
+- NL answers displayed in CRM: contacts card rows + dossier
+  "Newsletter advertising" section (member select extended).
+- "Do you run a newsletter?" field removed from /studio/profile.
+- Podcast-info block added above the NL opt-in on /studio/profile
+  (creator-kind only): current host / avg downloads per episode /
+  frequency / audience size → 4 new members columns in
+  docs/STUDIO_POD_INFO.sql (loader renamed loadMemberIntake, covers
+  nl_* + pod_*; tolerant fallbacks everywhere). Pod info displayed in
+  both CRM surfaces (only when any value present).
+
 ## Open issues / next steps
-- RUN docs/STUDIO_NL_ADVERTISING.sql in the Supabase SQL editor —
-  until then NL answers are dropped with a server warning.
-- NL fields not yet displayed in the CRM (contacts/dossier) — likely
-  next ask once the migration is in.
+- RUN docs/STUDIO_POD_INFO.sql in the Supabase SQL editor — until
+  then pod answers are dropped with a server warning (NL columns are
+  already live).
 - Reset-password Supabase template: re-paste from
   docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).
 - Snowdrift snowfall GIF for the invite/confirm emails — parked;

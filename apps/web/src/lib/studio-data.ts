@@ -268,42 +268,60 @@ export async function loadStudioOrgProfile(member: {
 }
 
 /* ============================================================
- * Newsletter-advertising fields (docs/STUDIO_NL_ADVERTISING.sql)
+ * Intake fields on the members row: newsletter-ads opt-in
+ * (docs/STUDIO_NL_ADVERTISING.sql) + podcast info
+ * (docs/STUDIO_POD_INFO.sql)
  * ============================================================ */
 
-export type MemberNlAds = {
-  interest: boolean;
-  provider: string | null;
-  openRate: string | null;
-  frequency: string | null;
-  subscribers: string | null;
+export type MemberIntake = {
+  nlInterest: boolean;
+  nlProvider: string | null;
+  nlOpenRate: string | null;
+  nlFrequency: string | null;
+  nlSubscribers: string | null;
+  podProvider: string | null;
+  podDownloads: string | null;
+  podFrequency: string | null;
+  podAudience: string | null;
 };
 
-/** The member's newsletter-ads opt-in + details from the members row.
- *  Null when the migration hasn't run (or the read fails) — callers
- *  render the block with empty defaults. */
-export async function loadMemberNlAds(
+/** The member's intake answers from the members row. Tolerant select
+ *  chain: full → without the pod_* columns (until STUDIO_POD_INFO.sql
+ *  runs) → null (callers render the blocks with empty defaults). */
+export async function loadMemberIntake(
   memberId: string,
-): Promise<MemberNlAds | null> {
-  const res = await supabaseRest<
-    Array<{
-      nl_ads_interest: boolean | null;
-      nl_provider: string | null;
-      nl_open_rate: string | null;
-      nl_frequency: string | null;
-      nl_subscribers: string | null;
-    }>
-  >(
-    `members?select=nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers&id=eq.${encodeURIComponent(memberId)}`,
+): Promise<MemberIntake | null> {
+  type Row = {
+    nl_ads_interest: boolean | null;
+    nl_provider: string | null;
+    nl_open_rate: string | null;
+    nl_frequency: string | null;
+    nl_subscribers: string | null;
+    pod_provider?: string | null;
+    pod_downloads?: string | null;
+    pod_frequency?: string | null;
+    pod_audience?: string | null;
+  };
+  let res = await supabaseRest<Row[]>(
+    `members?select=nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers,pod_provider,pod_downloads,pod_frequency,pod_audience&id=eq.${encodeURIComponent(memberId)}`,
   );
+  if (!res.ok) {
+    res = await supabaseRest<Row[]>(
+      `members?select=nl_ads_interest,nl_provider,nl_open_rate,nl_frequency,nl_subscribers&id=eq.${encodeURIComponent(memberId)}`,
+    );
+  }
   if (!res.ok || !res.data?.[0]) return null;
   const r = res.data[0];
   return {
-    interest: r.nl_ads_interest === true,
-    provider: r.nl_provider,
-    openRate: r.nl_open_rate,
-    frequency: r.nl_frequency,
-    subscribers: r.nl_subscribers,
+    nlInterest: r.nl_ads_interest === true,
+    nlProvider: r.nl_provider,
+    nlOpenRate: r.nl_open_rate,
+    nlFrequency: r.nl_frequency,
+    nlSubscribers: r.nl_subscribers,
+    podProvider: r.pod_provider ?? null,
+    podDownloads: r.pod_downloads ?? null,
+    podFrequency: r.pod_frequency ?? null,
+    podAudience: r.pod_audience ?? null,
   };
 }
 

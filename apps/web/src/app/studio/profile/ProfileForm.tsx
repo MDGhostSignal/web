@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { MemberNlAds, StudioOrgProfile } from "@/lib/studio-data";
+import type { MemberIntake, StudioOrgProfile } from "@/lib/studio-data";
 
 import styles from "../studio.module.css";
 
@@ -15,7 +15,7 @@ import styles from "../studio.module.css";
 export function ProfileForm({
   member,
   org,
-  nlAds,
+  intake,
 }: {
   member: {
     kind: "brand" | "creator" | "other";
@@ -23,7 +23,7 @@ export function ProfileForm({
     lastName: string | null;
   };
   org: StudioOrgProfile | null;
-  nlAds: MemberNlAds | null;
+  intake: MemberIntake | null;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -34,13 +34,16 @@ export function ProfileForm({
   const [description, setDescription] = useState(org?.description ?? "");
   const [website, setWebsite] = useState(org?.website ?? "");
   const [podcastUrl, setPodcastUrl] = useState(org?.podcastUrl ?? "");
-  const [newsletterUrl, setNewsletterUrl] = useState(org?.newsletterUrl ?? "");
   const [rssUrl, setRssUrl] = useState(org?.rssUrl ?? "");
-  const [nlInterest, setNlInterest] = useState(nlAds?.interest ?? false);
-  const [nlProvider, setNlProvider] = useState(nlAds?.provider ?? "");
-  const [nlOpenRate, setNlOpenRate] = useState(nlAds?.openRate ?? "");
-  const [nlFrequency, setNlFrequency] = useState(nlAds?.frequency ?? "");
-  const [nlSubscribers, setNlSubscribers] = useState(nlAds?.subscribers ?? "");
+  const [podProvider, setPodProvider] = useState(intake?.podProvider ?? "");
+  const [podDownloads, setPodDownloads] = useState(intake?.podDownloads ?? "");
+  const [podFrequency, setPodFrequency] = useState(intake?.podFrequency ?? "");
+  const [podAudience, setPodAudience] = useState(intake?.podAudience ?? "");
+  const [nlInterest, setNlInterest] = useState(intake?.nlInterest ?? false);
+  const [nlProvider, setNlProvider] = useState(intake?.nlProvider ?? "");
+  const [nlOpenRate, setNlOpenRate] = useState(intake?.nlOpenRate ?? "");
+  const [nlFrequency, setNlFrequency] = useState(intake?.nlFrequency ?? "");
+  const [nlSubscribers, setNlSubscribers] = useState(intake?.nlSubscribers ?? "");
   const [imageUrl, setImageUrl] = useState(org?.imageUrl ?? null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -91,13 +94,20 @@ export function ProfileForm({
       body.nlOpenRate = nlOpenRate;
       body.nlFrequency = nlFrequency;
       body.nlSubscribers = nlSubscribers;
+      // Podcast info (docs/STUDIO_POD_INFO.sql) — creator-kind only;
+      // always sent so clears persist.
+      if (member.kind === "creator" || org?.kind === "creator") {
+        body.podProvider = podProvider;
+        body.podDownloads = podDownloads;
+        body.podFrequency = podFrequency;
+        body.podAudience = podAudience;
+      }
       if (org) {
         body.tagline = tagline;
         body.description = description;
         if (org.kind === "creator") {
           body.orgName = orgName;
           body.podcastUrl = podcastUrl;
-          body.newsletterUrl = newsletterUrl;
           body.rssUrl = rssUrl;
         } else if (org.kind === "brand") {
           body.orgName = orgName;
@@ -347,17 +357,59 @@ export function ProfileForm({
                 inputMode="url"
               />
             </div>
+          </>
+        )}
+
+        {/* Podcast info — the NL questions, podcast flavor; values
+            live on the CRM member row (docs/STUDIO_POD_INFO.sql). */}
+        {(isCreator || member.kind === "creator") && (
+          <>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-newsletter-url">
-                Do you run a newsletter?
+              <label className={styles.label} htmlFor="profile-pod-provider">
+                Current podcast host
               </label>
               <input
-                id="profile-newsletter-url"
+                id="profile-pod-provider"
                 className={styles.input}
-                value={newsletterUrl}
-                onChange={(e) => setNewsletterUrl(e.target.value)}
-                placeholder="Optional — paste the link if you do"
-                inputMode="url"
+                value={podProvider}
+                onChange={(e) => setPodProvider(e.target.value)}
+                placeholder="e.g. Buzzsprout, Libsyn, Spotify for Creators"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="profile-pod-downloads">
+                Average downloads per episode
+              </label>
+              <input
+                id="profile-pod-downloads"
+                className={styles.input}
+                value={podDownloads}
+                onChange={(e) => setPodDownloads(e.target.value)}
+                placeholder="e.g. 5,000"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="profile-pod-frequency">
+                Podcast frequency
+              </label>
+              <input
+                id="profile-pod-frequency"
+                className={styles.input}
+                value={podFrequency}
+                onChange={(e) => setPodFrequency(e.target.value)}
+                placeholder="e.g. weekly"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="profile-pod-audience">
+                Current audience size
+              </label>
+              <input
+                id="profile-pod-audience"
+                className={styles.input}
+                value={podAudience}
+                onChange={(e) => setPodAudience(e.target.value)}
+                placeholder="e.g. 20,000"
               />
             </div>
           </>

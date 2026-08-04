@@ -180,6 +180,14 @@ export async function PATCH(req: NextRequest) {
             nl_frequency: cleanText(body.nlFrequency, 60),
             nl_subscribers: cleanText(body.nlSubscribers, 40),
           });
+    // Podcast-info block (docs/STUDIO_POD_INFO.sql) — sent by the
+    // profile form for creator-kind members; empty string clears.
+    const podPatch = compact({
+      pod_provider: cleanText(body.podProvider, 80),
+      pod_downloads: cleanText(body.podDownloads, 40),
+      pod_frequency: cleanText(body.podFrequency, 60),
+      pod_audience: cleanText(body.podAudience, 40),
+    });
 
     const memberPatch = compact({
       first_name: cleanText(body.firstName, 80),
@@ -193,15 +201,19 @@ export async function PATCH(req: NextRequest) {
             bio: cleanText(body.description, 2000),
           }),
     });
-    if (Object.keys(memberPatch).length + Object.keys(nlPatch).length > 0) {
+    const intakePatch = { ...nlPatch, ...podPatch };
+    if (Object.keys(memberPatch).length + Object.keys(intakePatch).length > 0) {
       try {
-        await scopedUpdate(member, "members", { ...memberPatch, ...nlPatch });
+        await scopedUpdate(member, "members", {
+          ...memberPatch,
+          ...intakePatch,
+        });
       } catch (err) {
-        // Pre-migration schema: retry without the NL columns so the
-        // rest of the save still lands.
-        if (Object.keys(nlPatch).length === 0) throw err;
+        // Pre-migration schema: retry without the intake columns so
+        // the rest of the save still lands.
+        if (Object.keys(intakePatch).length === 0) throw err;
         console.warn(
-          "[studio/profile] NL fields skipped (run docs/STUDIO_NL_ADVERTISING.sql)",
+          "[studio/profile] intake fields skipped (run docs/STUDIO_NL_ADVERTISING.sql + STUDIO_POD_INFO.sql)",
         );
         if (Object.keys(memberPatch).length > 0) {
           await scopedUpdate(member, "members", memberPatch);
