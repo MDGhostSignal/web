@@ -23,7 +23,7 @@ export function defaultInviteWelcome(): string {
   return (
     "Welcome! The GHOSTSignal team would like to invite you to Studio" +
     "—the members’ workspace where brands and podcasts set up their " +
-    "profile, complete the XQ/RQ alignment quiz, and manage their " +
+    "profile, complete the XQ/RQ alignment quizzes, and manage their " +
     "account details. It’s the essential first step to help us connect " +
     "you with partners you can be proud of. (Setup takes ≈ 20 mins)"
   );
