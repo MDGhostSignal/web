@@ -81,9 +81,41 @@
   heymatvond@gmail.com via direct Resend (route correctly 409s it —
   already has a Studio account).
 
+## Afternoon session (same day, second push)
+
+### Studio landing pared to hero-only (Martin's call)
+- `StudioLiteLanding` now renders topbar + hero only — everything
+  below the hero's Sign in button removed: "Two surfaces" panels,
+  the client-portfolio deck (built this morning), "Handled for you",
+  closing CTA. `ClientPortfolio.tsx` + module CSS and the
+  brand/creator accent tokens stay in the repo (unrouted); section
+  wiring lives in git history (9e15cfe) if it comes back.
+
+### Snowdrift ad in the invite email
+- Compact version of the RQ-results email's starry Snowdrift card
+  added as the last row of the invite email (shared template
+  `lib/studio-invite-email.ts`, so the CRM preview shows it too):
+  white logo, "GHOSTSignal transmission" line, Substack subscribe CTA.
+- Logo served from www.ghostsignal.cloud (canonical), not the old
+  preview domain.
+
+### Email asset domain fix (spotted during the above)
+- All 6 references to the stale `web-nine-fawn-27.vercel.app` preview
+  domain in `api/rq-submissions/emails.ts` (chart base URL, logo,
+  Mike GIF, Snowdrift logo) and `api/xq-submissions/emails.ts` (logo,
+  Mike GIF) now point at `https://www.ghostsignal.cloud`. Every
+  target verified 200 on the canonical domain first (including
+  /api/rq-chart returning image/png).
+
+### Validation (afternoon)
+- typecheck / lint clean; landing verified hero-only on dev server;
+  Snowdrift block verified in the invite preview endpoint output.
+
 ## Open issues / next steps
-- DEPLOY BEFORE SENDING REAL INVITES: emailed links point at
-  www.ghostsignal.cloud, which won't accept invite tokens until this
-  ships. Links in today's preview emails dead-end at login until then.
+- DEPLOYED: morning push (9e15cfe) is live and verified on prod
+  (portfolio was public for part of the day until the afternoon
+  hero-only change shipped).
+- Real invites can be sent from /admin/studio-members once the
+  afternoon push is deployed (morning deploy already accepts tokens).
 - Fuller Studio spec (ad prefs, brand copy space, brokerage) still
   pending Martin.
