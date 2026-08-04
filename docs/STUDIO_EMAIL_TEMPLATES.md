@@ -30,8 +30,10 @@ The HTML below mirrors the Studio surface's design system
 - Table-based layout + inline styles only (email-client safe); the
   CTA is a `bgcolor` table cell so Outlook renders a solid button.
 - Keep `{{ .ConfirmationURL }}` exactly as written — it already
-  carries the `/auth/callback` redirect. The plain-link fallback line
-  under the button is intentional (some clients block styled links).
+  carries the `/auth/callback` redirect. The fallback under the button
+  is a short muted text link ("Use this confirmation link") rather
+  than the raw URL — Supabase token URLs are hundreds of characters
+  and dominated the layout when printed (Martin, 2026-08-04).
 
 ## Confirm signup
 
@@ -89,9 +91,8 @@ Body (HTML):
                   </td>
                 </tr>
               </table>
-              <p style="margin: 14px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                Button not working? Copy this link into your browser:<br>
-                <a href="{{ .ConfirmationURL }}" style="color: #7c58d6; word-break: break-all;">{{ .ConfirmationURL }}</a>
+              <p style="margin: 14px 0 0; font-size: 11px; color: #9aa1ab; line-height: 1.6;">
+                Button not working? <a href="{{ .ConfirmationURL }}" style="color: #6a727b;">Use this confirmation link</a> instead.
               </p>
             </td>
           </tr>
@@ -207,9 +208,8 @@ Body (HTML):
                   </td>
                 </tr>
               </table>
-              <p style="margin: 14px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                Button not working? Copy this link into your browser:<br>
-                <a href="{{ .ConfirmationURL }}" style="color: #7c58d6; word-break: break-all;">{{ .ConfirmationURL }}</a>
+              <p style="margin: 14px 0 0; font-size: 11px; color: #9aa1ab; line-height: 1.6;">
+                Button not working? <a href="{{ .ConfirmationURL }}" style="color: #6a727b;">Use this reset link</a> instead.
               </p>
             </td>
           </tr>
