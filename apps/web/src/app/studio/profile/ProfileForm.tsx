@@ -90,6 +90,12 @@ export function ProfileForm({
           body.website = website;
         }
       }
+      if (member.kind === "creator" && org?.kind !== "creator") {
+        // Creator without a linked creators row yet (fresh invite):
+        // send the feed anyway — the API lazy-creates the row so the
+        // RSS lands on record either way.
+        body.rssUrl = rssUrl;
+      }
       const res = await fetch("/api/studio/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -288,25 +294,32 @@ export function ProfileForm({
           </div>
         )}
 
+        {/* RSS is asked of every creator-kind member, even before a
+            creators row exists (fresh invites) — the save lazy-creates
+            the row. Operationally important: this feed is what the
+            team imports into ART19. */}
+        {(isCreator || member.kind === "creator") && (
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="profile-rss-url">
+              Your show&apos;s RSS feed URL
+            </label>
+            <input
+              id="profile-rss-url"
+              className={styles.input}
+              value={rssUrl}
+              onChange={(e) => setRssUrl(e.target.value)}
+              placeholder="https://feeds.example.com/your-show"
+              inputMode="url"
+            />
+            <span className={styles.fieldHint}>
+              The feed your current host publishes — the team needs it
+              on record for the ART19 move.
+            </span>
+          </div>
+        )}
+
         {isCreator && (
           <>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-rss-url">
-                Your show&apos;s RSS feed URL
-              </label>
-              <input
-                id="profile-rss-url"
-                className={styles.input}
-                value={rssUrl}
-                onChange={(e) => setRssUrl(e.target.value)}
-                placeholder="https://feeds.example.com/your-show"
-                inputMode="url"
-              />
-              <span className={styles.fieldHint}>
-                The feed your current host publishes — the team needs it
-                on record for the ART19 move.
-              </span>
-            </div>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="profile-podcast-url">
                 Where does your show live today?

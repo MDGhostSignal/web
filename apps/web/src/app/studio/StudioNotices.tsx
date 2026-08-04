@@ -33,7 +33,7 @@ export function StudioNotices({
     notices.push({
       key: "xq",
       title: "Take your XQ",
-      body: "Three minutes. Your Values Blueprint is how the network reads you — matching starts here.",
+      body: "Your Values Blueprint is how the network reads you — matching starts here.",
       href: "/xq-quiz",
       cta: "Start the XQ",
     });

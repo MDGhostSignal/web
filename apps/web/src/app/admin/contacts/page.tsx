@@ -1463,6 +1463,24 @@ function ContactCard({ member }: { member: Member }) {
             )}
           </dd>
         </div>
+        {member.member_type === "creator" && (
+          <div>
+            <dt>RSS feed</dt>
+            <dd>
+              {member.creators?.rss_url ? (
+                <a
+                  href={member.creators.rss_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {member.creators.rss_url}
+                </a>
+              ) : (
+                "—"
+              )}
+            </dd>
+          </div>
+        )}
       </dl>
     </section>
   );

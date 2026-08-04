@@ -411,6 +411,7 @@ function DossierBody({ row, d }: { row: StudioMemberRow; d: Dossier }) {
                 {d.org.newsletterUrl && (
                   <ExtLink href={d.org.newsletterUrl} label="Newsletter" />
                 )}
+                {d.org.rssUrl && <ExtLink href={d.org.rssUrl} label="RSS feed" />}
               </div>
             </div>
           </div>

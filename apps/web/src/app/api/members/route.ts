@@ -24,9 +24,18 @@ const TABLE = process.env.MEMBERS_TABLE ?? "members";
  * matcher rule added for Phase 3.
  */
 export async function GET() {
-  const res = await supabaseRest<Member[]>(
-    `${TABLE}?select=*&order=created_at.desc&limit=1000`,
+  // Embed the linked creator's RSS feed so the contacts CRM can show
+  // it inline (creators.rss_url via members.creator_id). Fall back to
+  // the plain select if the embed ever fails (e.g. FK missing on a
+  // fresh environment) — the list must not 502 over a nicety.
+  let res = await supabaseRest<Member[]>(
+    `${TABLE}?select=*,creators(rss_url)&order=created_at.desc&limit=1000`,
   );
+  if (!res.ok) {
+    res = await supabaseRest<Member[]>(
+      `${TABLE}?select=*&order=created_at.desc&limit=1000`,
+    );
+  }
 
   if (!res.ok) {
     return NextResponse.json(

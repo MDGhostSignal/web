@@ -219,6 +219,10 @@ export type Member = {
   organization: string | null;
   role: string | null;
   website: string | null;
+  /** Embedded from the linked creators row by GET /api/members
+   *  (select=*,creators(rss_url)) — the show's RSS feed, shown in the
+   *  contacts CRM. Absent on writes and on the embed-less fallback. */
+  creators?: { rss_url: string | null } | null;
   phase: MemberPhase;
   phase_entered_at: string;
   owner: string | null;

@@ -188,6 +188,33 @@
   whitespace-only diffs (trailing newline + CRLF from an editor
   save) — not part of today's work, deliberately left uncommitted.
 
+## Evening session 2 — RSS pipeline + Jack's account reset
+
+### Jack's account investigation + reset (Supabase admin API)
+- Diagnosed: deleting a CRM members row does NOT remove the Supabase
+  auth account; re-signup then silently sends no email (account
+  already confirmed → nothing to resend). Deleted auth users
+  jack@stthomascambridge.org and jackwharding@icloud.com (iCloud CRM
+  row kept but unlinked/deactivated per never-hard-delete rule).
+  Orphan auth account jack@ghostsignal.cloud still exists (Martin
+  aware). Invite welcome copy also pluralized to "quizzes" (ab9cdc0).
+
+### First-login RSS + notices (Martin's ask)
+- StudioNotices: "Three minutes." removed from the Take-your-XQ bar.
+- /studio/profile: RSS input now renders for EVERY creator-kind
+  member — including fresh invitees with no creators row (previously
+  hidden because org fell back to the personal card).
+- PATCH /api/studio/profile: lazy-creates + links the creators row on
+  first RSS save (name from CRM organization, seeded with the save's
+  tagline/description; pre-migration column fallbacks kept).
+- CRM display: /admin/contacts ContactCard shows an "RSS feed" row
+  for creator contacts (GET /api/members now embeds
+  creators(rss_url), fallback to plain select; sanitizePayload strips
+  the embed on writes) and the /admin/studio-members dossier org card
+  shows an "RSS feed" ExtLink.
+- Verified: embed live on 79 linked contacts; 0/53 creators have
+  rss_url yet (expected — nobody has saved one).
+
 ## Open issues / next steps
 - Reset-password Supabase template: re-paste from
   docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).

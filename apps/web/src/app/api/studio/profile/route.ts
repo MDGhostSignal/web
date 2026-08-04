@@ -6,6 +6,7 @@ import {
   StudioAuthError,
 } from "@/lib/studio-auth";
 import { studioError } from "@/lib/studio-route";
+import { supabaseRest } from "@/lib/supabase-admin";
 
 /**
  * PATCH /api/studio/profile
@@ -76,6 +77,10 @@ export async function PATCH(req: NextRequest) {
     // docs/STUDIO_LITE_RSS.sql runs) so the client can say the RSS
     // value didn't stick instead of silently dropping it.
     let pendingRss = false;
+    // Set when this request created + linked a creators row, so the
+    // personal-card fallback below doesn't double-write the same
+    // tagline/description onto the members row.
+    let createdOrg = false;
 
     if (member.kind === "creator" && member.creatorId) {
       const patch = compact({
@@ -100,6 +105,57 @@ export async function PATCH(req: NextRequest) {
           }
         }
       }
+    } else if (member.kind === "creator" && !member.creatorId) {
+      // Invite-era creators start with only a members row — no
+      // creators row until they hand over something creator-specific.
+      // When this save carries an RSS feed (the field every creator
+      // sees on /studio/profile, and the one the team needs for the
+      // ART19 move), create the row now and link it, seeded with this
+      // save's card fields. Name comes from the CRM organization the
+      // team typed at invite time, falling back to the display name.
+      const rssUrl = cleanUrl(body.rssUrl, "RSS feed URL");
+      if (typeof rssUrl === "string") {
+        const nameRes = await supabaseRest<
+          Array<{ organization: string | null }>
+        >(
+          `members?select=organization&id=eq.${encodeURIComponent(member.id)}`,
+        );
+        const crmOrgName =
+          (nameRes.ok && nameRes.data?.[0]?.organization?.trim()) || null;
+        const insertBody: Record<string, unknown> = {
+          name: orgName ?? crmOrgName ?? member.displayName,
+          description: cleanText(body.description, 2000) ?? null,
+          tagline: cleanText(body.tagline, 140) ?? null,
+          rss_url: rssUrl,
+        };
+        let ins = await supabaseRest<Array<{ id: string }>>("creators", {
+          method: "POST",
+          body: JSON.stringify(insertBody),
+          prefer: "return=representation",
+        });
+        if (!ins.ok) {
+          // Tolerate pre-migration schemas: retry without the columns
+          // added by STUDIO_LITE_RSS/TAGLINE.sql.
+          delete insertBody.rss_url;
+          delete insertBody.tagline;
+          pendingRss = true;
+          ins = await supabaseRest<Array<{ id: string }>>("creators", {
+            method: "POST",
+            body: JSON.stringify(insertBody),
+            prefer: "return=representation",
+          });
+        }
+        if (!ins.ok || !ins.data?.[0]?.id) {
+          throw new StudioAuthError(
+            "Couldn't save your RSS feed — try again or contact the team.",
+            500,
+          );
+        }
+        await scopedUpdate(member, "members", {
+          creator_id: ins.data[0].id,
+        });
+        createdOrg = true;
+      }
     } else if (member.kind === "brand" && member.brandId) {
       const patch = compact({
         name: orgName,
@@ -117,7 +173,7 @@ export async function PATCH(req: NextRequest) {
       last_name: cleanText(body.lastName, 80),
       // Personal card (no linked org row): tagline + descriptive text
       // live on the members row itself. Requires STUDIO_LITE_MEMBER_CARD.sql.
-      ...(hasLinkedOrg
+      ...(hasLinkedOrg || createdOrg
         ? {}
         : {
             tagline: cleanText(body.tagline, 140),
