@@ -284,12 +284,17 @@
   the react-hooks/set-state-in-effect lint rule (async IIFE +
   refresh-counter pattern).
 
+### Outreach schema live (end of day)
+- docs/OUTREACH_SUPABASE_SCHEMA.sql run by Martin and
+  sentinel-verified: insert → admin list API shows the row →
+  duplicate POST 409s with alreadyContactedAt BEFORE any Resend call
+  → cleanup. Tab fully operational for Mike.
+
 ## Open issues / next steps
-- RUN docs/OUTREACH_SUPABASE_SCHEMA.sql — the Outreach tab needs the
-  cold_outreach table before Mike can send.
 - Cold-outreach email copy: subject + pitch box in
   lib/cold-outreach-email.ts are placeholders — write the real email
-  next (Martin: "the email itself we will build next").
+  next (Martin: "the email itself we will build next"). Mike should
+  know the placeholder is what sends until then.
 - Reset-password Supabase template: re-paste from
   docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).
 - Snowdrift snowfall GIF for the invite/confirm emails — parked;
