@@ -23,12 +23,12 @@ export function StudioLanding() {
     <main className={styles.page}>
       <header className={styles.topbar}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>GhostSignal</span>
+          <span className={styles.brandName}>GHOSTSignal</span>
           <span className={styles.brandTag}>Studio</span>
         </div>
         <div className={styles.topbarActions}>
           <Link href="/what-is-this" className={styles.linkSubtle}>
-            What is GhostSignal?
+            What is GHOSTSignal?
           </Link>
           <Link href="/studio/login" className={styles.btnGhost}>
             Sign in
@@ -44,7 +44,7 @@ export function StudioLanding() {
             Your private signal HQ for brand &amp; creator partnerships.
           </h1>
           <p className={styles.heroLede}>
-            Studio is the GhostSignal members&rsquo; workspace &mdash;
+            Studio is the GHOSTSignal members&rsquo; workspace &mdash;
             where your show or your campaign meets live performance
             data, your conviction profile, and the partners your values
             already align with.
@@ -197,7 +197,7 @@ export function StudioLanding() {
               </span>
               <h3 className={styles.featureTitle}>Your XQ &amp; RQ profile</h3>
               <p className={styles.featureBody}>
-                The Values Blueprint and Resonance Quotient that GhostSignal
+                The Values Blueprint and Resonance Quotient that GHOSTSignal
                 uses to match you &mdash; visible to you, side by side,
                 with the archetype and the axis read.
               </p>
@@ -209,7 +209,7 @@ export function StudioLanding() {
               <h3 className={styles.featureTitle}>Marketplace + World</h3>
               <p className={styles.featureBody}>
                 Browse the matched X-Deck of brands or creators tuned to
-                your signal, and walk into the GhostSignal World to meet
+                your signal, and walk into the GHOSTSignal World to meet
                 them in a shared social space.
               </p>
             </article>
@@ -222,10 +222,10 @@ export function StudioLanding() {
         <div className={styles.sectionInner}>
           <p className={styles.sectionEyebrow}>Who this is for</p>
           <h2 className={styles.sectionTitle}>
-            Vetted brands and creators inside the GhostSignal network.
+            Vetted brands and creators inside the GHOSTSignal network.
           </h2>
           <p className={styles.sectionLede}>
-            Studio is the members&rsquo; surface of the GhostSignal
+            Studio is the members&rsquo; surface of the GHOSTSignal
             podcast advertising network &mdash; the workspace you get
             once your XQ assessment is reviewed and your show or
             brand is invited into the network.
@@ -257,7 +257,7 @@ export function StudioLanding() {
                 </li>
                 <li className={styles.personaListItem}>
                   Contracts, ad insertion, and payment tracking handled
-                  by the GhostSignal team.
+                  by the GHOSTSignal team.
                 </li>
               </ul>
             </article>
@@ -320,7 +320,7 @@ export function StudioLanding() {
             <div className={styles.worldFrame}>
               <img
                 src="/world/sprites/SNES - Harvest Moon - Backgrounds - Village (Summer).png"
-                alt="A bird&rsquo;s-eye view of the GhostSignal World village — pixel-art buildings, paths, and trees laid out in a town square."
+                alt="A bird&rsquo;s-eye view of the GHOSTSignal World village — pixel-art buildings, paths, and trees laid out in a town square."
                 className={styles.worldImage}
                 loading="lazy"
               />

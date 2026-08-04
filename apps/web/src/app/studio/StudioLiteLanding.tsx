@@ -19,12 +19,12 @@ export function StudioLiteLanding() {
     <main className={styles.page}>
       <header className={styles.topbar}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>GhostSignal</span>
+          <span className={styles.brandName}>GHOSTSignal</span>
           <span className={styles.brandTag}>Studio</span>
         </div>
         <div className={styles.topbarActions}>
           <Link href="/what-is-this" className={styles.linkSubtle}>
-            What is GhostSignal?
+            What is GHOSTSignal?
           </Link>
           <Link href="/studio/login" className={styles.btnGhost}>
             Sign in
@@ -44,7 +44,7 @@ export function StudioLiteLanding() {
           </h1>
           <div className={`${styles.morse} ${styles.rise3}`} aria-hidden="true" />
           <p className={`${styles.heroLede} ${styles.rise3}`}>
-            Studio is the GhostSignal members&rsquo; workspace.
+            Studio is the GHOSTSignal members&rsquo; workspace.
           </p>
           <div className={`${styles.heroActions} ${styles.rise4}`}>
             <Link href="/studio/login" className={styles.btnPrimary}>

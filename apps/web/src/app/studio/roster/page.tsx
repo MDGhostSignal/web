@@ -26,7 +26,7 @@ import styles from "../studio.module.css";
 /** /studio/roster — who's on the network.
  *
  *  Brand roster (creator/other viewers): a baseball-card deck you
- *  flick through, one brand at a time. The GhostSignal team's
+ *  flick through, one brand at a time. The GHOSTSignal team's
  *  hand-picked recommendations lead the deck with the "✦ GS Pick"
  *  badge.
  *
@@ -61,7 +61,7 @@ export default async function StudioRosterPage() {
         org={org}
         headerProfile={headerProfile}
         title="Creator roster"
-        subtitle="Every show on the GhostSignal network."
+        subtitle="Every show on the GHOSTSignal network."
       >
         {creators.length === 0 ? (
           <EmptyRoster side="creators" />
@@ -115,7 +115,7 @@ export default async function StudioRosterPage() {
       title="Brand roster"
       subtitle={
         pickCount > 0
-          ? `The GhostSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GS Pick. Flick through the cards; tap one for the full story.`
+          ? `The GHOSTSignal team picked ${pickCount === 1 ? "one brand" : `${pickCount} brands`} for you — they lead the deck, marked ✦ GS Pick. Flick through the cards; tap one for the full story.`
           : "Every brand on the network, one card at a time. Flick through the deck; tap a card for the full story."
       }
     >

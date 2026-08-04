@@ -135,7 +135,7 @@ export async function sendUserSummaryEmail(
 
   const html = `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your GhostSignal Conviction Quotient</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your GHOSTSignal Conviction Quotient</title></head>
 <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
     <tr>
@@ -144,7 +144,7 @@ export async function sendUserSummaryEmail(
 
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
-              <img src="https://www.ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
+              <img src="https://www.ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GHOSTSignal" width="140" style="display: block; margin: 0 auto 20px;" />
               <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.4;">
                 <span style="display: block;">Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span></span>
                 <span style="display: block;">Conviction Quotient</span>
@@ -247,7 +247,7 @@ export async function sendUserSummaryEmail(
 
           <tr>
             <td align="center" style="padding: 16px 32px 32px; font-size: 12px; color: #999999;">
-              GhostSignal · The Conviction Quotient · XQ
+              GHOSTSignal · The Conviction Quotient · XQ
             </td>
           </tr>
 

@@ -81,7 +81,7 @@ const STEPS: Step[] = [
     n: 2,
     title: "Keys To New Gallery",
     timing: ["Your time: ~30 min", "Import completes in: 24–72 h"],
-    lede: "We bring your show into the GhostSignal network, hosted on ART19.",
+    lede: "We bring your show into the GHOSTSignal network, hosted on ART19.",
     items: [
       {
         id: "2-rss",
@@ -153,7 +153,7 @@ const STEPS: Step[] = [
     n: 4,
     title: "Opening Day",
     timing: ["Allow 24 h for full signal fidelity"],
-    lede: "Once your address is changed, your new home is with GhostSignal on ART19!",
+    lede: "Once your address is changed, your new home is with GHOSTSignal on ART19!",
     items: [
       {
         id: "4-apps",

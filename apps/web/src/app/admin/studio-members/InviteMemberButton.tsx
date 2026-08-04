@@ -38,15 +38,15 @@ export function InviteMemberButton() {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  // null = still on the template (keeps tracking type/org edits);
-  // a string = the team's personal welcome text.
+  // null = still on the template; a string = the team's personal
+  // welcome text.
   const [welcomeDraft, setWelcomeDraft] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const welcome = welcomeDraft ?? defaultInviteWelcome(memberKind, orgName);
+  const welcome = welcomeDraft ?? defaultInviteWelcome();
 
   function reset() {
     setPhase({ kind: "form" });
@@ -281,7 +281,7 @@ export function InviteMemberButton() {
                 />
                 <span className={styles.inviteHint}>
                   {welcomeDraft === null ? (
-                    "Template text — it follows the type and name above; edit it to send a personal welcome."
+                    "Template text — edit it to send a personal welcome."
                   ) : (
                     <>
                       Personal welcome — this exact text goes in the email.{" "}

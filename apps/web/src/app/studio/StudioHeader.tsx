@@ -32,7 +32,7 @@ export function StudioHeader({
   return (
     <header className={styles.dashHeader}>
       <div className={styles.dashHeaderBrand}>
-        <span className={styles.brandName}>GhostSignal</span>
+        <span className={styles.brandName}>GHOSTSignal</span>
         <span className={styles.brandTag}>Studio</span>
       </div>
       <nav className={styles.headerNav}>

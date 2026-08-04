@@ -240,7 +240,7 @@ export function BrandCardFace({
       }
     >
       <header className={styles.faceTop}>
-        <span className={styles.faceLeague}>GhostSignal Roster</span>
+        <span className={styles.faceLeague}>GHOSTSignal Roster</span>
         {brand.recommended && (
           <span className={styles.facePick}>✦ GS Pick</span>
         )}

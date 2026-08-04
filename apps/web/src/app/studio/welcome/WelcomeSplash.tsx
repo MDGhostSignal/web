@@ -140,7 +140,7 @@ export function WelcomeSplash({
     <div className={styles.splash}>
       {/* --- Hero ---------------------------------------------------- */}
       <header className={styles.hero}>
-        <p className={styles.eyebrow}>GhostSignal Studio · Welcome</p>
+        <p className={styles.eyebrow}>GHOSTSignal Studio · Welcome</p>
         <h1 className={styles.title}>
           Welcome in{firstName ? `, ${firstName}` : ""}. Let&apos;s set up
           your card.

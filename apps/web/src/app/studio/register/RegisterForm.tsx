@@ -232,7 +232,7 @@ export function RegisterForm({
     <main className={styles.authPage}>
       <div className={styles.authCard}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>GhostSignal</span>
+          <span className={styles.brandName}>GHOSTSignal</span>
           <span className={styles.brandTag}>Studio</span>
         </div>
         <h1 className={styles.title}>
@@ -241,7 +241,7 @@ export function RegisterForm({
         <p className={styles.subtitle}>
           {invite ? (
             <>
-              The GhostSignal team set this invite up for{" "}
+              The GHOSTSignal team set this invite up for{" "}
               <strong>{invite.email}</strong>. Check your details, set a
               password, confirm your email and you&apos;re in.
             </>
@@ -265,7 +265,7 @@ export function RegisterForm({
                     {invite.kind === "creator" ? "Podcast / Creator" : "Brand"}
                   </span>
                   <span className={styles.kindBtnDesc}>
-                    Selected by the GhostSignal team for your invite.
+                    Selected by the GHOSTSignal team for your invite.
                   </span>
                 </div>
               </div>

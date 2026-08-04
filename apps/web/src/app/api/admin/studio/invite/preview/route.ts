@@ -31,10 +31,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const kind = body.kind === "brand" ? "brand" : "creator";
-  const orgName = body.orgName?.trim() ?? "";
   const welcome =
-    body.welcome?.trim().slice(0, 2000) || defaultInviteWelcome(kind, orgName);
+    body.welcome?.trim().slice(0, 2000) || defaultInviteWelcome();
 
   const html = inviteEmailHtml({
     firstName: body.firstName?.trim() || "Alex",

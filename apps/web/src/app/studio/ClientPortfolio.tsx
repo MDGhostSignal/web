@@ -83,7 +83,7 @@ export function ClientPortfolio({ cards }: { cards: PortfolioCard[] }) {
               </span>
               <span className={styles.cardName}>{card.name}</span>
               {card.blurb && <span className={styles.cardBlurb}>{card.blurb}</span>}
-              <span className={styles.cardFootnote}>GhostSignal client</span>
+              <span className={styles.cardFootnote}>GHOSTSignal client</span>
             </button>
           );
         })}

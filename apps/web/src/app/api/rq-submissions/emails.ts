@@ -70,7 +70,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your GhostSignal Resonance Quotient</title>
+  <title>Your GHOSTSignal Resonance Quotient</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
@@ -81,7 +81,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
           <!-- Header -->
           <tr>
             <td align="center" style="padding: 40px 32px 24px;">
-              <img src="https://www.ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GhostSignal" width="140" style="display: block; margin: 0 auto 20px;" />
+              <img src="https://www.ghostsignal.cloud/images/brand/ghostsignal-logo.svg" alt="GHOSTSignal" width="140" style="display: block; margin: 0 auto 20px;" />
               <h1 style="margin: 0; font-size: 24px; font-weight: 400; color: #1a1a1a; line-height: 1.4;">
                 <span style="display: block;">Your <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span></span>
                 <span style="display: block;">Resonance Quotient</span>
@@ -411,7 +411,7 @@ export async function sendUserSummaryEmail(payload: SubmissionPayload) {
             </td>
           </tr>
 
-          <!-- Discover GhostSignal Button -->
+          <!-- Discover GHOSTSignal Button -->
           <tr>
             <td align="center" style="padding: 24px 32px;">
               <a href="https://ghostsignal.cloud" target="_blank" style="display: inline-block; padding: 14px 28px; background: #FBAD25; color: #1a1a1a; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">

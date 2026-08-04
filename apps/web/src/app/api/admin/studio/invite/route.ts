@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   }
   const note = body.note?.trim().slice(0, 1000) || null;
   const welcome =
-    body.welcome?.trim().slice(0, 2000) || defaultInviteWelcome(kind, orgName);
+    body.welcome?.trim().slice(0, 2000) || defaultInviteWelcome();
 
   const resendKey = process.env.RESEND_API_KEY;
   const resendFrom = process.env.RESEND_FROM;
@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       from: resendFrom,
       to: [email],
-      subject: `${firstName}, you're invited to GhostSignal Studio`,
+      subject: `${firstName}, you're invited to GHOSTSignal Studio`,
       html: inviteEmailHtml({ firstName, welcome, note, inviteUrl }),
     }),
   });

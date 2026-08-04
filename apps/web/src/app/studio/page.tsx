@@ -75,7 +75,7 @@ export default async function StudioDashboardPage() {
             ? "Your show's performance and the partnership signals shaped by your XQ archetype."
             : member.kind === "brand"
             ? "Your campaigns, audience reach, and podcasts that align with your brand values."
-            : "Your GhostSignal workspace."}
+            : "Your GHOSTSignal workspace."}
         </p>
 
         {/* Creator dashboard */}

@@ -144,7 +144,7 @@ export function BrandPanel({
 
         {brand.recommended && (
           <span className={styles.wcDetailPickNote}>
-            ✦ Hand-picked for you by the GhostSignal team
+            ✦ Hand-picked for you by the GHOSTSignal team
           </span>
         )}
 
@@ -256,7 +256,7 @@ export function BrandPanel({
         <footer className={styles.modalFoot}>
           {request.state === "sent" ? (
             <div className={styles.formSaved}>
-              Request sent — the GhostSignal team will broker the intro
+              Request sent — the GHOSTSignal team will broker the intro
               and get back to you.
             </div>
           ) : (
@@ -272,7 +272,7 @@ export function BrandPanel({
                   : "Request an intro"}
               </button>
               <span className={styles.modalMuted}>
-                Brokered by the GhostSignal team — no cold outreach.
+                Brokered by the GHOSTSignal team — no cold outreach.
               </span>
             </>
           )}

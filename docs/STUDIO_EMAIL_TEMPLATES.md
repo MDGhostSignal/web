@@ -19,7 +19,7 @@ this repo** — apply them at:
 The HTML below mirrors the Studio surface's design system
 (`apps/web/src/app/studio/studio-tokens.css` + the Lite landing):
 
-- Wordmark lockup: **GhostSignal** (17px / 800 / tight tracking) +
+- Wordmark lockup: **GHOSTSignal** (17px / 800 / tight tracking) +
   the bordered uppercase **STUDIO** pill.
 - The morse-code accent strip from the landing hero
   (repeating-gradient on `#7c58d6`; clients without gradient support
@@ -38,7 +38,7 @@ The HTML below mirrors the Studio surface's design system
 Subject:
 
 ```
-{{ if .Data.first_name }}{{ .Data.first_name }}, confirm your GhostSignal Studio account{{ else }}Confirm your GhostSignal Studio account{{ end }}
+{{ if .Data.first_name }}{{ .Data.first_name }}, confirm your GHOSTSignal Studio account{{ else }}Confirm your GHOSTSignal Studio account{{ end }}
 ```
 
 Body (HTML):
@@ -55,7 +55,7 @@ Body (HTML):
           <!-- Wordmark lockup -->
           <tr>
             <td style="padding: 28px 36px 0;">
-              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GhostSignal</span>
+              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GHOSTSignal</span>
               <span style="display: inline-block; margin-left: 8px; padding: 2px 9px; border: 1px solid #7c58d6; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #7c58d6; vertical-align: 2px;">Studio</span>
             </td>
           </tr>
@@ -74,7 +74,7 @@ Body (HTML):
                 {{ if .Data.first_name }}Hi {{ .Data.first_name }},{{ else }}Hi,{{ end }}
               </h1>
               <p style="margin: 0; font-size: 15px; color: #5a5e66; line-height: 1.65;">
-                Welcome to GhostSignal Studio{{ if .Data.organization }} &mdash; great to have <strong style="color: #0e1119;">{{ .Data.organization }}</strong> on the network{{ end }}. One click and your account is live:
+                Welcome to GHOSTSignal Studio{{ if .Data.organization }} &mdash; great to have <strong style="color: #0e1119;">{{ .Data.organization }}</strong> on the network{{ end }}. One click and your account is live:
               </p>
             </td>
           </tr>
@@ -106,7 +106,7 @@ Body (HTML):
                       After confirming, sign in and your workspace is ready &mdash;
                       <strong style="color: #0e1119;">your profile</strong>, the
                       <strong style="color: #0e1119;">network roster</strong>, and your
-                      <strong style="color: #0e1119;">GhostSignal picks</strong>.
+                      <strong style="color: #0e1119;">GHOSTSignal picks</strong>.
                     </p>
                   </td>
                 </tr>
@@ -118,8 +118,8 @@ Body (HTML):
           <tr>
             <td style="padding: 0 36px 28px; border-top: 1px solid #e6e8ee;">
               <p style="margin: 18px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                &mdash; The GhostSignal team<br>
-                You&rsquo;re receiving this because this address was used to sign up for GhostSignal Studio. If that wasn&rsquo;t you, you can ignore this email.
+                &mdash; The GHOSTSignal team<br>
+                You&rsquo;re receiving this because this address was used to sign up for GHOSTSignal Studio. If that wasn&rsquo;t you, you can ignore this email.
               </p>
             </td>
           </tr>
@@ -137,7 +137,7 @@ Body (HTML):
 Subject:
 
 ```
-{{ if .Data.first_name }}{{ .Data.first_name }}, reset your GhostSignal Studio password{{ else }}Reset your GhostSignal Studio password{{ end }}
+{{ if .Data.first_name }}{{ .Data.first_name }}, reset your GHOSTSignal Studio password{{ else }}Reset your GHOSTSignal Studio password{{ end }}
 ```
 
 Body (HTML):
@@ -154,7 +154,7 @@ Body (HTML):
           <!-- Wordmark lockup -->
           <tr>
             <td style="padding: 28px 36px 0;">
-              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GhostSignal</span>
+              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GHOSTSignal</span>
               <span style="display: inline-block; margin-left: 8px; padding: 2px 9px; border: 1px solid #7c58d6; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #7c58d6; vertical-align: 2px;">Studio</span>
             </td>
           </tr>
@@ -173,7 +173,7 @@ Body (HTML):
                 {{ if .Data.first_name }}Hi {{ .Data.first_name }},{{ else }}Hi,{{ end }}
               </h1>
               <p style="margin: 0; font-size: 15px; color: #5a5e66; line-height: 1.65;">
-                Follow the link below to set a new password for your GhostSignal Studio account:
+                Follow the link below to set a new password for your GHOSTSignal Studio account:
               </p>
             </td>
           </tr>
@@ -202,7 +202,7 @@ Body (HTML):
                 Didn&rsquo;t request this? You can safely ignore this email &mdash; your password stays unchanged.
               </p>
               <p style="margin: 0; padding-top: 18px; border-top: 1px solid #e6e8ee; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                &mdash; The GhostSignal team
+                &mdash; The GHOSTSignal team
               </p>
             </td>
           </tr>

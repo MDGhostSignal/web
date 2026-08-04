@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
     <main className={styles.authPage}>
       <div className={styles.authCard}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>GhostSignal</span>
+          <span className={styles.brandName}>GHOSTSignal</span>
           <span className={styles.brandTag}>Studio</span>
         </div>
         <h1 className={styles.title}>Set a new password</h1>

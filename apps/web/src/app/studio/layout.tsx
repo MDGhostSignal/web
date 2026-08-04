@@ -4,8 +4,8 @@ import "./studio-tokens.css";
 import styles from "./studio.module.css";
 
 export const metadata: Metadata = {
-  title: "GhostSignal Studio",
-  description: "Your GhostSignal client workspace — performance, matching, and brand-creator collaboration.",
+  title: "GHOSTSignal Studio",
+  description: "Your GHOSTSignal client workspace — performance, matching, and brand-creator collaboration.",
 };
 
 /**

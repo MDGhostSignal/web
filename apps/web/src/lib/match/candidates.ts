@@ -18,7 +18,7 @@ export function brandToCandidate(b: MarketplaceBrand): MatchCandidate {
     role: "Brand",
     memberType: "brand",
     imageUrl: b.logoUrl ?? `https://picsum.photos/seed/${b.id}/600/780`,
-    pitch: truncate(b.description ?? "A brand on GhostSignal.", 96),
+    pitch: truncate(b.description ?? "A brand on GHOSTSignal.", 96),
     bio: b.description ?? "Profile to come.",
     archetype,
     axisVector: archetypeToAxis(b.contactArchetype),
@@ -35,7 +35,7 @@ export function creatorToCandidate(c: MarketplaceCreator): MatchCandidate {
     ? `${c.showTitle}${
         c.showListenCount ? ` · ${formatListens(c.showListenCount)} listens` : ""
       }`
-    : "Creator on GhostSignal.";
+    : "Creator on GHOSTSignal.";
   return {
     id: `creator-${c.id}`,
     name: c.name,

@@ -15,25 +15,17 @@
 
 export type InviteKind = "brand" | "creator";
 
-/** The template welcome paragraph, resolved with the org/show name.
- *  Shown prefilled in the CRM invite form; the team can replace it
- *  with a personal welcome before sending. */
-export function defaultInviteWelcome(
-  kind: InviteKind,
-  orgName: string,
-): string {
-  const org = orgName.trim();
-  const orgBit =
-    kind === "creator"
-      ? org
-        ? `your show ${org}`
-        : "your show"
-      : org || "your brand";
+/** The template welcome paragraph (Jack's copy, 2026-08-04). Shown
+ *  prefilled in the CRM invite form; the team can replace it with a
+ *  personal welcome before sending. Deliberately static — same text
+ *  for brands and creators. */
+export function defaultInviteWelcome(): string {
   return (
-    `The GhostSignal team would like to invite you and ${orgBit} to Studio — ` +
-    "the members’ workspace where brands and podcasts on our network keep " +
-    "their profile sharp, see who they share the air with, and let us " +
-    "broker the partnerships that fit."
+    "Welcome! The GHOSTSignal team would like to invite you to Studio" +
+    "—the members’ workspace where brands and podcasts set up their " +
+    "profile, complete the XQ/RQ alignment quiz, and manage their " +
+    "account details. It’s the essential first step to help us connect " +
+    "you with partners you can be proud of. (Setup takes ≈ 20 mins)"
   );
 }
 
@@ -90,7 +82,7 @@ export function inviteEmailHtml({
 
           <tr>
             <td style="padding: 28px 36px 0;">
-              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GhostSignal</span>
+              <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #0e1119;">GHOSTSignal</span>
               <span style="display: inline-block; margin-left: 8px; padding: 2px 9px; border: 1px solid #7c58d6; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #7c58d6; vertical-align: 2px;">Studio</span>
             </td>
           </tr>
@@ -144,8 +136,8 @@ export function inviteEmailHtml({
           <tr>
             <td style="padding: 0 36px 28px; border-top: 1px solid #e6e8ee;">
               <p style="margin: 18px 0 0; font-size: 12px; color: #6a727b; line-height: 1.6;">
-                &mdash; The GhostSignal team<br>
-                You&rsquo;re receiving this because the GhostSignal team invited you to their members&rsquo; workspace. Not interested? You can simply ignore this email.
+                &mdash; The GHOSTSignal team<br>
+                You&rsquo;re receiving this because the GHOSTSignal team invited you to their members&rsquo; workspace. Not interested? You can simply ignore this email.
               </p>
             </td>
           </tr>

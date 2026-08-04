@@ -20,7 +20,7 @@ export default async function StudioPendingPage() {
         <div className={styles.pendingIcon} aria-hidden="true">⏳</div>
         <h1 className={styles.title}>Waiting for approval</h1>
         <p className={styles.subtitle}>
-          Thanks for registering. A GhostSignal co-founder will review
+          Thanks for registering. A GHOSTSignal co-founder will review
           your account shortly. You&apos;ll receive an email once
           you&apos;re approved — usually within a business day.
         </p>

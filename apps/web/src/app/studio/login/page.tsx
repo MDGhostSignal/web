@@ -131,7 +131,7 @@ function LoginForm() {
     <main className={styles.authPage}>
       <div className={styles.authCard}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>GhostSignal</span>
+          <span className={styles.brandName}>GHOSTSignal</span>
           <span className={styles.brandTag}>Studio</span>
         </div>
         <h1 className={styles.title}>Sign in</h1>
@@ -197,7 +197,7 @@ function LoginForm() {
         {STUDIO_INVITE_ONLY ? (
           <div className={styles.altLink}>
             Studio is invite-only &mdash; accounts are set up by the
-            GhostSignal team.
+            GHOSTSignal team.
           </div>
         ) : (
           <div className={styles.altLink}>
