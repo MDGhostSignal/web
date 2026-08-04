@@ -45,7 +45,7 @@ export function StudioLiteLanding() {
           <div className={`${styles.morse} ${styles.rise3}`} aria-hidden="true" />
           <p className={`${styles.heroLede} ${styles.rise3}`}>
             The GHOSTSignal Studio is where members set up their
-            profile, complete the XQ/RQ alignment quiz, and manage
+            profile, complete the XQ/RQ alignment quizzes, and manage
             account details&mdash;the essential first step to building
             partnerships you can be proud of.
           </p>
