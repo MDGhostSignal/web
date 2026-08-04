@@ -245,10 +245,18 @@
   nl_* + pod_*; tolerant fallbacks everywhere). Pod info displayed in
   both CRM surfaces (only when any value present).
 
+### Pod-question merge (final shape)
+- "Avg downloads per episode" + "Current audience size" merged into
+  one "Average listens per month" question (pod_monthly_listens;
+  docs/STUDIO_POD_LISTENS.sql adds it and drops the two empty
+  columns). Profile, PATCH route, loader, dossier + contacts display
+  all updated (625f123).
+- All three intake migrations (NL_ADVERTISING, POD_INFO,
+  POD_LISTENS) run by Martin and sentinel-verified. Final members
+  intake columns: nl_ads_interest/provider/open_rate/frequency/
+  subscribers + pod_provider/monthly_listens/frequency.
+
 ## Open issues / next steps
-- RUN docs/STUDIO_POD_INFO.sql in the Supabase SQL editor — until
-  then pod answers are dropped with a server warning (NL columns are
-  already live).
 - Reset-password Supabase template: re-paste from
   docs/STUDIO_EMAIL_TEMPLATES.md when convenient (doc is current).
 - Snowdrift snowfall GIF for the invite/confirm emails — parked;
