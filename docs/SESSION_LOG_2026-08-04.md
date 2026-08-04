@@ -111,11 +111,47 @@
 - typecheck / lint clean; landing verified hero-only on dev server;
   Snowdrift block verified in the invite preview endpoint output.
 
+## Late-afternoon session (third push)
+
+### GHOSTSignal brand casing (Martin's call)
+- Every user-visible "GhostSignal" → "GHOSTSignal" across the studio
+  surface (landing, login, register, reset-password, pending, welcome
+  splash, roster/BrandDeck/BrandPanel, migration guide, portfolio
+  card, StudioHeader, layout metadata title, legacy StudioLanding)
+  and the emails: invite email (wordmark, team lines, subject), XQ/RQ
+  result emails (titles, logo alt, footer), match-deck fallback
+  pitches. `BrandedGhostSignal` identifier guarded; CSS comments left.
+- `docs/STUDIO_EMAIL_TEMPLATES.md` updated too — NOTE: the live
+  Supabase dashboard auth templates still say GhostSignal until
+  Martin re-pastes them.
+- Deliberately left as-is (Martin: "leave as is"): site-wide
+  `og:site_name = "GhostSignal"` (root layout, affects all pages) and
+  admin-internal CRM alert emails.
+
+### Invite email welcome template — Jack's final copy
+- `defaultInviteWelcome()` now returns Jack's 12:06 text verbatim
+  ("Welcome! The GHOSTSignal team would like to invite you to
+  Studio—… (Setup takes ≈ 20 mins)"). Now static — no longer
+  interpolates show/brand name (signature changed to no-args; all 3
+  call sites updated; CRM hint copy adjusted).
+
+### Considered, skipped for now
+- Snowfall animation in the email's Snowdrift ad: the RQ-page version
+  is JS canvas (dead in email); CSS animation only survives Apple
+  Mail. Viable route documented = baked animated GIF (frame 1 = the
+  static starry card as Outlook fallback). Martin: skip for now.
+
+### Validation (late afternoon)
+- typecheck / lint clean; preview endpoint verified: new welcome copy
+  + 0 lowercase GhostSignal in the rendered invite email; /studio
+  clean except the site-wide og:site_name meta.
+
 ## Open issues / next steps
-- DEPLOYED: morning push (9e15cfe) is live and verified on prod
-  (portfolio was public for part of the day until the afternoon
-  hero-only change shipped).
-- Real invites can be sent from /admin/studio-members once the
-  afternoon push is deployed (morning deploy already accepts tokens).
+- Real invites can be sent from /admin/studio-members once this push
+  is deployed (tokens already accepted on prod since the morning).
+- Supabase dashboard auth templates: re-paste from
+  docs/STUDIO_EMAIL_TEMPLATES.md to pick up GHOSTSignal casing.
+- Snowdrift snowfall GIF for the invite email — parked, approach
+  documented above.
 - Fuller Studio spec (ad prefs, brand copy space, brokerage) still
   pending Martin.
