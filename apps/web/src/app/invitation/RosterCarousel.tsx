@@ -29,17 +29,27 @@ type Client = {
   about: string;
   /** Short mock RQ resonance read for the popup. */
   rq: string;
+  /** Client-chosen banner image shown in the card's top section. */
+  banner: string;
 };
 
+/** Fade the banner's lower edge into the card surface so the content
+ *  below stays readable. Shared by card + popup. */
+function bannerBackground(banner: string): React.CSSProperties {
+  return {
+    backgroundImage: `linear-gradient(180deg, rgb(255 255 255 / 0%) 45%, var(--gs-background) 97%), url(${banner})`,
+  };
+}
+
 const ROSTER: Client[] = [
-  { kind: "brand", name: "Meridian Coffee", blurb: "Small-batch roaster building mornings people look forward to.", xqCode: "C-P-C", about: "A roastery that treats coffee as a daily ritual worth protecting — small lots, named farms, and a subscription that reads more like a friendship than a funnel.", rq: "High resonance with craft-first, morning-ritual audiences. Strongest reads on the network: The Field Guide, The Quiet Hours." },
-  { kind: "creator", name: "The Field Guide", blurb: "Weekly conversations about the outdoors and the people who live in it.", xqCode: "C-P-L", about: "A weekly show where rangers, farmers, and trail builders talk about the land they keep. Loyal audience, long episodes, zero hot takes.", rq: "Audience leans considered-outdoors; resonates with durable-goods brands that value stewardship over hype." },
-  { kind: "brand", name: "Northlight Gear", blurb: "Trail-ready equipment designed to outlast the trend cycle.", xqCode: "C-S-C", about: "Packs and shelters engineered to be repaired, not replaced — with a lifetime service bench and a catalogue that changes slowly on purpose.", rq: "Resonates with slow-adventure listeners; aligned shows index high on trust and repair-not-replace values." },
-  { kind: "creator", name: "Static & Stone", blurb: "True stories from small towns, told one road trip at a time.", xqCode: "X-P-C", about: "Two producers, one van, and the kind of small-town stories national desks drive past. Intimate, handmade documentary work.", rq: "Small-town storytelling audience; best fits brands with roots, provenance, and a point of view." },
-  { kind: "brand", name: "Harbor & Pine", blurb: "Home goods for people who notice the details.", xqCode: "X-S-C", about: "A home-goods studio that redesigns the overlooked — brooms, hooks, kettles — with the precision usually saved for furniture.", rq: "Design-literate households; resonates with shows where taste and intention drive the conversation." },
-  { kind: "creator", name: "The Quiet Hours", blurb: "A late-night show about creativity, doubt, and getting the work done.", xqCode: "X-P-L", about: "Late-night conversations with people mid-project — the doubt, the drafts, the discipline. A companion for anyone working after everyone else went to bed.", rq: "Night-owl creative audience; resonates with tools-of-the-trade brands and slow-productivity thinking." },
-  { kind: "brand", name: "Juniper Supply Co.", blurb: "Everyday carry built to be handed down, not thrown out.", xqCode: "C-S-L", about: "Knives, notebooks, and bags built on a buy-it-once philosophy — with a repair program older than most of its competitors.", rq: "Legacy-minded buyers; resonates with generational-story shows and buy-it-once communities." },
-  { kind: "creator", name: "Long Way Home", blurb: "Documentary storytelling about the places that shape us.", xqCode: "X-S-L", about: "A documentary series about places and the systems that shape them — one season, one town, every thread pulled.", rq: "Documentary listeners with high place-attachment; fits travel, heritage, and craft-minded brands." },
+  { kind: "brand", name: "Meridian Coffee", banner: "/images/invitation/banner-meridian-coffee.jpg", blurb: "Small-batch roaster building mornings people look forward to.", xqCode: "C-P-C", about: "A roastery that treats coffee as a daily ritual worth protecting — small lots, named farms, and a subscription that reads more like a friendship than a funnel.", rq: "High resonance with craft-first, morning-ritual audiences. Strongest reads on the network: The Field Guide, The Quiet Hours." },
+  { kind: "creator", name: "The Field Guide", banner: "/images/invitation/banner-field-guide.jpg", blurb: "Weekly conversations about the outdoors and the people who live in it.", xqCode: "C-P-L", about: "A weekly show where rangers, farmers, and trail builders talk about the land they keep. Loyal audience, long episodes, zero hot takes.", rq: "Audience leans considered-outdoors; resonates with durable-goods brands that value stewardship over hype." },
+  { kind: "brand", name: "Northlight Gear", banner: "/images/invitation/banner-northlight-gear.jpg", blurb: "Trail-ready equipment designed to outlast the trend cycle.", xqCode: "C-S-C", about: "Packs and shelters engineered to be repaired, not replaced — with a lifetime service bench and a catalogue that changes slowly on purpose.", rq: "Resonates with slow-adventure listeners; aligned shows index high on trust and repair-not-replace values." },
+  { kind: "creator", name: "Static & Stone", banner: "/images/invitation/banner-static-stone.jpg", blurb: "True stories from small towns, told one road trip at a time.", xqCode: "X-P-C", about: "Two producers, one van, and the kind of small-town stories national desks drive past. Intimate, handmade documentary work.", rq: "Small-town storytelling audience; best fits brands with roots, provenance, and a point of view." },
+  { kind: "brand", name: "Harbor & Pine", banner: "/images/invitation/banner-harbor-pine.jpg", blurb: "Home goods for people who notice the details.", xqCode: "X-S-C", about: "A home-goods studio that redesigns the overlooked — brooms, hooks, kettles — with the precision usually saved for furniture.", rq: "Design-literate households; resonates with shows where taste and intention drive the conversation." },
+  { kind: "creator", name: "The Quiet Hours", banner: "/images/invitation/banner-quiet-hours.jpg", blurb: "A late-night show about creativity, doubt, and getting the work done.", xqCode: "X-P-L", about: "Late-night conversations with people mid-project — the doubt, the drafts, the discipline. A companion for anyone working after everyone else went to bed.", rq: "Night-owl creative audience; resonates with tools-of-the-trade brands and slow-productivity thinking." },
+  { kind: "brand", name: "Juniper Supply Co.", banner: "/images/invitation/banner-juniper-supply.jpg", blurb: "Everyday carry built to be handed down, not thrown out.", xqCode: "C-S-L", about: "Knives, notebooks, and bags built on a buy-it-once philosophy — with a repair program older than most of its competitors.", rq: "Legacy-minded buyers; resonates with generational-story shows and buy-it-once communities." },
+  { kind: "creator", name: "Long Way Home", banner: "/images/invitation/banner-long-way-home.jpg", blurb: "Documentary storytelling about the places that shape us.", xqCode: "X-S-L", about: "A documentary series about places and the systems that shape them — one season, one town, every thread pulled.", rq: "Documentary listeners with high place-attachment; fits travel, heritage, and craft-minded brands." },
 ];
 
 /** First sentence of a multi-sentence description — keeps the popup's
@@ -164,7 +174,11 @@ export function RosterCarousel() {
                   }
                 }}
               >
-                <span className={styles.cardMorse} aria-hidden="true" />
+                <span
+                  className={styles.cardBanner}
+                  style={bannerBackground(client.banner)}
+                  aria-hidden="true"
+                />
                 <span className={styles.cardHead}>
                   <span className={styles.cardDisc} aria-hidden="true">
                     {client.name.charAt(0)}
@@ -173,6 +187,7 @@ export function RosterCarousel() {
                     {KIND_LABEL[client.kind]}
                   </span>
                 </span>
+                <span className={styles.cardMorse} aria-hidden="true" />
                 <span className={styles.cardName}>{client.name}</span>
                 <span className={styles.cardBlurb}>{client.blurb}</span>
                 <span className={styles.cardFootnote}>
@@ -247,7 +262,11 @@ export function RosterCarousel() {
             >
               &times;
             </button>
-            <span className={styles.cardMorse} aria-hidden="true" />
+            <span
+              className={styles.profileBanner}
+              style={bannerBackground(selected.banner)}
+              aria-hidden="true"
+            />
             <div className={styles.profileHead}>
               <span className={styles.cardDisc} aria-hidden="true">
                 {selected.name.charAt(0)}
@@ -256,6 +275,7 @@ export function RosterCarousel() {
                 {KIND_LABEL[selected.kind]}
               </span>
             </div>
+            <span className={styles.cardMorse} aria-hidden="true" />
             <h3 className={styles.profileName}>{selected.name}</h3>
             <p className={styles.profileBlurb}>{selected.blurb}</p>
             <p className={styles.profileAbout}>{selected.about}</p>

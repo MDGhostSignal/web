@@ -1,5 +1,13 @@
 # Session Log — 2026-08-06
 
+## Revision 17 — client banner images on the roster cards (post-ship increment)
+
+- **/invitation carousel + popup:** every card gained a "client-chosen" banner image filling only the top section, fading into the card surface (shared `bannerBackground()` gradient helper — works for any future real upload). Profile-header layout: ringed avatar disc overlaps the banner's lower edge, kind chip sits on the image, morse strip moved below the head row. Popup shows a taller crop of the same banner; fixed a self-inflicted specificity bug where the content-lifting `:not()` rule out-specificity'd the close button's absolute positioning (excluded it + z-index 2).
+- **Mock banner assets:** eight thematic 600×220 abstract gradients (~15 KB each) generated → `public/images/invitation/banner-*.jpg`.
+- **Email roster GIFs regenerated to match** — same banner-top layout in both themes (gen-assets cardHtml mirrored; gradient fades into per-theme card bg). Banners pushed sizes to ~1 MB; trimmed FADE_STEPS 5→4 + palette 160→128 → ~816 KB light / ~833 KB dark.
+- Validation: typecheck, ESLint, Stylelint, assets:audit (72), popup open/Escape re-verified, frames + email renders screenshot-checked.
+- NOT yet committed — live /invitation currently 404s the banner images (renders gracefully without them) until the next push.
+
 ## Cold-outreach email: final copy + template polish
 
 The `/admin/outreach` cold email graduated from placeholder to final copy.
