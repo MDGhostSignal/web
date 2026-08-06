@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import {
   coldOutreachEmailHtml,
+  coldOutreachEmailText,
   coldOutreachSubject,
 } from "@/lib/cold-outreach-email";
 import { supabaseRest } from "@/lib/supabase-admin";
@@ -14,7 +15,7 @@ import { supabaseRest } from "@/lib/supabase-admin";
  *        can point at docs/OUTREACH_SUPABASE_SCHEMA.sql).
  * POST — { name, email, message, force? }: files a cold_outreach row,
  *        then sends the email via Resend (template in
- *        lib/cold-outreach-email.ts — pitch copy still placeholder).
+ *        lib/cold-outreach-email.ts).
  *        Repeat sends to an email Mike already contacted 409 unless
  *        force is set, so nobody gets double-cold-emailed by accident.
  *        A Resend failure marks the row status 'failed' (visible in
@@ -146,6 +147,7 @@ export async function POST(req: NextRequest) {
       to: [email],
       subject: coldOutreachSubject(name),
       html: coldOutreachEmailHtml({ name, message }),
+      text: coldOutreachEmailText({ name, message }),
     }),
   });
   if (!sendRes.ok) {

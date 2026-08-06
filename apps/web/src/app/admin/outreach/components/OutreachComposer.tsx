@@ -124,7 +124,7 @@ export function OutreachComposer({
         phase.kind === "sent"
           ? undefined
           : previewHtml
-            ? "Exactly what lands in their inbox. Note: the pitch copy around your message is still the placeholder version."
+            ? "Exactly what lands in their inbox."
             : "Your personal message is the heart of the email — the branded shell and pitch copy wrap around it automatically."
       }
     >
