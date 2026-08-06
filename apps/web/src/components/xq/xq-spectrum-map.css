@@ -107,3 +107,54 @@
     animation: none;
   }
 }
+
+/* Result-mode user point — elegant pulse so the marker is easy to
+ * spot among the eight anchors. Two layers: an expanding ring that
+ * fades as it grows (radar ping) and a soft halo that breathes.
+ * transform-box: fill-box keeps the scaling centred on the circle
+ * itself rather than the SVG origin. */
+.xq-spectrum-user-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xq-user-ping 2.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.xq-spectrum-user-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xq-user-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes xq-user-ping {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.55;
+  }
+  75% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes xq-user-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.08;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.16;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xq-spectrum-user-ping,
+  .xq-spectrum-user-halo {
+    animation: none;
+  }
+}

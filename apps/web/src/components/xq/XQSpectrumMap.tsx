@@ -58,6 +58,9 @@ type Props = {
   highlight?: ArchetypeCode;
   /** Compact mode shrinks character thumbnails. */
   compact?: boolean;
+  /** Label above the result-mode point. Defaults to "YOU" (the quiz
+   *  reveal); /invitation passes "YOUR BRAND" for its example read. */
+  pointLabel?: string;
   /** Which character renderer to use for the anchor thumbnails.
    *  Defaults to "mark" (XQCharacterMark) — simplified logo-like
    *  silhouettes designed for these small ringed circles, where the
@@ -133,6 +136,7 @@ export function XQSpectrumMap({
   position,
   highlight,
   compact,
+  pointLabel = "YOU",
   variant = "mark",
 }: Props) {
   const userPoint = position ? projectUser(position) : null;
@@ -362,16 +366,27 @@ export function XQSpectrumMap({
         );
       })()}
 
-      {/* User point — only rendered in result mode. Pulsing ring +
+      {/* User point — only rendered in result mode. Breathing halo +
+          expanding ping ring (styles in xq-spectrum-map.css) around a
           solid dot at the user's projected coordinates. */}
       {userPoint && (
         <g>
           <circle
+            className="xq-spectrum-user-halo"
             cx={userPoint.x}
             cy={userPoint.y}
             r={28}
             fill="#ffffff"
             opacity={0.08}
+          />
+          <circle
+            className="xq-spectrum-user-ping"
+            cx={userPoint.x}
+            cy={userPoint.y}
+            r={18}
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth={1.5}
           />
           <circle
             cx={userPoint.x}
@@ -396,7 +411,7 @@ export function XQSpectrumMap({
             letterSpacing={1.4}
             fill="#ffffff"
           >
-            YOU
+            {pointLabel}
           </text>
         </g>
       )}
