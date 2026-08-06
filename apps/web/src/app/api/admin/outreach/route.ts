@@ -4,6 +4,7 @@ import {
   coldOutreachEmailHtml,
   coldOutreachEmailText,
   coldOutreachSubject,
+  defaultOutreachMessage,
 } from "@/lib/cold-outreach-email";
 import { supabaseRest } from "@/lib/supabase-admin";
 
@@ -13,9 +14,11 @@ import { supabaseRest } from "@/lib/supabase-admin";
  * GET  — the reachout list, newest first, for /admin/outreach.
  *        Tolerates a missing table (returns tableMissing so the page
  *        can point at docs/OUTREACH_SUPABASE_SCHEMA.sql).
- * POST — { name, email, message, force? }: files a cold_outreach row,
+ * POST — { name?, email, message?, theme?, force? }: files a
+ *        cold_outreach row,
  *        then sends the email via Resend (template in
- *        lib/cold-outreach-email.ts).
+ *        lib/cold-outreach-email.ts; a blank message falls back to
+ *        defaultOutreachMessage()).
  *        Repeat sends to an email Mike already contacted 409 unless
  *        force is set, so nobody gets double-cold-emailed by accident.
  *        A Resend failure marks the row status 'failed' (visible in
@@ -57,6 +60,7 @@ export async function POST(req: NextRequest) {
     name?: string;
     email?: string;
     message?: string;
+    theme?: string;
     force?: boolean;
   };
   try {
@@ -65,21 +69,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
+  // Name is optional — the template greets "Hello," and drops the
+  // subject's name prefix when it's blank.
   const name = body.name?.trim() ?? "";
   const email = body.email?.trim() ?? "";
   const message = body.message?.trim() ?? "";
-  if (!name) {
-    return NextResponse.json({ error: "Name required." }, { status: 400 });
-  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Valid email required." }, { status: 400 });
   }
-  if (!message) {
-    return NextResponse.json(
-      { error: "Personal message required." },
-      { status: 400 },
-    );
-  }
+  // Blank message → the standard template text, so the stored row
+  // reflects what was actually sent.
+  const finalMessage = message || defaultOutreachMessage();
+  // Which visual template goes out — picked in the composer.
+  const theme = body.theme === "dark" ? "dark" : "light";
 
   const resendKey = process.env.RESEND_API_KEY;
   const resendFrom = process.env.RESEND_FROM;
@@ -120,7 +122,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       name,
       email,
-      message,
+      message: finalMessage,
       status: "sent",
       sent_at: new Date().toISOString(),
     }),
@@ -146,8 +148,8 @@ export async function POST(req: NextRequest) {
       from: resendFrom,
       to: [email],
       subject: coldOutreachSubject(name),
-      html: coldOutreachEmailHtml({ name, message }),
-      text: coldOutreachEmailText({ name, message }),
+      html: coldOutreachEmailHtml({ name, message: finalMessage, theme }),
+      text: coldOutreachEmailText({ name, message: finalMessage }),
     }),
   });
   if (!sendRes.ok) {

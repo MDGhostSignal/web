@@ -100,14 +100,50 @@
   gap: 14px;
 }
 
-/* White canvas regardless of admin theme — the email is
- * light-mode-only HTML, same as it renders in an inbox. */
+/* Light/dark preview toggle above the iframe. */
+.previewThemeRow {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Which template goes out — radio pair in the form. */
+.themeField {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.themeChoices {
+  display: flex;
+  gap: 18px;
+}
+
+.themeChoice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--admin-text-primary);
+  cursor: pointer;
+}
+
+.themeChoice input {
+  accent-color: var(--admin-accent);
+  cursor: pointer;
+}
+
+/* Neutral canvas — the email HTML brings its own page background
+ * (light #fafbff or dark #0f1219 depending on the toggled theme). */
 .previewFrame {
   width: 100%;
   height: 62vh;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-md);
-  background: #f4f6fb;
+  background: transparent;
 }
 
 /* --- Sent confirmation ---------------------------------------- */

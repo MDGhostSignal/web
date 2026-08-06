@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button, Modal } from "@/components/admin";
+import { defaultOutreachMessage } from "@/lib/cold-outreach-email";
 
 import styles from "../outreach.module.css";
 
@@ -29,8 +30,13 @@ export function OutreachComposer({
   const [phase, setPhase] = useState<Phase>({ kind: "form" });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  // Prefilled with the standard template text (same pattern as the
+  // studio invite form) — edit it per-send to make it personal.
+  const [message, setMessage] = useState(defaultOutreachMessage());
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  // Which template goes out — picked in the form, mirrored by the
+  // preview toggle, and sent with the reachout.
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [duplicateAt, setDuplicateAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +58,7 @@ export function OutreachComposer({
           name,
           email,
           message,
+          theme,
           force: force || undefined,
         }),
       });
@@ -78,14 +85,15 @@ export function OutreachComposer({
     await send(false);
   }
 
-  async function loadPreview() {
+  async function loadPreview(nextTheme: "light" | "dark" = theme) {
     setError(null);
     setPreviewLoading(true);
+    setTheme(nextTheme);
     try {
       const res = await fetch("/api/admin/outreach/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message }),
+        body: JSON.stringify({ name, message, theme: nextTheme }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || typeof body.html !== "string") {
@@ -145,6 +153,24 @@ export function OutreachComposer({
         </div>
       ) : previewHtml ? (
         <div className={styles.preview}>
+          <div className={styles.previewThemeRow}>
+            <Button
+              variant={theme === "light" ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => void loadPreview("light")}
+              disabled={previewLoading || phase.kind === "sending"}
+            >
+              Light
+            </Button>
+            <Button
+              variant={theme === "dark" ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => void loadPreview("dark")}
+              disabled={previewLoading || phase.kind === "sending"}
+            >
+              Dark
+            </Button>
+          </div>
           <iframe
             className={styles.previewFrame}
             title="Cold email preview"
@@ -194,11 +220,10 @@ export function OutreachComposer({
             <span className={styles.fieldLabel}>Name</span>
             <input
               type="text"
-              required
               className={styles.input}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Contact person's first name"
+              placeholder="Contact person's first name — blank sends a plain “Hello,”"
               autoFocus
             />
           </label>
@@ -218,16 +243,41 @@ export function OutreachComposer({
             />
           </label>
 
+          <fieldset className={styles.themeField}>
+            <legend className={styles.fieldLabel}>Email template</legend>
+            <div className={styles.themeChoices}>
+              <label className={styles.themeChoice}>
+                <input
+                  type="radio"
+                  name="outreach-theme"
+                  value="light"
+                  checked={theme === "light"}
+                  onChange={() => setTheme("light")}
+                />
+                <span>Light mode</span>
+              </label>
+              <label className={styles.themeChoice}>
+                <input
+                  type="radio"
+                  name="outreach-theme"
+                  value="dark"
+                  checked={theme === "dark"}
+                  onChange={() => setTheme("dark")}
+                />
+                <span>Dark mode</span>
+              </label>
+            </div>
+          </fieldset>
+
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Personal message</span>
             <textarea
-              required
               className={styles.textarea}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={2000}
               rows={6}
-              placeholder="Why this brand fits the network — written like a person, not a campaign. Line breaks are kept."
+              placeholder="Why this brand fits the network — written like a person, not a campaign. Left blank, the standard template text is sent."
             />
           </label>
 
