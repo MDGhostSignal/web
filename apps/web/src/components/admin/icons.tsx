@@ -182,6 +182,38 @@ export function IconFinance(props: Props) {
   );
 }
 
+/** Operations — gear/cog (the operational hub: campaigns + quizzes). */
+export function IconOperations(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1" />
+    </svg>
+  );
+}
+
+/** Admin — shield with a check (finance + contracts, the trust surface). */
+export function IconAdmin(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3l7 3v5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6l7-3z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+
+/** Pages — a document sheet (public-site page management). */
+export function IconPages(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <path d="M7 3h6l4 4v11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M13 3v4h4" />
+      <line x1="9" y1="12" x2="14" y2="12" />
+      <line x1="9" y1="15" x2="14" y2="15" />
+    </svg>
+  );
+}
+
 /** Chevron — used for sidebar expand/collapse indicator. */
 export function IconChevron(props: Props) {
   return (

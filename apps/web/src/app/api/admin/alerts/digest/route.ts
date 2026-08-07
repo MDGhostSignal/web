@@ -5,6 +5,7 @@ import { supabaseRest } from "@/lib/supabase-admin";
 
 import {
   CONTRACT_ALERT_OWNERS,
+  DIGEST_EMAILABLE_KINDS,
   type DigestAlert,
   fallbackEmail,
   ownerEmailFromEnv,
@@ -58,19 +59,33 @@ export async function POST(req: Request) {
     );
   }
 
+  // Which alert kinds may be emailed right now. Paused 2026-08-07 to
+  // contract renewal reminders only (see DIGEST_EMAILABLE_KINDS). An
+  // empty allowlist means email nothing — short-circuit before querying.
+  if (DIGEST_EMAILABLE_KINDS.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      total_alerts: 0,
+      groups_sent: 0,
+      details: [],
+    });
+  }
+
   // Pull open + non-snoozed alerts. PostgREST embed pulls both the
   // member-side and task-side subject columns the digest renders;
   // exactly one of (member, task) is populated per row per the
   // subject-check constraint.
+  //
+  // Restricted to DIGEST_EMAILABLE_KINDS — currently contract_expiring
+  // only. This also excludes campaign_ending, which gets its own
+  // one-time email at detection time (see campaign-alerts/sync).
   const nowIso = new Date().toISOString();
   const path =
     "crm_alerts?select=*," +
     "member:members(id,first_name,last_name,owner,phase,organization)," +
     "task:design_tasks(id,title,status,priority,assigned_to,created_by)" +
     "&resolved_at=is.null" +
-    // campaign_ending alerts get their own one-time email at detection
-    // time (see campaign-alerts/sync), so keep them out of this digest.
-    "&kind=neq.campaign_ending" +
+    `&kind=in.(${DIGEST_EMAILABLE_KINDS.join(",")})` +
     `&or=(snoozed_until.is.null,snoozed_until.lt.${nowIso})` +
     "&order=triggered_at.desc";
 

@@ -1,12 +1,12 @@
 /**
  * Campaign-ending alerts — detection, snapshot, and the one-time email.
  *
- * Trigger: an ART19 campaign has elapsed ≥ 97% of its RUN TIME (not its
+ * Trigger: an ART19 campaign has elapsed 100% of its RUN TIME (not its
  * impression goal — campaigns routinely over-deliver impressions, so a
  * volume threshold would misfire). Detection runs hourly from
  * /api/admin/campaign-alerts/sync; the crm_alerts row it inserts is both
  * the in-app record (bell + dashboard) and the fire-once dedup guard, so
- * the email below is sent exactly once as the campaign crosses 97%.
+ * the email below is sent exactly once as the campaign completes.
  *
  * Recipients: Jack + Mike (the contract/campaign owners), resolved from
  * the same ALERT_EMAIL_<SLUG> env vars the CRM digest uses.
@@ -15,15 +15,17 @@
 import type { CampaignAlertSnapshot } from "@/lib/alerts";
 import type { Art19CampaignRow } from "@/lib/art19-types";
 
-/** Run-time completion that trips the alert. */
-export const CAMPAIGN_ENDING_RUN_PCT = 97;
+/** Run-time completion that trips the alert. Fires only once the
+ *  campaign is fully complete (100% of its run-time window elapsed),
+ *  not earlier. */
+export const CAMPAIGN_ENDING_RUN_PCT = 100;
 
 /**
  * How many days past a campaign's end_date we still allow the alert to
- * fire. This decouples detection cadence from the trigger: the 97→100%
- * run-time window is narrower than a day for a 30-day campaign (~21h),
- * so a daily/every-few-days cron could otherwise step right over it. The
- * grace lets a just-concluded campaign still fire once (fire-once via the
+ * fire. This decouples detection cadence from the trigger: run time hits
+ * 100% exactly at the end_date, an instant a daily/every-few-days cron
+ * would otherwise step right over. The grace keeps a just-completed
+ * campaign qualifying for a few days after its end (fire-once via the
  * crm_alerts row), while excluding long-concluded history so a redeploy
  * never blasts old campaigns. Keep it comfortably larger than the cron
  * interval (currently daily).
@@ -64,7 +66,10 @@ export function buildCampaignSnapshot(
   const end = Date.parse(c.end_date);
   if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return null;
 
-  const runPct = pct(((nowMs - start) / (end - start)) * 100);
+  // Clamp at 100: run time keeps climbing past the end_date (now > end),
+  // but "104% of run time" reads as a bug. The detector fires at 100%, so
+  // a completed campaign should present as exactly 100%.
+  const runPct = Math.min(100, pct(((nowMs - start) / (end - start)) * 100));
   const daysRemaining = Math.max(0, Math.ceil((end - nowMs) / MS_PER_DAY));
 
   const impressions = c.listen_count ?? null;
@@ -99,11 +104,12 @@ export function buildCampaignSnapshot(
 
 /**
  * Pure: should this campaign have an open `campaign_ending` alert right
- * now? Qualifies once run time reaches 97%, and keeps qualifying up to
- * `CAMPAIGN_ENDING_GRACE_DAYS` past the end date — so a slow cron never
- * skips the narrow 97→100% window, yet long-concluded campaigns (end
- * date older than the grace) never fire, so a redeploy can't blast
- * history. Fire-once is enforced by the open crm_alerts row.
+ * now? Qualifies once run time reaches 100% (i.e. at/after the end date),
+ * and keeps qualifying up to `CAMPAIGN_ENDING_GRACE_DAYS` past the end
+ * date — so a slow cron never skips the moment of completion, yet
+ * long-concluded campaigns (end date older than the grace) never fire, so
+ * a redeploy can't blast history. Fire-once is enforced by the open
+ * crm_alerts row.
  */
 export function detectCampaignEndingAlert(
   c: CampaignCandidate,
@@ -194,7 +200,7 @@ export function buildCampaignEmail(s: CampaignAlertSnapshot): {
   text: string;
 } {
   const name = s.name ?? "Untitled campaign";
-  const subject = `Campaign wrapping up · ${name} at ${s.run_pct}% run time`;
+  const subject = `Campaign complete · ${name}`;
 
   const rows = metricRows(s);
   const rowHtml = rows
@@ -212,9 +218,9 @@ export function buildCampaignEmail(s: CampaignAlertSnapshot): {
 <body style="margin:0;padding:24px;background:#f5f5f5;font-family:-apple-system,'Segoe UI',sans-serif;">
   <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
     <tr><td style="padding:28px 20px 14px;border-bottom:1px solid #eee;">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:#1f8a8a;margin-bottom:6px;">Campaign wrapping up</div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:#1f8a8a;margin-bottom:6px;">Campaign complete</div>
       <h1 style="margin:0;font-size:20px;color:#1a1a1a;">${esc(name)}</h1>
-      <p style="margin:8px 0 0;font-size:14px;color:#444;">This campaign has reached <strong>${s.run_pct}% of its run time</strong>${s.days_remaining > 0 ? ` — about ${s.days_remaining} day${s.days_remaining === 1 ? "" : "s"} left.` : "."}</p>
+      <p style="margin:8px 0 0;font-size:14px;color:#444;">This campaign has reached the end of its scheduled run — <strong>100% of its run time</strong> elapsed.</p>
     </td></tr>
     <tr><td style="padding:8px 0 0;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">${rowHtml}</table>
@@ -226,8 +232,8 @@ export function buildCampaignEmail(s: CampaignAlertSnapshot): {
 </body></html>`;
 
   const text = [
-    `Campaign wrapping up: ${name}`,
-    `Reached ${s.run_pct}% of run time${s.days_remaining > 0 ? ` (~${s.days_remaining}d left)` : ""}.`,
+    `Campaign complete: ${name}`,
+    `Reached the end of its scheduled run (100% of run time elapsed).`,
     "",
     ...rows.map(([label, value]) => `  ${label}: ${value}`),
     "",

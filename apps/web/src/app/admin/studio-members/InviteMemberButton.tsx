@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button, Modal } from "@/components/admin";
 import { defaultInviteWelcome } from "@/lib/studio-invite-email";
@@ -31,7 +31,18 @@ type MemberKind = "creator" | "brand";
  */
 export function InviteMemberButton() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+
+  // The nav's "Studio Invite" item (Operations group) links here with
+  // ?invite=1 to open this modal directly — there's no standalone invite
+  // route. Strip the param on open so re-selecting the nav item (which
+  // re-adds ?invite=1) re-triggers, and so the URL stays clean.
+  useEffect(() => {
+    if (searchParams?.get("invite") !== "1") return;
+    setOpen(true);
+    router.replace("/admin/studio-members");
+  }, [searchParams, router]);
   const [phase, setPhase] = useState<Phase>({ kind: "form" });
   const [memberKind, setMemberKind] = useState<MemberKind>("creator");
   const [orgName, setOrgName] = useState("");

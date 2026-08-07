@@ -152,7 +152,12 @@
 .content {
   flex: 1;
   min-width: 0;
-  width: 100%;
+  /* Width comes from `flex: 1` filling the row minus the sidebar-width
+     `margin-left` below. A `width: 100%` here is redundant (flex-basis
+     wins) and, because it resolves against the full row while margin-left
+     also offsets it, can push the box past the viewport in engines that
+     honor it — the source of the "content stays too narrow / shifted"
+     glitch on collapse/expand. Left it off deliberately. */
   /* No max-width — admin chrome is mostly tables, grids, and
      dashboards that benefit from filling wide screens. The horizontal
      padding below (--admin-space-6 = 24 px) is the only spacer between

@@ -90,6 +90,23 @@ export function ownerEmailFromEnv(owner: string): string | undefined {
  */
 export const CONTRACT_ALERT_OWNERS = ["Mike Sense", "Jack W Harding"] as const;
 
+/**
+ * Alert kinds the daily digest is currently allowed to EMAIL.
+ *
+ * Paused 2026-08-07 at the team's request: only contract renewal
+ * reminders (`contract_expiring`) still go out by email. This gates the
+ * digest email ONLY — detection (lib/alerts.ts) and the in-app bell +
+ * /admin/alerts dashboard still surface every kind, since they read
+ * `crm_alerts` directly and never go through this list. Campaign-progress
+ * emails are a separate path (campaign-alerts/sync) and are unaffected.
+ *
+ * Flip-to-restore: add kinds back here to resume emailing them
+ * (e.g. "marketplace_stall", "task_stale"). An empty array emails
+ * nothing. `contact_cold` is additionally gated off at detection time
+ * (see contactColdAlertsEnabled in lib/alerts.ts).
+ */
+export const DIGEST_EMAILABLE_KINDS: AlertKind[] = ["contract_expiring"];
+
 /** Fallback inbox for alerts whose subject has no owner set. */
 export function fallbackEmail(): string {
   return process.env.ALERT_EMAIL_FALLBACK ?? "hello@ghostsignal.cloud";

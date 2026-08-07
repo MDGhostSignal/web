@@ -9,18 +9,12 @@ import { AdminShell } from "@/components/admin";
 // Leaf pages don't need to import this again.
 import "@/components/admin/tokens.css";
 import {
-  IconAlerts,
-  IconArt19,
-  IconContracts,
-  IconDashboard,
-  IconFinance,
+  IconAdmin,
   IconLeads,
   IconMarketing,
   IconMarketplace,
-  IconOutreach,
-  IconRQ,
-  IconTasks,
-  IconXQ,
+  IconOperations,
+  IconPages,
 } from "@/components/admin/icons";
 
 /**
@@ -59,78 +53,74 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <AdminShell
       nav={[
-        { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
+        // Navigation V3 — task-clustered hierarchy. Each parent links to
+        // its first child; the sidebar expands + highlights a group via
+        // path-prefix / query matching (see AdminSidebar). Dashboard
+        // (/admin) has no explicit item — the brand logo links there.
         { href: "/admin/contacts", label: "Contacts", icon: <IconLeads /> },
         {
-          // Cold-email brand prospecting (Mike). High in the order on
-          // purpose — onboarding brands is the current company focus.
-          href: "/admin/outreach",
-          label: "Outreach",
-          icon: <IconOutreach />,
-        },
-        {
-          href: "/admin/marketplace",
-          label: "Marketplace",
+          href: "/admin/tasks",
+          label: "Members",
           icon: <IconMarketplace />,
           children: [
+            { href: "/admin/tasks", label: "Tasks" },
             {
               href: "/admin/marketplace?view=pool",
-              label: "Pool",
+              label: "Marketplace",
               isDefault: true,
             },
-            { href: "/admin/marketplace?view=match", label: "Match" },
           ],
         },
         {
-          href: "/admin/rq-responses",
-          label: "RQ Responses",
-          icon: <IconRQ />,
+          href: "/admin/art19",
+          label: "Operations",
+          icon: <IconOperations />,
+          children: [
+            { href: "/admin/art19", label: "Campaigns" },
+            {
+              href: "/admin/studio-members",
+              label: "Studio Members",
+              isDefault: true,
+            },
+            // No standalone invite route — this opens the invite modal on
+            // the members page (InviteMemberButton reads ?invite=1).
+            { href: "/admin/studio-members?invite=1", label: "Studio Invite" },
+            { href: "/admin/xq-responses", label: "XQ Responses" },
+            { href: "/admin/rq-responses", label: "RQ Responses" },
+          ],
         },
         {
-          href: "/admin/xq-responses",
-          label: "XQ Responses",
-          icon: <IconXQ />,
+          href: "/admin/finance",
+          label: "Admin",
+          icon: <IconAdmin />,
+          children: [
+            { href: "/admin/finance", label: "Finance" },
+            { href: "/admin/contracts", label: "Contracts" },
+          ],
         },
-        { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
         {
-          // Parent links directly to the Social Planner sub-page —
-          // most-used Marketing surface, so clicking the tab lands
-          // there without a redirect hop. The section-match logic in
-          // AdminSidebar still expands + highlights the Marketing
-          // group when the user is on Assets or Copy.
-          href: "/admin/marketing/social",
+          href: "/admin/outreach",
           label: "Marketing",
           icon: <IconMarketing />,
           children: [
+            { href: "/admin/outreach", label: "Outreach" },
             { href: "/admin/marketing/assets", label: "Assets" },
             { href: "/admin/marketing/copy", label: "Copy" },
             { href: "/admin/marketing/social", label: "Social Planner" },
           ],
         },
-        { href: "/admin/finance", label: "Finance", icon: <IconFinance /> },
-        { href: "/admin/art19", label: "Campaigns", icon: <IconArt19 /> },
         {
-          href: "/admin/contracts",
-          label: "Contracts",
-          icon: <IconContracts />,
-        },
-        { href: "/admin/alerts", label: "Alerts", icon: <IconAlerts /> },
-        {
-          // Parent links to Members — the everyday Studio surface
-          // since open signup made Approvals a fallback. Same pattern
-          // as Marketing: distinct child routes, sidebar expands via
-          // path-prefix matching.
-          href: "/admin/studio-members",
-          label: "Studio",
-          icon: <IconLeads />,
+          href: "/admin/pages",
+          label: "Pages",
+          icon: <IconPages />,
           children: [
-            { href: "/admin/studio-members", label: "Members" },
-            { href: "/admin/studio-picks", label: "GS Picks" },
+            { href: "/admin/pages", label: "Pages" },
+            { href: "/admin/alerts", label: "Alerts" },
             { href: "/admin/studio-requests", label: "Intro Requests" },
             { href: "/admin/studio-approvals", label: "Approvals" },
+            { href: "/admin/studio-picks", label: "GS Picks" },
           ],
         },
-        { href: "/admin/pages", label: "Pages", icon: <IconDashboard /> },
       ]}
       onLogout={handleLogout}
     >

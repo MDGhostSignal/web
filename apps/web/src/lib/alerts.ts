@@ -40,7 +40,7 @@ export const ALERT_KIND_LABELS: Record<AlertKind, string> = {
   marketplace_stall: "Marketplace stalled",
   task_stale: "Task untouched",
   contract_expiring: "Contract renewal due",
-  campaign_ending: "Campaign wrapping up",
+  campaign_ending: "Campaign complete",
 };
 
 /** Snapshot of an ART19 campaign captured when a `campaign_ending`
