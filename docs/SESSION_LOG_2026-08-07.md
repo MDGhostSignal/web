@@ -244,6 +244,18 @@ Verified live (quote + 52 morse symbols render in a tidy band).
 - **Notebook delete confirmation** switched from `window.confirm` to the
   GhostSignal admin `Modal` (Cancel + destructiveSolid "Delete page").
 
+## 13. Dashboard banner — animated 3D mesh background
+
+Reworked the motivational banner from a plain outlined container into a
+self-contained dark "signal field" panel with an **animated 3D wireframe
+mesh** rippling in perspective (hand-rolled canvas — a grid of vertices
+displaced by travelling sine waves, cheap perspective projection, glowing
+near→far blue→violet segments). DPR-aware, ResizeObserver-fit,
+prefers-reduced-motion renders one still frame. Brandmark + quote + morse
+float above on a vignette scrim; morse glows. `DashboardHero` is now a
+client component; always-dark so it reads the same in both admin themes.
+Verified live (frame screenshot).
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`
