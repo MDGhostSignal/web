@@ -18,53 +18,48 @@ type Props = {
 };
 
 /**
- * Four overall statuses for a contact: Discern → Courting → Member,
- * plus Stopped as a separate off-pipeline state. The Courting phase
- * has three sub-steps tracking outreach progress (no contact, made
- * but no reply, replied).
- *
- * All five circle positions are derived from existing Member fields:
- *   - phase = "paused" or "churned" → Stopped (stepper greys out)
- *   - became_member_at != null OR phase in {sign,onboard,run} → Member
- *   - phase = "discern" → Discern is current
- *   - phase = "court" + neither last_contact_at nor last_response set
- *     → Courting sub-1 (no contact established)
- *   - phase = "court" + last_contact_at set, last_response null
- *     → Courting sub-2 (contact made, no reply)
- *   - phase = "court" + last_response set
- *     → Courting sub-3 (replied)
- *
- * Read-only in v1: the existing edit modal + PipelineCard control all
- * three underlying fields. Click-to-advance can land in a follow-up.
+ * Six-stage reach-out lifecycle for a contact, plus two off-pipeline
+ * states (untouched / stopped). All positions derive from existing
+ * Member fields — see `deriveStatus` below for the exact mapping. The
+ * circles are click-to-set on the `full` variant (the parent translates
+ * a clicked stage into a Member PATCH via `statusToPatch`).
  */
 
 /**
- * Traffic-light statuses (Jack's v2 spec, 2026-06-03):
- *   0. untouched           — no explicit lifecycle action taken yet
- *                             (the default for newly-imported rows)
- *   1. discern             — pipeline entry; no contact attempted yet
- *   2. reached-out         — first outreach happened, awaiting reply
- *   3. replied-no          — they responded with a "no" / not interested
- *   4. replied-interested  — they responded positively
- * Plus two non-stepper states that still flow through the derivation
- * so the filter dropdown can surface them:
- *   - member  → graduated (set via the "become a member" button below
- *               the stepper, or any post-court phase)
- *   - stopped → off-pipeline (paused / churned)
+ * Reach-out lifecycle (Martin's 2026-08-07 spec) — six progression
+ * stages plus two off-pipeline states:
+ *   1. first-reachout    — first outreach sent, awaiting reply
+ *   2. second-reachout   — a follow-up went out, still awaiting reply
+ *   3. heard-no          — they replied "no" / not interested (dead-end)
+ *   4. heard-interested  — they replied positively
+ *   5. agreements-sent   — membership agreement sent, awaiting signature
+ *   6. member            — signed up as a GhostSignal member
+ * Off-pipeline (surfaced in the filter, not counted as progress):
+ *   - untouched → no outreach yet (default for freshly-imported rows)
+ *   - stopped   → paused / churned
  *
- * The discriminator between `untouched` and `discern` is
- * `lifecycle_steps.discernment.status === "done"` — set when the
- * founder explicitly clicks any traffic-light circle (handled in
- * page.tsx's `statusToPatch`). Without that marker we can't tell a
- * brand-new row (phase defaults to "discern" at insert) from one the
- * founder has actually triaged.
+ * Derived from existing Member fields — no schema change:
+ *   - phase paused/churned                 → stopped
+ *   - became_member_at set OR phase run    → member
+ *   - phase sign                           → agreements-sent
+ *   - response_kind "interested"           → heard-interested
+ *   - response_kind "no"                   → heard-no
+ *   - lifecycle_steps.second_reachout done → second-reachout
+ *   - first reach-out recorded             → first-reachout
+ *   - otherwise                            → untouched
+ *
+ * The 1st-vs-2nd reach-out split is the one genuinely new bit of state;
+ * it rides in the free-form `lifecycle_steps` jsonb (keys
+ * `first_reachout` / `second_reachout`) so no migration is needed. The
+ * marketplace stepper ignores keys outside its own catalog.
  */
 export type DerivedStatus =
   | "untouched"
-  | "discern"
-  | "reached-out"
-  | "replied-no"
-  | "replied-interested"
+  | "first-reachout"
+  | "second-reachout"
+  | "heard-no"
+  | "heard-interested"
+  | "agreements-sent"
   | "member"
   | "stopped";
 
@@ -72,10 +67,11 @@ export type DerivedStatus =
  *  dropdown so the option order mirrors the stepper left-to-right. */
 export const DERIVED_STATUSES: readonly DerivedStatus[] = [
   "untouched",
-  "discern",
-  "reached-out",
-  "replied-no",
-  "replied-interested",
+  "first-reachout",
+  "second-reachout",
+  "heard-no",
+  "heard-interested",
+  "agreements-sent",
   "member",
   "stopped",
 ] as const;
@@ -83,51 +79,58 @@ export const DERIVED_STATUSES: readonly DerivedStatus[] = [
 /** Human labels for the filter dropdown. */
 export const DERIVED_STATUS_LABELS: Record<DerivedStatus, string> = {
   untouched: "Not started",
-  discern: "Discern",
-  "reached-out": "Reached out",
-  "replied-no": "Replied — no",
-  "replied-interested": "Replied — interested",
-  member: "Member",
+  "first-reachout": "First reach out",
+  "second-reachout": "2nd reach out",
+  "heard-no": "Heard back — no",
+  "heard-interested": "Heard back — interested",
+  "agreements-sent": "Agreements sent",
+  member: "Signed up as member",
   stopped: "Stopped",
 };
 
-/** True when the founder has explicitly engaged with this contact via
- *  the traffic-light stepper. Any forward-of-discern signal counts
- *  (court phase, contact recorded, reply categorised, graduated) plus
- *  the explicit `discernment` checkpoint that the stepper sets on
- *  every click. Used to distinguish "Discern clicked" (state: discern)
- *  from "no action yet" (state: untouched). */
-function isLifecycleStarted(m: Member): boolean {
-  if (m.lifecycle_steps?.discernment?.status === "done") return true;
-  if (m.phase !== "discern") return true;
+/**
+ * Progress rank — how far along the success path a contact is. Higher =
+ * closer to "all steps succeeded" (member). Used by the Contacts list's
+ * Lifecycle sort. Off-pipeline states sort to the bottom: `stopped` and
+ * `untouched` are 0 so they trail every contact that has real progress.
+ */
+export const LIFECYCLE_RANK: Record<DerivedStatus, number> = {
+  stopped: 0,
+  untouched: 0,
+  "first-reachout": 1,
+  "second-reachout": 2,
+  "heard-no": 3,
+  "heard-interested": 4,
+  "agreements-sent": 5,
+  member: 6,
+};
+
+/** True once a first reach-out has been recorded for this contact —
+ *  either an explicit `first_reachout` marker, a logged contact date, or
+ *  the contact having advanced past the initial `discern` phase. */
+function hasFirstReachout(m: Member): boolean {
+  if (m.lifecycle_steps?.first_reachout?.status === "done") return true;
   if (m.last_contact_at) return true;
-  if (m.response_kind) return true;
-  if (m.became_member_at) return true;
+  if (m.phase === "court") return true;
   return false;
 }
 
 export function deriveStatus(m: Member): DerivedStatus {
   if (m.phase === "paused" || m.phase === "churned") return "stopped";
-  if (m.became_member_at) return "member";
-  if (
-    m.phase === "sign" ||
-    m.phase === "onboard" ||
-    m.phase === "run"
-  ) {
+  if (m.became_member_at || m.phase === "run" || m.phase === "onboard") {
     return "member";
   }
-  if (m.phase === "court") {
-    // `response_kind` is the authoritative traffic-light signal. The
-    // free-text `last_response` is still allowed alongside it (founders
-    // capture the actual words there) but is no longer consulted for
-    // status derivation — too easy to misclassify "they said no but
-    // want to chat in Q3" as either bucket.
-    if (m.response_kind === "no") return "replied-no";
-    if (m.response_kind === "interested") return "replied-interested";
-    return "reached-out";
+  if (m.phase === "sign") return "agreements-sent";
+  // `response_kind` is the authoritative reply signal; free-text
+  // `last_response` stays for the founder's actual words but isn't
+  // consulted here (too easy to misclassify).
+  if (m.response_kind === "interested") return "heard-interested";
+  if (m.response_kind === "no") return "heard-no";
+  if (m.lifecycle_steps?.second_reachout?.status === "done") {
+    return "second-reachout";
   }
-  // phase === "discern" — explicit click vs untouched row.
-  return isLifecycleStarted(m) ? "discern" : "untouched";
+  if (hasFirstReachout(m)) return "first-reachout";
+  return "untouched";
 }
 
 type StepState = "done" | "current" | "upcoming";
@@ -161,43 +164,34 @@ type StepRow = {
  * see `stateFor` for how that's reflected in done/current/upcoming.
  */
 const STEP_TEMPLATE: (Omit<StepRow, "state">)[] = [
-  { key: "discern",     label: "Discern",            tint: "neutral", target: "discern" },
-  { key: "reached-out", label: "Reached out",        tint: "warn",    target: "reached-out" },
-  { key: "no",          label: "Replied — no",       tint: "danger",  target: "replied-no" },
-  { key: "interested",  label: "Replied — interested", tint: "success", target: "replied-interested" },
+  { key: "first",      label: "First reach out",        tint: "warn",    target: "first-reachout" },
+  { key: "second",     label: "2nd reach out",          tint: "warn",    target: "second-reachout" },
+  { key: "no",         label: "Heard back — no",        tint: "danger",  target: "heard-no" },
+  { key: "interested", label: "Heard back — interested", tint: "success", target: "heard-interested" },
+  { key: "agreements", label: "Agreements sent",        tint: "neutral", target: "agreements-sent" },
+  { key: "member",     label: "Signed up as member",    tint: "success", target: "member" },
 ];
 
 function stateFor(status: DerivedStatus, stepIndex: number): StepState {
-  // Untouched + stopped = all circles upcoming (hollow). Counts as 0/4.
+  // Untouched + stopped = all circles upcoming (hollow). Counts as 0/6.
   if (status === "untouched" || status === "stopped") return "upcoming";
-  // Graduated members: discern + reached-out + one of the reply
-  // outcomes are all consumed history — paint them all done.
+
+  // Step ranks map 1:1 to STEP_TEMPLATE order (first=1 … member=6),
+  // matching LIFECYCLE_RANK. `cur` is how far this contact has advanced.
+  const stepRank = stepIndex + 1;
+  const cur = LIFECYCLE_RANK[status];
+
+  // "Heard back — no" (rank 3) is the alternative outcome to
+  // "interested" — only paint it when the contact actually went that
+  // route. Anyone who progressed past the reply (rank ≥ 4) never took it.
+  if (stepRank === 3 && cur >= 4) return "upcoming";
+
+  // Graduated members: every earned position is consumed history.
   if (status === "member") return "done";
 
-  switch (status) {
-    case "discern":
-      // Only discern is current; everything to its right is upcoming.
-      return stepIndex === 0 ? "current" : "upcoming";
-    case "reached-out":
-      // Discern done, reached-out current, both reply outcomes are
-      // still pending alternatives.
-      if (stepIndex === 0) return "done";
-      if (stepIndex === 1) return "current";
-      return "upcoming";
-    case "replied-no":
-      // Discern + reached-out happened; "no" is current; interested
-      // is the alternative outcome that didn't occur.
-      if (stepIndex === 0 || stepIndex === 1) return "done";
-      if (stepIndex === 2) return "current";
-      return "upcoming";
-    case "replied-interested":
-      // Same as above but mirrored — interested is current, no is the
-      // alternative that didn't occur. We deliberately don't mark "no"
-      // as done; only earned positions are done.
-      if (stepIndex === 0 || stepIndex === 1) return "done";
-      if (stepIndex === 3) return "current";
-      return "upcoming";
-  }
+  if (stepRank === cur) return "current";
+  if (stepRank < cur) return "done";
+  return "upcoming";
 }
 
 function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
@@ -401,9 +395,11 @@ export const ContactLifecycleStepper = memo(
     prev.member.became_member_at === next.member.became_member_at &&
     prev.member.last_contact_at === next.member.last_contact_at &&
     prev.member.response_kind === next.member.response_kind &&
-    // The discernment step status discriminates untouched vs Discern;
-    // include it so the stepper restripes when the founder clicks the
-    // first circle and the underlying marker flips to "done".
-    prev.member.lifecycle_steps?.discernment?.status ===
-      next.member.lifecycle_steps?.discernment?.status,
+    // The reach-out markers drive the 1st-vs-2nd distinction; include
+    // them so the stepper restripes when the founder clicks a reach-out
+    // circle and the underlying jsonb marker flips to "done".
+    prev.member.lifecycle_steps?.first_reachout?.status ===
+      next.member.lifecycle_steps?.first_reachout?.status &&
+    prev.member.lifecycle_steps?.second_reachout?.status ===
+      next.member.lifecycle_steps?.second_reachout?.status,
 );

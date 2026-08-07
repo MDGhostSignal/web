@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
+  CONTACT_STEPPER_STEP_KEYS,
   initLifecycleSteps,
   LIFECYCLE_STEPS,
   MEMBER_PHASES,
@@ -242,7 +243,11 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
   return out;
 }
 
-const KNOWN_STEP_KEYS = new Set(LIFECYCLE_STEPS.map((s) => s.key));
+const KNOWN_STEP_KEYS = new Set<string>([
+  ...LIFECYCLE_STEPS.map((s) => s.key),
+  // The Contacts reach-out stepper writes these non-catalog markers.
+  ...CONTACT_STEPPER_STEP_KEYS,
+]);
 
 /**
  * Drops unknown step keys, validates status enum, and ensures

@@ -39,16 +39,14 @@ import {
  *  triaged contact (state: discern) from a brand-new untouched row
  *  (state: untouched). Preserves any prior completed_at so we don't
  *  bump the date on re-clicks. */
-function withDiscernmentDone(current: Member): LifecycleSteps {
+function withStepsDone(current: Member, keys: string[]): LifecycleSteps {
   const today = new Date().toISOString().slice(0, 10);
-  const existing = current.lifecycle_steps?.discernment;
-  return {
-    ...(current.lifecycle_steps ?? {}),
-    discernment: {
-      status: "done",
-      completed_at: existing?.completed_at ?? today,
-    },
-  };
+  const out: LifecycleSteps = { ...(current.lifecycle_steps ?? {}) };
+  for (const k of keys) {
+    // Preserve any prior completed_at so re-clicks don't bump the date.
+    out[k] = { status: "done", completed_at: out[k]?.completed_at ?? today };
+  }
+  return out;
 }
 
 import { XQSummaryCard } from "@/components/admin/XQSummaryCard";
@@ -58,6 +56,7 @@ import {
   DERIVED_STATUSES,
   DERIVED_STATUS_LABELS,
   deriveStatus,
+  LIFECYCLE_RANK,
   type DerivedStatus,
 } from "./ContactLifecycleStepper";
 import styles from "./contacts.module.css";
@@ -77,18 +76,12 @@ function statusToPatch(
   current: Member,
 ): MemberWritable {
   const nowIso = new Date().toISOString();
-  // Every forward-of-untouched click marks the discernment step done
-  // so deriveStatus() flips out of "untouched". Cached once here so
-  // each branch can reuse it.
-  const lifecycleStepsWithDiscernment = withDiscernmentDone(current);
+  const contactAt = current.last_contact_at ?? nowIso;
 
   switch (next) {
     case "untouched":
-      // Reserved for completeness — the stepper has no circle that
-      // maps to "untouched", so this branch is unreachable from the
-      // UI. If a future caller wires it up, clear the discernment
-      // marker (and downstream signals) to send the row back to the
-      // initial state.
+      // Back to the initial state — clear reach-out markers + downstream
+      // reply/membership signals.
       return {
         phase: "discern",
         became_member_at: null,
@@ -96,44 +89,64 @@ function statusToPatch(
         response_kind: null,
         lifecycle_steps: {
           ...(current.lifecycle_steps ?? {}),
-          discernment: { status: "todo", completed_at: null },
+          first_reachout: { status: "todo", completed_at: null },
+          second_reachout: { status: "todo", completed_at: null },
         },
       };
-    case "discern":
-      return {
-        phase: "discern",
-        became_member_at: null,
-        response_kind: null,
-        lifecycle_steps: lifecycleStepsWithDiscernment,
-      };
-    case "reached-out":
+    case "first-reachout":
       return {
         phase: "court",
         became_member_at: null,
-        last_contact_at: current.last_contact_at ?? nowIso,
+        last_contact_at: contactAt,
         response_kind: null,
-        lifecycle_steps: lifecycleStepsWithDiscernment,
+        lifecycle_steps: {
+          ...withStepsDone(current, ["first_reachout"]),
+          second_reachout: { status: "todo", completed_at: null },
+        },
       };
-    case "replied-no":
+    case "second-reachout":
       return {
         phase: "court",
         became_member_at: null,
-        last_contact_at: current.last_contact_at ?? nowIso,
+        last_contact_at: contactAt,
+        response_kind: null,
+        lifecycle_steps: withStepsDone(current, [
+          "first_reachout",
+          "second_reachout",
+        ]),
+      };
+    case "heard-no":
+      return {
+        phase: "court",
+        became_member_at: null,
+        last_contact_at: contactAt,
         response_kind: "no",
-        lifecycle_steps: lifecycleStepsWithDiscernment,
+        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
       };
-    case "replied-interested":
+    case "heard-interested":
       return {
         phase: "court",
         became_member_at: null,
-        last_contact_at: current.last_contact_at ?? nowIso,
+        last_contact_at: contactAt,
         response_kind: "interested",
-        lifecycle_steps: lifecycleStepsWithDiscernment,
+        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
+      };
+    case "agreements-sent":
+      // Agreement sent, awaiting signature — phase `sign`. Interested is
+      // implied. became_member_at stays null until they actually sign up.
+      return {
+        phase: "sign",
+        became_member_at: null,
+        response_kind: "interested",
+        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
       };
     case "member":
+      // became_member_at is the authoritative "is a member" signal, so
+      // the separate unmark button (which nulls it) still works. Phase
+      // is left as-is so unmarking falls back to the reply-based stage.
       return {
         became_member_at: current.became_member_at ?? nowIso,
-        lifecycle_steps: lifecycleStepsWithDiscernment,
+        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
       };
     case "stopped":
       return { phase: "paused" };
@@ -820,6 +833,11 @@ function MembersTable({
     {
       key: "phase",
       header: "Lifecycle",
+      // Sort by progress toward "signed up as member" (LIFECYCLE_RANK).
+      // Ascending puts untouched/stopped first; toggle the header to
+      // descending to surface the contacts closest to fully signed up.
+      sort: (a, b) =>
+        LIFECYCLE_RANK[deriveStatus(a)] - LIFECYCLE_RANK[deriveStatus(b)],
       cell: (m) => <ContactLifecycleStepper member={m} variant="compact" />,
     },
     {

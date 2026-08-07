@@ -116,6 +116,53 @@ days network listens". Investigated the live data before building:
 
 Not started pending Martin's call on the two points above.
 
+## 6. Nav V3 — further trims (uncommitted)
+
+- **Members** and **Pages** collapsed from single-child dropdowns to
+  plain leaf links (Members → /admin/marketplace, Pages → /admin/pages)
+  after Match / Approvals / GS Picks were removed. Final top nav:
+  Dashboard · Contacts · Members · Tasks · Operations · Admin · Marketing
+  · Pages.
+
+## 7. Contact reach-out lifecycle → 6 stages (uncommitted)
+
+Reshaped the Contacts derived-status model (no DB enum migration —
+`phase` stays a Postgres enum; the lifecycle is derived from Member
+fields). New stages: First reach out · 2nd reach out · Heard back — no ·
+Heard back — interested · Agreements sent · Signed up as member, plus
+off-pipeline Not started / Stopped.
+
+- `ContactLifecycleStepper.tsx`: new `DerivedStatus` set +
+  `deriveStatus` mapping (became_member/run → member; phase sign →
+  agreements-sent; response_kind → heard-no/interested;
+  lifecycle_steps.second_reachout → 2nd reach out; else first/untouched),
+  6-circle stepper, `LIFECYCLE_RANK` export.
+- `page.tsx`: `statusToPatch` rewritten for the 6 stages; Status filter
+  auto-updates (driven by DERIVED_STATUSES); **new Lifecycle-column sort**
+  by `LIFECYCLE_RANK` (toggle to descending = closest to signed-up first).
+- **1st/2nd reach-out** is the one new bit of state — stored in the
+  free-form `lifecycle_steps` jsonb (`first_reachout` / `second_reachout`).
+  These are NOT catalog steps; registered via new
+  `CONTACT_STEPPER_STEP_KEYS` and allowlisted in the members API's
+  `sanitizeLifecycleSteps` so they survive writes (the sanitizer drops
+  unknown keys — would otherwise have silently stripped them).
+- Verified live: filter shows all 8 options, stepper renders 6 circles,
+  Lifecycle column sortable.
+
+## 8. Marketplace lifecycle → 5 onboarding steps (uncommitted)
+
+Replaced the 10-step Sign+Onboard+Run marketplace slice with 5 Onboard
+steps (Martin's spec, in order): Welcome Box Sent · Studio Invite Sent ·
+Mercury / Tax Sent · Studio Profile Completed · Mercury / Tax Completed.
+
+- `lib/members.ts`: LIFECYCLE_STEPS marketplace slice swapped; Mercury /
+  Tax steps are `creatorOnly` (brands don't receive payouts → N/A).
+  Discern + Court checkpoints kept for the Contacts lead-stage checklist.
+- `marketplace/LifecycleStepper.tsx`: removed the dead xq_completed
+  auto-derive; phase header/label hidden when there's a single phase
+  group (all 5 are Onboard → flat 5-step row).
+- Verified live: stepper shows exactly the 5 labels, no phase header.
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`

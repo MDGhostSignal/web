@@ -62,18 +62,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
         { href: "/admin/contacts", label: "Contacts", icon: <IconLeads /> },
         {
-          // Members = the marketplace (the member pool + matching).
-          href: "/admin/marketplace?view=pool",
+          // Members = the marketplace member pool.
+          href: "/admin/marketplace",
           label: "Members",
           icon: <IconMarketplace />,
-          children: [
-            {
-              href: "/admin/marketplace?view=pool",
-              label: "Pool",
-              isDefault: true,
-            },
-            { href: "/admin/marketplace?view=match", label: "Match" },
-          ],
         },
         { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
         {
@@ -111,16 +103,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             { href: "/admin/marketing/social", label: "Social Planner" },
           ],
         },
-        {
-          href: "/admin/pages",
-          label: "Pages",
-          icon: <IconPages />,
-          children: [
-            { href: "/admin/pages", label: "Pages" },
-            { href: "/admin/studio-approvals", label: "Approvals" },
-            { href: "/admin/studio-picks", label: "GS Picks" },
-          ],
-        },
+        { href: "/admin/pages", label: "Pages", icon: <IconPages /> },
       ]}
       onLogout={handleLogout}
     >

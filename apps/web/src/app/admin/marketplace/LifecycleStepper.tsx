@@ -57,15 +57,6 @@ export function LifecycleStepper({ member, variant, onToggle }: Props) {
     const stepKeys = new Set(MARKETPLACE_LIFECYCLE_KEYS);
     return LIFECYCLE_STEPS.filter((s) => stepKeys.has(s.key)).map((step) => {
       const isNa = !!step.creatorOnly && member.member_type !== "creator";
-      // Auto-derive xq_completed from members.xq_submission_id — once
-      // the public /xq-quiz POST links the submission back to a member
-      // by email, the quiz is functionally "done" without anyone
-      // ticking a checkbox. (rq_completed will get the same treatment
-      // when rq_submission_id auto-linking lands; tracked in the
-      // session log.)
-      if (step.key === "xq_completed" && member.xq_submission_id && !isNa) {
-        return { step, status: "done" as StepStatus, isNa };
-      }
       const status = getEffectiveStatus(
         member.lifecycle_steps,
         step.key,
@@ -73,7 +64,7 @@ export function LifecycleStepper({ member, variant, onToggle }: Props) {
       );
       return { step, status, isNa };
     });
-  }, [member.lifecycle_steps, member.member_type, member.xq_submission_id]);
+  }, [member.lifecycle_steps, member.member_type]);
 
   const applicable = stepData.filter((s) => !s.isNa);
   const done = applicable.filter((s) => s.status === "done").length;
@@ -134,9 +125,11 @@ export function LifecycleStepper({ member, variant, onToggle }: Props) {
             <span className={styles.stepperCompactComplete}>· Complete</span>
           ) : currentRow ? (
             <>
-              <span className={styles.stepperCompactPhase}>
-                · {MEMBER_PHASE_LABELS[currentRow.step.phase]}
-              </span>
+              {phaseGroups.length > 1 && (
+                <span className={styles.stepperCompactPhase}>
+                  · {MEMBER_PHASE_LABELS[currentRow.step.phase]}
+                </span>
+              )}
               <span className={styles.stepperCompactStepLabel}>
                 · {currentRow.step.label}
               </span>
@@ -208,9 +201,11 @@ export function LifecycleStepper({ member, variant, onToggle }: Props) {
               className={styles.stepperFullPhase}
               data-phase={group.phase}
             >
-              <div className={styles.stepperFullPhaseHeader}>
-                {MEMBER_PHASE_LABELS[group.phase]}
-              </div>
+              {phaseGroups.length > 1 && (
+                <div className={styles.stepperFullPhaseHeader}>
+                  {MEMBER_PHASE_LABELS[group.phase]}
+                </div>
+              )}
               <div className={styles.stepperFullPhaseSteps}>
                 {group.steps.map((row, i) => {
                   const isDone = row.status === "done";

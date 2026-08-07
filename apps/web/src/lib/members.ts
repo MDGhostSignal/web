@@ -89,18 +89,19 @@ export type LifecycleStepDef = {
 };
 
 /**
- * Full lifecycle definition — 13 steps across all 5 active phases.
- *
- * Each surface renders only the slice it cares about:
- *  - /admin/leads renders Discern + Court (6 steps) on the lead card.
- *  - /admin/marketplace (pool) renders Sign + Onboard + Run (7 steps)
- *    on the expanded member row, since marketplace members are
+ * Full lifecycle definition. Each surface renders only the slice it
+ * cares about:
+ *  - /admin/contacts renders Discern + Court on the lead card (the new
+ *    six-stage reach-out stepper is derived separately; these are the
+ *    legacy checkpoints).
+ *  - /admin/marketplace (pool) renders the Onboard slice (5 steps) on
+ *    the expanded member row, since marketplace members are
  *    post-graduation and the onboarding work happens there.
  *
- * Keeping all 13 in one place means `sanitizeLifecycleSteps` accepts
- * the keys for both surfaces (the per-surface filtering is purely a
- * render concern) and a row carries its full history regardless of
- * which page is editing it.
+ * Keeping all in one place means `sanitizeLifecycleSteps` accepts the
+ * keys for both surfaces (the per-surface filtering is purely a render
+ * concern) and a row carries its full history regardless of which page
+ * is editing it.
  */
 export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   // ---- Leads surface (Discern + Court) -----------------------------
@@ -112,26 +113,35 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
   { key: "deck_sent", label: "Deck sent", phase: "court", ownerRole: "Founder" },
   { key: "ad_copy_sent", label: "Ad Copy Guidelines sent", phase: "court", ownerRole: "Founder" },
   { key: "rq_quiz", label: "RQ quiz", phase: "court", ownerRole: "Founder" },
-  // ---- Marketplace surface (Sign + Onboard + Run) -----------------
-  // Sign
-  { key: "membership_sent", label: "Membership Sent", phase: "sign", ownerRole: "Ops" },
-  { key: "membership_signed", label: "Membership Signed", phase: "sign", ownerRole: "Ops" },
-  // Onboard
-  { key: "welcome_box", label: "Welcome Email + Box", phase: "onboard", ownerRole: "Ops" },
-  { key: "mercury_w9", label: "Mercury / W9", phase: "onboard", ownerRole: "Finance", creatorOnly: true },
-  { key: "show_info", label: "Show Info Received", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
-  { key: "art19_migration", label: "ART19 Migration", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
-  { key: "art19_tutorial_sent", label: "Art 19 setup & tutorial sent", phase: "onboard", ownerRole: "Ops", creatorOnly: true },
-  // Run
-  { key: "rq_completed", label: "RQ quiz completed", phase: "run", ownerRole: "Member" },
-  { key: "xq_completed", label: "XQ quiz completed", phase: "run", ownerRole: "Member" },
-  { key: "campaign_planning", label: "Campaign Planning + Execution", phase: "run", ownerRole: "Ops" },
+  // ---- Marketplace surface (Onboard) ------------------------------
+  // The 5-step onboarding checklist (Martin's 2026-08-07 spec), in
+  // order. All live in the `onboard` phase so the marketplace stepper
+  // renders them as one flat sequence. Mercury / Tax steps are
+  // creator-only (brands pay, they don't receive payouts).
+  { key: "welcome_box", label: "Welcome Box Sent", phase: "onboard", ownerRole: "Ops" },
+  { key: "studio_invite_sent", label: "Studio Invite Sent", phase: "onboard", ownerRole: "Ops" },
+  { key: "mercury_tax_sent", label: "Mercury / Tax Sent", phase: "onboard", ownerRole: "Finance", creatorOnly: true },
+  { key: "studio_profile_completed", label: "Studio Profile Completed", phase: "onboard", ownerRole: "Member" },
+  { key: "mercury_tax_completed", label: "Mercury / Tax Completed", phase: "onboard", ownerRole: "Finance", creatorOnly: true },
 ] as const;
 
 /**
- * Step keys that surface on the marketplace pool expanded row — Sign
- * + Onboard + Run phases only. Used to filter LIFECYCLE_STEPS down to
- * the marketplace slice without duplicating the array.
+ * Extra lifecycle_steps keys the Contacts reach-out stepper writes
+ * (1st / 2nd reach-out markers). They are NOT catalog steps — they don't
+ * render in any phase checklist — but they must survive the members API's
+ * `sanitizeLifecycleSteps` whitelist, so they're allowlisted there
+ * alongside LIFECYCLE_STEPS. See ContactLifecycleStepper.deriveStatus.
+ */
+export const CONTACT_STEPPER_STEP_KEYS = [
+  "first_reachout",
+  "second_reachout",
+] as const;
+
+/**
+ * Step keys that surface on the marketplace pool expanded row — the
+ * post-graduation onboarding slice (Sign + Onboard + Run phases). Today
+ * that's the 5 Onboard steps; the filter stays phase-based so adding a
+ * Sign/Run step later needs no change here.
  */
 export const MARKETPLACE_LIFECYCLE_KEYS = LIFECYCLE_STEPS.filter(
   (s) => s.phase === "sign" || s.phase === "onboard" || s.phase === "run",
