@@ -190,28 +190,39 @@ Mercury / Tax Sent · Studio Profile Completed · Mercury / Tax Completed.
 - Verified live: ↕ on all three headers; Name asc/desc + Organization
   asc reorder the rows correctly.
 
-## 10. Notebook page (Tasks subnav)
+## 10. Notebook page (To Do & Plan subnav) — dynamic tabbed pages
 
-New `/admin/tasks/notebook` — a plain-text scratch notebook. Tasks became
-a nav parent (Tasks + Notebook children). Full-viewport editor with
-Google-Sheets-style bottom tabs to switch pages; two fixed pages
-(Business plan / Notes), each autosaved (debounced 800ms; flushed on tab
-switch + page hide).
+New `/admin/tasks/notebook` — a plain-text scratch notebook. The "Tasks"
+top-level nav item became a parent (children: Tasks + Notebook) and was
+**renamed "To Do & Plan"**. Full-viewport editor with Google-Sheets-style
+bottom tabs: switch pages, **+ to add**, double-click to rename, × to
+delete. Bodies autosave (debounced 800ms; flushed on tab switch + page
+hide). Seeds with two pages (Business plan / Notes).
 
-- `api/admin/notebook/route.ts`: GET both docs, PUT upserts one
-  (Prefer resolution=merge-duplicates). Tolerant of a missing table
-  (`tableMissing` flag → page shows a setup hint; PUT 503s). **Gotcha
-  fixed:** PostgREST reports a missing table as `PGRST205` / "Could not
-  find the table … in the schema cache", NOT raw `42P01` — the
-  missing-table check covers both.
-- Storage: `docs/NOTEBOOK_SUPABASE_SCHEMA.sql` (notebook_docs; slug PK,
-  body, updated_at). **NOT yet run** — Supabase MCP is read-only, so
-  Martin must run it; until then the page shows the setup hint and
-  edits don't persist.
-- proxy.ts: added `/api/admin/notebook` to the matcher (cookie gate).
-- Verified live: nav parent + Notebook child, full-size editor, tabs
-  switch and keep separate bodies, setup hint shows while the table is
-  absent.
+- `api/admin/notebook/route.ts`: GET list (ordered by position), POST
+  create (append at max position + 1), PUT update title/body, DELETE by
+  id. Tolerant of a missing table (`tableMissing` flag → setup hint;
+  writes 503). **Gotcha fixed:** PostgREST reports a missing table as
+  `PGRST205` / "Could not find the table … in the schema cache", NOT raw
+  `42P01` — the check covers both.
+- Storage: `docs/NOTEBOOK_SUPABASE_SCHEMA.sql` (notebook_docs; uuid id,
+  title, body, position). **NOT yet run** — Supabase MCP is read-only, so
+  Martin must run it; until then the page shows the setup hint, the +
+  button is disabled, and edits don't persist. (Started as two fixed
+  slugs; revised to dynamic pages before the table was ever created, so
+  no migration churn.)
+- proxy.ts: `/api/admin/notebook` added to the matcher (cookie gate).
+- Verified live (pre-table): nav parent + Notebook child, full-size
+  editor, setup hint + disabled + while the table is absent.
+
+## 11. Dashboard motivational banner
+
+`DashboardHero` at the top of `/admin` — the GHOSTSignal vertical cloud
+brandmark (theme-aware white/dark swap, same idiom as the topbar), the
+line **"You are making the World."**, and a morse strip beneath that
+encodes the same phrase (self-contained dot/dash renderer, amber accent).
+Purely decorative; sits above the existing Dashboard header + KPI grid.
+Verified live (quote + 52 morse symbols render in a tidy band).
 
 ## Files touched
 

@@ -69,7 +69,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         },
         {
           href: "/admin/tasks",
-          label: "Tasks",
+          label: "To Do & Plan",
           icon: <IconTasks />,
           children: [
             { href: "/admin/tasks", label: "Tasks" },

@@ -9,57 +9,48 @@ import styles from "./notebook.module.css";
 
 /**
  * /admin/tasks/notebook — a plain-text scratch notebook. Full-size
- * editor with Google-Sheets-style bottom tabs to switch between pages.
- * Two fixed pages today (Business plan / Notes); each is one row in
- * `notebook_docs`, autosaved (debounced) via PUT /api/admin/notebook.
+ * editor with Google-Sheets-style bottom tabs: switch, add (+),
+ * double-click to rename, × to delete. Each page is a row in
+ * `notebook_docs`; bodies autosave (debounced) via the notebook API.
  */
 
-const PAGES = [
-  { slug: "business_plan", label: "Business plan" },
-  { slug: "notes", label: "Notes" },
-] as const;
-type Slug = (typeof PAGES)[number]["slug"];
-
+type Doc = { id: string; title: string; body: string };
 type SaveState = "idle" | "saving" | "saved" | "error";
 const AUTOSAVE_MS = 800;
 
 export default function NotebookPage() {
-  const [bodies, setBodies] = useState<Record<Slug, string>>({
-    business_plan: "",
-    notes: "",
-  });
-  const [active, setActive] = useState<Slug>("business_plan");
+  const [docs, setDocs] = useState<Doc[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tableMissing, setTableMissing] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Latest bodies, readable inside debounced callbacks without stale
-  // closures.
-  const bodiesRef = useRef(bodies);
-  bodiesRef.current = bodies;
+  const docsRef = useRef(docs);
+  docsRef.current = docs;
 
-  // Initial load — both docs at once.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/api/admin/notebook", { cache: "no-store" });
         const json = (await res.json()) as {
-          ok: boolean;
           tableMissing?: boolean;
-          docs?: Record<string, { body: string }>;
+          docs?: Array<{ id: string; title: string; body: string }>;
         };
         if (cancelled) return;
         if (json.tableMissing) setTableMissing(true);
-        if (json.docs) {
-          setBodies({
-            business_plan: json.docs.business_plan?.body ?? "",
-            notes: json.docs.notes?.body ?? "",
-          });
-        }
+        const list: Doc[] = (json.docs ?? []).map((d) => ({
+          id: d.id,
+          title: d.title,
+          body: d.body ?? "",
+        }));
+        setDocs(list);
+        setActiveId(list[0]?.id ?? null);
       } catch {
-        /* leave the editor empty; save will surface any error */
+        /* leave empty; the setup hint / save errors surface the problem */
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -69,13 +60,17 @@ export default function NotebookPage() {
     };
   }, []);
 
-  const save = useCallback(async (slug: Slug) => {
+  const active = docs.find((d) => d.id === activeId) ?? null;
+
+  const saveBody = useCallback(async (id: string) => {
+    const doc = docsRef.current.find((d) => d.id === id);
+    if (!doc) return;
     setSaveState("saving");
     try {
       const res = await fetch("/api/admin/notebook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, body: bodiesRef.current[slug] }),
+        body: JSON.stringify({ id, body: doc.body }),
       });
       setSaveState(res.ok ? "saved" : "error");
     } catch {
@@ -84,41 +79,116 @@ export default function NotebookPage() {
   }, []);
 
   const scheduleSave = useCallback(
-    (slug: Slug) => {
+    (id: string) => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => void save(slug), AUTOSAVE_MS);
+      timerRef.current = setTimeout(() => void saveBody(id), AUTOSAVE_MS);
     },
-    [save],
+    [saveBody],
   );
 
   const flushSave = useCallback(
-    (slug: Slug) => {
+    (id: string) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
-        void save(slug);
+        void saveBody(id);
       }
     },
-    [save],
+    [saveBody],
   );
 
   function onEdit(value: string) {
-    setBodies((prev) => ({ ...prev, [active]: value }));
+    if (!activeId) return;
+    setDocs((prev) =>
+      prev.map((d) => (d.id === activeId ? { ...d, body: value } : d)),
+    );
     setSaveState("idle");
-    scheduleSave(active);
+    scheduleSave(activeId);
   }
 
-  function switchTo(slug: Slug) {
-    if (slug === active) return;
-    flushSave(active); // don't lose pending edits on the outgoing page
-    setActive(slug);
+  function switchTo(id: string) {
+    if (id === activeId) return;
+    if (activeId) flushSave(activeId);
+    setActiveId(id);
     setSaveState("idle");
   }
 
-  // Flush a pending save when the tab/window is hidden.
+  async function addPage() {
+    try {
+      const res = await fetch("/api/admin/notebook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Untitled" }),
+      });
+      const json = (await res.json()) as {
+        ok: boolean;
+        doc?: { id: string; title: string; body: string };
+      };
+      if (!res.ok || !json.doc) {
+        setSaveState("error");
+        return;
+      }
+      const doc: Doc = {
+        id: json.doc.id,
+        title: json.doc.title,
+        body: json.doc.body ?? "",
+      };
+      setDocs((prev) => [...prev, doc]);
+      setActiveId(doc.id);
+      // Drop straight into rename so the new tab gets a name.
+      setRenameDraft(doc.title);
+      setRenamingId(doc.id);
+    } catch {
+      setSaveState("error");
+    }
+  }
+
+  function startRename(doc: Doc) {
+    setRenameDraft(doc.title);
+    setRenamingId(doc.id);
+  }
+
+  async function commitRename() {
+    const id = renamingId;
+    if (!id) return;
+    const title = renameDraft.trim() || "Untitled";
+    setRenamingId(null);
+    setDocs((prev) => prev.map((d) => (d.id === id ? { ...d, title } : d)));
+    try {
+      await fetch("/api/admin/notebook", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, title }),
+      });
+    } catch {
+      /* best-effort; local title still updated */
+    }
+  }
+
+  async function deletePage(id: string) {
+    const doc = docs.find((d) => d.id === id);
+    if (
+      !window.confirm(
+        `Delete "${doc?.title ?? "this page"}"? This can't be undone.`,
+      )
+    ) {
+      return;
+    }
+    const next = docs.filter((d) => d.id !== id);
+    setDocs(next);
+    if (activeId === id) setActiveId(next[0]?.id ?? null);
+    try {
+      await fetch(`/api/admin/notebook?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      /* best-effort */
+    }
+  }
+
   useEffect(() => {
     const onHide = () => {
-      if (timerRef.current) flushSave(active);
+      if (timerRef.current && activeId) flushSave(activeId);
     };
     window.addEventListener("beforeunload", onHide);
     document.addEventListener("visibilitychange", onHide);
@@ -126,7 +196,7 @@ export default function NotebookPage() {
       window.removeEventListener("beforeunload", onHide);
       document.removeEventListener("visibilitychange", onHide);
     };
-  }, [active, flushSave]);
+  }, [activeId, flushSave]);
 
   const saveLabel =
     saveState === "saving"
@@ -163,48 +233,95 @@ export default function NotebookPage() {
         <div className={styles.setupHint}>
           Notebook storage isn&apos;t set up yet. Run{" "}
           <code>docs/NOTEBOOK_SUPABASE_SCHEMA.sql</code> in Supabase, then
-          reload. You can still type below, but changes won&apos;t save until
-          then.
+          reload — pages and edits will save after that.
         </div>
       )}
 
       <div className={styles.editorWrap}>
-        <textarea
-          className={styles.editor}
-          value={bodies[active]}
-          onChange={(e) => onEdit(e.target.value)}
-          placeholder={
-            loading ? "Loading…" : `Start writing your ${labelFor(active)}…`
-          }
-          spellCheck
-          aria-label={labelFor(active)}
-        />
+        {active ? (
+          <textarea
+            className={styles.editor}
+            value={active.body}
+            onChange={(e) => onEdit(e.target.value)}
+            placeholder={`Start writing your ${active.title}…`}
+            spellCheck
+            aria-label={active.title}
+          />
+        ) : (
+          <div className={styles.emptyState}>
+            {loading
+              ? "Loading…"
+              : tableMissing
+                ? "Set up storage above to start writing."
+                : "No pages yet — add one with the + below."}
+          </div>
+        )}
       </div>
 
       {/* Google-Sheets-style page tabs, pinned to the bottom. */}
       <div className={styles.tabBar} role="tablist" aria-label="Notebook pages">
-        {PAGES.map((p) => (
-          <button
-            key={p.slug}
-            type="button"
-            role="tab"
-            aria-selected={active === p.slug}
-            className={[
-              styles.tab,
-              active === p.slug ? styles.tabActive : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={() => switchTo(p.slug)}
-          >
-            {p.label}
-          </button>
-        ))}
+        {docs.map((d) => {
+          const isActive = d.id === activeId;
+          const isRenaming = d.id === renamingId;
+          return (
+            <div
+              key={d.id}
+              className={[styles.tab, isActive ? styles.tabActive : ""]
+                .filter(Boolean)
+                .join(" ")}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => !isRenaming && switchTo(d.id)}
+              onDoubleClick={() => startRename(d)}
+            >
+              {isRenaming ? (
+                <input
+                  className={styles.tabRenameInput}
+                  value={renameDraft}
+                  autoFocus
+                  onChange={(e) => setRenameDraft(e.target.value)}
+                  onBlur={() => void commitRename()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void commitRename();
+                    if (e.key === "Escape") setRenamingId(null);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Rename page"
+                />
+              ) : (
+                <>
+                  <span className={styles.tabLabel}>{d.title}</span>
+                  <button
+                    type="button"
+                    className={styles.tabClose}
+                    aria-label={`Delete ${d.title}`}
+                    title="Delete page"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void deletePage(d.id);
+                    }}
+                  >
+                    ×
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
+
+        <button
+          type="button"
+          className={styles.tabAdd}
+          onClick={() => void addPage()}
+          disabled={tableMissing}
+          title={
+            tableMissing ? "Set up storage first" : "Add a page"
+          }
+          aria-label="Add a page"
+        >
+          +
+        </button>
       </div>
     </div>
   );
-}
-
-function labelFor(slug: Slug): string {
-  return PAGES.find((p) => p.slug === slug)?.label ?? "notes";
 }

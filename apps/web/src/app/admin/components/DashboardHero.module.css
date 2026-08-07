@@ -1,0 +1,81 @@
+/* Dashboard motivational banner — GHOSTSignal cloud brandmark, a
+   rallying line, and a morse strip. Admin surface: --admin-* tokens +
+   raw px (Stylelint excludes the admin tree). */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 20px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  background: var(--admin-surface-1);
+  text-align: center;
+}
+
+.logo {
+  height: 56px;
+  width: auto;
+  opacity: 0.96;
+}
+
+/* Theme-aware swap — mirror of the topbar brand logo. White brandmark
+   shows by default (dark theme); on light theme swap to the dark one. */
+.logoLight {
+  display: none;
+}
+:global(.admin-root[data-theme="light"]) .logoDark {
+  display: none;
+}
+:global(.admin-root[data-theme="light"]) .logoLight {
+  display: block;
+}
+
+.quote {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--admin-text-primary);
+}
+
+/* --- Morse strip --------------------------------------------------- */
+
+.morse {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.dot,
+.dash {
+  display: inline-block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--admin-accent);
+  opacity: 0.85;
+}
+
+.dot {
+  width: 4px;
+}
+
+.dash {
+  width: 14px;
+}
+
+/* Intra-word letter gap and inter-word gap between symbols. */
+.letterGap {
+  width: 6px;
+}
+
+.wordGap {
+  width: 16px;
+}

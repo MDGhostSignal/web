@@ -17,6 +17,7 @@ import {
 import { MEMBER_PHASE_LABELS, type Member, type MemberPhase } from "@/lib/members";
 import type { SocialPostRow } from "@/lib/social-posts-types";
 
+import { DashboardHero } from "./components/DashboardHero";
 import { HomeKpiCard } from "./components/HomeKpiCard";
 import styles from "./admin-home.module.css";
 
@@ -234,6 +235,8 @@ export default function AdminHome() {
 
   return (
     <div className={styles.page}>
+      <DashboardHero />
+
       <PageHeader
         title="Dashboard"
         subtitle="Today at GhostSignal — cash, posts, pipeline at a glance."
