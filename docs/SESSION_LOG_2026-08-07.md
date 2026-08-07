@@ -256,6 +256,18 @@ float above on a vignette scrim; morse glows. `DashboardHero` is now a
 client component; always-dark so it reads the same in both admin themes.
 Verified live (frame screenshot).
 
+## 14. Dashboard banner — Renaissance gilded-fresco redesign
+
+Reworked the banner again (Martin's call) from the 3D mesh to a
+Renaissance / Michelangelo-inspired **gilded fresco**, theme "admiration
+of beauty and craft": a deep warm bronze ground lit by divine light, slow
+rotating god-rays (CSS conic-gradient, masked), drifting gold dust motes
+(canvas, additive `lighter` blend, upward drift + twinkle; reduced-motion
+= still scatter), the white brandmark haloed in gold, and "You are making
+the World." in a gilded italic serif (brushed-gold `background-clip:text`
+gradient). Morse recolored to gold. Still a self-contained warm/dark panel
+(theme-independent). Verified live (frame screenshot).
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`

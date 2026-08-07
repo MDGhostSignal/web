@@ -5,16 +5,17 @@ import { useEffect, useRef } from "react";
 import styles from "./DashboardHero.module.css";
 
 /**
- * Motivational banner atop the admin dashboard — a dark "signal field"
- * panel with an animated 3D wireframe mesh rippling in perspective,
- * behind the GHOSTSignal cloud brandmark, a co-founder rallying line,
- * and a morse strip that transmits the same phrase.
+ * Motivational banner atop the admin dashboard — a Renaissance-inspired
+ * gilded fresco. A deep warm ground lit by "divine light", drifting gold
+ * dust motes (like gilding catching candlelight in a chapel), the
+ * GHOSTSignal cloud brandmark, a co-founder line rendered in gilded
+ * serif, and a gold morse strip transmitting the same phrase. The theme
+ * is admiration of beauty and craft — "You are making the World." as an
+ * echo of the Creation.
  *
- * The mesh is a hand-rolled canvas effect (no libs): a grid of vertices
- * on an X/Z plane displaced by travelling sine waves, projected with a
- * cheap perspective and drawn as glowing wireframe segments that fade
- * into the distance. Respects prefers-reduced-motion (renders one still
- * frame), scales for DPR, and re-fits on resize.
+ * The gold dust is a hand-rolled canvas effect (no libs): soft motes
+ * drifting upward with a gentle twinkle. Respects prefers-reduced-motion
+ * (renders one still scatter), scales for DPR, and re-fits on resize.
  */
 
 const MORSE: Record<string, string> = {
@@ -42,99 +43,59 @@ function buildSequence(phrase: string): Sym[] {
 }
 const SEQUENCE = buildSequence(PHRASE);
 
-/* ------------------------------ mesh ------------------------------- */
+/* --------------------------- gold dust ----------------------------- */
 
-const COLS = 30; // vertices across
-const ROWS = 16; // vertices in depth
+type Mote = {
+  x: number; // 0..1 of width
+  y: number; // 0..1 of height
+  r: number; // radius px
+  speed: number; // upward, per second (fraction of height)
+  drift: number; // horizontal sway amplitude (fraction of width)
+  phase: number;
+  alpha: number;
+};
 
-function lerp(a: number, b: number, t: number) {
-  return a + (b - a) * t;
+function seedMotes(count: number): Mote[] {
+  const motes: Mote[] = [];
+  for (let i = 0; i < count; i++) {
+    motes.push({
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.6 + Math.random() * 2.2,
+      speed: 0.008 + Math.random() * 0.022,
+      drift: 0.004 + Math.random() * 0.014,
+      phase: Math.random() * Math.PI * 2,
+      alpha: 0.25 + Math.random() * 0.6,
+    });
+  }
+  return motes;
 }
 
-function drawMesh(
+function drawDust(
   ctx: CanvasRenderingContext2D,
+  motes: Mote[],
   w: number,
   h: number,
   time: number,
 ) {
   ctx.clearRect(0, 0, w, h);
-
-  const cx = w / 2;
-  const spanX = w * 0.92; // plane width in screen units at the front
-  const focal = 480;
-  const depthUnit = 46; // z-distance between rows
-  const zNear = 90;
-  const horizonY = h * 0.34; // where far rows converge
-  const frontY = h * 0.98; // baseline of the nearest row
-  const amp = 26; // wave height
-
-  // Precompute projected points [row][col] = {x, y, depthT}
-  const pts: Array<Array<{ x: number; y: number; t: number }>> = [];
-  for (let r = 0; r < ROWS; r++) {
-    const row: Array<{ x: number; y: number; t: number }> = [];
-    const z = zNear + r * depthUnit;
-    const persp = focal / (focal + z);
-    const depthT = r / (ROWS - 1); // 0 near → 1 far
-    const baseY = lerp(frontY, horizonY, depthT);
-    for (let c = 0; c < COLS; c++) {
-      const gx = c / (COLS - 1) - 0.5; // -0.5 .. 0.5
-      // Two travelling waves for an organic ripple.
-      const wave =
-        Math.sin(gx * 6 + time * 1.1 + r * 0.35) *
-          Math.cos(r * 0.5 - time * 0.9) +
-        Math.sin(r * 0.8 + time * 0.6) * 0.5;
-      const x = cx + gx * spanX * persp;
-      const y = baseY + wave * amp * persp;
-      row.push({ x, y, t: depthT });
-    }
-    pts.push(row);
-  }
-
-  ctx.lineWidth = 1;
-  ctx.shadowBlur = 8;
-
-  const stroke = (t: number) => {
-    // Near = bright blue, far = deep violet, fading out.
-    const rr = Math.round(lerp(150, 96, t));
-    const gg = Math.round(lerp(170, 70, t));
-    const bb = Math.round(lerp(255, 210, t));
-    const alpha = lerp(0.85, 0.05, t);
-    const col = `rgba(${rr},${gg},${bb},${alpha})`;
-    ctx.strokeStyle = col;
-    ctx.shadowColor = `rgba(${rr},${gg},${bb},${alpha * 0.8})`;
-  };
-
-  // Horizontal lines (along each row).
-  for (let r = 0; r < ROWS; r++) {
-    stroke(pts[r][0].t);
+  ctx.globalCompositeOperation = "lighter"; // additive glow
+  for (const m of motes) {
+    const px = (m.x + Math.sin(time * 0.5 + m.phase) * m.drift) * w;
+    const py = m.y * h;
+    const twinkle = 0.55 + 0.45 * Math.sin(time * 1.6 + m.phase);
+    const a = m.alpha * twinkle;
+    const rad = m.r * 4;
+    const g = ctx.createRadialGradient(px, py, 0, px, py, rad);
+    g.addColorStop(0, `rgba(255, 226, 150, ${a})`);
+    g.addColorStop(0.4, `rgba(226, 178, 92, ${a * 0.5})`);
+    g.addColorStop(1, "rgba(200, 150, 70, 0)");
+    ctx.fillStyle = g;
     ctx.beginPath();
-    for (let c = 0; c < COLS; c++) {
-      const p = pts[r][c];
-      if (c === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    }
-    ctx.stroke();
+    ctx.arc(px, py, rad, 0, Math.PI * 2);
+    ctx.fill();
   }
-  // Vertical lines (along each column).
-  for (let c = 0; c < COLS; c++) {
-    ctx.beginPath();
-    for (let r = 0; r < ROWS; r++) {
-      const p = pts[r][c];
-      if (r === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-      // Recolor per-segment by depth for a smooth near→far fade.
-      if (r > 0) {
-        ctx.stroke();
-        stroke(p.t);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-      } else {
-        stroke(p.t);
-      }
-    }
-    ctx.stroke();
-  }
-  ctx.shadowBlur = 0;
+  ctx.globalCompositeOperation = "source-over";
 }
 
 /* ------------------------------ view ------------------------------- */
@@ -155,6 +116,7 @@ export function DashboardHero() {
     const reduce = window.matchMedia?.(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    const motes = seedMotes(64);
 
     const fit = () => {
       const rect = canvas.getBoundingClientRect();
@@ -163,7 +125,7 @@ export function DashboardHero() {
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (reduce) drawMesh(ctx, w, h, 0.4);
+      if (reduce) drawDust(ctx, motes, w, h, 0.6);
     };
 
     fit();
@@ -172,8 +134,20 @@ export function DashboardHero() {
 
     if (!reduce) {
       const start = performance.now();
+      let last = start;
       const loop = (now: number) => {
-        drawMesh(ctx, w, h, (now - start) / 1000);
+        const t = (now - start) / 1000;
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        // advance motes (upward, wrap to bottom)
+        for (const m of motes) {
+          m.y -= m.speed * dt;
+          if (m.y < -0.05) {
+            m.y = 1.05;
+            m.x = Math.random();
+          }
+        }
+        drawDust(ctx, motes, w, h, t);
         raf = requestAnimationFrame(loop);
       };
       raf = requestAnimationFrame(loop);
@@ -187,7 +161,8 @@ export function DashboardHero() {
 
   return (
     <section className={styles.hero} aria-label="You are making the World">
-      <canvas ref={canvasRef} className={styles.mesh} aria-hidden="true" />
+      <div className={styles.rays} aria-hidden="true" />
+      <canvas ref={canvasRef} className={styles.dust} aria-hidden="true" />
       <div className={styles.scrim} aria-hidden="true" />
 
       <div className={styles.content}>

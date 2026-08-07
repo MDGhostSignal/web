@@ -1,8 +1,8 @@
-/* Dashboard motivational banner — a self-contained dark "signal field"
-   panel with an animated 3D wireframe mesh behind the brandmark, quote,
-   and morse strip. Always dark (its own environment) so it reads the
-   same in both admin themes. Admin surface: raw px is fine (Stylelint
-   excludes the admin tree). */
+/* Dashboard motivational banner — a Renaissance-inspired gilded fresco.
+   Deep warm ground lit by divine light, slow god-rays, drifting gold
+   dust, and gilded serif type. Always warm/dark (its own environment) so
+   it reads the same in both admin themes. Admin surface: raw px is fine
+   (Stylelint excludes the admin tree). */
 
 .hero {
   position: relative;
@@ -13,46 +13,63 @@
   min-height: 250px;
   margin-bottom: 20px;
   padding: 30px 20px;
-  border: 1px solid rgb(120 140 255 / 18%);
+  border: 1px solid rgb(198 156 78 / 30%);
   border-radius: 16px;
   background:
-    radial-gradient(120% 140% at 50% 0%, #141a33 0%, #0b0e1c 55%, #070912 100%);
+    radial-gradient(90% 120% at 50% -10%, rgb(120 86 34 / 55%), rgb(120 86 34 / 0%) 55%),
+    radial-gradient(120% 140% at 50% 0%, #3a2a14 0%, #22160a 46%, #120b05 100%);
   isolation: isolate;
 }
 
-.mesh {
+/* Slow "god rays" fanning from just above the panel. */
+.rays {
+  position: absolute;
+  left: 50%;
+  top: -55%;
+  z-index: 0;
+  width: 170%;
+  aspect-ratio: 1 / 1;
+  transform: translateX(-50%);
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgb(255 216 140 / 0%) 0deg,
+    rgb(255 216 140 / 7%) 2.4deg,
+    rgb(255 216 140 / 0%) 5deg
+  );
+  -webkit-mask: radial-gradient(closest-side, #000, rgb(0 0 0 / 35%) 46%, transparent 72%);
+  mask: radial-gradient(closest-side, #000, rgb(0 0 0 / 35%) 46%, transparent 72%);
+  animation: heroRays 70s linear infinite;
+}
+
+@keyframes heroRays {
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+.dust {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
 }
 
-/* Darkens behind the text and softly fades the mesh at the edges. */
+/* Warm vignette + a touch of darkening behind the text. */
 .scrim {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   background:
-    radial-gradient(
-      90% 78% at 50% 46%,
-      rgb(7 9 18 / 58%),
-      rgb(7 9 18 / 0%) 70%
-    ),
-    linear-gradient(
-      180deg,
-      rgb(7 9 18 / 35%),
-      rgb(7 9 18 / 0%) 26%,
-      rgb(7 9 18 / 0%) 72%,
-      rgb(7 9 18 / 55%)
-    );
+    radial-gradient(85% 78% at 50% 48%, rgb(18 11 5 / 45%), rgb(18 11 5 / 0%) 70%),
+    linear-gradient(180deg, rgb(18 11 5 / 30%), rgb(18 11 5 / 0%) 30%, rgb(18 11 5 / 0%) 70%, rgb(18 11 5 / 55%));
 }
 
 .content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -63,20 +80,27 @@
 .logo {
   height: 56px;
   width: auto;
-  filter: drop-shadow(0 2px 14px rgb(120 150 255 / 45%));
+  /* Warm gilded glow around the white mark. */
+  filter: drop-shadow(0 2px 16px rgb(230 190 110 / 55%));
 }
 
+/* Gilded serif quote — brushed-gold gradient fill. */
 .quote {
   margin: 0;
-  font-family: var(--admin-font);
-  font-size: 25px;
+  font-family: Georgia, "Times New Roman", "Iowan Old Style", serif;
+  font-size: 27px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #f4f6ff;
-  text-shadow: 0 2px 18px rgb(8 10 20 / 70%);
+  font-style: italic;
+  letter-spacing: 0.01em;
+  color: #e7c987; /* fallback where background-clip:text is unsupported */
+  background: linear-gradient(180deg, #fff3d2 0%, #f0cf8a 42%, #c79544 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 20px rgb(120 80 20 / 45%);
 }
 
-/* --- Morse strip (glowing) ----------------------------------------- */
+/* --- Morse strip (gilded) ------------------------------------------ */
 
 .morse {
   display: flex;
@@ -93,8 +117,8 @@
   display: inline-block;
   height: 4px;
   border-radius: 2px;
-  background: #9fb2ff;
-  box-shadow: 0 0 7px rgb(140 165 255 / 85%);
+  background: linear-gradient(180deg, #ffe6a8, #d3a04f);
+  box-shadow: 0 0 7px rgb(230 190 110 / 80%);
 }
 
 .dot {
@@ -114,7 +138,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo {
-    filter: drop-shadow(0 2px 10px rgb(120 150 255 / 35%));
+  .rays {
+    animation: none;
   }
 }
