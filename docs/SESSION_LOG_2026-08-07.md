@@ -175,6 +175,21 @@ Mercury / Tax Sent · Studio Profile Completed · Mercury / Tax Completed.
   Organization column ahead of Name.
 - Verified live: both header rows read Organization → Name → …
 
+### Members (marketplace) list — sortable columns
+
+- Added `sort` to the marketplace pool's **Organization**, **Name**, and
+  **Lifecycle** columns (previously the pool table had no sortable
+  columns). Organization/Name are string sorts (empty orgs park at the
+  bottom on asc); Lifecycle sorts by onboarding progress.
+- New `countMarketplaceCompleted(steps, memberType)` in members.ts —
+  {done,total} over the marketplace onboarding slice only (excludes N/A
+  creator-only steps), matching what the compact stepper shows. PoolView
+  builds a `memberById` map + a `lifecycleRank` fraction (mocks with no
+  member sort to the bottom).
+- Organization also added to the pool search filter.
+- Verified live: ↕ on all three headers; Name asc/desc + Organization
+  asc reorder the rows correctly.
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`

@@ -197,6 +197,32 @@ export function countCompleted(
   return { done, total };
 }
 
+const MARKETPLACE_KEY_SET = new Set(MARKETPLACE_LIFECYCLE_KEYS);
+
+/**
+ * { done, total } over the marketplace onboarding slice only (excludes
+ * `na` creator-only steps) — matches what the marketplace
+ * LifecycleStepper displays. Used to sort the pool by onboarding
+ * progress.
+ */
+export function countMarketplaceCompleted(
+  steps: LifecycleSteps | null | undefined,
+  memberType: MemberType,
+): { done: number; total: number } {
+  let done = 0;
+  let total = 0;
+  for (const def of LIFECYCLE_STEPS) {
+    if (!MARKETPLACE_KEY_SET.has(def.key)) continue;
+    const effective: StepStatus =
+      steps?.[def.key]?.status ??
+      (def.creatorOnly && memberType !== "creator" ? "na" : "todo");
+    if (effective === "na") continue;
+    total += 1;
+    if (effective === "done") done += 1;
+  }
+  return { done, total };
+}
+
 /**
  * Days between now and `isoTs`. Used for the rot dot — if a member
  * has been in the current phase longer than ROT_THRESHOLD_DAYS, the

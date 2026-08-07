@@ -17,6 +17,7 @@ import type { Match } from "@/lib/marketplace-store";
 import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
 import type { RQResult } from "@/lib/rq/scoring";
 import {
+  countMarketplaceCompleted,
   type LifecycleSteps,
   type Member,
   type MemberType,
@@ -160,6 +161,7 @@ export function PoolView({
       if (q) {
         if (
           !e.name.toLowerCase().includes(q) &&
+          !(e.organization ?? "").toLowerCase().includes(q) &&
           !e.rq_code.toLowerCase().includes(q) &&
           !e.rq_name.toLowerCase().includes(q) &&
           !e.tags.some((t) => t.toLowerCase().includes(q))
@@ -171,16 +173,46 @@ export function PoolView({
     });
   }, [entities, search, kindFilter, matchedFilter, pairingsById]);
 
+  // member.id → Member, for the Lifecycle column (render + progress sort).
+  const memberById = useMemo(() => {
+    const map = new Map<string, Member>();
+    for (const m of members ?? []) map.set(m.id, m);
+    return map;
+  }, [members]);
+
+  // Onboarding progress as a fraction (0–1) for the Lifecycle sort;
+  // entities with no underlying member (mocks) sort to the bottom.
+  const lifecycleRank = (e: MarketplaceEntity): number => {
+    const memberId = entityToMemberId(e.id);
+    const member = memberId ? memberById.get(memberId) : null;
+    if (!member) return -1;
+    const { done, total } = countMarketplaceCompleted(
+      member.lifecycle_steps,
+      member.member_type,
+    );
+    return total === 0 ? 0 : done / total;
+  };
+
   const columns: Column<MarketplaceEntity>[] = [
     {
       key: "organization",
       header: "Organization",
       variant: "truncate",
+      // Empty organizations sort to the bottom on asc (mocks / org-less
+      // members park at the end) and to the top on desc.
+      sort: (a, b) => {
+        const av = a.organization ?? "";
+        const bv = b.organization ?? "";
+        if (av === "" && bv !== "") return 1;
+        if (bv === "" && av !== "") return -1;
+        return av.localeCompare(bv);
+      },
       cell: (e) => e.organization || "—",
     },
     {
       key: "name",
       header: "Name",
+      sort: (a, b) => a.name.localeCompare(b.name),
       cell: (e) => (
         <div className={styles.poolNameCell}>
           <span className={styles.poolName}>{e.name}</span>
@@ -213,10 +245,12 @@ export function PoolView({
       // Mocks have no underlying member and show "—".
       key: "status",
       header: "Lifecycle",
+      // Sort by onboarding progress (fraction of applicable steps done);
+      // toggle the header to descending to surface the most-onboarded.
+      sort: (a, b) => lifecycleRank(a) - lifecycleRank(b),
       cell: (e) => {
         const memberId = entityToMemberId(e.id);
-        const member =
-          memberId && members ? members.find((m) => m.id === memberId) : null;
+        const member = memberId ? memberById.get(memberId) : null;
         if (!member) {
           return <span className={styles.poolStatusEmpty}>—</span>;
         }
