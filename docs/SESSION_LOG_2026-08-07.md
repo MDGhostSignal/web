@@ -224,6 +224,26 @@ encodes the same phrase (self-contained dot/dash renderer, amber accent).
 Purely decorative; sits above the existing Dashboard header + KPI grid.
 Verified live (quote + 52 morse symbols render in a tidy band).
 
+## 12. Follow-ups: sidebar refresh-gap, notebook default + delete modal
+
+- **Sidebar refresh gap (real fix).** Removing `width:100%` earlier didn't
+  cover the reported case: on **refresh with a collapsed preference**, the
+  sidebar renders 64px but the shell's `data-sidebar-collapsed` stayed at
+  the SSR value `"false"`, so the content margin stayed 256px → a
+  persistent 192px gap. Root cause: `collapsed` flips via render-phase
+  setState during hydration and, with the Suspense-wrapped sidebar, React
+  left that attribute on the shell div unpatched. Fix: an effect
+  imperatively syncs `data-sidebar-collapsed` to state via a ref
+  (`AdminShell.tsx`). Verified: gap=0 on collapsed AND expanded refresh,
+  both directions.
+- **Notebook is now the default page** under "To Do & Plan" (parent →
+  /admin/tasks/notebook; children Notebook then Tasks). Added an `exact`
+  flag to `AdminNavSubItem` (`AdminSidebar.tsx`) so the Tasks row
+  (`/admin/tasks`, a path-prefix of the notebook route) doesn't also
+  highlight on the Notebook page. Verified live.
+- **Notebook delete confirmation** switched from `window.confirm` to the
+  GhostSignal admin `Modal` (Cancel + destructiveSolid "Delete page").
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`

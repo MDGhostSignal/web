@@ -16,6 +16,11 @@ export interface AdminNavSubItem {
    *  on query-param-driven pages so the sidebar still highlights it
    *  when the user lands on the bare route. */
   isDefault?: boolean;
+  /** When true, match the pathname exactly instead of by prefix. Needed
+   *  when this sub-item's path is a prefix of a sibling's (e.g. Tasks
+   *  `/admin/tasks` vs Notebook `/admin/tasks/notebook`) so the parent
+   *  route doesn't also light up on the child route. */
+  exact?: boolean;
 }
 
 export interface AdminNavItem {
@@ -210,7 +215,9 @@ function subItemActive(
   currentSearch: URLSearchParams,
 ): boolean {
   const { path, params } = parseHref(sub.href);
-  const pathMatches = pathname === path || pathname.startsWith(path + "/");
+  const pathMatches = sub.exact
+    ? pathname === path
+    : pathname === path || pathname.startsWith(path + "/");
   if (!pathMatches) return false;
   if ([...params.keys()].length === 0) return true;
   // Every declared param either matches the current URL, OR (when sub

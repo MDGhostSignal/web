@@ -5,6 +5,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -54,6 +55,9 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
   // stored-collapsed snap on hard nav is instant (no 200ms width animation
   // that would otherwise show a wide rail with icons only).
   const [ready, setReady] = useState(false);
+  // The shell node — used to imperatively keep its
+  // `data-sidebar-collapsed` attribute in sync with state (see effect).
+  const shellRef = useRef<HTMLDivElement>(null);
 
   // Render-phase hydration of the collapsed preference from
   // localStorage. Uses the same compare-and-set idiom as the local
@@ -93,6 +97,21 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
     const id = requestAnimationFrame(() => setReady(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // Force the shell's `data-sidebar-collapsed` attribute to match state.
+  // The collapsed preference is applied via render-phase setState during
+  // hydration; combined with the Suspense-wrapped sidebar, React can
+  // leave the SSR-rendered attribute ("false") on this div unpatched even
+  // though the sidebar itself collapses. That desyncs the content margin
+  // (driven by --admin-sidebar-width off this attribute) from the sidebar
+  // width, leaving a persistent gap after a refresh with a collapsed
+  // preference. Setting it imperatively guarantees the two stay in sync.
+  useEffect(() => {
+    shellRef.current?.setAttribute(
+      "data-sidebar-collapsed",
+      collapsed ? "true" : "false",
+    );
+  }, [collapsed]);
 
   // Ctrl/Cmd + B — power-user toggle. Matches VS Code's binding so it
   // feels native. Only fires when the focus isn't trapped in an
@@ -138,6 +157,7 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
 
   return (
     <div
+      ref={shellRef}
       className={`${styles.shell} admin-root`}
       data-sidebar-collapsed={collapsed ? "true" : "false"}
       data-ready={ready ? "true" : "false"}

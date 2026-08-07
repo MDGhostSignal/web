@@ -201,6 +201,17 @@
   cursor: not-allowed;
 }
 
+.confirmText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--admin-text-secondary);
+}
+
+.confirmText strong {
+  color: var(--admin-text-primary);
+}
+
 .emptyState {
   flex: 1;
   display: flex;

@@ -68,12 +68,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           icon: <IconMarketplace />,
         },
         {
-          href: "/admin/tasks",
+          // Notebook is the default landing; Tasks (the board) sits
+          // below. `exact` on Tasks so /admin/tasks/notebook doesn't also
+          // light up the Tasks row (its path is a prefix of Notebook's).
+          href: "/admin/tasks/notebook",
           label: "To Do & Plan",
           icon: <IconTasks />,
           children: [
-            { href: "/admin/tasks", label: "Tasks" },
             { href: "/admin/tasks/notebook", label: "Notebook" },
+            { href: "/admin/tasks", label: "Tasks", exact: true },
           ],
         },
         {

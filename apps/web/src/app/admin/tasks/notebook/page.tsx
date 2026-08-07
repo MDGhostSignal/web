@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { PageHeader } from "@/components/admin";
+import { Button, Modal, PageHeader } from "@/components/admin";
 import "@/components/admin/tokens.css";
 
 import styles from "./notebook.module.css";
@@ -26,6 +26,8 @@ export default function NotebookPage() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  // The page queued for deletion — drives the confirm modal.
+  const [pendingDelete, setPendingDelete] = useState<Doc | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const docsRef = useRef(docs);
@@ -165,20 +167,15 @@ export default function NotebookPage() {
     }
   }
 
-  async function deletePage(id: string) {
-    const doc = docs.find((d) => d.id === id);
-    if (
-      !window.confirm(
-        `Delete "${doc?.title ?? "this page"}"? This can't be undone.`,
-      )
-    ) {
-      return;
-    }
-    const next = docs.filter((d) => d.id !== id);
+  async function confirmDelete() {
+    const target = pendingDelete;
+    if (!target) return;
+    setPendingDelete(null);
+    const next = docs.filter((d) => d.id !== target.id);
     setDocs(next);
-    if (activeId === id) setActiveId(next[0]?.id ?? null);
+    if (activeId === target.id) setActiveId(next[0]?.id ?? null);
     try {
-      await fetch(`/api/admin/notebook?id=${encodeURIComponent(id)}`, {
+      await fetch(`/api/admin/notebook?id=${encodeURIComponent(target.id)}`, {
         method: "DELETE",
       });
     } catch {
@@ -298,7 +295,7 @@ export default function NotebookPage() {
                     title="Delete page"
                     onClick={(e) => {
                       e.stopPropagation();
-                      void deletePage(d.id);
+                      setPendingDelete(d);
                     }}
                   >
                     ×
@@ -322,6 +319,31 @@ export default function NotebookPage() {
           +
         </button>
       </div>
+
+      <Modal
+        open={!!pendingDelete}
+        onClose={() => setPendingDelete(null)}
+        title="Delete page"
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPendingDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructiveSolid"
+              onClick={() => void confirmDelete()}
+            >
+              Delete page
+            </Button>
+          </>
+        }
+      >
+        <p className={styles.confirmText}>
+          Delete <strong>{pendingDelete?.title}</strong>? This can&apos;t be
+          undone.
+        </p>
+      </Modal>
     </div>
   );
 }
