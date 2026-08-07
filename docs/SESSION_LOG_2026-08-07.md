@@ -190,6 +190,29 @@ Mercury / Tax Sent · Studio Profile Completed · Mercury / Tax Completed.
 - Verified live: ↕ on all three headers; Name asc/desc + Organization
   asc reorder the rows correctly.
 
+## 10. Notebook page (Tasks subnav)
+
+New `/admin/tasks/notebook` — a plain-text scratch notebook. Tasks became
+a nav parent (Tasks + Notebook children). Full-viewport editor with
+Google-Sheets-style bottom tabs to switch pages; two fixed pages
+(Business plan / Notes), each autosaved (debounced 800ms; flushed on tab
+switch + page hide).
+
+- `api/admin/notebook/route.ts`: GET both docs, PUT upserts one
+  (Prefer resolution=merge-duplicates). Tolerant of a missing table
+  (`tableMissing` flag → page shows a setup hint; PUT 503s). **Gotcha
+  fixed:** PostgREST reports a missing table as `PGRST205` / "Could not
+  find the table … in the schema cache", NOT raw `42P01` — the
+  missing-table check covers both.
+- Storage: `docs/NOTEBOOK_SUPABASE_SCHEMA.sql` (notebook_docs; slug PK,
+  body, updated_at). **NOT yet run** — Supabase MCP is read-only, so
+  Martin must run it; until then the page shows the setup hint and
+  edits don't persist.
+- proxy.ts: added `/api/admin/notebook` to the matcher (cookie gate).
+- Verified live: nav parent + Notebook child, full-size editor, tabs
+  switch and keep separate bodies, setup hint shows while the table is
+  absent.
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`

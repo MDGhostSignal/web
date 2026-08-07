@@ -164,6 +164,8 @@ export const config = {
     // is allowlisted in PUBLIC_SUBPATHS so esignatures.com can POST
     // events without an admin cookie.
     "/api/admin/contracts/:path*",
+    // Notebook — plain-text scratch docs (Business plan / Notes).
+    "/api/admin/notebook",
     // Members lite-lookup (used by the contracts dashboard + the Phase C
     // composer to hydrate member labels / search-pick a counterparty).
     "/api/admin/members/:path*",

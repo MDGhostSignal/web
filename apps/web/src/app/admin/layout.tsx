@@ -67,7 +67,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           label: "Members",
           icon: <IconMarketplace />,
         },
-        { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
+        {
+          href: "/admin/tasks",
+          label: "Tasks",
+          icon: <IconTasks />,
+          children: [
+            { href: "/admin/tasks", label: "Tasks" },
+            { href: "/admin/tasks/notebook", label: "Notebook" },
+          ],
+        },
         {
           href: "/admin/art19",
           label: "Operations",
