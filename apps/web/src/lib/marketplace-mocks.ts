@@ -37,6 +37,9 @@ export type MarketplaceEntity = {
   id: string;
   kind: EntityKind;
   name: string;
+  /** Member's organization / brand name when known. Real members only;
+   *  the seed mocks in this file leave it undefined. */
+  organization?: string | null;
   /** RQ archetype code, mirrors `rq_submissions.rq_code` shape. */
   rq_code: string;
   /** Human-readable archetype, mirrors `rq_submissions.rq_name`. */

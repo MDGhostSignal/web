@@ -163,6 +163,18 @@ Mercury / Tax Sent · Studio Profile Completed · Mercury / Tax Completed.
   group (all 5 are Onboard → flat 5-step row).
 - Verified live: stepper shows exactly the 5 labels, no phase header.
 
+## 9. Organization column on Members + Contacts lists
+
+- Added an **Organization** column to the marketplace (Members) pool list
+  and ordered it **first, before Name** on both the Members list and the
+  Contacts list (Martin's call).
+- `MarketplaceEntity` (marketplace-mocks.ts) + `MarketplaceLite`
+  (members.ts) gained an optional `organization`; `memberToMarketplaceEntity`
+  populates it from `m.organization` (seed mocks leave it undefined → "—").
+- PoolView: new truncate column; contacts/page.tsx: moved the existing
+  Organization column ahead of Name.
+- Verified live: both header rows read Organization → Name → …
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`

@@ -767,6 +767,20 @@ function MembersTable({
 }: TableProps) {
   const columns: Column<Member>[] = [
     {
+      key: "organization",
+      header: "Organization",
+      variant: "truncate",
+      // Empty organizations sort to the bottom on asc.
+      sort: (a, b) => {
+        const av = a.organization ?? "";
+        const bv = b.organization ?? "";
+        if (av === "" && bv !== "") return 1;
+        if (bv === "" && av !== "") return -1;
+        return av.localeCompare(bv);
+      },
+      cell: (m) => m.organization || "—",
+    },
+    {
       key: "name",
       header: "Name",
       variant: "nowrap",
@@ -799,21 +813,6 @@ function MembersTable({
         ) : (
           "—"
         ),
-    },
-    {
-      key: "organization",
-      header: "Organization",
-      variant: "truncate",
-      // Empty organizations sort to the bottom on asc — same pattern as
-      // the Owner column above.
-      sort: (a, b) => {
-        const av = a.organization ?? "";
-        const bv = b.organization ?? "";
-        if (av === "" && bv !== "") return 1;
-        if (bv === "" && av !== "") return -1;
-        return av.localeCompare(bv);
-      },
-      cell: (m) => m.organization || "—",
     },
     {
       key: "type",

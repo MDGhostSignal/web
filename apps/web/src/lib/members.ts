@@ -333,6 +333,7 @@ export type MarketplaceLite = {
   id: string;
   kind: "creator" | "brand";
   name: string;
+  organization?: string | null;
   rq_code: string;
   rq_name: string;
   tags: readonly string[];
@@ -362,6 +363,7 @@ export function memberToMarketplaceEntity(m: Member): MarketplaceLite | null {
     id: `mem-${m.id}`,
     kind: m.member_type,
     name,
+    organization: m.organization,
     rq_code: m.rq_submission_id ? "RQ-?" : "RQ-?",
     rq_name: m.rq_submission_id ? "RQ pending" : "RQ pending",
     tags: m.tags,

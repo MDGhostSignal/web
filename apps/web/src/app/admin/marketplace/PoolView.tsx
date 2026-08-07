@@ -173,6 +173,12 @@ export function PoolView({
 
   const columns: Column<MarketplaceEntity>[] = [
     {
+      key: "organization",
+      header: "Organization",
+      variant: "truncate",
+      cell: (e) => e.organization || "—",
+    },
+    {
       key: "name",
       header: "Name",
       cell: (e) => (
