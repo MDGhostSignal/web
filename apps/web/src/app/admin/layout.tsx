@@ -10,11 +10,13 @@ import { AdminShell } from "@/components/admin";
 import "@/components/admin/tokens.css";
 import {
   IconAdmin,
+  IconDashboard,
   IconLeads,
   IconMarketing,
   IconMarketplace,
   IconOperations,
   IconPages,
+  IconTasks,
 } from "@/components/admin/icons";
 
 /**
@@ -55,22 +57,25 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       nav={[
         // Navigation V3 — task-clustered hierarchy. Each parent links to
         // its first child; the sidebar expands + highlights a group via
-        // path-prefix / query matching (see AdminSidebar). Dashboard
-        // (/admin) has no explicit item — the brand logo links there.
+        // path-prefix / query matching (see AdminSidebar). Dashboard is
+        // the first item; the brand logo also links to /admin.
+        { href: "/admin", label: "Dashboard", icon: <IconDashboard /> },
         { href: "/admin/contacts", label: "Contacts", icon: <IconLeads /> },
         {
-          href: "/admin/tasks",
+          // Members = the marketplace (the member pool + matching).
+          href: "/admin/marketplace?view=pool",
           label: "Members",
           icon: <IconMarketplace />,
           children: [
-            { href: "/admin/tasks", label: "Tasks" },
             {
               href: "/admin/marketplace?view=pool",
-              label: "Marketplace",
+              label: "Pool",
               isDefault: true,
             },
+            { href: "/admin/marketplace?view=match", label: "Match" },
           ],
         },
+        { href: "/admin/tasks", label: "Tasks", icon: <IconTasks /> },
         {
           href: "/admin/art19",
           label: "Operations",
@@ -82,9 +87,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               label: "Studio Members",
               isDefault: true,
             },
-            // No standalone invite route — this opens the invite modal on
-            // the members page (InviteMemberButton reads ?invite=1).
-            { href: "/admin/studio-members?invite=1", label: "Studio Invite" },
             { href: "/admin/xq-responses", label: "XQ Responses" },
             { href: "/admin/rq-responses", label: "RQ Responses" },
           ],
@@ -115,8 +117,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           icon: <IconPages />,
           children: [
             { href: "/admin/pages", label: "Pages" },
-            { href: "/admin/alerts", label: "Alerts" },
-            { href: "/admin/studio-requests", label: "Intro Requests" },
             { href: "/admin/studio-approvals", label: "Approvals" },
             { href: "/admin/studio-picks", label: "GS Picks" },
           ],

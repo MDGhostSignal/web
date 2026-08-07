@@ -60,34 +60,37 @@ Report: content sometimes stays too narrow after toggling the sidebar.
 
 ## 4. Navigation V3 — task-clustered hierarchy (live)
 
-Replaced the flat V1 sidebar in `admin/layout.tsx` with a 6-group tree
-(supersedes the never-adopted V2 `/admin2` preview, now doubly stale):
+Replaced the flat V1 sidebar in `admin/layout.tsx` with a task-clustered
+tree (supersedes the never-adopted V2 `/admin2` preview, now doubly
+stale). **Final shape** after several live refinements from Martin:
 
+- **Dashboard** (leaf → /admin)
 - **Contacts** (leaf)
-- **Members** → Tasks, Marketplace
-- **Operations** → Campaigns, Studio Members, Studio Invite, XQ
-  Responses, RQ Responses
+- **Members** = the marketplace → Pool, Match
+- **Tasks** (leaf, its own top-level item after Members)
+- **Operations** → Campaigns, Studio Members, XQ Responses, RQ Responses
 - **Admin** → Finance, Contracts
 - **Marketing** → Outreach, Assets, Copy, Social Planner
-- **Pages** → Pages, Alerts, Intro Requests, Approvals, GS Picks
-
-Decisions folded in from Martin's clarifications: Tasks + Marketplace
-under Members; Studio member list + invite under Operations;
-Picks/Intro Requests/Approvals + Alerts under Pages. **Dashboard has no
-explicit item** — the brand logo already links to `/admin` (flagged;
-easy to add back).
+- **Pages** → Pages, Approvals, GS Picks
 
 - Each parent links to its first child; sidebar expands/highlights via
-  path-prefix + query matching. Marketplace collapsed to a single leaf
-  (page still supports ?view=pool|match internally).
-- **Studio Invite** has no standalone route — the nav item links to
-  `/admin/studio-members?invite=1` and `InviteMemberButton` now
-  auto-opens the invite modal on that param, stripping it via
-  `router.replace` so re-selecting re-triggers.
+  path-prefix + query matching.
 - Three new icons: `IconOperations` (gear), `IconAdmin` (shield),
-  `IconPages` (document). Members reuses `IconMarketplace`.
-- Verified live: all six groups + children render as specified, correct
-  icons, invite modal auto-opens and URL param is cleared.
+  `IconPages` (document). Members uses `IconMarketplace`; Dashboard
+  `IconDashboard`, Tasks `IconTasks`.
+- **AdminSidebar fix:** a leaf item now only highlights on an exact
+  route match, never as an "ancestor" — Dashboard's `/admin` href is a
+  path-prefix of every admin route and would otherwise section-tint the
+  whole tree. `parentIsAncestor` gated on `item.children`.
+- Iterated shape (all live-verified via Playwright): first pass had
+  Members = Tasks+Marketplace, Operations with a "Studio Invite" item
+  (opened the modal via ?invite=1), and Pages with Alerts + Intro
+  Requests. Martin then: made Dashboard the first item, moved Tasks to
+  its own top-level slot, set Members = marketplace (Pool/Match),
+  removed Studio Invite (there's an invite button inside the members
+  list — the ?invite=1 auto-open in InviteMemberButton was reverted),
+  and dropped Alerts + Intro Requests from Pages (Alerts still has its
+  topbar bell). Routes for all dropped items still exist by URL.
 
 ## 5. Dashboard tiles — investigation only (NOT built this commit)
 

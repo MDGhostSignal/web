@@ -270,7 +270,12 @@ function NavRow({
   // marketing redirect mid-flight). When a child is active, the
   // parent gets the softer "parent of active" tint instead.
   const parentIsActive = isExactActive && !childActiveHref;
-  const parentIsAncestor = isInsideSection && !parentIsActive;
+  // Only grouped items (with children) can be an "ancestor" of the
+  // current route. Leaf items — notably Dashboard at "/admin", whose
+  // href is a path-prefix of every admin route — must highlight on an
+  // exact match only, never section-tint the whole tree.
+  const parentIsAncestor =
+    Boolean(item.children) && isInsideSection && !parentIsActive;
 
   return (
     <li className={styles.item}>
