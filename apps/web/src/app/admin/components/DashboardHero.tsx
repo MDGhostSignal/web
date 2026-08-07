@@ -5,17 +5,17 @@ import { useEffect, useRef } from "react";
 import styles from "./DashboardHero.module.css";
 
 /**
- * Motivational banner atop the admin dashboard — a Renaissance-inspired
- * gilded fresco. A deep warm ground lit by "divine light", drifting gold
- * dust motes (like gilding catching candlelight in a chapel), the
- * GHOSTSignal cloud brandmark, a co-founder line rendered in gilded
- * serif, and a gold morse strip transmitting the same phrase. The theme
- * is admiration of beauty and craft — "You are making the World." as an
- * echo of the Creation.
+ * Motivational banner atop the admin dashboard — a neutral panel that
+ * follows the admin theme (light greys in light mode, dark greys in
+ * dark). Subtle drifting dust motes behind the GHOSTSignal brandmark,
+ * the "You are making the World." line, and a morse strip transmitting
+ * the same phrase. No accent coloring — grey tones only.
  *
- * The gold dust is a hand-rolled canvas effect (no libs): soft motes
- * drifting upward with a gentle twinkle. Respects prefers-reduced-motion
- * (renders one still scatter), scales for DPR, and re-fits on resize.
+ * The dust is a hand-rolled canvas effect (no libs): soft motes drifting
+ * upward with a gentle twinkle. Mote colour is read from the
+ * `--hero-mote-rgb` CSS variable so it flips with the theme. Respects
+ * prefers-reduced-motion (still scatter), scales for DPR, re-fits on
+ * resize.
  */
 
 const MORSE: Record<string, string> = {
@@ -43,14 +43,14 @@ function buildSequence(phrase: string): Sym[] {
 }
 const SEQUENCE = buildSequence(PHRASE);
 
-/* --------------------------- gold dust ----------------------------- */
+/* --------------------------- dust motes ---------------------------- */
 
 type Mote = {
-  x: number; // 0..1 of width
-  y: number; // 0..1 of height
-  r: number; // radius px
-  speed: number; // upward, per second (fraction of height)
-  drift: number; // horizontal sway amplitude (fraction of width)
+  x: number;
+  y: number;
+  r: number;
+  speed: number;
+  drift: number;
   phase: number;
   alpha: number;
 };
@@ -65,7 +65,7 @@ function seedMotes(count: number): Mote[] {
       speed: 0.008 + Math.random() * 0.022,
       drift: 0.004 + Math.random() * 0.014,
       phase: Math.random() * Math.PI * 2,
-      alpha: 0.25 + Math.random() * 0.6,
+      alpha: 0.2 + Math.random() * 0.45,
     });
   }
   return motes;
@@ -74,12 +74,12 @@ function seedMotes(count: number): Mote[] {
 function drawDust(
   ctx: CanvasRenderingContext2D,
   motes: Mote[],
+  rgb: string,
   w: number,
   h: number,
   time: number,
 ) {
   ctx.clearRect(0, 0, w, h);
-  ctx.globalCompositeOperation = "lighter"; // additive glow
   for (const m of motes) {
     const px = (m.x + Math.sin(time * 0.5 + m.phase) * m.drift) * w;
     const py = m.y * h;
@@ -87,25 +87,26 @@ function drawDust(
     const a = m.alpha * twinkle;
     const rad = m.r * 4;
     const g = ctx.createRadialGradient(px, py, 0, px, py, rad);
-    g.addColorStop(0, `rgba(255, 226, 150, ${a})`);
-    g.addColorStop(0.4, `rgba(226, 178, 92, ${a * 0.5})`);
-    g.addColorStop(1, "rgba(200, 150, 70, 0)");
+    g.addColorStop(0, `rgba(${rgb}, ${a})`);
+    g.addColorStop(0.5, `rgba(${rgb}, ${a * 0.35})`);
+    g.addColorStop(1, `rgba(${rgb}, 0)`);
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(px, py, rad, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.globalCompositeOperation = "source-over";
 }
 
 /* ------------------------------ view ------------------------------- */
 
 export function DashboardHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const hero = heroRef.current;
+    if (!canvas || !hero) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -116,7 +117,26 @@ export function DashboardHero() {
     const reduce = window.matchMedia?.(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const motes = seedMotes(64);
+    const motes = seedMotes(60);
+
+    // Mote colour follows the theme via a CSS variable; re-read when the
+    // admin-root data-theme flips.
+    let rgb = "180 186 198";
+    const readColour = () => {
+      const v = getComputedStyle(hero)
+        .getPropertyValue("--hero-mote-rgb")
+        .trim();
+      if (v) rgb = v;
+    };
+    readColour();
+    const themeRoot = hero.closest(".admin-root");
+    const mo = themeRoot
+      ? new MutationObserver(() => {
+          readColour();
+          if (reduce) drawDust(ctx, motes, rgb, w, h, 0.6);
+        })
+      : null;
+    mo?.observe(themeRoot!, { attributes: true, attributeFilter: ["data-theme"] });
 
     const fit = () => {
       const rect = canvas.getBoundingClientRect();
@@ -125,7 +145,7 @@ export function DashboardHero() {
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (reduce) drawDust(ctx, motes, w, h, 0.6);
+      if (reduce) drawDust(ctx, motes, rgb, w, h, 0.6);
     };
 
     fit();
@@ -139,7 +159,6 @@ export function DashboardHero() {
         const t = (now - start) / 1000;
         const dt = Math.min((now - last) / 1000, 0.05);
         last = now;
-        // advance motes (upward, wrap to bottom)
         for (const m of motes) {
           m.y -= m.speed * dt;
           if (m.y < -0.05) {
@@ -147,7 +166,7 @@ export function DashboardHero() {
             m.x = Math.random();
           }
         }
-        drawDust(ctx, motes, w, h, t);
+        drawDust(ctx, motes, rgb, w, h, t);
         raf = requestAnimationFrame(loop);
       };
       raf = requestAnimationFrame(loop);
@@ -156,21 +175,31 @@ export function DashboardHero() {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      mo?.disconnect();
     };
   }, []);
 
   return (
-    <section className={styles.hero} aria-label="You are making the World">
-      <div className={styles.rays} aria-hidden="true" />
+    <section
+      ref={heroRef}
+      className={styles.hero}
+      aria-label="You are making the World"
+    >
       <canvas ref={canvasRef} className={styles.dust} aria-hidden="true" />
-      <div className={styles.scrim} aria-hidden="true" />
 
       <div className={styles.content}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/brand/brandmark-vert-white.svg"
           alt="GHOSTSignal"
-          className={styles.logo}
+          className={`${styles.logo} ${styles.logoDark}`}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/brand/gs-brandmark-vert-dark.png"
+          alt=""
+          aria-hidden="true"
+          className={`${styles.logo} ${styles.logoLight}`}
         />
         <p className={styles.quote}>You are making the World.</p>
         <div className={styles.morse} aria-hidden="true">

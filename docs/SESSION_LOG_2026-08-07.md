@@ -268,6 +268,34 @@ the World." in a gilded italic serif (brushed-gold `background-clip:text`
 gradient). Morse recolored to gold. Still a self-contained warm/dark panel
 (theme-independent). Verified live (frame screenshot).
 
+## 15. Dashboard banner — neutral grey, theme-aware (final)
+
+Restyled the banner from the gilded fresco to neutral grey tones that
+follow the admin theme (Martin's call): background/border/text now driven
+by `--admin-*` tokens (light greys in light mode, dark greys in dark),
+all gold/warm/blue coloring removed. Headline reverted from the gilded
+italic serif back to the sans style (`var(--admin-font)`, 25px/600,
+`--admin-text-primary`). The drifting dust animation stays but is now
+grey via a `--hero-mote-rgb` CSS var read by the canvas (208 213 222 on
+dark / 96 102 114 on light), re-read on a `data-theme` MutationObserver;
+god-rays + scrim removed. Brandmark uses the theme-aware white/dark swap
+again. Verified live in both themes (grey flips, brandmark swaps, headline
+sans).
+
+## Closeout — 2026-08-07
+
+Shipped across the day (all on origin/main): alert-email scope →
+contract renewals only; campaign email at 100%; sidebar width + refresh
+gap fixes; Nav V3 (+ several rounds of refinement, final: Dashboard ·
+Contacts · Members · To Do & Plan · Operations · Admin · Marketing ·
+Pages); Organization column + sortable Members list; contact 6-stage
+reach-out lifecycle; marketplace 5-step onboarding; Notebook page
+(dynamic tabs, styled delete modal — `notebook_docs` schema run + in
+use); dashboard motivational banner (iterated mesh → fresco → neutral
+grey). Only open item: the 30-day network listens dashboard tile, parked
+pending Martin's ART19 rep conversation (Total Cash already combines both
+checking accounts).
+
 ## Files touched
 
 - `src/app/api/admin/alerts/emails.ts`, `alerts/digest/route.ts`
