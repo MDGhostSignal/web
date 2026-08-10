@@ -31,6 +31,8 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+import { linkMemberSubmissionsByEmail } from "@/lib/members";
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -181,6 +183,33 @@ export async function loadCurrentStudioMember(): Promise<StudioMember | null> {
     .maybeSingle();
   if (error || !data) return null;
 
+  let xqSubmissionId = data.xq_submission_id as string | null;
+  let xqArchetype = data.xq_archetype as string | null;
+  let rqSubmissionId = data.rq_submission_id as string | null;
+  let rqCode = data.rq_code as string | null;
+
+  // Best-effort re-link: the at-submit link (linkSubmissionToMember /
+  // linkRqSubmissionToMember) only fires when the quiz is taken by an
+  // email that already matches exactly one member. A member who took the
+  // quiz before registering — or under a slightly different flow — ends
+  // up with a completed submission but no link, so their Studio results
+  // never appear. Here we link by the member's own email (their account,
+  // so no PII ambiguity): newest completed submission wins. Runs only
+  // while a link is missing, so it's a one-time cost per member.
+  const linked = await linkMemberSubmissionsByEmail(
+    data.id as string,
+    data.email as string,
+    { xq: xqSubmissionId !== null, rq: rqSubmissionId !== null },
+  );
+  if (linked.xq_submission_id) {
+    xqSubmissionId = linked.xq_submission_id;
+    if (linked.xq_archetype && !xqArchetype) xqArchetype = linked.xq_archetype;
+  }
+  if (linked.rq_submission_id) {
+    rqSubmissionId = linked.rq_submission_id;
+    if (linked.rq_code && !rqCode) rqCode = linked.rq_code;
+  }
+
   const fn = data.first_name?.trim() ?? "";
   const ln = data.last_name?.trim() ?? "";
   const displayName = `${fn} ${ln}`.trim() || data.email || "Studio member";
@@ -196,9 +225,9 @@ export async function loadCurrentStudioMember(): Promise<StudioMember | null> {
     brandId: data.brand_id,
     creatorId: data.creator_id,
     isApproved: data.activated_at !== null,
-    xqArchetype: data.xq_archetype,
-    xqSubmissionId: data.xq_submission_id,
-    rqCode: data.rq_code,
-    rqSubmissionId: data.rq_submission_id,
+    xqArchetype,
+    xqSubmissionId,
+    rqCode,
+    rqSubmissionId,
   };
 }

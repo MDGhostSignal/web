@@ -20,6 +20,7 @@ export function StudioHeader({
     | "roster"
     | "world"
     | "profile"
+    | "results"
     | "migration"
     /** Onboarding splash — no nav tab highlights. */
     | "welcome";
@@ -54,6 +55,14 @@ export function StudioHeader({
             </Link>
           </>
         )}
+        {/* My results — the member's XQ/RQ reveal. Always available so
+            they can revisit what they saw right after the quiz. */}
+        <Link
+          href="/studio/results"
+          className={`${styles.headerNavTab} ${activeTab === "results" ? styles.headerNavTabActive : ""}`}
+        >
+          My results
+        </Link>
         {/* Roster is paused, not removed — its page also redirects
             while STUDIO_ROSTER_HIDDEN is on. */}
         {!STUDIO_ROSTER_HIDDEN && (

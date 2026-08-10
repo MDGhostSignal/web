@@ -302,6 +302,12 @@ export type Member = {
       have completed the XQ quiz. Set when the public XQ quiz POSTs
       with an email that matches this member. See docs/CRM_XQ_SUBMISSIONS_SCHEMA.sql. */
   xq_submission_id: string | null;
+  /** Denormalized archetype code (mirrors the linked XQ submission's
+      xq_code) so the marketplace card + matching read it without a join.
+      Set alongside xq_submission_id. */
+  xq_archetype: string | null;
+  /** Denormalized RQ code (mirrors the linked RQ submission's rq_code). */
+  rq_code: string | null;
   /** Shipping address — populated when the team needs to mail
       membership boxes / branded swag. All six fields are optional;
       backfilled per-member as the team gathers them. See
@@ -424,4 +430,90 @@ export async function findMembersByEmail(
   );
   if (!res.ok) return [];
   return res.data;
+}
+
+/**
+ * Link a member to their own completed XQ/RQ submissions by email when a
+ * link is missing. Idempotent + best-effort (never throws). Writes
+ * members.{xq,rq}_submission_id + the denormalized {xq_archetype, rq_code}
+ * so both the Studio (results page, "fill me" prompts) and the
+ * marketplace (card archetype + matching) reflect the result.
+ *
+ * This is the single hardening point for the fragile at-submit link
+ * (which only fires on an exact single-email match the instant the quiz
+ * is submitted). Call it whenever a member row appears or their email
+ * changes, from the Studio loader, or from a backfill — so a submission
+ * taken before / around signup still attaches. `have` lets a caller skip
+ * the lookup for a side that's already linked. Returns what it linked so
+ * the caller can reflect it without a re-query.
+ */
+export async function linkMemberSubmissionsByEmail(
+  memberId: string,
+  email: string | null | undefined,
+  have?: { xq?: boolean; rq?: boolean },
+): Promise<{
+  xq_submission_id?: string;
+  xq_archetype?: string;
+  rq_submission_id?: string;
+  rq_code?: string;
+}> {
+  const out: {
+    xq_submission_id?: string;
+    xq_archetype?: string;
+    rq_submission_id?: string;
+    rq_code?: string;
+  } = {};
+  const normalised = email?.trim().toLowerCase();
+  if (!memberId || !normalised || !normalised.includes("@")) return out;
+  if (have?.xq && have?.rq) return out;
+
+  const patch: Record<string, unknown> = {};
+  try {
+    if (!have?.xq) {
+      const xqRes = await supabaseRest<
+        Array<{ id: string; xq_code: string | null }>
+      >(
+        `xq_submissions?select=id,xq_code&status=eq.complete` +
+          `&email=ilike.${encodeURIComponent(normalised)}` +
+          `&order=submitted_at.desc&limit=1`,
+      );
+      const xq = xqRes.ok ? xqRes.data[0] : undefined;
+      if (xq?.id) {
+        out.xq_submission_id = xq.id;
+        patch.xq_submission_id = xq.id;
+        if (xq.xq_code) {
+          out.xq_archetype = xq.xq_code;
+          patch.xq_archetype = xq.xq_code;
+        }
+      }
+    }
+    if (!have?.rq) {
+      const rqRes = await supabaseRest<
+        Array<{ id: string; rq_code: string | null }>
+      >(
+        `rq_submissions?select=id,rq_code&status=eq.complete` +
+          `&email=ilike.${encodeURIComponent(normalised)}` +
+          `&order=submitted_at.desc&limit=1`,
+      );
+      const rq = rqRes.ok ? rqRes.data[0] : undefined;
+      if (rq?.id) {
+        out.rq_submission_id = rq.id;
+        patch.rq_submission_id = rq.id;
+        if (rq.rq_code) {
+          out.rq_code = rq.rq_code;
+          patch.rq_code = rq.rq_code;
+        }
+      }
+    }
+    if (Object.keys(patch).length > 0) {
+      await supabaseRest(`members?id=eq.${encodeURIComponent(memberId)}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+        prefer: "return=minimal",
+      });
+    }
+  } catch (err) {
+    console.warn("linkMemberSubmissionsByEmail skipped:", err);
+  }
+  return out;
 }

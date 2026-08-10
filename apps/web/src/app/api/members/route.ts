@@ -4,6 +4,7 @@ import {
   CONTACT_STEPPER_STEP_KEYS,
   initLifecycleSteps,
   LIFECYCLE_STEPS,
+  linkMemberSubmissionsByEmail,
   MEMBER_PHASES,
   MEMBER_TYPES,
   STEP_STATUSES,
@@ -110,6 +111,27 @@ export async function POST(req: NextRequest) {
   }
 
   const created = Array.isArray(res.data) ? res.data[0] : res.data;
+
+  // Attach any completed XQ/RQ submission already taken under this
+  // member's email (e.g. they filled the quiz before this CRM row
+  // existed). Best-effort — the create still succeeds regardless — and
+  // reflected back on the response so the client sees the link.
+  if (created?.id && created.email) {
+    const linked = await linkMemberSubmissionsByEmail(
+      created.id,
+      created.email,
+      { xq: created.xq_submission_id != null, rq: created.rq_submission_id != null },
+    );
+    if (linked.xq_submission_id) {
+      created.xq_submission_id = linked.xq_submission_id;
+      if (linked.xq_archetype) created.xq_archetype = linked.xq_archetype;
+    }
+    if (linked.rq_submission_id) {
+      created.rq_submission_id = linked.rq_submission_id;
+      if (linked.rq_code) created.rq_code = linked.rq_code;
+    }
+  }
+
   return NextResponse.json({ ok: true, member: created });
 }
 

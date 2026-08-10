@@ -1501,6 +1501,20 @@ a.rosterMeta:hover {
   color: var(--studio-text-secondary);
 }
 
+/* Subtle "see full result" link inside a completed quiz tile → /studio/results. */
+.quizTileMore {
+  align-self: flex-start;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-accent);
+  text-decoration: none;
+}
+
+.quizTileMore:hover {
+  text-decoration: underline;
+}
+
 .quizTileCta {
   align-self: flex-start;
   margin-top: 6px;

@@ -62,6 +62,9 @@ export function XqTile({ summary }: { summary: StudioXqSummary | null }) {
           ))}
         </div>
       )}
+      <Link href="/studio/results" className={styles.quizTileMore}>
+        See full breakdown →
+      </Link>
     </section>
   );
 }
@@ -97,6 +100,9 @@ export function RqTile({ summary }: { summary: StudioRqSummary | null }) {
       {summary.clarityNote && (
         <p className={styles.quizTileBody}>{summary.clarityNote}</p>
       )}
+      <Link href="/studio/results" className={styles.quizTileMore}>
+        See full breakdown →
+      </Link>
     </section>
   );
 }

@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { sanitizePayload } from "../route";
 import { type AlertKind, resolveOpenAlertsForMember } from "@/lib/alerts";
-import { type Member, type MemberWritable } from "@/lib/members";
+import {
+  linkMemberSubmissionsByEmail,
+  type Member,
+  type MemberWritable,
+} from "@/lib/members";
 import { supabaseRest } from "@/lib/supabase-admin";
 
 const TABLE = process.env.MEMBERS_TABLE ?? "members";
@@ -125,6 +129,25 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
   if (kindsToResolve.length > 0) {
     void resolveOpenAlertsForMember(id, kindsToResolve);
+  }
+
+  // Re-link XQ/RQ submissions when the member has an email but isn't
+  // fully linked — covers an email correction that now matches a
+  // submission, or a submission taken before this row was completed.
+  // Best-effort; reflected back on the response.
+  if (updated.email && (!updated.xq_submission_id || !updated.rq_submission_id)) {
+    const linked = await linkMemberSubmissionsByEmail(updated.id, updated.email, {
+      xq: updated.xq_submission_id != null,
+      rq: updated.rq_submission_id != null,
+    });
+    if (linked.xq_submission_id) {
+      updated.xq_submission_id = linked.xq_submission_id;
+      if (linked.xq_archetype) updated.xq_archetype = linked.xq_archetype;
+    }
+    if (linked.rq_submission_id) {
+      updated.rq_submission_id = linked.rq_submission_id;
+      if (linked.rq_code) updated.rq_code = linked.rq_code;
+    }
   }
 
   return NextResponse.json({ ok: true, member: updated });
