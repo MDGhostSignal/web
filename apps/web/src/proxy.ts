@@ -82,6 +82,8 @@ export async function proxy(req: NextRequest) {
     if (
       pathname === "/studio" ||
       pathname === "/studio/login" ||
+      // Dev-only results preview (the page itself 404s in production).
+      pathname === "/studio/results-preview" ||
       (pathname === "/studio/register" &&
         (!STUDIO_INVITE_ONLY || req.nextUrl.searchParams.has("invite")))
     ) {

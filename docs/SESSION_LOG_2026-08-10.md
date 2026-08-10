@@ -134,6 +134,26 @@ cause was deeper than the earlier missing-link fix:
   shows the clarity note + per-axis prose ("As Formative, …" for values /
   authenticity / horizon) from the summary's `profile`.
 
+## 6. Dev-only results preview (kept as an internal tool)
+
+`/studio/results-preview` — renders `/studio/results` for a real member
+who has both quizzes filled (currently Blue Souk), so the team can view
+the member experience without a member login. **404s in production**;
+exempted from the studio auth gate in proxy.ts. Committed as a permanent
+internal preview tool.
+
+## Closeout — 2026-08-10
+
+Studio-focused day driven by the first two real clients' feedback (Aaron/
+Etkin, Mark Meynell). Shipped: `/studio/results` (view your XQ/RQ any
+time) redesigned to compact tiles → full-detail modal with the spectrum
+map / resonance radar + a personal "what this means for you" explainer;
+reliable + self-healing submission→member linking (fixed the stale-link
+gap that hid Mark's XQ); email = identity anchor (409 on dup-email
+create); non-destructive dedup of Mark's duplicate rows; two admin
+console-error fixes (hydration + canvas). Data repairs run + verified.
+Open: 30-day network-listens dashboard tile still parked on ART19.
+
 ## Open
 
 - 30-day network listens dashboard tile — still parked pending the ART19
