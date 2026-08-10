@@ -8,8 +8,7 @@ import { loadCurrentStudioMember } from "@/lib/studio-auth";
 import { loadStudioRqSummary, loadStudioXqSummary } from "@/lib/studio-data";
 
 import { StudioHeader } from "../StudioHeader";
-import { RqProfileCard } from "../RqProfileCard";
-import { XqProfileCard } from "../XqProfileCard";
+import { ResultTiles } from "../ResultTiles";
 
 import styles from "../studio.module.css";
 
@@ -48,13 +47,12 @@ export default async function StudioResultsPage() {
 
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Your conviction profile</h3>
-          <div className={styles.profileGrid}>
-            <XqProfileCard
-              summary={xqSummary}
-              fallbackCode={member.xqArchetype}
-            />
-            <RqProfileCard summary={rqSummary} fallbackCode={member.rqCode} />
-          </div>
+          <ResultTiles
+            xqSummary={xqSummary}
+            rqSummary={rqSummary}
+            xqFallback={member.xqArchetype}
+            rqFallback={member.rqCode}
+          />
         </section>
       </main>
     </>

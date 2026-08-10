@@ -199,7 +199,7 @@ export async function loadCurrentStudioMember(): Promise<StudioMember | null> {
   const linked = await linkMemberSubmissionsByEmail(
     data.id as string,
     data.email as string,
-    { xq: xqSubmissionId !== null, rq: rqSubmissionId !== null },
+    { xqSubmissionId, rqSubmissionId },
   );
   if (linked.xq_submission_id) {
     xqSubmissionId = linked.xq_submission_id;

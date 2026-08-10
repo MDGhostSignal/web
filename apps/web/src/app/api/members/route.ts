@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import {
   CONTACT_STEPPER_STEP_KEYS,
+  findMembersByEmail,
   initLifecycleSteps,
   LIFECYCLE_STEPS,
   linkMemberSubmissionsByEmail,
@@ -89,6 +90,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Email is the person's identity anchor — enforce one member per
+  // email so a re-typed org name (or a quiz taken under a slightly
+  // different profile) can't spawn a duplicate contact. If the email
+  // already belongs to a member, refuse with the existing id so the
+  // caller opens/links that record instead of creating a dupe. (Members
+  // that legitimately share nothing but an email are vanishingly rare;
+  // this is the model Martin approved after the Mark Meynell dedupe.)
+  if (payload.email) {
+    const existing = await findMembersByEmail(payload.email);
+    if (existing.length > 0) {
+      const m = existing[0];
+      const who =
+        m.organization ||
+        [m.first_name, m.last_name].filter(Boolean).join(" ").trim() ||
+        "an existing member";
+      return NextResponse.json(
+        {
+          ok: false,
+          duplicate: true,
+          existingMemberId: m.id,
+          error: `A member with ${payload.email} already exists (${who}). Open that record instead of creating a duplicate.`,
+        },
+        { status: 409 },
+      );
+    }
+  }
+
   // Seed the lifecycle checklist server-side when the caller didn't
   // provide one — keeps the default in sync with LIFECYCLE_STEPS
   // regardless of which client creates the row.
@@ -120,7 +148,10 @@ export async function POST(req: NextRequest) {
     const linked = await linkMemberSubmissionsByEmail(
       created.id,
       created.email,
-      { xq: created.xq_submission_id != null, rq: created.rq_submission_id != null },
+      {
+        xqSubmissionId: created.xq_submission_id,
+        rqSubmissionId: created.rq_submission_id,
+      },
     );
     if (linked.xq_submission_id) {
       created.xq_submission_id = linked.xq_submission_id;

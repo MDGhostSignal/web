@@ -81,6 +81,55 @@ was lost. The gap was purely the member link.
   `--hero-mote-rgb` is a space-separated triplet, so `rgba(208 213 222, a)`
   was invalid. Switched to the modern `rgb(r g b / a)` slash syntax.
 
+## 4. Mark Meynell feedback — stale-link self-heal + non-destructive dedup
+
+First real customer's feedback: "XQ didn't pull through in Studio." Root
+cause was deeper than the earlier missing-link fix:
+
+- **Stale links.** Mark's studio row (`Triptych Conversations`) had a
+  non-null `xq_submission_id` pointing at a **deleted** submission, and
+  `rq_submission_id` at an **incomplete** one. The earlier linker treated
+  non-null as "linked" and skipped him. Hardened
+  `linkMemberSubmissionsByEmail` to **self-heal**: it now takes the
+  member's `current` link ids and re-links to the newest *completed*
+  submission whenever the current id is null OR points somewhere invalid.
+  Call sites (studio loader, member create/edit) pass current ids; the
+  PATCH path now always attempts (not just when null). Ran a repair sweep
+  → fixed Mark (dead XQ id → real completed C-P-C, archetype backfilled)
+  + one other; the RQ correctly stayed unlinked (he has no completed RQ).
+- **Duplicate member rows** (the underlying ambiguity): Mark had 3 rows
+  sharing his email/identity — canonical `Triptych Conversations`
+  (studio account, in marketplace) + a stray `Triptych` (no email/data) +
+  `Fabrician Bridge Media` (auto-created the day he took the quiz, no
+  creator link). Only the canonical is in the marketplace, so no dup
+  cards. Sidelined the two dupes **non-destructively**: phase → paused,
+  tag `duplicate`, note pointing at the canonical row. Nothing deleted;
+  reversible.
+
+## 5. Identity model + My Results redesign
+
+- **Mark's canonical org set to "Fabrician Bridge Media"** (what he typed
+  on the quiz himself — his source of truth) on the member row + linked
+  creator row. Confirmed the duplicate came from a re-typed org name under
+  the same email (not multiple emails).
+- **Email = identity anchor (enforced).** POST /api/members now 409s when
+  the email already belongs to a member (returns `existingMemberId`), so a
+  re-typed org / a quiz under a slightly different profile can't spawn a
+  duplicate contact. Advice recorded: keep one canonical email per member;
+  org name is a mutable attribute; multiple-emails-per-person is a future
+  nicety (a secondary-emails field), not needed now.
+- **My Results redesign** — replaced the two full profile cards with
+  compact **tiles** (`ResultTiles.tsx`): a small centered 3D wordmark
+  (XQ3DWordmark / RQ3DWordmark), a one-line read (XQ = archetype name +
+  quote; RQ = code + resonance name + clarity), a drop shadow, and a
+  "See full result" button. Clicking opens a modal with the **complete
+  reveal**: the full XqProfileCard/RqProfileCard content PLUS the
+  **XQSpectrumMap** ("where you land", 8 archetypes, You-point ringed on
+  the winning archetype) for XQ, and the **RQResultsGraph** radar for RQ.
+  XQ map position is approximated from the stored axis letters (scores
+  aren't persisted); the archetype ring carries the precise landing.
+  Verified live in the dev preview (tiles + both modals, 0 console errors).
+
 ## Open
 
 - 30-day network listens dashboard tile — still parked pending the ART19

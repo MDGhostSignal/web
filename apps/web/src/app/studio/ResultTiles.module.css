@@ -1,0 +1,190 @@
+/* /studio/results — two result tiles (XQ + RQ) with a small centered
+   wordmark, a one-line read, a drop shadow, and an expand button that
+   opens the full reveal in a modal. Studio surface: --studio-* tokens. */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 26px 22px 22px;
+  min-height: 220px;
+  text-align: center;
+  background: var(--studio-surface-1);
+  border: 1px solid var(--studio-border);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 20%),
+    0 14px 34px rgb(0 0 0 / 28%);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.tile:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 22%),
+    0 22px 48px rgb(0 0 0 / 34%);
+}
+
+/* Small, centered 3D wordmark. */
+.logo {
+  width: 100%;
+  max-width: 104px;
+  margin: 0 auto;
+}
+
+.logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tileBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+}
+
+.quote {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--studio-text-secondary);
+}
+
+.rqCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--studio-accent, #c4880d);
+}
+
+.claritySmall {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--studio-text-secondary);
+}
+
+.emptyBlurb {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--studio-text-secondary);
+}
+
+.expandBtn {
+  align-self: center;
+  margin-top: 4px;
+  padding: 9px 18px;
+  border: 1px solid var(--tile-accent, var(--studio-accent, #7c58d6));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--tile-accent, #7c58d6) 14%, transparent);
+  color: var(--studio-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.expandBtn:hover {
+  background: color-mix(in srgb, var(--tile-accent, #7c58d6) 24%, transparent);
+}
+
+/* --- Modal --------------------------------------------------------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+  background: rgb(6 8 14 / 66%);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  padding: 28px 24px;
+  background: var(--studio-bg, #0f1219);
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgb(0 0 0 / 55%);
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface-1);
+  color: var(--studio-text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--studio-text-primary);
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mapSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mapTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--studio-text-secondary);
+}

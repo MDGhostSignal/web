@@ -135,10 +135,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   // fully linked — covers an email correction that now matches a
   // submission, or a submission taken before this row was completed.
   // Best-effort; reflected back on the response.
-  if (updated.email && (!updated.xq_submission_id || !updated.rq_submission_id)) {
+  if (updated.email) {
     const linked = await linkMemberSubmissionsByEmail(updated.id, updated.email, {
-      xq: updated.xq_submission_id != null,
-      rq: updated.rq_submission_id != null,
+      xqSubmissionId: updated.xq_submission_id,
+      rqSubmissionId: updated.rq_submission_id,
     });
     if (linked.xq_submission_id) {
       updated.xq_submission_id = linked.xq_submission_id;

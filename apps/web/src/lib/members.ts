@@ -443,14 +443,16 @@ export async function findMembersByEmail(
  * (which only fires on an exact single-email match the instant the quiz
  * is submitted). Call it whenever a member row appears or their email
  * changes, from the Studio loader, or from a backfill — so a submission
- * taken before / around signup still attaches. `have` lets a caller skip
- * the lookup for a side that's already linked. Returns what it linked so
- * the caller can reflect it without a re-query.
+ * taken before / around signup still attaches. Pass the member's `current`
+ * link ids: the newest completed submission wins, so this also REPAIRS a
+ * stale link (an id pointing at a deleted or incomplete submission — the
+ * failure mode that leaves "linked" members with no visible result).
+ * Returns what it (re)linked so the caller can reflect it without a re-query.
  */
 export async function linkMemberSubmissionsByEmail(
   memberId: string,
   email: string | null | undefined,
-  have?: { xq?: boolean; rq?: boolean },
+  current?: { xqSubmissionId?: string | null; rqSubmissionId?: string | null },
 ): Promise<{
   xq_submission_id?: string;
   xq_archetype?: string;
@@ -465,11 +467,13 @@ export async function linkMemberSubmissionsByEmail(
   } = {};
   const normalised = email?.trim().toLowerCase();
   if (!memberId || !normalised || !normalised.includes("@")) return out;
-  if (have?.xq && have?.rq) return out;
 
   const patch: Record<string, unknown> = {};
   try {
-    if (!have?.xq) {
+    // XQ — newest COMPLETE submission by email is the source of truth.
+    // Re-link when the member's current id is null OR points somewhere
+    // that isn't this (missing / stale / incomplete) — self-healing.
+    {
       const xqRes = await supabaseRest<
         Array<{ id: string; xq_code: string | null }>
       >(
@@ -478,7 +482,7 @@ export async function linkMemberSubmissionsByEmail(
           `&order=submitted_at.desc&limit=1`,
       );
       const xq = xqRes.ok ? xqRes.data[0] : undefined;
-      if (xq?.id) {
+      if (xq?.id && xq.id !== current?.xqSubmissionId) {
         out.xq_submission_id = xq.id;
         patch.xq_submission_id = xq.id;
         if (xq.xq_code) {
@@ -487,7 +491,8 @@ export async function linkMemberSubmissionsByEmail(
         }
       }
     }
-    if (!have?.rq) {
+    // RQ — same self-healing rule.
+    {
       const rqRes = await supabaseRest<
         Array<{ id: string; rq_code: string | null }>
       >(
@@ -496,7 +501,7 @@ export async function linkMemberSubmissionsByEmail(
           `&order=submitted_at.desc&limit=1`,
       );
       const rq = rqRes.ok ? rqRes.data[0] : undefined;
-      if (rq?.id) {
+      if (rq?.id && rq.id !== current?.rqSubmissionId) {
         out.rq_submission_id = rq.id;
         patch.rq_submission_id = rq.id;
         if (rq.rq_code) {
