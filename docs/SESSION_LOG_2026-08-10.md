@@ -129,6 +129,10 @@ cause was deeper than the earlier missing-link fix:
   XQ map position is approximated from the stored axis letters (scores
   aren't persisted); the archetype ring carries the precise landing.
   Verified live in the dev preview (tiles + both modals, 0 console errors).
+- **Personal explainer** added to each modal ("What this means for you"):
+  XQ shows `ARCHETYPES[code].desc` (the archetype's full description); RQ
+  shows the clarity note + per-axis prose ("As Formative, …" for values /
+  authenticity / horizon) from the summary's `profile`.
 
 ## Open
 

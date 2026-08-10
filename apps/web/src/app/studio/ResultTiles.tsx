@@ -9,7 +9,7 @@ import {
   type SpectrumPosition,
 } from "@/components/xq/XQSpectrumMap";
 import { CHARACTERS } from "@/lib/xq/characters";
-import type { ArchetypeCode } from "@/lib/xq/constants";
+import { ARCHETYPES, type ArchetypeCode } from "@/lib/xq/constants";
 import type { RQResult } from "@/lib/rq/scoring";
 import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 
@@ -43,6 +43,17 @@ function positionFromLetters(
     axis3: axes.craftLeverage === "C" ? M : -M,
   };
 }
+
+/** Active-side name per RQ axis letter — used to write the personal
+ *  "As {name}, {prose}" explainer lines (mirrors the RqProfileCard). */
+const RQ_AXIS = {
+  values: { label: "Values", names: { F: "Formative", I: "Implicit" } },
+  authenticity: {
+    label: "Authenticity",
+    names: { R: "Relational", S: "Structural" },
+  },
+  horizon: { label: "Horizon", names: { L: "Long-Arc", C: "Catalytic" } },
+} as const;
 
 /** Build the RQResultsGraph input from a StudioRqSummary (same axis
  *  shape). Returns null when any axis is missing — the graph needs all
@@ -199,6 +210,16 @@ export function ResultTiles({
             {open === "xq" ? (
               <div className={styles.modalBody}>
                 <XqProfileCard summary={xqSummary} fallbackCode={xqFallback} />
+                {xqCode && ARCHETYPES[xqCode] && (
+                  <section className={styles.explainer}>
+                    <h4 className={styles.explainerTitle}>
+                      What this means for you
+                    </h4>
+                    <p className={styles.explainerText}>
+                      {ARCHETYPES[xqCode].desc}
+                    </p>
+                  </section>
+                )}
                 {xqPosition && xqCode && (
                   <section className={styles.mapSection}>
                     <h4 className={styles.mapTitle}>Where you land</h4>
@@ -213,6 +234,35 @@ export function ResultTiles({
             ) : (
               <div className={styles.modalBody}>
                 <RqProfileCard summary={rqSummary} fallbackCode={rqFallback} />
+                {rqResult && (
+                  <section className={styles.explainer}>
+                    <h4 className={styles.explainerTitle}>
+                      What this means for you
+                    </h4>
+                    {rqSummary?.clarityNote && (
+                      <p className={styles.explainerText}>
+                        {rqSummary.clarityNote}
+                      </p>
+                    )}
+                    {(["values", "authenticity", "horizon"] as const).map(
+                      (k) => {
+                        const prose = rqResult.profile[k];
+                        if (!prose) return null;
+                        const letter = rqResult.details[k].letter;
+                        const name =
+                          (RQ_AXIS[k].names as Record<string, string>)[
+                            letter
+                          ] ?? letter;
+                        return (
+                          <p key={k} className={styles.explainerText}>
+                            <strong>{RQ_AXIS[k].label} — </strong>
+                            As {name}, {prose}
+                          </p>
+                        );
+                      },
+                    )}
+                  </section>
+                )}
                 {rqResult && (
                   <section className={styles.mapSection}>
                     <h4 className={styles.mapTitle}>Your resonance graph</h4>
