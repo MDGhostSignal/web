@@ -87,9 +87,11 @@ function drawDust(
     const a = m.alpha * twinkle;
     const rad = m.r * 4;
     const g = ctx.createRadialGradient(px, py, 0, px, py, rad);
-    g.addColorStop(0, `rgba(${rgb}, ${a})`);
-    g.addColorStop(0.5, `rgba(${rgb}, ${a * 0.35})`);
-    g.addColorStop(1, `rgba(${rgb}, 0)`);
+    // `rgb` is a space-separated triplet ("208 213 222"), so use the
+    // modern slash-alpha syntax — rgba(r g b, a) is invalid.
+    g.addColorStop(0, `rgb(${rgb} / ${a})`);
+    g.addColorStop(0.5, `rgb(${rgb} / ${a * 0.35})`);
+    g.addColorStop(1, `rgb(${rgb} / 0)`);
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(px, py, rad, 0, Math.PI * 2);

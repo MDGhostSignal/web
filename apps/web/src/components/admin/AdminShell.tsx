@@ -5,7 +5,6 @@ import {
   Suspense,
   useCallback,
   useEffect,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -45,7 +44,6 @@ type Props = {
 export function AdminShell({ nav, children, trail, onLogout }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
   // Transient hover-peek: when the sidebar is collapsed, hovering
   // anywhere on the rail temporarily reveals the full width (overlaying
   // content, not reflowing it). Cleared when the pointer leaves the
@@ -55,27 +53,25 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
   // stored-collapsed snap on hard nav is instant (no 200ms width animation
   // that would otherwise show a wide rail with icons only).
   const [ready, setReady] = useState(false);
-  // The shell node — used to imperatively keep its
-  // `data-sidebar-collapsed` attribute in sync with state (see effect).
-  const shellRef = useRef<HTMLDivElement>(null);
 
-  // Render-phase hydration of the collapsed preference from
-  // localStorage. Uses the same compare-and-set idiom as the local
-  // `useDraftSync` hook elsewhere in the codebase — avoids the
-  // `react-hooks/set-state-in-effect` rule that bans setState in an
-  // effect body. SSR pass skips the block (no `window`), client first
-  // render enters it once, flips `hydrated`, and conditionally bumps
-  // `collapsed`. A single-frame flash on hard nav is preferred over
-  // an SSR/CSR mismatch warning.
-  if (!hydrated && typeof window !== "undefined") {
-    setHydrated(true);
+  // Apply the stored collapsed preference AFTER mount. The first client
+  // render deliberately matches the server (expanded), so there is no
+  // hydration mismatch; this effect then flips to the stored value. The
+  // `ready` gate keeps transitions off until the next frame, so the flip
+  // is an instant snap rather than a visible animation.
+  useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-      if (stored === "true") setCollapsed(true);
+      if (window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true") {
+        // Deliberate: applying a persisted preference exactly once on
+        // mount. It must NOT run during render (that would desync from the
+        // server's expanded HTML and re-introduce the hydration mismatch).
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time post-mount preference application; see comment above.
+        setCollapsed(true);
+      }
     } catch {
-      /* localStorage unavailable (private mode, etc) — silent default */
+      /* localStorage unavailable (private mode, etc) — keep the default */
     }
-  }
+  }, []);
 
   // Persist on change. Skipping the initial false write is fine; we
   // only need to remember explicit user choices.
@@ -97,21 +93,6 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
     const id = requestAnimationFrame(() => setReady(true));
     return () => cancelAnimationFrame(id);
   }, []);
-
-  // Force the shell's `data-sidebar-collapsed` attribute to match state.
-  // The collapsed preference is applied via render-phase setState during
-  // hydration; combined with the Suspense-wrapped sidebar, React can
-  // leave the SSR-rendered attribute ("false") on this div unpatched even
-  // though the sidebar itself collapses. That desyncs the content margin
-  // (driven by --admin-sidebar-width off this attribute) from the sidebar
-  // width, leaving a persistent gap after a refresh with a collapsed
-  // preference. Setting it imperatively guarantees the two stay in sync.
-  useEffect(() => {
-    shellRef.current?.setAttribute(
-      "data-sidebar-collapsed",
-      collapsed ? "true" : "false",
-    );
-  }, [collapsed]);
 
   // Ctrl/Cmd + B — power-user toggle. Matches VS Code's binding so it
   // feels native. Only fires when the focus isn't trapped in an
@@ -157,7 +138,6 @@ export function AdminShell({ nav, children, trail, onLogout }: Props) {
 
   return (
     <div
-      ref={shellRef}
       className={`${styles.shell} admin-root`}
       data-sidebar-collapsed={collapsed ? "true" : "false"}
       data-ready={ready ? "true" : "false"}

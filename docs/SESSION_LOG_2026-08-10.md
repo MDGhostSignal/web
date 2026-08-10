@@ -65,6 +65,22 @@ was lost. The gap was purely the member link.
   Full authed render not click-tested — needs a real member session;
   relies on typecheck + reuse of the proven dashboard cards/loaders.
 
+## 3. Admin console-error fixes (reported from a live inspect)
+
+- **Hydration mismatch** on `data-sidebar-collapsed` (cascading into the
+  sidebar's `data-collapsed` / row `title` / collapse-button label). Cause:
+  AdminShell applied the stored collapsed preference via **render-phase
+  setState**, so the first client render differed from the server's
+  expanded HTML. Fix: the first client render now matches the server
+  (expanded); the stored value is applied in a post-mount `useEffect`
+  (with the `ready` gate keeping the flip an instant snap). Removed the
+  `hydrated` state + the imperative `data-sidebar-collapsed` ref-sync
+  (both were workarounds for the mismatch, now unnecessary). Verified: 0
+  console errors, collapsed refresh still gap-0.
+- **Canvas `addColorStop` crash** in the DashboardHero gold/grey dust:
+  `--hero-mote-rgb` is a space-separated triplet, so `rgba(208 213 222, a)`
+  was invalid. Switched to the modern `rgb(r g b / a)` slash syntax.
+
 ## Open
 
 - 30-day network listens dashboard tile — still parked pending the ART19
