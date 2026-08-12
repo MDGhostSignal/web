@@ -77,3 +77,28 @@ now backs off and resumes instead of killing the run.
 - `npm run typecheck` — pass
 - `npx eslint src/lib/art19.ts` — clean
 - Live end-to-end proof: see below (triggered both crons against production).
+
+## Live proof (both crons triggered against production 2026-08-12 ~13:04 UTC)
+
+Triggered directly via `POST` with `CRON_SECRET` bearer.
+
+### Campaign-ending alert — WORKING
+`POST /api/admin/campaign-alerts/sync` →
+`{ok:true, scanned:35, qualifying:1, opened:1, emailed:1,
+recipients:["jack@ghostsignal.cloud","mike@ghostsignal.cloud"]}`
+
+Confirmed the `crm_alerts` row was written: kind `campaign_ending`, campaign
+`GHOSTSignal + Unseriously (Host / Mid / 60)` (Holly Mackle), run_pct 100,
+`resolved_at` null (open in bell/dashboard). Email accepted by Resend for Jack +
+Mike. `ALERT_EMAIL_JACK_W_HARDING` / `ALERT_EMAIL_MIKE_SENSE` confirmed set.
+
+### ART19 sync — WORKING (429 retry proven under stress)
+One isolated run: ok in 63s. Then 3 back-to-back runs (deliberate rate-limit
+pressure): all ok, durations 87s/92s/89s. The ~25-30s rise vs the isolated run
+is the backoff/retry absorbing 429s that previously aborted the run. Four
+consecutive `art19_sync_runs` rows all `status=ok`, error_message null — vs the
+prior ~2-of-3 429 failure rate. Retry fix confirmed.
+
+## Outcome
+Both crons confirmed working with live proof. Jack + Mike notified about Holly
+Mackle's completed campaign. ART19 daily sync should now stay green.
