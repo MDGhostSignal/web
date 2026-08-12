@@ -50,9 +50,30 @@ and the workflow header.
 - Pure-function replay over real campaign rows — only the Unseriously host-read
   campaign fires; active/history/archived correctly skip.
 
-### Next steps
-- Deploy, then trigger the sync (workflow_dispatch or POST
-  `/api/admin/campaign-alerts/sync`) so Jack is notified now rather than at the
-  next daily 07:15 UTC run.
-- Confirm `ALERT_EMAIL_JACK_W_HARDING` is set in Vercel (prior alerts emailed
-  successfully, so almost certainly is).
+### Deploy
+- Merged to `main` (fast-forward) and pushed → Vercel production.
+
+## ART19 sync failing daily — 429 rate limiting (separate issue)
+
+### Diagnosis (from `art19_sync_runs`)
+Investigating why the "ART19 sync" GitHub workflow fails most days (user noticed
+~1 in 3 passes). Root cause is NOT a timeout (runs finish in 39–76s, well under
+the 300s cap) — every failure is `ART19 429 Too Many Requests`, usually on an
+episode GET mid-walk. The sync does ~370 sequential ART19 GETs (network → series
+→ every episode → campaign_series → every campaign) with no retry, so a single
+429 anywhere aborts the whole run. This is unrelated to the missed
+campaign-ending alert (different workflow; alert cron was succeeding).
+
+### Fix
+`apps/web/src/lib/art19.ts` — `get()` now retries transient statuses
+(429/500/502/503/504) up to 5×, honoring `Retry-After` when present and falling
+back to exponential backoff (0.5→1→2→4→8s, capped 8s, +jitter). A mid-walk 429
+now backs off and resumes instead of killing the run.
+
+### Files touched
+- `apps/web/src/lib/art19.ts`
+
+### Validation
+- `npm run typecheck` — pass
+- `npx eslint src/lib/art19.ts` — clean
+- Live end-to-end proof: see below (triggered both crons against production).

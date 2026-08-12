@@ -83,23 +83,62 @@ export function art19ConfigFromEnv(): Art19Config | null {
   };
 }
 
+/** Statuses worth retrying: ART19 rate-limits a full sync walk (hundreds
+ *  of sequential episode/campaign GETs) with 429s, and transient 5xx also
+ *  clear on a retry. Anything else (401/403/404/400) is fatal — retrying
+ *  won't help. */
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const MAX_RETRIES = 5;
+/** Backoff cap per wait, so a single call's retries can't blow the
+ *  route's maxDuration. Base doubles: ~0.5→1→2→4→8s. */
+const MAX_BACKOFF_MS = 8_000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Honor an ART19 `Retry-After` (delta-seconds or HTTP-date) when present,
+ *  capped so we never park longer than a backoff step. Returns null when
+ *  the header is absent/unparseable so the caller falls back to
+ *  exponential backoff. */
+function retryAfterMs(res: Response): number | null {
+  const h = res.headers.get("retry-after");
+  if (!h) return null;
+  const secs = Number(h);
+  if (Number.isFinite(secs)) return Math.min(Math.max(0, secs) * 1000, MAX_BACKOFF_MS);
+  const when = Date.parse(h);
+  if (!Number.isNaN(when)) {
+    return Math.min(Math.max(0, when - Date.now()), MAX_BACKOFF_MS);
+  }
+  return null;
+}
+
 async function get<T>(cfg: Art19Config, pathOrUrl: string): Promise<T> {
   const url = pathOrUrl.startsWith("http")
     ? pathOrUrl
     : `${cfg.baseUrl ?? DEFAULT_BASE}${pathOrUrl}`;
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: authHeader(cfg),
-      Accept: "application/vnd.api+json",
-    },
-    cache: "no-store",
-  });
-  if (!res.ok) {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: authHeader(cfg),
+        Accept: "application/vnd.api+json",
+      },
+      cache: "no-store",
+    });
+    if (res.ok) return (await res.json()) as T;
+
     const body = await res.text();
+    // Retry transient statuses with backoff (honoring Retry-After) so a
+    // single 429 mid-walk no longer aborts the whole sync.
+    if (RETRYABLE_STATUSES.has(res.status) && attempt < MAX_RETRIES) {
+      const backoff = Math.min(500 * 2 ** attempt, MAX_BACKOFF_MS);
+      const jitter = Math.floor(Math.random() * 250);
+      await sleep((retryAfterMs(res) ?? backoff) + jitter);
+      continue;
+    }
     throw new Art19Error(`ART19 ${res.status} on ${pathOrUrl}`, res.status, body);
   }
-  return (await res.json()) as T;
 }
 
 /** Walk a relationship endpoint that returns `JsonApiRef[]` until empty. */
