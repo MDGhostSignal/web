@@ -34,6 +34,21 @@ export const CAMPAIGN_ENDING_GRACE_DAYS = 7;
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+/**
+ * ART19 statuses that mean a campaign has run its course. Internal
+ * host-read direct campaigns (ad_source "internal") conclude by status
+ * without ever carrying an `end_date`, so run-time-% detection alone
+ * silently skips them — status is the only completion signal they have.
+ * Lower-cased compare; "completed" included defensively in case ART19
+ * ever labels a terminal campaign that way.
+ */
+const TERMINAL_CAMPAIGN_STATUSES = new Set(["concluded", "completed"]);
+
+/** Has ART19 marked this campaign as finished (by status)? */
+export function isCampaignConcluded(status: string | null | undefined): boolean {
+  return !!status && TERMINAL_CAMPAIGN_STATUSES.has(status.trim().toLowerCase());
+}
+
 /** Slim shape the detector needs from a campaign row. */
 export type CampaignCandidate = Pick<
   Art19CampaignRow,
@@ -56,21 +71,35 @@ function pct(n: number): number {
 }
 
 /** Build the captured snapshot for a campaign at time `nowMs`. Returns
- *  null when the campaign lacks a usable run-time window. */
+ *  null when the campaign has neither a usable run-time window nor a
+ *  terminal status to anchor completion. */
 export function buildCampaignSnapshot(
   c: CampaignCandidate,
   nowMs: number,
 ): CampaignAlertSnapshot | null {
-  if (!c.start_date || !c.end_date) return null;
-  const start = Date.parse(c.start_date);
-  const end = Date.parse(c.end_date);
-  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return null;
+  const start = c.start_date ? Date.parse(c.start_date) : NaN;
+  const end = c.end_date ? Date.parse(c.end_date) : NaN;
+  const hasWindow =
+    !Number.isNaN(start) && !Number.isNaN(end) && end > start;
 
-  // Clamp at 100: run time keeps climbing past the end_date (now > end),
-  // but "104% of run time" reads as a bug. The detector fires at 100%, so
-  // a completed campaign should present as exactly 100%.
-  const runPct = Math.min(100, pct(((nowMs - start) / (end - start)) * 100));
-  const daysRemaining = Math.max(0, Math.ceil((end - nowMs) / MS_PER_DAY));
+  let runPct: number;
+  let daysRemaining: number;
+  if (hasWindow) {
+    // Clamp at 100: run time keeps climbing past the end_date (now >
+    // end), but "104% of run time" reads as a bug. The detector fires at
+    // 100%, so a completed campaign should present as exactly 100%.
+    runPct = Math.min(100, pct(((nowMs - start) / (end - start)) * 100));
+    daysRemaining = Math.max(0, Math.ceil((end - nowMs) / MS_PER_DAY));
+  } else if (isCampaignConcluded(c.status)) {
+    // No usable run-time window (e.g. internal host-read campaigns carry
+    // no end_date), but ART19 marks it concluded — treat as fully
+    // elapsed so it still trips the alert.
+    runPct = 100;
+    daysRemaining = 0;
+  } else {
+    // A live campaign with no usable window — nothing to report on yet.
+    return null;
+  }
 
   const impressions = c.listen_count ?? null;
   const goal = c.maximum_impressions ?? null;
@@ -119,10 +148,20 @@ export function detectCampaignEndingAlert(
   const snap = buildCampaignSnapshot(c, nowMs);
   if (!snap) return null;
   if (snap.run_pct < CAMPAIGN_ENDING_RUN_PCT) return null;
-  // Exclude campaigns that concluded longer than the grace window ago.
+
+  // Grace window: exclude campaigns that concluded longer than the grace
+  // window ago, so a redeploy can't blast old history. This can only be
+  // measured when there's an end_date — status-concluded campaigns with
+  // no end_date (internal host-read reads) have no date to range-check,
+  // and the fire-once crm_alerts row is their sufficient dedup guard.
   const end = snap.end_date ? Date.parse(snap.end_date) : NaN;
-  if (Number.isNaN(end)) return null;
-  if (end < nowMs - CAMPAIGN_ENDING_GRACE_DAYS * MS_PER_DAY) return null;
+  if (!Number.isNaN(end)) {
+    if (end < nowMs - CAMPAIGN_ENDING_GRACE_DAYS * MS_PER_DAY) return null;
+  } else if (!isCampaignConcluded(c.status)) {
+    // No usable end_date and not concluded by status — buildCampaignSnapshot
+    // would already have returned null; guard defensively regardless.
+    return null;
+  }
   return { campaign_id: c.id, reason: { campaign: snap } };
 }
 
@@ -182,7 +221,7 @@ function metricRows(s: CampaignAlertSnapshot): Array<[string, string, boolean?]>
     ["Days remaining", String(s.days_remaining)],
     [
       "Window",
-      `${(s.start_date ?? "").slice(0, 10)} → ${(s.end_date ?? "").slice(0, 10)}`,
+      `${s.start_date ? s.start_date.slice(0, 10) : "—"} → ${s.end_date ? s.end_date.slice(0, 10) : "—"}`,
     ],
     ["Impressions delivered", pacing, true],
     ["Delivery vs. run time", deliveryVsTime],

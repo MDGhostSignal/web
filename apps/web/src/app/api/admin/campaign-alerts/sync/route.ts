@@ -16,12 +16,14 @@ export const dynamic = "force-dynamic";
 /**
  * POST /api/admin/campaign-alerts/sync — campaign-ending detection.
  *
- * Runs hourly from .github/workflows/campaign-alerts.yml (Bearer
- * CRON_SECRET); also reachable from the admin UI via cookie. For each
- * ART19 campaign ≥ 97% through its run time (and still running) with no
- * open alert, it inserts a `campaign_ending` crm_alerts row AND sends
- * the one-time email to Jack + Mike. Campaigns that have since concluded
- * get their open alert resolved. Idempotent — the open-alert set is the
+ * Runs daily from .github/workflows/campaign-alerts.yml (Bearer
+ * CRON_SECRET); also reachable from the admin UI via cookie. A campaign
+ * qualifies when it has reached 100% of its run time (within the grace
+ * window) OR ART19 has marked it concluded but it carries no end_date
+ * (internal host-read reads). For each newly-qualifying campaign with no
+ * open alert, it inserts a `campaign_ending` crm_alerts row AND sends the
+ * one-time email to Jack + Mike. Campaigns that no longer qualify get
+ * their open alert resolved. Idempotent — the open-alert set is the
  * fire-once guard, so re-runs never double-email.
  */
 export async function POST(req: Request) {

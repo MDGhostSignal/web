@@ -1,12 +1,13 @@
 # Campaign-ending alerts — runs once daily. Detects ART19 campaigns that
-# have reached 97% of their run time and, for each newly-qualifying one,
-# inserts an in-app alert and sends a one-time email to Jack + Mike.
+# have reached 100% of their run time (or that ART19 has marked concluded
+# but carry no end_date, e.g. internal host-read reads) and, for each
+# newly-qualifying one, inserts an in-app alert and sends a one-time
+# email to Jack + Mike.
 #
 # Idempotent: the open-alert set is the fire-once guard, so re-runs never
-# double-email. Daily cadence is safe despite the narrow 97→100% window
-# (~21h for a 30-day campaign) because detection qualifies for a grace
-# period past the end date (CAMPAIGN_ENDING_GRACE_DAYS) — a run that
-# lands just after 100% still fires once.
+# double-email. Daily cadence is safe because run-time detection qualifies
+# for a grace period past the end date (CAMPAIGN_ENDING_GRACE_DAYS) — a run
+# that lands just after 100% still fires once.
 #
 # Setup
 # ─────
