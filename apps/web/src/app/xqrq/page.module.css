@@ -1,0 +1,298 @@
+/* =============================================================================
+   /xqrq — XQ + RQ landing page.
+
+   A focused, single-purpose page: hero question, world-making narrative,
+   and the two assessments (XQ free / RQ members-only) with their CTAs.
+   Sits on the shared starry <ParallaxBackground/> dark canvas, so the
+   page itself is transparent and every band is centered prose.
+
+   Spacing flows through the calc(var(--gs-n-N) * var(--gs-px)) token
+   pattern per the public-surface Stylelint discipline. --edge-pad is the
+   shared page-shell variable (declared on :root) and is only *narrowed*
+   here at breakpoints, never redeclared at full width.
+   ============================================================================= */
+
+.page {
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overflow-y: visible;
+  background: transparent;
+}
+
+/* -----------------------------------------------------------------------------
+   HERO
+   ----------------------------------------------------------------------------- */
+
+.heroSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88dvh;
+  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad)
+    calc(var(--gs-n-96) * var(--gs-px));
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+  max-width: calc(var(--gs-n-960, 960) * var(--gs-px));
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: clamp(12px, 1.2vw, 14px);
+  line-height: 1.4;
+  color: #fbad25;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+}
+
+.heroHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(40px, 7vw, 92px);
+  line-height: 1.05;
+  color: var(--gs-tw-white);
+  letter-spacing: -0.02em;
+}
+
+.headlineLine {
+  display: block;
+}
+
+.heroSubhead {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
+  color: rgba(255, 255, 255, 0.82);
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+}
+
+/* -----------------------------------------------------------------------------
+   NARRATIVE — world-making body copy
+   ----------------------------------------------------------------------------- */
+
+.narrativeSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+}
+
+.narrativeContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+  max-width: calc(var(--gs-n-820, 820) * var(--gs-px));
+}
+
+.narrativeLead {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.narrativeBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* -----------------------------------------------------------------------------
+   ASSESSMENTS — XQ / RQ two-up
+   ----------------------------------------------------------------------------- */
+
+.assessmentsSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gs-n-96) * var(--gs-px)) var(--edge-pad)
+    calc(var(--gs-n-120) * var(--gs-px));
+}
+
+.assessmentsContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-40) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-1120, 1120) * var(--gs-px));
+}
+
+.assessmentsHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.12;
+  color: var(--gs-tw-white);
+  letter-spacing: -0.02em;
+}
+
+.assessmentPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--gs-n-32) * var(--gs-px));
+  width: 100%;
+  align-items: stretch;
+}
+
+.assessmentColumn {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  align-items: stretch;
+  height: 100%;
+}
+
+/* Wordmark slot above each column's card. The Wordmarks3D SVGs carry the
+   `.xq-intro-hero-svg` global class for their own sizing token; override
+   the height locally so the marks render at a column-friendly scale
+   without pulling in the whole xq-quiz CSS. */
+.assessmentWordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.assessmentWordmark :global(.xq-intro-hero-svg) {
+  display: block;
+  height: clamp(64px, 8vw, 104px);
+  width: auto;
+  overflow: visible;
+}
+
+.assessmentCard {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  padding: calc(var(--gs-n-32) * var(--gs-px))
+    calc(var(--gs-n-28) * var(--gs-px));
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.assessmentLabel {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1.2;
+  color: var(--gs-tw-white);
+  letter-spacing: -0.01em;
+}
+
+.assessmentAvailability {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: clamp(11px, 1vw, 13px);
+  line-height: 1.4;
+  color: #fbad25;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.assessmentBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-md-size);
+  line-height: var(--gs-text-md-leading);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* CTA pill — sits at the bottom of each card via margin-top:auto so both
+   buttons align regardless of body-copy length. Content-sized, so the
+   click target is the pill only. */
+.assessmentCta {
+  align-self: flex-start;
+  margin-top: auto;
+  display: inline-block;
+  padding: calc(var(--gs-n-14) * var(--gs-px))
+    calc(var(--gs-n-28) * var(--gs-px));
+  background: #fbad25;
+  color: #1a1a1a;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-md-size);
+  line-height: var(--gs-text-md-leading);
+  text-decoration: none;
+  border-radius: 8px;
+  transition:
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.assessmentCta:hover {
+  background: #e09d1f;
+  transform: translateY(-2px);
+}
+
+.assessmentsFooternote {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-lg-size);
+  line-height: var(--gs-text-lg-leading);
+  color: rgba(255, 255, 255, 0.7);
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+}
+
+/* -----------------------------------------------------------------------------
+   RESPONSIVE — narrow the shared edge padding, then stack the two-up.
+   ----------------------------------------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .page {
+    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
+  }
+}
+
+@media (max-width: 1024px) {
+  .page {
+    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
+  }
+
+  .assessmentPair {
+    grid-template-columns: 1fr;
+  }
+
+  .assessmentCta {
+    align-self: stretch;
+    text-align: center;
+  }
+}
