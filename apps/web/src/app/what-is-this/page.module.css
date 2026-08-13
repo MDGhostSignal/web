@@ -702,7 +702,11 @@
   align-items: center;
   justify-content: flex-start;
   padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
-  padding-bottom: calc(var(--gs-n-80) * var(--gs-px));
+  /* Extra tail below the globe so the animation has room to breathe
+     before the white Platforms band begins. The globe wrapper fills
+     the section (height: 100%), so this padding grows the globe's
+     canvas too rather than just adding dead space. */
+  padding-bottom: calc(var(--gs-n-240) * var(--gs-px));
   /* 100 px breathing room between the bottom of "Values create value"
      and the top of this section. The bars-graph height grows by the
      same amount so it still reaches the seam below this gap. */
@@ -1240,6 +1244,8 @@
   .finalSection {
     min-height: auto;
     padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
+    /* Keep a smaller version of the desktop globe tail on phones. */
+    padding-bottom: calc(var(--gs-n-160) * var(--gs-px));
   }
 
   .finalHeadline {
