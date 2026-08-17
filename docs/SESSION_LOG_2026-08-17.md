@@ -143,3 +143,25 @@ the `/xqrq` XQ·RQ landing page.
 - Added a hover animation to the invitation "What this is" feature
   tiles: subtle lift + soft drop shadow + violet accent border on a
   220ms ease transition (disabled under prefers-reduced-motion).
+
+## Follow-up 4 — invitation XQ tile, carousel order, CRM XQ label fix
+
+- **Invitation XQ section** now uses the same glassy tile as the /xqrq XQ
+  column (rounded, cyan hairline, translucent dark, blur): XQ wordmark +
+  "Discover your character" + short XQ summary + interactive XQ map +
+  "Take the XQ" CTA (/xq-quiz?start=1).
+- **Roster carousel order** set to Mike's hierarchy, mapped to VISIBLE
+  slots (deck wraps): centre = Rabbit Room, right = MatchGrant, left =
+  Etkin, far-right = Biblical Mind, far-left = The Pivot, rest behind;
+  Readmio + Hutchmoot (not on his list) last. Driven by a `DISPLAY_ORDER`
+  slug list sorted against the roster.
+- **CRM XQ label fix**: `members.xq_archetype` is a denormalized XQ *code*
+  (`C-P-C`), set by four writers and read as a code by the Studio world
+  avatar/card. The members list + approvals table printed that raw code
+  in the "XQ" column, so "The Steward" showed as "C-P-C". Fixed at the
+  display layer only — both tables now map code → archetype name via
+  `ARCHETYPES` (stored value untouched; no DB migration; RQ was already
+  correct). XQ = character, RQ = resonance code — confusion resolved.
+- Files: `invitation/{RosterCarousel.tsx,page.tsx,page.module.css}`,
+  `admin/studio-members/MembersTable.tsx`,
+  `admin/studio-approvals/ApprovalsTable.tsx`.

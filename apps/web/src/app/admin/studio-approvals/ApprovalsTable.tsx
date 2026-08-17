@@ -4,9 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/admin";
+import { ARCHETYPES } from "@/lib/xq/constants";
 
 import type { PendingRow } from "./page";
 import styles from "./page.module.css";
+
+/** members.xq_archetype holds the XQ *code* — show the archetype *name*. */
+function xqArchetypeName(code: string | null): string | null {
+  if (!code) return null;
+  return (ARCHETYPES as Record<string, { name: string }>)[code]?.name ?? code;
+}
 
 /** Pending registrations table. Each row shows the registrant +
  *  their organization + an Approve button. After approve, the row
@@ -77,7 +84,7 @@ export function ApprovalsTable({ rows }: { rows: PendingRow[] }) {
                       {r.member_type}
                     </Badge>
                   </td>
-                  <td>{r.xq_archetype ?? "—"}</td>
+                  <td>{xqArchetypeName(r.xq_archetype) ?? "—"}</td>
                   <td className={styles.dim}>{relativeDate(r.created_at)}</td>
                   <td className={styles.actionCol}>
                     <button

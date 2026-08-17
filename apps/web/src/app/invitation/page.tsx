@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { XQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { XQMapCard } from "@/app/xqrq/XQMapCard";
 import { Footer } from "@/components/Footer";
@@ -224,21 +225,27 @@ export default function InvitationPage() {
       {/* CTA — the two assessments + an example spectrum read */}
       <Section className={styles.ctaSection}>
         <Container className={styles.cta}>
-          <SplitLinesReveal duration={1.9}>
-            <h2 className={styles.ctaTitle}>
-              Discover your character by taking our values quiz.
-            </h2>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={0} duration={1.7} className={styles.mapReveal}>
-            <div className={styles.xqMapWrap}>
-              <XQMapCard />
-            </div>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <div className={styles.ctaActions}>
-              <Button href="/xq-quiz?start=1" variant="secondary">
-                Take the XQ &mdash; it&rsquo;s free
-              </Button>
+          <ScrollFadeUp index={0} duration={1.7}>
+            {/* Same glassy tile as the XQ column on /xqrq. */}
+            <div className={styles.xqTile}>
+              <div className={styles.xqTileLogo}>
+                <XQ3DWordmark />
+              </div>
+              <h2 className={styles.ctaTitle}>Discover your character</h2>
+              <p className={styles.ctaLede}>
+                The XQ &mdash; our Conviction Quotient &mdash; helps you
+                discover and codify your values across eight archetypes, so
+                you know the character behind your work. Free to explore;
+                hover the map to meet each one.
+              </p>
+              <div className={styles.xqMapWrap}>
+                <XQMapCard />
+              </div>
+              <div className={styles.ctaActions}>
+                <Button href="/xq-quiz?start=1" variant="secondary">
+                  Take the XQ &mdash; it&rsquo;s free
+                </Button>
+              </div>
             </div>
           </ScrollFadeUp>
         </Container>

@@ -4,7 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Badge, Button, Modal, typeVariant } from "@/components/admin";
+import { ARCHETYPES } from "@/lib/xq/constants";
 import type { StudioOrgProfile, StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
+
+/** members.xq_archetype is a denormalized XQ *code* (e.g. "C-P-C") — map
+ *  it to the archetype *name* ("The Steward") for display so the XQ
+ *  column reads as the character, not a code. Unknown → show as-is. */
+function xqArchetypeName(code: string | null): string | null {
+  if (!code) return null;
+  return (ARCHETYPES as Record<string, { name: string }>)[code]?.name ?? code;
+}
 
 import type { StudioMemberRow } from "./page";
 import styles from "./page.module.css";
@@ -100,7 +109,7 @@ export function MembersTable({ rows }: { rows: StudioMemberRow[] }) {
                 <td>
                   {r.xq_submission_id ? (
                     <Badge variant="success">
-                      {r.xq_archetype ? `✓ ${r.xq_archetype}` : "✓ done"}
+                      {r.xq_archetype ? `✓ ${xqArchetypeName(r.xq_archetype)}` : "✓ done"}
                     </Badge>
                   ) : (
                     <Badge variant="neutral">not yet</Badge>

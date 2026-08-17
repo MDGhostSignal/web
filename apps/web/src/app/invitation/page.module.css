@@ -1072,3 +1072,43 @@
   max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
   margin-inline: auto;
 }
+
+/* Short XQ summary under the CTA-section title (dark band). */
+.ctaLede {
+  margin: 0;
+  max-width: calc(var(--gs-n-640) * var(--gs-px));
+  font-size: var(--gs-text-lg-size);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Same glassy tile as the /xqrq XQ column (rounded, cyan hairline,
+   translucent dark, blur) wrapping the embedded XQ map. */
+.xqTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-820, 820) * var(--gs-px));
+  margin-inline: auto;
+  padding: calc(var(--gs-n-48) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+  border: 1px solid rgba(199, 249, 255, 0.15);
+  border-radius: calc(var(--gs-n-28) * var(--gs-px));
+  background: rgba(10, 14, 26, 0.45);
+  backdrop-filter: blur(4px);
+  text-align: center;
+}
+
+.xqTileLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.xqTileLogo :global(svg) {
+  display: block;
+  height: clamp(52px, 6vw, 84px);
+  width: auto;
+}

@@ -275,6 +275,36 @@ const ROSTER: Client[] = [
   },
 ];
 
+/** Mike's priority hierarchy (2026-08-17) mapped to the carousel's
+ *  VISIBLE slots on load (front = 0), not linear order — the deck wraps,
+ *  so the last array entries render to the LEFT of centre. Ranked slots:
+ *    centre  = index 0        → Mike #1
+ *    right   = index 1        → Mike #2
+ *    right-2 = index 2        → Mike #4
+ *    left    = last index     → Mike #3
+ *    left-2  = 2nd-last index → Mike #5
+ *    behind  = middle indices → Mike #6…#13 (Readmio + Hutchmoot last).
+ */
+const DISPLAY_ORDER = [
+  "rabbit-room", // #1 · centre
+  "matchgrant", // #2 · right of centre
+  "biblical-mind", // #4 · furthest right
+  "sunshine-in-my-nest", // #6 · behind
+  "tektones", // #7 · behind
+  "the-habit", // #8 · behind
+  "unseriously", // #9 · behind
+  "tonjas-toffee", // #10 · behind
+  "triptych", // #11 · behind
+  "readmio", // (not on Mike's list) · behind
+  "hutchmoot", // (not on Mike's list) · behind
+  "the-pivot", // #5 · furthest left
+  "etkin-designs", // #3 · left of centre
+];
+
+const ORDERED_ROSTER: Client[] = [...ROSTER].sort(
+  (a, b) => DISPLAY_ORDER.indexOf(a.slug) - DISPLAY_ORDER.indexOf(b.slug),
+);
+
 /** First sentence of a multi-sentence description — keeps the popup's
  *  XQ summary short. */
 function firstSentence(text: string): string {
@@ -310,7 +340,7 @@ export function RosterCarousel() {
   // overlay's animationend unmounts it.
   const [selected, setSelected] = useState<Client | null>(null);
   const [closing, setClosing] = useState(false);
-  const count = ROSTER.length;
+  const count = ORDERED_ROSTER.length;
 
   const advance = useCallback(
     (dir: 1 | -1) => setFront((f) => (f + dir + count) % count),
@@ -368,7 +398,7 @@ export function RosterCarousel() {
         </button>
 
         <div className={styles.deck} role="group" aria-label="Client roster">
-          {ROSTER.map((client, i) => {
+          {ORDERED_ROSTER.map((client, i) => {
             const offset = offsetOf(i, front, count);
             const posClass =
               Math.abs(offset) <= 2
