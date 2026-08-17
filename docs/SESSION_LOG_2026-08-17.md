@@ -235,5 +235,31 @@ scripts and the local compare page removed; dev server stopped.
 
 Resolved from the open items: **cold-email roster GIF regenerated with real
 clients.** Still open: Sunshine In My Nest duplicate CRM rows,
-`/for-advertisers` reorder, the Altar migration croc-imagine video, optional
+`/for-advertisers` reorder, the ART19 migration video, optional
 `/rq-quiz` members gate.
+
+## Follow-up 7 — ART19 migration explainer video brief (Grok Imagine)
+
+Wrote a complete production brief for the **ART19 migration onboarding
+explainer** → `docs/ART19_MIGRATION_VIDEO_GROK.md`. Pairs with
+`/studio/migration`. Format: **16:9, ~75s**, "moving artwork between
+galleries" metaphor rendered in the GHOSTSignal brand look (violet/cyan/gold,
+cosmic starfield, snowdrift particles, morse dashes). Tool = **Grok Imagine**
+(user produces; I wrote the brief only — Grok makes ~6s clips, so VO/captions/
+logo/music go on in the editor).
+
+Brief is 17 sections: mood & emotional arc (through-line = *trust*), tone of
+voice + per-line VO delivery, pacing, a **master timeline** (single source of
+truth aligning shot·VO·caption·music/SFX to a 75s clock — fixed an earlier
+draft where shot beats and caption times disagreed), Style DNA, the
+**reference-image workflow** (2 master reference stills — "The Gallery" +
+"The Artwork" — then seed all shots from them), **10 shot prompts** (hook →
+4 steps → close), on-screen captions, music & sound design, subtitles, brand
+assets, editor checklist, Grok gotchas. Delivered all 12 copy-paste prompts
+(2 reference + 10 shots) in-chat for the user to start generating.
+
+Naming caveat: scripted as **ART19** (matches the live guide); flagged that
+"Altar" is a one-line swap if that's the on-screen name.
+
+Open item resolved: **migration video instructions written** (production
+pending on the user's side in Grok).
