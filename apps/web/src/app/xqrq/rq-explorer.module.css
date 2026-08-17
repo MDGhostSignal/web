@@ -1,0 +1,193 @@
+/* RQExplorer — static three-axis map of all RQ combinations, light-on-
+ * dark for the starry /xqrq canvas, RQ cyan (#C7F9FF) accent. Raw px is
+ * used only on non-spacing properties; spacing keeps the --gs token
+ * pattern per the public-surface Stylelint rule. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--gs-n-20) * var(--gs-px));
+  width: 100%;
+}
+
+/* Scaled fit-box — reserves the scaled height so the board (scaled from
+ * its top-left) doesn't overlap siblings. Centred in its column. */
+.fit {
+  position: relative;
+  margin-inline: auto;
+}
+
+/* Isometric board — sized inline by the component; points are placed
+ * absolutely by their projected coordinates. */
+.board {
+  position: relative;
+}
+
+.axes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Grounding floor (Authenticity = 0 plane). */
+.floor {
+  fill: rgba(199, 249, 255, 0.045);
+  stroke: rgba(199, 249, 255, 0.12);
+  stroke-width: 1;
+}
+
+/* Bounding-box wireframe — faint dotted edges give the 3D read. */
+.cubeEdge {
+  stroke: rgba(199, 249, 255, 0.18);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 6;
+}
+
+/* The three axes from the origin — brighter so they lead the eye. */
+.axisLine {
+  stroke: rgba(199, 249, 255, 0.5);
+  stroke-width: 2;
+  stroke-dasharray: 2 5;
+}
+
+.axisLabelPos {
+  fill: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.axisLabelNeg {
+  fill: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.point {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  /* left/top mark the centre. */
+  transform: translate(-50%, -50%);
+  /* Ripple wave — driven by the JS --pulse (0..~0.55): a soft cyan glow
+   * plus a gentle brightness lift, so it never fights the transform. */
+  box-shadow: 0 0 calc(var(--pulse, 0) * 14px) rgba(199, 249, 255, calc(var(--pulse, 0) * 0.9));
+  filter: brightness(calc(1 + var(--pulse, 0) * 0.8));
+  transition: transform 120ms ease;
+}
+
+.point:hover {
+  transform: translate(-50%, -50%) scale(1.6);
+  outline: 2px solid #c7f9ff;
+  outline-offset: 1px;
+  z-index: 2;
+}
+
+/* --- Floating tooltip --------------------------------------------- */
+
+.tip {
+  position: fixed;
+  z-index: 120;
+  /* Never intercept the pointer — it must not block the point below. */
+  pointer-events: none;
+  width: 340px;
+  padding: calc(var(--gs-n-24) * var(--gs-px));
+  border: 1px solid rgba(199, 249, 255, 0.22);
+  border-radius: 16px;
+  background: rgba(10, 14, 26, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.7);
+  animation: tip-in 120ms ease both;
+}
+
+@keyframes tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tipSwatch {
+  display: block;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  box-shadow: 0 0 22px rgba(199, 249, 255, 0.25);
+}
+
+.tipCode {
+  margin: calc(var(--gs-n-14) * var(--gs-px)) 0 0;
+  font-family: var(--gs-font-mono, monospace);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: #c7f9ff;
+}
+
+.tipName {
+  margin: calc(var(--gs-n-4) * var(--gs-px)) 0 0;
+  font-size: 26px;
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.tipSummary {
+  margin: calc(var(--gs-n-12) * var(--gs-px)) 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.tipAxes {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-8) * var(--gs-px));
+  margin: calc(var(--gs-n-16) * var(--gs-px)) 0 0;
+}
+
+.tipAxis {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  padding-bottom: calc(var(--gs-n-8) * var(--gs-px));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tipAxisName {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tipAxisVal {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gs-n-8) * var(--gs-px));
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--gs-font-weight-semibold, 600);
+  color: #fff;
+}
+
+.tipAxisLetter {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: rgba(199, 249, 255, 0.14);
+  font-size: 11px;
+  font-weight: var(--gs-font-weight-bold, 700);
+  color: #c7f9ff;
+}

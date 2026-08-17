@@ -71,6 +71,12 @@ type Props = {
    *  is RSC-serializable when the map is rendered from a server
    *  component like /xq-characters2/page.tsx. */
   variant?: "mark" | "line-art" | "3d";
+  /** Suppress the built-in (in-SVG) tooltip — pair with `onHover` to
+   *  render your own floating tooltip outside the scaled SVG. */
+  hideTooltip?: boolean;
+  /** Fired as the pointer enters/moves/leaves an archetype. Coordinates
+   *  are viewport (clientX/clientY); `code` is null on leave. */
+  onHover?: (code: ArchetypeCode | null, clientX: number, clientY: number) => void;
 };
 
 /* ====================================================================
@@ -138,6 +144,8 @@ export function XQSpectrumMap({
   compact,
   pointLabel = "YOU",
   variant = "mark",
+  hideTooltip = false,
+  onHover,
 }: Props) {
   const userPoint = position ? projectUser(position) : null;
   const neighbourSet = new Set(highlight ? getNeighbors(highlight) : []);
@@ -243,13 +251,21 @@ export function XQSpectrumMap({
             onMouseLeave={() =>
               setHoveredCode((prev) => (prev === code ? null : prev))
             }
+            onPointerEnter={(e) => onHover?.(code, e.clientX, e.clientY)}
+            onPointerMove={(e) => onHover?.(code, e.clientX, e.clientY)}
+            onPointerLeave={(e) => onHover?.(null, e.clientX, e.clientY)}
             tabIndex={0}
             role="button"
             aria-label={`${archetype.name} — ${archetype.tagline}`}
-            onFocus={() => setHoveredCode(code)}
-            onBlur={() =>
-              setHoveredCode((prev) => (prev === code ? null : prev))
-            }
+            onFocus={(e) => {
+              setHoveredCode(code);
+              const r = e.currentTarget.getBoundingClientRect();
+              onHover?.(code, r.right, r.top);
+            }}
+            onBlur={() => {
+              setHoveredCode((prev) => (prev === code ? null : prev));
+              onHover?.(null, 0, 0);
+            }}
           >
             {/* Glow disc behind the avatar */}
             <circle
@@ -321,7 +337,7 @@ export function XQSpectrumMap({
       {/* Hover tooltip — brief blurb about the hovered archetype.
           Flips above/below the anchor based on which row it sits
           in so it stays inside the visible map area. */}
-      {hoveredCode && (() => {
+      {!hideTooltip && hoveredCode && (() => {
         const a = ANCHORS[hoveredCode];
         const c = CHARACTERS[hoveredCode];
         const arc = ARCHETYPES[hoveredCode];

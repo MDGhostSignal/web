@@ -127,8 +127,8 @@ const categories: Category[] = [
             deepen audience trust. Brands: you’ll be paired with podcasters
             whose audience is already tuned to what you are doing. Resonance is
             the new reach.{" "}
-            <Link href="/rq-quiz" className={styles.inlineLink}>
-              Take the assessment
+            <Link href="/xqrq" className={styles.inlineLink}>
+              See how the RQ works
             </Link>
             .
           </>

@@ -1,0 +1,12 @@
+/* Enlarged character icon in the XQ hover tile (replaces the plain
+ * swatch). The mark fills this box (it is width/height 100%). */
+.icon {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 22px rgba(199, 249, 255, 0.18);
+  overflow: hidden;
+}

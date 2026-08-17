@@ -7,19 +7,19 @@
  * as lib/studio-invite-email.ts. Pure string building — safe to import
  * from client components (the composer prefills the default message).
  *
- * Section order per Mike's 2026-08-06 feedback rounds:
+ * Section order — mirrors the /invitation page (roster now precedes the
+ * "what is this" panel, per the page's 2026-08-17 section swap):
  *   1. spinning cloud glyph + wordmark, then the invitation headline
  *      broken over two lines ("You're invited / to the GHOSTSignal
- *      Studio.")
+ *      ecosystem.")
  *   2. personal message ("Hello {name}," — or just "Hello," when no
  *      name is known; composer text falls back to the standard
  *      default below)
- *   3. description panel (no chip/label) — the "what is this"
- *   4. the four co-founders — faces + names link to their LinkedIn
+ *   3. "Who we work with" — animated client card fan
+ *   4. pull-quote bridging the roster into the description
+ *   5. description panel (no chip/label) — the "what is this"
+ *   6. the four co-founders — faces + names link to their LinkedIn
  *      (photos + data mirrored from who-are-we/FoundersSection.tsx)
- *   5. pull-quote on top of the card rotation
- *   6. "Who we work with" — animated card fan (2.2s holds + opacity
- *      crossfades; footnotes show each client's XQ archetype)
  *   7. CTA, then the Snowdrift newsletter ad (same starry card as the
  *      studio invite email), then the footer
  *
@@ -158,18 +158,18 @@ export function coldOutreachEmailText({
   const founders = FOUNDERS.map(
     (f) => `- ${f.name}, ${f.role} — ${f.linkedin}`,
   ).join("\n");
-  return `You're invited to the GHOSTSignal Studio.
+  return `You're invited to the GHOSTSignal ecosystem.
 
 ${greeting(name)}
 
 ${body}
 
-${WHAT_IS_THIS}
+Who we work with
+Brands and creators across the network, matched where the audience already fits. See the roster and how membership works: ${PROD_ORIGIN}${ADVERTISERS_PATH}
 
 "${QUOTE}"
 
-Who we work with
-Brands and creators across the network, matched where the audience already fits. See the roster and how membership works: ${PROD_ORIGIN}${ADVERTISERS_PATH}
+${WHAT_IS_THIS}
 
 The co-founders
 ${founders}
@@ -230,7 +230,7 @@ export function coldOutreachEmailHtml({
           <!-- 1 · Invitation headline, broken over two lines -->
           <tr>
             <td align="center" style="padding: 28px 40px 0;">
-              <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.3;">You&rsquo;re invited<br>to the ${wordmark} Studio.</h1>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.3;">You&rsquo;re invited<br>to the ${wordmark} ecosystem.</h1>
             </td>
           </tr>
 
@@ -244,30 +244,7 @@ export function coldOutreachEmailHtml({
             </td>
           </tr>
 
-          <!-- 3 · Description panel — no chip, no label -->
-          <tr>
-            <td style="padding: 30px 40px 0;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.panelBg}" style="background-color: ${t.panelBg}; border: 1px solid ${t.panelBorder}; border-radius: 14px;">
-                <tr>
-                  <td align="center" style="padding: 18px 24px;">
-                    <p style="margin: 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.75; text-align: center;">
-                      ${pitchToHtml(WHAT_IS_THIS, t.textPrimary)}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Pull-quote — sits on top of the card rotation -->
-          <tr>
-            <td align="center" style="padding: 32px 56px 0;">
-              <div style="margin: 0 auto 14px; width: 58px;">${morse("58px")}</div>
-              <p style="margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.5;">&ldquo;${escapeHtml(QUOTE).replace("right people", "right&nbsp;people")}&rdquo;</p>
-            </td>
-          </tr>
-
-          <!-- 4 · Who we work with — rotating client-card fan -->
+          <!-- 3 · Who we work with — rotating client-card fan -->
           <tr>
             <td align="center" style="padding: 26px 40px 0;">
               <p style="margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent};">Who we work with</p>
@@ -297,6 +274,29 @@ export function coldOutreachEmailHtml({
               <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.6;">
                 Brands in blue, creators in ember &mdash; a card for every client on the network.
               </p>
+            </td>
+          </tr>
+
+          <!-- Pull-quote — bridges the roster into the description -->
+          <tr>
+            <td align="center" style="padding: 32px 56px 0;">
+              <div style="margin: 0 auto 14px; width: 58px;">${morse("58px")}</div>
+              <p style="margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.5;">&ldquo;${escapeHtml(QUOTE).replace("right people", "right&nbsp;people")}&rdquo;</p>
+            </td>
+          </tr>
+
+          <!-- 4 · What GHOSTSignal is — description panel -->
+          <tr>
+            <td style="padding: 30px 40px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.panelBg}" style="background-color: ${t.panelBg}; border: 1px solid ${t.panelBorder}; border-radius: 14px;">
+                <tr>
+                  <td align="center" style="padding: 18px 24px;">
+                    <p style="margin: 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.75; text-align: center;">
+                      ${pitchToHtml(WHAT_IS_THIS, t.textPrimary)}
+                    </p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 

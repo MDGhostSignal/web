@@ -147,6 +147,8 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       from: resendFrom,
       to: [email],
+      // Replies go to a monitored human inbox, not the noreply From.
+      reply_to: process.env.OUTREACH_REPLY_TO || "Mike Sense <mike@ghostsignal.cloud>",
       subject: coldOutreachSubject(name),
       html: coldOutreachEmailHtml({ name, message: finalMessage, theme }),
       text: coldOutreachEmailText({ name, message: finalMessage }),

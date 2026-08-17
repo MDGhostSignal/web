@@ -253,8 +253,8 @@ export function ResultsScreen({
           and connect with partners. It&apos;s the bridge into the matching
           matrix.
         </p>
-        <Link href="/rq-quiz" className="xq-btn">
-          Unlock Your Resonance Quotient (RQ) →
+        <Link href="/xqrq" className="xq-btn">
+          Discover the Resonance Quotient (RQ) →
         </Link>
       </div>
     </div>

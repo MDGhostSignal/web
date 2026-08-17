@@ -90,7 +90,6 @@
 
 .aboutSection {
   padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
-  background: color-mix(in srgb, var(--gs-tw-violet-500) 4%, var(--gs-background));
 }
 
 .about {
@@ -279,8 +278,10 @@
 /* --- Roster carousel ---------------------------------------------- */
 
 .rosterSection {
-  padding: calc(var(--gs-n-48) * var(--gs-px)) var(--edge-pad)
-    calc(var(--gs-n-80) * var(--gs-px));
+  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+  /* Purple band — moved here from .aboutSection so the top slot keeps
+   * its tint after the roster/explainer swap. */
+  background: color-mix(in srgb, var(--gs-tw-violet-500) 4%, var(--gs-background));
 }
 
 .roster {
@@ -359,9 +360,10 @@
   appearance: none;
   font: inherit;
   text-align: left;
-  /* Top padding clears most of the banner; the head row overlaps its
-   * lower edge, profile-header style. */
-  padding: calc(var(--gs-n-60) * var(--gs-px))
+  /* Top padding clears most of the banner; the head row straddles its
+   * lower edge, profile-header style. Kept in step with the taller
+   * .cardBanner below so everything shifts down together. */
+  padding: calc(var(--gs-n-100) * var(--gs-px))
     calc(var(--gs-n-28) * var(--gs-px)) calc(var(--gs-n-24) * var(--gs-px));
   overflow: hidden;
   background: var(--gs-background);
@@ -381,7 +383,7 @@
 .cardBanner {
   position: absolute;
   inset: 0 0 auto 0;
-  height: calc(var(--gs-n-96) * var(--gs-px));
+  height: calc(var(--gs-n-128) * var(--gs-px));
   background-size: cover;
   background-position: center;
 }
@@ -599,11 +601,14 @@
   align-items: flex-start;
   gap: calc(var(--gs-n-12) * var(--gs-px));
   width: 100%;
-  max-width: calc(var(--gs-n-576) * var(--gs-px));
-  max-height: 86vh;
+  /* ~3× the 300px card width, ~2× its 384px height — a comprehensive
+   * view rather than a slightly-bigger card. */
+  max-width: calc(var(--gs-n-960, 960) * var(--gs-px));
+  min-height: min(calc(var(--gs-n-768, 768) * var(--gs-px)), 84vh);
+  max-height: 92vh;
   overflow-y: auto;
-  padding: calc(var(--gs-n-80) * var(--gs-px))
-    calc(var(--gs-n-32) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  padding: calc(var(--gs-n-160, 160) * var(--gs-px))
+    calc(var(--gs-n-48) * var(--gs-px)) calc(var(--gs-n-48) * var(--gs-px));
   background: var(--gs-background);
   border: 1px solid var(--gs-border);
   border-radius: calc(var(--gs-n-22) * var(--gs-px));
@@ -615,7 +620,7 @@
 .profileBanner {
   position: absolute;
   inset: 0 0 auto 0;
-  height: calc(var(--gs-n-128) * var(--gs-px));
+  height: calc(var(--gs-n-224, 224) * var(--gs-px));
   border-radius: calc(var(--gs-n-20) * var(--gs-px))
     calc(var(--gs-n-20) * var(--gs-px)) 0 0;
   background-size: cover;
@@ -735,7 +740,8 @@
 
 .profileBlurb {
   margin: 0;
-  font-size: var(--gs-text-base-size);
+  max-width: calc(var(--gs-n-768, 768) * var(--gs-px));
+  font-size: var(--gs-text-lg-size);
   font-weight: var(--gs-font-weight-semibold, 600);
   line-height: 1.5;
   color: var(--pk-accent);
@@ -743,17 +749,21 @@
 
 .profileAbout {
   margin: 0;
-  font-size: var(--gs-text-sm-size);
+  max-width: calc(var(--gs-n-768, 768) * var(--gs-px));
+  font-size: var(--gs-text-base-size);
   line-height: 1.7;
   color: var(--gs-muted-foreground);
 }
 
 .profileQuotients {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-12) * var(--gs-px));
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(calc(var(--gs-n-256, 256) * var(--gs-px)), 1fr)
+  );
+  gap: calc(var(--gs-n-16) * var(--gs-px));
   width: 100%;
-  margin-top: calc(var(--gs-n-8) * var(--gs-px));
+  margin-top: calc(var(--gs-n-16) * var(--gs-px));
 }
 
 .profileQuotient {

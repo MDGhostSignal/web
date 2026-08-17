@@ -5,13 +5,14 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
-import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { Section } from "@/components/layout";
 import { XQ3DWordmark, RQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
+import { XQMapCard } from "./XQMapCard";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 
+import { RQExplorer } from "./RQExplorer";
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
 
@@ -20,9 +21,9 @@ export default function XqRqPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Starry night background — same dark canvas the rest of the
-          public storytelling pages sit on. */}
-      <ParallaxBackground />
+      {/* One continuous cosmic backdrop (nebula drift + starfield) behind
+          the entire page — fixed, so every section shares it. */}
+      <div className={styles.cosmicBg} aria-hidden="true" />
 
       {/* ---------------------------------------------------------------
           HERO — the central question. Line-by-line reveal on the
@@ -47,7 +48,7 @@ export default function XqRqPage() {
           </h1>
           <ScrollFadeUp index={1} duration={1.6}>
             <p className={styles.heroSubhead}>
-              Discover your values to find your perfect partner.
+              Discover Your Values to Find Your Perfect Partner.
             </p>
           </ScrollFadeUp>
         </div>
@@ -66,6 +67,16 @@ export default function XqRqPage() {
               do today.
             </p>
           </ScrollFadeUp>
+        </div>
+      </Section>
+
+      {/* THE QUESTION — its own band with an orange eyebrow, like the
+          maps section. Sets up why alignment matters. */}
+      <Section className={styles.narrativeSection}>
+        <div className={styles.narrativeContent}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <p className={styles.eyebrow}>The question</p>
+          </ScrollFadeUp>
           <ScrollFadeUp index={1} duration={1.6}>
             <p className={styles.narrativeBody}>
               The best future is a world where we work together to multiply
@@ -77,59 +88,53 @@ export default function XqRqPage() {
       </Section>
 
       {/* ---------------------------------------------------------------
-          THE TWO ASSESSMENTS — XQ (free, open) and RQ (members only).
-          Each column stacks its extruded wordmark above a prose card
-          and its own CTA.
+          THE TWO MAPS — RQ resonance explorer + XQ character map, side
+          by side. Explore both spaces before the assessment cards.
           --------------------------------------------------------------- */}
-      <Section className={styles.assessmentsSection}>
-        <div className={styles.assessmentsContent}>
+      <Section className={styles.mapsSection}>
+        <div className={styles.mapsContent}>
           <ScrollFadeUp index={0} duration={1.6}>
-            <h2 className={styles.assessmentsHeadline}>
-              Two quotients. One aligned partnership.
-            </h2>
+            <p className={styles.eyebrow}>Explore the maps</p>
           </ScrollFadeUp>
-
-          <div className={styles.assessmentPair}>
-            {/* XQ — free, open to everyone */}
-            <ScrollFadeUp
-              index={1}
-              duration={1.6}
-              className={styles.assessmentColumn}
-            >
-              <div className={styles.assessmentWordmark}>
+          <ScrollFadeUp index={1} duration={1.6}>
+            <h2 className={styles.rqMapHeadline}>Two maps of who you are.</h2>
+          </ScrollFadeUp>
+          <div className={styles.mapsGrid}>
+            {/* XQ — left, free character map */}
+            <div className={styles.mapCol}>
+              <div className={styles.mapLogo}>
                 <XQ3DWordmark />
               </div>
-              <article className={styles.assessmentCard}>
-                <p className={styles.assessmentLabel}>
-                  Conviction Quotient
-                </p>
+              <h3 className={styles.mapHeadline}>Discover your character</h3>
+              <div className={`${styles.mapBox} ${styles.xqBox}`}>
+                <XQMapCard />
+              </div>
+              <div className={styles.mapCta}>
+                <p className={styles.assessmentLabel}>Conviction Quotient</p>
                 <p className={styles.assessmentAvailability}>
                   Free &middot; Open to everyone
                 </p>
                 <p className={styles.assessmentBody}>
-                  The XQ helps you discover and codify your business
-                  values, so you know your company&rsquo;s moral
-                  framework.
+                  The XQ helps you discover and codify your business values,
+                  so you know your company&rsquo;s moral framework.
                 </p>
                 <Link href="/xq-quiz" className={styles.assessmentCta}>
                   Take the XQ
                 </Link>
-              </article>
-            </ScrollFadeUp>
+              </div>
+            </div>
 
-            {/* RQ — members only, the matching engine */}
-            <ScrollFadeUp
-              index={2}
-              duration={1.6}
-              className={styles.assessmentColumn}
-            >
-              <div className={styles.assessmentWordmark}>
+            {/* RQ — right, members' resonance map */}
+            <div className={styles.mapCol}>
+              <div className={styles.mapLogo}>
                 <RQ3DWordmark />
               </div>
-              <article className={styles.assessmentCard}>
-                <p className={styles.assessmentLabel}>
-                  Resonance Quotient
-                </p>
+              <h3 className={styles.mapHeadline}>See how you resonate</h3>
+              <div className={`${styles.mapBox} ${styles.rqBox}`}>
+                <RQExplorer />
+              </div>
+              <div className={styles.mapCta}>
+                <p className={styles.assessmentLabel}>Resonance Quotient</p>
                 <p className={styles.assessmentAvailability}>
                   Members only &middot; The matching engine
                 </p>
@@ -139,19 +144,15 @@ export default function XqRqPage() {
                   your objectives. Reserved for members of{" "}
                   <BrandedGhostSignal />.
                 </p>
-                <Link href="/rq-quiz" className={styles.assessmentCta}>
-                  Take the RQ
-                </Link>
-              </article>
-            </ScrollFadeUp>
+                <span
+                  className={styles.assessmentCtaLocked}
+                  aria-disabled="true"
+                >
+                  Only accessible to members
+                </span>
+              </div>
+            </div>
           </div>
-
-          <ScrollFadeUp index={3} duration={1.6}>
-            <p className={styles.assessmentsFooternote}>
-              Start with the XQ &mdash; it&rsquo;s free, and it&rsquo;s the
-              first step toward finding whom you belong with.
-            </p>
-          </ScrollFadeUp>
         </div>
       </Section>
 

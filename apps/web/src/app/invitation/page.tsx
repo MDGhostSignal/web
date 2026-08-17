@@ -30,9 +30,9 @@ import styles from "./page.module.css";
  */
 
 export const metadata = {
-  title: "You're invited — GHOSTSignal Studio",
+  title: "You're invited — the GHOSTSignal ecosystem",
   description:
-    "GHOSTSignal is a podcast network that pairs brands with shows whose audiences already share their values. This is your invitation to the Studio.",
+    "GHOSTSignal is a podcast network that pairs brands with shows whose audiences already share their values. This is your invitation to the GHOSTSignal ecosystem.",
 };
 
 /** Mirrored from who-are-we/FoundersSection.tsx — update together. */
@@ -121,23 +121,45 @@ export default function InvitationPage() {
             </SplitLinesReveal>
             <SplitLinesReveal duration={2} delay={0.3}>
               <span>
-                to the <BrandedGhostSignal /> Studio.
+                to the <BrandedGhostSignal /> ecosystem.
               </span>
             </SplitLinesReveal>
           </h1>
           <ScrollFadeUp index={2} duration={1.8}>
             <p className={styles.heroLede}>
-              This is the full version of our introduction — the one the
-              email could only hint at. We came across your brand and a
-              few shows on our network came to mind right away. No pitch
-              deck, just a look at how podcast partnerships work when the
-              audience already fits.
+              We came across your brand and a few shows on our network
+              came to mind right away. No pitch deck, just a look at how
+              podcast partnerships work when the audience already fits.
             </p>
           </ScrollFadeUp>
         </Container>
       </Section>
 
-      {/* What this is — the description panel, given room */}
+      {/* Who we work with — interactive five-card carousel.
+          Swapped above "What this is" so it owns the purple band. */}
+      <Section className={styles.rosterSection}>
+        <Container className={styles.roster}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <p className={styles.eyebrow}>Who we work with</p>
+          </ScrollFadeUp>
+          <RosterCarousel />
+        </Container>
+      </Section>
+
+      {/* Pull-quote bridging the roster into the explainer below */}
+      <Section className={styles.quoteSection}>
+        <Container className={styles.quote}>
+          <div className={styles.morse} aria-hidden="true" />
+          <SplitLinesReveal duration={2}>
+            <p className={styles.quoteText}>
+              &ldquo;We help brands zoom in on the right people.&rdquo;
+            </p>
+          </SplitLinesReveal>
+        </Container>
+      </Section>
+
+      {/* What this is — the description panel, now below the roster
+          with a plain (white) background. */}
       <Section className={styles.aboutSection}>
         <Container className={styles.about}>
           <ScrollFadeUp index={0} duration={1.6}>
@@ -168,28 +190,6 @@ export default function InvitationPage() {
               </ScrollFadeUp>
             ))}
           </div>
-        </Container>
-      </Section>
-
-      {/* Pull-quote on top of the roster, same as the email */}
-      <Section className={styles.quoteSection}>
-        <Container className={styles.quote}>
-          <div className={styles.morse} aria-hidden="true" />
-          <SplitLinesReveal duration={2}>
-            <p className={styles.quoteText}>
-              &ldquo;We help brands zoom in on the right people.&rdquo;
-            </p>
-          </SplitLinesReveal>
-        </Container>
-      </Section>
-
-      {/* Who we work with — interactive five-card carousel */}
-      <Section className={styles.rosterSection}>
-        <Container className={styles.roster}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>Who we work with</p>
-          </ScrollFadeUp>
-          <RosterCarousel />
         </Container>
       </Section>
 
@@ -295,8 +295,8 @@ export default function InvitationPage() {
                   audience.
                 </p>
                 <div className={styles.assessmentAction}>
-                  <Button href="/rq-quiz" variant="secondary">
-                    Take the RQ
+                  <Button href="/xqrq" variant="secondary">
+                    Explore the RQ
                   </Button>
                 </div>
               </article>

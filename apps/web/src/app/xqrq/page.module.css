@@ -34,7 +34,93 @@
     calc(var(--gs-n-96) * var(--gs-px));
 }
 
+/* =============================================================================
+   COSMIC BACKDROP — one continuous fixed background for the whole page
+   (nebula drift + starfield). Replaces both the old per-hero background
+   and the shared <ParallaxBackground/>. Fixed + z-index:-1 so it stays
+   put behind every section as you scroll.
+   ============================================================================= */
+
+.cosmicBg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, #06060e 0%, #0a0a14 100%);
+}
+
+/* Nebula layer — slow 120s drift; -12% inset bleeds so the transform
+ * never reveals bare edges (parent overflow clips the bleed). */
+.cosmicBg::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 55% at 22% 28%, rgba(90, 60, 180, 0.45), transparent 60%),
+    radial-gradient(ellipse 55% 40% at 82% 68%, rgba(50, 100, 210, 0.38), transparent 55%),
+    radial-gradient(ellipse 50% 38% at 58% 42%, rgba(220, 90, 150, 0.22), transparent 60%),
+    radial-gradient(ellipse 85% 60% at 50% 88%, rgba(30, 50, 110, 0.55), transparent 65%);
+  z-index: 0;
+  will-change: transform;
+  animation: heroNebulaDrift 120s ease-in-out infinite;
+}
+
+/* Starfield overlaid on the nebula. */
+.cosmicBg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(255,255,255,0.7) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 25% 28%, rgba(255,255,255,0.6) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 42% 12%, rgba(255,255,255,0.65) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 60% 22%, rgba(255,255,255,0.55) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 75% 18%, rgba(255,255,255,0.6) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 88% 25%, rgba(255,255,255,0.5) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 15% 42%, rgba(255,255,255,0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 38%, rgba(255,255,255,0.5) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 92% 10%, rgba(255,255,255,0.4) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 35% 55%, rgba(255,255,255,0.35) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 82% 48%, rgba(255,255,255,0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 5% 72%, rgba(255,255,255,0.55) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 30% 78%, rgba(255,255,255,0.35) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 55% 88%, rgba(255,255,255,0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 78% 82%, rgba(255,255,255,0.5) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 48% 65%, rgba(255,255,255,0.3) 0 0.8px, transparent 1.2px);
+  z-index: 1;
+}
+
+@keyframes heroNebulaDrift {
+  0% {
+    transform: translate3d(0%, 0%, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(-1.5%, -0.8%, 0) scale(1.015);
+  }
+  50% {
+    transform: translate3d(1.2%, -1.5%, 0) scale(1.025);
+  }
+  75% {
+    transform: translate3d(-0.8%, 1.2%, 0) scale(1.012);
+  }
+  100% {
+    transform: translate3d(0%, 0%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmicBg::after {
+    animation: none;
+  }
+}
+
 .heroContent {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -295,4 +381,297 @@
     align-self: stretch;
     text-align: center;
   }
+}
+
+/* -----------------------------------------------------------------------------
+   RQ MAP — the resonance cube
+   ----------------------------------------------------------------------------- */
+
+.rqMapSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Deliberately roomier top + bottom than the other bands so the big
+   * graph has space to breathe. */
+  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad)
+    calc(var(--gs-n-192, 192) * var(--gs-px));
+}
+
+.rqMapContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-20) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-1120, 1120) * var(--gs-px));
+}
+
+.rqMapHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold);
+  font-size: clamp(26px, 3.6vw, 44px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  color: var(--gs-tw-white);
+}
+
+.rqMapIntro {
+  margin: 0;
+  max-width: calc(var(--gs-n-768, 768) * var(--gs-px));
+  font-family: var(--font-body);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Give the cube room above the fold of the section. */
+.rqMapContent > :last-child {
+  margin-top: calc(var(--gs-n-24) * var(--gs-px));
+}
+
+/* RQ CTA when members-only — looks like a CTA, not clickable. */
+.assessmentCtaLocked {
+  align-self: flex-start;
+  margin-top: auto;
+  display: inline-block;
+  padding: calc(var(--gs-n-14) * var(--gs-px))
+    calc(var(--gs-n-28) * var(--gs-px));
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.62);
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-md-size);
+  line-height: var(--gs-text-md-leading);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  cursor: not-allowed;
+}
+
+/* -----------------------------------------------------------------------------
+   TWO MAPS — RQ explorer + XQ character map, side by side
+   ----------------------------------------------------------------------------- */
+
+.mapsSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Roomier top + bottom than the other bands. */
+  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad)
+    calc(var(--gs-n-192, 192) * var(--gs-px));
+}
+
+.mapsContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-1440, 1440) * var(--gs-px));
+}
+
+.mapsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: calc(var(--gs-n-40) * var(--gs-px));
+  /* Stretch so both tiles are exactly the same height. */
+  align-items: stretch;
+  width: 100%;
+  margin-top: calc(var(--gs-n-32) * var(--gs-px));
+}
+
+/* Each map sits in its own equal-size glassy tile on the space bg. */
+.mapCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  min-width: 0;
+  height: 100%;
+  padding: calc(var(--gs-n-40) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  border: 1px solid rgba(199, 249, 255, 0.15);
+  border-radius: calc(var(--gs-n-28) * var(--gs-px));
+  background: rgba(10, 14, 26, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.mapLabel {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: var(--gs-text-lg-size);
+  letter-spacing: 0.04em;
+  color: #c7f9ff;
+}
+
+.mapHint {
+  margin: 0 0 calc(var(--gs-n-12) * var(--gs-px));
+  max-width: calc(var(--gs-n-384) * var(--gs-px));
+  font-family: var(--font-body);
+  font-size: var(--gs-text-sm-size);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* -----------------------------------------------------------------------------
+   FINAL — XQ·RQ lockup + free CTA
+   ----------------------------------------------------------------------------- */
+
+.finalSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gs-n-64) * var(--gs-px)) var(--edge-pad)
+    calc(var(--gs-n-160) * var(--gs-px));
+}
+
+.finalTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+  padding: calc(var(--gs-n-56) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+  border: 1px solid rgba(199, 249, 255, 0.2);
+  border-radius: calc(var(--gs-n-24) * var(--gs-px));
+  background: rgba(10, 14, 26, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.finalLockup {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gs-n-10) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-black, 800);
+  font-size: clamp(40px, 6vw, 68px);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.finalXq {
+  color: #fbad25;
+}
+
+.finalRq {
+  color: #c7f9ff;
+}
+
+.finalDot {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.finalHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.finalBody {
+  margin: 0;
+  max-width: calc(var(--gs-n-512, 512) * var(--gs-px));
+  font-family: var(--font-body);
+  font-size: var(--gs-text-lg-size);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.finalCta {
+  margin-top: calc(var(--gs-n-8) * var(--gs-px));
+  display: inline-block;
+  padding: calc(var(--gs-n-14) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  background: #fbad25;
+  color: #1a1a1a;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-md-size);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 200ms ease, transform 200ms ease;
+}
+
+.finalCta:hover {
+  background: #ffbe4d;
+  transform: translateY(-2px);
+}
+
+/* Map column logo (3D wordmark) + distinct headline + size-balanced box. */
+.mapLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: calc(var(--gs-n-4) * var(--gs-px));
+}
+
+.mapLogo :global(svg) {
+  display: block;
+  height: clamp(52px, 6vw, 84px);
+  width: auto;
+}
+
+.mapHeadline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: #fff;
+}
+
+.mapBox {
+  width: 100%;
+  margin-inline: auto;
+  margin-top: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+/* XQ a touch larger, RQ a touch smaller, so they read as equals. */
+.xqBox {
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+}
+
+.rqBox {
+  max-width: calc(var(--gs-n-448, 448) * var(--gs-px));
+}
+
+/* Bigger, readable character names + code chips on this page's XQ map
+   (scoped to /xqrq — the shared component stays untouched elsewhere).
+   The hover tooltip is handled by XQMapCard, which reuses the RQ
+   tooltip's styles for an identical tile. */
+.xqBox :global(.xq-spectrum-anchor) text {
+  font-size: 17px;
+}
+
+/* CTA block folded under each map — pushed to the tile's bottom so the
+   two CTAs line up at equal distance regardless of map height. */
+.mapCta {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--gs-n-8) * var(--gs-px));
+  width: 100%;
+  padding-top: calc(var(--gs-n-32) * var(--gs-px));
+  border-top: 1px solid rgba(199, 249, 255, 0.12);
+  text-align: center;
+}
+
+/* These CTAs were card-anchored (flex-start); centre them in the tile. */
+.mapCta .assessmentCta,
+.mapCta .assessmentCtaLocked {
+  align-self: center;
+  margin-top: calc(var(--gs-n-8) * var(--gs-px));
 }
