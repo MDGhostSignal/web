@@ -54,6 +54,38 @@ export default function XqRqPage() {
         </div>
       </Section>
 
+      {/* THE QUESTION — sets up the assessments; sits just above the
+          maps. Two questions pulled out as distinct cards for clarity. */}
+      <Section className={styles.narrativeSection}>
+        <div className={styles.narrativeContent}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <p className={styles.eyebrow}>The question</p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={1} duration={1.6}>
+            <p className={styles.questionLead}>
+              The best future is a world where we work together to multiply
+              our world-making effort.
+            </p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={2} duration={1.6}>
+            <div className={styles.questionCards}>
+              <div className={styles.questionCard}>
+                <span className={styles.questionNum}>01</span>
+                <p className={styles.questionCardText}>
+                  How do we ensure the right partnerships?
+                </p>
+              </div>
+              <div className={styles.questionCard}>
+                <span className={styles.questionNum}>02</span>
+                <p className={styles.questionCardText}>
+                  How do we make sure we are aligned?
+                </p>
+              </div>
+            </div>
+          </ScrollFadeUp>
+        </div>
+      </Section>
+
       {/* ---------------------------------------------------------------
           THE TWO MAPS — RQ resonance explorer + XQ character map, side
           by side.
@@ -64,7 +96,9 @@ export default function XqRqPage() {
             <p className={styles.eyebrow}>Explore the maps</p>
           </ScrollFadeUp>
           <ScrollFadeUp index={1} duration={1.6}>
-            <h2 className={styles.rqMapHeadline}>Two maps of who you are.</h2>
+            <h2 className={styles.rqMapHeadline}>
+              Two assessments for values-alignment.
+            </h2>
           </ScrollFadeUp>
           <div className={styles.mapsGrid}>
             {/* XQ — left, free character map */}
@@ -85,7 +119,7 @@ export default function XqRqPage() {
                   The XQ helps you discover and codify your business values,
                   so you know your company&rsquo;s moral framework.
                 </p>
-                <Link href="/xq-quiz" className={styles.assessmentCta}>
+                <Link href="/xq-quiz?start=1" className={styles.assessmentCta}>
                   Take the XQ
                 </Link>
               </div>
@@ -108,8 +142,9 @@ export default function XqRqPage() {
                 <p className={styles.assessmentBody}>
                   The RQ helps you discern what kind of partner you are, so
                   that you can connect with the most aligned partners for
-                  your objectives. Reserved for members of{" "}
-                  <BrandedGhostSignal />.
+                  your objectives.
+                  <br />
+                  Reserved for members of <BrandedGhostSignal />.
                 </p>
                 <span
                   className={styles.assessmentCtaLocked}
@@ -137,43 +172,12 @@ export default function XqRqPage() {
           <ScrollFadeUp index={1} duration={1.6}>
             <ul className={styles.makerChips} aria-label="World-makers">
               <li className={styles.makerChip}>Businesses</li>
+              <li className={styles.makerChip}>Non-profits</li>
               <li className={styles.makerChip}>Podcasters</li>
               <li className={styles.makerChip}>Artists</li>
               <li className={styles.makerChip}>Musicians</li>
               <li className={styles.makerChip}>Creators</li>
             </ul>
-          </ScrollFadeUp>
-        </div>
-      </Section>
-
-      {/* THE QUESTION — its own band with an orange eyebrow; the two
-          questions are pulled out as distinct cards for clarity. */}
-      <Section className={styles.narrativeSection}>
-        <div className={styles.narrativeContent}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>The question</p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <p className={styles.questionLead}>
-              The best future is a world where we work together to multiply
-              our world-making effort.
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={2} duration={1.6}>
-            <div className={styles.questionCards}>
-              <div className={styles.questionCard}>
-                <span className={styles.questionNum}>01</span>
-                <p className={styles.questionCardText}>
-                  How do we ensure the right partnerships?
-                </p>
-              </div>
-              <div className={styles.questionCard}>
-                <span className={styles.questionNum}>02</span>
-                <p className={styles.questionCardText}>
-                  How do we make sure we are aligned?
-                </p>
-              </div>
-            </div>
           </ScrollFadeUp>
         </div>
       </Section>

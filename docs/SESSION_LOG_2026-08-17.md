@@ -112,3 +112,19 @@ the `/xqrq` XQ·RQ landing page.
   opens straight into the interactive XQ/RQ maps.
 - Files: `apps/web/src/app/xqrq/{page.tsx,page.module.css}`. eslint /
   stylelint clean, page 200.
+
+## Follow-up 2 — XQ CTA + `/xqrq` copy tweaks
+
+- **"Take the XQ" skips the intro**: the `/xqrq` CTA now links to
+  `/xq-quiz?start=1`; `xq-quiz/page.tsx` reads `?start` (via
+  `useSearchParams` inside a `Suspense` boundary) and lands the user on
+  the first fill-out step (contact) instead of the welcome intro. Direct
+  `/xq-quiz` visits keep the intro.
+- Added **Non-profits** chip after Businesses in the world-maker chips.
+- "Reserved for members of GHOSTSignal." now on its own line (`<br/>`).
+- Maps headline → "Two assessments for values-alignment."
+- Files: `apps/web/src/app/{xq-quiz/page.tsx,xqrq/page.tsx}`.
+
+- Moved the "The question" band to just **above** the maps (Hero → the
+  question → maps → world-makers → Contact); maps headline → "Two
+  assessments for values-alignment."

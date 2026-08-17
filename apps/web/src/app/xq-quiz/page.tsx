@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { BRAND, PHASE2_QUESTIONS } from "@/lib/xq/constants";
 
@@ -73,8 +74,14 @@ type SubmitState =
  * admin alert). The results stage POSTs a full "complete" row on
  * arrival, which triggers admin notification + user summary emails.
  */
-export default function XQQuizPage() {
-  const [stage, setStage] = useState<Stage>("intro");
+function XQQuizFlow() {
+  // Arriving from the /xqrq "Take the XQ" CTA (?start) skips the welcome
+  // intro and lands the user straight on the first fill-out step. Direct
+  // visits to /xq-quiz still get the intro.
+  const searchParams = useSearchParams();
+  const [stage, setStage] = useState<Stage>(
+    searchParams.get("start") ? "contact" : "intro",
+  );
   const [basics, setBasics] = useState<Basics>(EMPTY_BASICS);
   const [answers, setAnswers] = useState<XQAnswers>({});
   const [stress, setStress] = useState<XQStressInput>({
@@ -302,5 +309,14 @@ export default function XQQuizPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// useSearchParams requires a Suspense boundary; the flow is client-only.
+export default function XQQuizPage() {
+  return (
+    <Suspense fallback={null}>
+      <XQQuizFlow />
+    </Suspense>
   );
 }
