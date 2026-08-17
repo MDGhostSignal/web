@@ -1045,3 +1045,10 @@
     max-height: calc(var(--gs-n-320) * var(--gs-px));
   }
 }
+
+/* XQ character map embedded in the CTA section (reused from /xqrq). */
+.xqMapWrap {
+  width: 100%;
+  max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
+  margin-inline: auto;
+}

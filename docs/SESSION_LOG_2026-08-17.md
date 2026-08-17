@@ -128,3 +128,14 @@ the `/xqrq` XQ·RQ landing page.
 - Moved the "The question" band to just **above** the maps (Hero → the
   question → maps → world-makers → Contact); maps headline → "Two
   assessments for values-alignment."
+
+## Follow-up 3 — invitation page copy + XQ map
+
+- Hero: headline → "You're invited / to GHOSTSignal!"; new values-based
+  subheadline; roster eyebrow → "Here are some of our current
+  world-makers:"; removed the "What this is" description sentences.
+- Bottom CTA section: replaced the XQ/RQ two-up + example map with the
+  interactive XQ character map (reused `XQMapCard` from /xqrq) under
+  "Discover your character by taking our values quiz." + a "Take the XQ"
+  CTA (/xq-quiz?start=1).
+- Files: `apps/web/src/app/invitation/{page.tsx,page.module.css}`.

@@ -1,8 +1,7 @@
 import Image from "next/image";
 
-import { XQ3DWordmark, RQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
-import { XQSpectrumMap } from "@/components/xq/XQSpectrumMap";
+import { XQMapCard } from "@/app/xqrq/XQMapCard";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui";
@@ -121,15 +120,17 @@ export default function InvitationPage() {
             </SplitLinesReveal>
             <SplitLinesReveal duration={2} delay={0.3}>
               <span>
-                to the <BrandedGhostSignal /> ecosystem.
+                to <BrandedGhostSignal />!
               </span>
             </SplitLinesReveal>
           </h1>
           <ScrollFadeUp index={2} duration={1.8}>
             <p className={styles.heroLede}>
-              We came across your brand and a few shows on our network
-              came to mind right away. No pitch deck, just a look at how
-              podcast partnerships work when the audience already fits.
+              GHOSTSignal is the values-based podcast advertising network.
+              We create partnerships that feel good, because they are
+              good. When brands&rsquo; and creators&rsquo; are
+              values-aligned, advertising contributes to the world we all
+              want to make.
             </p>
           </ScrollFadeUp>
         </Container>
@@ -140,7 +141,9 @@ export default function InvitationPage() {
       <Section className={styles.rosterSection}>
         <Container className={styles.roster}>
           <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>Who we work with</p>
+            <p className={styles.eyebrow}>
+              Here are some of our current world-makers:
+            </p>
           </ScrollFadeUp>
           <RosterCarousel />
         </Container>
@@ -164,20 +167,6 @@ export default function InvitationPage() {
         <Container className={styles.about}>
           <ScrollFadeUp index={0} duration={1.6}>
             <p className={styles.eyebrow}>What this is</p>
-          </ScrollFadeUp>
-          <SplitLinesReveal duration={1.9}>
-            <h2 className={styles.sectionTitle}>
-              <BrandedGhostSignal /> is a podcast network that pairs
-              brands with shows whose audiences already share their
-              values.
-            </h2>
-          </SplitLinesReveal>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <p className={styles.sectionLede}>
-              We handle the whole partnership &mdash; contracts, ad
-              creation, transparent reporting &mdash; under one
-              membership.
-            </p>
           </ScrollFadeUp>
           <div className={styles.featuresGrid}>
             {FEATURES.map((feature, i) => (
@@ -237,94 +226,18 @@ export default function InvitationPage() {
         <Container className={styles.cta}>
           <SplitLinesReveal duration={1.9}>
             <h2 className={styles.ctaTitle}>
-              Find out what your RQ and XQ are.
+              Discover your character by taking our values quiz.
             </h2>
           </SplitLinesReveal>
-          {/* Two-up assessment columns — the heavy-visual XQ/RQ ad
-              from what-is-this: extruded 3D wordmarks crowning glassy
-              prose cards. Copy kept in lockstep with that page. */}
-          <div className={styles.assessmentPair}>
-            <ScrollFadeUp
-              index={0}
-              duration={1.6}
-              className={styles.assessmentColumn}
-            >
-              <div className={styles.assessmentWordmark}>
-                <XQ3DWordmark />
-              </div>
-              <article className={styles.assessmentCard}>
-                <p className={styles.assessmentLabel}>Conviction Quotient</p>
-                <p className={styles.assessmentAvailability}>
-                  Free &middot; Open to everyone
-                </p>
-                <p className={styles.assessmentBody}>
-                  A brief-but-thorough audit that uncovers the internal
-                  compass of your business. Codify your non-negotiables
-                  and your operating style across eight archetypes
-                  &mdash; and gain a Values Blueprint that will give
-                  you, brand or creator, absolute clarity on who they
-                  are.
-                </p>
-                <div className={styles.assessmentAction}>
-                  <Button href="/xq-quiz" variant="secondary">
-                    Take the XQ &mdash; it&rsquo;s free
-                  </Button>
-                </div>
-              </article>
-            </ScrollFadeUp>
-            <ScrollFadeUp
-              index={1}
-              duration={1.6}
-              className={styles.assessmentColumn}
-            >
-              <div className={styles.assessmentWordmark}>
-                <RQ3DWordmark />
-              </div>
-              <article className={styles.assessmentCard}>
-                <p className={styles.assessmentLabel}>Resonance Quotient</p>
-                <p className={styles.assessmentAvailability}>
-                  Members only &middot; The matching engine
-                </p>
-                <p className={styles.assessmentBody}>
-                  Reserved for full <BrandedGhostSignal /> members, the
-                  RQ translates your XQ blueprint into aligned
-                  partnerships. It&rsquo;s the bridge that matches
-                  brands with the right podcasts for revenue you can be
-                  proud of &mdash; and creators with the right brands
-                  for campaigns that don&rsquo;t cost them their
-                  audience.
-                </p>
-                <div className={styles.assessmentAction}>
-                  <Button href="/xqrq" variant="secondary">
-                    Explore the RQ
-                  </Button>
-                </div>
-              </article>
-            </ScrollFadeUp>
-          </div>
-          <ScrollFadeUp
-            index={2}
-            duration={1.7}
-            className={styles.mapReveal}
-          >
-            <div className={styles.mapPanel}>
-              <p className={styles.mapPanelTitle}>Where a company lands</p>
-              <XQSpectrumMap
-                position={{ axis1: 0.6, axis2: 0.5, axis3: 0.7 }}
-                highlight="C-P-C"
-                pointLabel="YOUR BRAND"
-              />
-              <p className={styles.mapCaption}>
-                An example read &mdash; a brand like Meridian Coffee lands
-                with The Steward. The XQ places you; the RQ tells us who
-                resonates with you.
-              </p>
+          <ScrollFadeUp index={0} duration={1.7} className={styles.mapReveal}>
+            <div className={styles.xqMapWrap}>
+              <XQMapCard />
             </div>
           </ScrollFadeUp>
-          <ScrollFadeUp index={3} duration={1.6}>
+          <ScrollFadeUp index={1} duration={1.6}>
             <div className={styles.ctaActions}>
-              <Button href="/for-advertisers" variant="secondary">
-                See how we work with brands
+              <Button href="/xq-quiz?start=1" variant="secondary">
+                Take the XQ &mdash; it&rsquo;s free
               </Button>
             </div>
           </ScrollFadeUp>
