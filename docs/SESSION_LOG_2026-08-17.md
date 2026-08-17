@@ -194,3 +194,46 @@ Invitation page:
 
 Files: `invitation/{page.tsx,page.module.css}`, `snowdrift/SnowParticles.tsx`,
 `xqrq/page.module.css`.
+
+## Follow-up 6 — cold email synced to `/invitation` + real animated roster GIF
+
+Brought `lib/cold-outreach-email.ts` fully in lockstep with the redesigned
+`/invitation` page, and **retired the mock roster GIF** (open item above).
+
+- **Copy + structure** (HTML + plain-text both): headline → "You're invited
+  to GHOSTSignal!"; the values-based intro panel moved up under the message
+  and **left-aligned**; roster label → "Here are some of our current
+  world-makers"; new **"How we do it"** section from a `VALUE_PROPS` const
+  (Highly-attuned audiences / Zero admin overhead / Real conversion). Final
+  order: headline → message → intro panel → roster → how-we-do-it →
+  pull-quote → co-founders → **XQ tile** → Snowdrift.
+- **XQ tile CTA**: replaced the old "See how we work with brands"
+  → `/for-advertisers` button with an XQ panel mirroring the page —
+  "XQ · Conviction Quotient" eyebrow, "Discover your character", the XQ
+  blurb, and a **branded-yellow "Take the XQ — it's free"** button
+  → `/xq-quiz?start=1`.
+- **Roster**: removed the decorative ←/→ arrow cells (they were HTML, not
+  part of the GIF) and widened the image to the full 520px content width.
+- **Real animated roster GIF** (replaces the 3-card "Meridian Coffee" mock):
+  drove Playwright to the live `/invitation` carousel, hid the arrows / rail
+  / site header, forced a white ground, then captured the `.deck`
+  frame-by-frame while pressing **ArrowRight through all 13 clients** (slow
+  1.5s eased slide per step). ffmpeg `palettegen (stats_mode=diff)` +
+  `paletteuse (bayer)` → **520×188, 53 frames, ~1.5 MB**, infinite loop,
+  slow full-roster cycle. Wrote it to both `outreach-roster.gif` and
+  `-dark.gif`. Compared against an email-safe HTML "chip strip" alternative
+  on a throwaway local page — the captured real-card fan clearly won.
+- Chose a **static-image delivery** (a GIF, same `<img>` slot as before) over
+  a re-implemented HTML roster because five real cards only fit an email
+  column via the invitation's overlap; the chip strip read as a plain logo
+  bar. Capture is reproducible if the roster changes (Playwright deck grab
+  + the ffmpeg recipe above).
+
+Validation: `eslint` + `tsc` clean on the email lib; `git status` scoped to
+the three intended files (two GIFs + the email template); temp capture
+scripts and the local compare page removed; dev server stopped.
+
+Resolved from the open items: **cold-email roster GIF regenerated with real
+clients.** Still open: Sunshine In My Nest duplicate CRM rows,
+`/for-advertisers` reorder, the Altar migration croc-imagine video, optional
+`/rq-quiz` members gate.

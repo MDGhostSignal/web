@@ -7,20 +7,19 @@
  * as lib/studio-invite-email.ts. Pure string building — safe to import
  * from client components (the composer prefills the default message).
  *
- * Section order — mirrors the /invitation page (roster now precedes the
- * "what is this" panel, per the page's 2026-08-17 section swap):
+ * Section order — mirrors the /invitation page (2026-08-17 redesign):
  *   1. spinning cloud glyph + wordmark, then the invitation headline
- *      broken over two lines ("You're invited / to the GHOSTSignal
- *      ecosystem.")
+ *      broken over two lines ("You're invited / to GHOSTSignal!")
  *   2. personal message ("Hello {name}," — or just "Hello," when no
  *      name is known; composer text falls back to the standard
  *      default below)
- *   3. "Who we work with" — animated client card fan
- *   4. pull-quote bridging the roster into the description
- *   5. description panel (no chip/label) — the "what is this"
- *   6. the four co-founders — faces + names link to their LinkedIn
+ *   3. values-based intro panel — the hero subheadline ("what is this")
+ *   4. "Here are some of our current world-makers" — client card fan
+ *   5. "How we do it" — the three value-props
+ *   6. pull-quote bridging into the co-founders
+ *   7. the four co-founders — faces + names link to their LinkedIn
  *      (photos + data mirrored from who-are-we/FoundersSection.tsx)
- *   7. CTA, then the Snowdrift newsletter ad (same starry card as the
+ *   8. CTA, then the Snowdrift newsletter ad (same starry card as the
  *      studio invite email), then the footer
  *
  * THEMES: the template renders in "light" (default, what sends use)
@@ -92,14 +91,32 @@ const FOUNDERS = [
   { name: "Jeremy Reeves", role: "Creative Strategist", img: "/images/email/founder-jeremy4.jpg", linkedin: "https://www.linkedin.com/in/jeremy-reeves-5365b036a/" },
 ] as const;
 
-/** The "what is this" description — shown in the entrance panel. */
+/** The values-based intro — shown in the entrance panel (mirrors the
+ *  /invitation hero subheadline). */
 const WHAT_IS_THIS =
-  "GHOSTSignal is a podcast network that pairs brands with shows whose " +
-  "audiences already share their values. We handle the whole partnership " +
-  "— contracts, ad creation, transparent reporting — under one membership.";
+  "GHOSTSignal is the values-based podcast advertising network. We create " +
+  "partnerships that feel good, because they are good. When brands' and " +
+  "creators' are values-aligned, advertising contributes to the world we " +
+  "all want to make.";
 
 /** The pull-quote above the card rotation. */
 const QUOTE = "We help brands zoom in on the right people.";
+
+/** "How we do it" — the three value-props from the /invitation page. */
+const VALUE_PROPS = [
+  {
+    title: "Highly-attuned audiences",
+    body: "We place you in front of considered communities where alignment runs deep — listeners who already share your values.",
+  },
+  {
+    title: "Zero admin overhead",
+    body: "Contracts, ad creation, transparent reporting — handled under one membership, without individual podcaster deals.",
+  },
+  {
+    title: "Real conversion",
+    body: "Audiences who are aligned and feel seen are far more likely to become customers. Resonance beats reach.",
+  },
+] as const;
 
 /** Standard personal message used when the composer form is left
  *  blank. Prefilled in the form so the team can edit it per-send. */
@@ -158,18 +175,24 @@ export function coldOutreachEmailText({
   const founders = FOUNDERS.map(
     (f) => `- ${f.name}, ${f.role} — ${f.linkedin}`,
   ).join("\n");
-  return `You're invited to the GHOSTSignal ecosystem.
+  const valueProps = VALUE_PROPS.map(
+    (v) => `- ${v.title}: ${v.body}`,
+  ).join("\n");
+  return `You're invited to GHOSTSignal!
 
 ${greeting(name)}
 
 ${body}
 
-Who we work with
+${WHAT_IS_THIS}
+
+Here are some of our current world-makers
 Brands and creators across the network, matched where the audience already fits. See the roster and how membership works: ${PROD_ORIGIN}${ADVERTISERS_PATH}
 
-"${QUOTE}"
+How we do it
+${valueProps}
 
-${WHAT_IS_THIS}
+"${QUOTE}"
 
 The co-founders
 ${founders}
@@ -230,7 +253,7 @@ export function coldOutreachEmailHtml({
           <!-- 1 · Invitation headline, broken over two lines -->
           <tr>
             <td align="center" style="padding: 28px 40px 0;">
-              <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.3;">You&rsquo;re invited<br>to the ${wordmark} ecosystem.</h1>
+              <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.3;">You&rsquo;re invited<br>to ${wordmark}!</h1>
             </td>
           </tr>
 
@@ -244,54 +267,13 @@ export function coldOutreachEmailHtml({
             </td>
           </tr>
 
-          <!-- 3 · Who we work with — rotating client-card fan -->
-          <tr>
-            <td align="center" style="padding: 26px 40px 0;">
-              <p style="margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent};">Who we work with</p>
-              <!-- Arrows are decorative — the GIF rotates on its own;
-                   they mirror the interactive carousel's controls. -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td valign="middle" align="center" width="44">
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td align="center" bgcolor="${t.card}" style="width: 36px; height: 36px; border: 1px solid ${t.cardBorder}; border-radius: 999px; font-size: 16px; line-height: 1; color: ${t.textMuted};">&larr;</td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td align="center" style="padding: 0 6px;">
-                    <img src="${assetOrigin}${t.rosterGif}" alt="Brand and creator cards from the GHOSTSignal client roster" width="416" style="display: block; width: 100%; max-width: 416px; height: auto;">
-                  </td>
-                  <td valign="middle" align="center" width="44">
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td align="center" bgcolor="${t.card}" style="width: 36px; height: 36px; border: 1px solid ${t.cardBorder}; border-radius: 999px; font-size: 16px; line-height: 1; color: ${t.textMuted};">&rarr;</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.6;">
-                Brands in blue, creators in ember &mdash; a card for every client on the network.
-              </p>
-            </td>
-          </tr>
-
-          <!-- Pull-quote — bridges the roster into the description -->
-          <tr>
-            <td align="center" style="padding: 32px 56px 0;">
-              <div style="margin: 0 auto 14px; width: 58px;">${morse("58px")}</div>
-              <p style="margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.5;">&ldquo;${escapeHtml(QUOTE).replace("right people", "right&nbsp;people")}&rdquo;</p>
-            </td>
-          </tr>
-
-          <!-- 4 · What GHOSTSignal is — description panel -->
+          <!-- 3 · What GHOSTSignal is — values-based intro panel -->
           <tr>
             <td style="padding: 30px 40px 0;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.panelBg}" style="background-color: ${t.panelBg}; border: 1px solid ${t.panelBorder}; border-radius: 14px;">
                 <tr>
-                  <td align="center" style="padding: 18px 24px;">
-                    <p style="margin: 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.75; text-align: center;">
+                  <td align="left" style="padding: 18px 24px;">
+                    <p style="margin: 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.75; text-align: left;">
                       ${pitchToHtml(WHAT_IS_THIS, t.textPrimary)}
                     </p>
                   </td>
@@ -300,7 +282,45 @@ export function coldOutreachEmailHtml({
             </td>
           </tr>
 
-          <!-- 5 · The co-founders — faces + names link to LinkedIn -->
+          <!-- 4 · Here are some of our current world-makers — card fan -->
+          <tr>
+            <td align="center" style="padding: 26px 40px 0;">
+              <p style="margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent};">Here are some of our current world-makers</p>
+              <!-- All five cards, full content width, no controls —
+                   mirrors the invitation carousel's five-up view. -->
+              <img src="${assetOrigin}${t.rosterGif}" alt="Brand and creator cards from the GHOSTSignal client roster" width="520" style="display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto;">
+              <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.6;">
+                Brands in blue, creators in ember &mdash; a card for every client on the network.
+              </p>
+            </td>
+          </tr>
+
+          <!-- 5 · How we do it — the three value-props -->
+          <tr>
+            <td style="padding: 30px 40px 0;">
+              <p style="margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent}; text-align: center;">How we do it</p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+${VALUE_PROPS.map(
+  (v) => `                <tr>
+                  <td style="padding: 8px 0;">
+                    <p style="margin: 0 0 3px; font-size: 14px; font-weight: 700; color: ${t.textPrimary};">${escapeHtml(v.title)}</p>
+                    <p style="margin: 0; font-size: 13px; color: ${t.textSecondary}; line-height: 1.6;">${escapeHtml(v.body)}</p>
+                  </td>
+                </tr>`,
+).join("\n")}
+              </table>
+            </td>
+          </tr>
+
+          <!-- Pull-quote — bridges into the co-founders -->
+          <tr>
+            <td align="center" style="padding: 32px 56px 0;">
+              <div style="margin: 0 auto 14px; width: 58px;">${morse("58px")}</div>
+              <p style="margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.5;">&ldquo;${escapeHtml(QUOTE).replace("right people", "right&nbsp;people")}&rdquo;</p>
+            </td>
+          </tr>
+
+          <!-- 6 · The co-founders — faces + names link to LinkedIn -->
           <tr>
             <td align="center" style="padding: 32px 40px 0;">
               <p style="margin: 0 0 16px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent};">The co-founders</p>
@@ -320,19 +340,25 @@ ${FOUNDERS.map(
             </td>
           </tr>
 
-          <!-- CTA -->
+          <!-- 8 · Discover your character — the XQ tile (free hook) -->
           <tr>
-            <td align="center" style="padding: 26px 40px 0;">
-              <table role="presentation" cellspacing="0" cellpadding="0">
+            <td style="padding: 32px 40px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.panelBg}" style="background-color: ${t.panelBg}; border: 1px solid ${t.panelBorder}; border-radius: 14px;">
                 <tr>
-                  <td bgcolor="${t.btnBg}" style="background-color: ${t.btnBg}; border: 1px solid ${t.btnBorder}; border-radius: 10px;">
-                    <a href="${PROD_ORIGIN}${ADVERTISERS_PATH}" target="_blank" style="display: inline-block; padding: 13px 28px; font-size: 14px; font-weight: 600; color: ${t.btnText}; text-decoration: none;">See how we work with brands</a>
+                  <td align="center" style="padding: 26px 26px 28px;">
+                    <p style="margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent};">XQ &middot; Conviction Quotient</p>
+                    <p style="margin: 0 0 8px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.3;">Discover your character</p>
+                    <p style="margin: 0 0 18px; font-size: 14px; color: ${t.textSecondary}; line-height: 1.7;">The XQ helps you discover and codify your values across eight archetypes, so you know the character behind your work. Free to take.</p>
+                    <table role="presentation" cellspacing="0" cellpadding="0" align="center">
+                      <tr>
+                        <td bgcolor="#fbad25" style="background-color: #fbad25; border-radius: 10px;">
+                          <a href="${PROD_ORIGIN}/xq-quiz?start=1" target="_blank" style="display: inline-block; padding: 13px 28px; font-size: 14px; font-weight: 700; color: #1a1a1a; text-decoration: none;">Take the XQ &mdash; it&rsquo;s free</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
-              <p style="margin: 14px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.6;">
-                Prefer a link? <a href="${PROD_ORIGIN}${ADVERTISERS_PATH}" target="_blank" style="color: ${t.accent};">ghostsignal.cloud/for-advertisers</a>
-              </p>
             </td>
           </tr>
 
