@@ -99,3 +99,16 @@ the `/xqrq` XQ·RQ landing page.
 - `/for-advertisers` "Business Case" reorder (Mike's observation).
 - Altar Migration explainer video — write the croc-imagine instructions.
 - Optional: gate `/rq-quiz` direct-URL access for non-members.
+
+## Follow-up — `/xqrq` narrative section (later same day)
+
+- Made the world-making / "the question" narrative **more visual**: the
+  list of world-makers became gold pill **chips** (Businesses, Podcasters,
+  Artists, Musicians, Creators; lead reworded to "Everyone is making the
+  world…"), and the two questions were pulled out as **numbered glassy
+  cards** (01/02).
+- **Reordered**: both narrative bands now sit **below the two maps**
+  (Hero → maps → world-makers → the question → Contact), so the page
+  opens straight into the interactive XQ/RQ maps.
+- Files: `apps/web/src/app/xqrq/{page.tsx,page.module.css}`. eslint /
+  stylelint clean, page 200.

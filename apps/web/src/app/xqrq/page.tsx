@@ -55,41 +55,8 @@ export default function XqRqPage() {
       </Section>
 
       {/* ---------------------------------------------------------------
-          THE WHY — world-making body copy that sets up why alignment
-          matters before introducing the two assessments.
-          --------------------------------------------------------------- */}
-      <Section className={styles.narrativeSection}>
-        <div className={styles.narrativeContent}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.narrativeLead}>
-              Every business, podcaster, artist, musician, and creator is
-              making the world &mdash; creating the future in the work we
-              do today.
-            </p>
-          </ScrollFadeUp>
-        </div>
-      </Section>
-
-      {/* THE QUESTION — its own band with an orange eyebrow, like the
-          maps section. Sets up why alignment matters. */}
-      <Section className={styles.narrativeSection}>
-        <div className={styles.narrativeContent}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>The question</p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <p className={styles.narrativeBody}>
-              The best future is a world where we work together to multiply
-              our world-making effort. But how do we ensure the right
-              partnerships? How do we make sure we are aligned?
-            </p>
-          </ScrollFadeUp>
-        </div>
-      </Section>
-
-      {/* ---------------------------------------------------------------
           THE TWO MAPS — RQ resonance explorer + XQ character map, side
-          by side. Explore both spaces before the assessment cards.
+          by side.
           --------------------------------------------------------------- */}
       <Section className={styles.mapsSection}>
         <div className={styles.mapsContent}>
@@ -153,6 +120,61 @@ export default function XqRqPage() {
               </div>
             </div>
           </div>
+        </div>
+      </Section>
+
+      {/* ---------------------------------------------------------------
+          THE WHY — world-making copy, now below the maps.
+          --------------------------------------------------------------- */}
+      <Section className={styles.narrativeSection}>
+        <div className={styles.narrativeContent}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <p className={styles.narrativeLead}>
+              Everyone is making the world &mdash; creating the future in
+              the work we do today.
+            </p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={1} duration={1.6}>
+            <ul className={styles.makerChips} aria-label="World-makers">
+              <li className={styles.makerChip}>Businesses</li>
+              <li className={styles.makerChip}>Podcasters</li>
+              <li className={styles.makerChip}>Artists</li>
+              <li className={styles.makerChip}>Musicians</li>
+              <li className={styles.makerChip}>Creators</li>
+            </ul>
+          </ScrollFadeUp>
+        </div>
+      </Section>
+
+      {/* THE QUESTION — its own band with an orange eyebrow; the two
+          questions are pulled out as distinct cards for clarity. */}
+      <Section className={styles.narrativeSection}>
+        <div className={styles.narrativeContent}>
+          <ScrollFadeUp index={0} duration={1.6}>
+            <p className={styles.eyebrow}>The question</p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={1} duration={1.6}>
+            <p className={styles.questionLead}>
+              The best future is a world where we work together to multiply
+              our world-making effort.
+            </p>
+          </ScrollFadeUp>
+          <ScrollFadeUp index={2} duration={1.6}>
+            <div className={styles.questionCards}>
+              <div className={styles.questionCard}>
+                <span className={styles.questionNum}>01</span>
+                <p className={styles.questionCardText}>
+                  How do we ensure the right partnerships?
+                </p>
+              </div>
+              <div className={styles.questionCard}>
+                <span className={styles.questionNum}>02</span>
+                <p className={styles.questionCardText}>
+                  How do we make sure we are aligned?
+                </p>
+              </div>
+            </div>
+          </ScrollFadeUp>
         </div>
       </Section>
 

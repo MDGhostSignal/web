@@ -675,3 +675,79 @@
   align-self: center;
   margin-top: calc(var(--gs-n-8) * var(--gs-px));
 }
+
+/* -----------------------------------------------------------------------------
+   NARRATIVE — world-maker chips + the two-question cards
+   ----------------------------------------------------------------------------- */
+
+.makerChips {
+  list-style: none;
+  margin: calc(var(--gs-n-8) * var(--gs-px)) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--gs-n-10) * var(--gs-px));
+}
+
+.makerChip {
+  padding: calc(var(--gs-n-8) * var(--gs-px)) calc(var(--gs-n-18) * var(--gs-px));
+  border: 1px solid rgba(251, 173, 37, 0.4);
+  border-radius: var(--gs-radius-full);
+  background: rgba(251, 173, 37, 0.08);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold, 600);
+  font-size: var(--gs-text-base-size);
+  letter-spacing: 0.01em;
+}
+
+.questionLead {
+  margin: 0;
+  max-width: calc(var(--gs-n-640, 640) * var(--gs-px));
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium);
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.questionCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: calc(var(--gs-n-24) * var(--gs-px));
+  width: 100%;
+  max-width: calc(var(--gs-n-820, 820) * var(--gs-px));
+  margin-top: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+.questionCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  padding: calc(var(--gs-n-32) * var(--gs-px));
+  border: 1px solid rgba(199, 249, 255, 0.18);
+  border-radius: calc(var(--gs-n-22) * var(--gs-px));
+  background: rgba(10, 14, 26, 0.45);
+  backdrop-filter: blur(4px);
+  text-align: left;
+}
+
+.questionNum {
+  font-family: var(--gs-font-mono, monospace);
+  font-size: 15px;
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: 0.08em;
+  color: #c7f9ff;
+}
+
+.questionCardText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
