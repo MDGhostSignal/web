@@ -137,6 +137,26 @@
   border-radius: calc(var(--gs-n-16) * var(--gs-px));
   text-align: left;
   height: 100%;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.28);
+  border-color: var(--gs-tw-violet-500);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featureCard {
+    transition: none;
+  }
+
+  .featureCard:hover {
+    transform: none;
+  }
 }
 
 .featureMorse {

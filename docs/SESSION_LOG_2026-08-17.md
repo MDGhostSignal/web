@@ -139,3 +139,7 @@ the `/xqrq` XQ·RQ landing page.
   "Discover your character by taking our values quiz." + a "Take the XQ"
   CTA (/xq-quiz?start=1).
 - Files: `apps/web/src/app/invitation/{page.tsx,page.module.css}`.
+
+- Added a hover animation to the invitation "What this is" feature
+  tiles: subtle lift + soft drop shadow + violet accent border on a
+  220ms ease transition (disabled under prefers-reduced-motion).
