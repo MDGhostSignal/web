@@ -23,7 +23,15 @@ type Particle = {
  * - Pauses the RAF loop when the tab is hidden or the canvas scrolls
  *   off screen to stop burning cycles in the background.
  */
-export default function SnowParticles({ className }: { className?: string }) {
+export default function SnowParticles({
+  className,
+  contained = false,
+}: {
+  className?: string;
+  /** Size to the parent element (a positioned container) instead of the
+   *  viewport — lets the snowfall live inside a scoped section/card. */
+  contained?: boolean;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -49,8 +57,14 @@ export default function SnowParticles({ className }: { className?: string }) {
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const parent = canvas.parentElement;
+      if (contained && parent) {
+        width = parent.clientWidth || window.innerWidth;
+        height = parent.clientHeight || window.innerHeight;
+      } else {
+        width = window.innerWidth;
+        height = window.innerHeight;
+      }
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
@@ -124,13 +138,22 @@ export default function SnowParticles({ className }: { className?: string }) {
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
 
+    // In contained mode, re-fit when the parent element resizes.
+    let ro: ResizeObserver | undefined;
+    const parentEl = canvas.parentElement;
+    if (contained && parentEl && "ResizeObserver" in window) {
+      ro = new ResizeObserver(onResize);
+      ro.observe(parentEl);
+    }
+
     return () => {
       running = false;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
+      ro?.disconnect();
     };
-  }, []);
+  }, [contained]);
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }

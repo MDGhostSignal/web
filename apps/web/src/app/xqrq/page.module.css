@@ -43,11 +43,15 @@
 
 .cosmicBg {
   position: fixed;
-  inset: 0;
+  /* Slight bleed so the diagonal-arc sweep below never reveals an edge. */
+  inset: -4%;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
   background: linear-gradient(180deg, #06060e 0%, #0a0a14 100%);
+  /* Whole-scene diagonal-arc drift, looping every 3 minutes. */
+  animation: cosmicArc 180s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* Nebula layer — slow 120s drift; -12% inset bleeds so the transform
@@ -63,8 +67,12 @@
     radial-gradient(ellipse 50% 38% at 58% 42%, rgba(220, 90, 150, 0.22), transparent 60%),
     radial-gradient(ellipse 85% 60% at 50% 88%, rgba(30, 50, 110, 0.55), transparent 65%);
   z-index: 0;
-  will-change: transform;
-  animation: heroNebulaDrift 120s ease-in-out infinite;
+  will-change: transform, filter;
+  /* Slow drift + a slower hue shift so the gradients visibly move and
+   * gently change colour over time. */
+  animation:
+    heroNebulaDrift 70s ease-in-out infinite,
+    nebulaHue 55s ease-in-out infinite;
 }
 
 /* Starfield overlaid on the nebula. */
@@ -92,6 +100,8 @@
     radial-gradient(circle at 78% 82%, rgba(255,255,255,0.5) 0 1px, transparent 1.5px),
     radial-gradient(circle at 48% 65%, rgba(255,255,255,0.3) 0 0.8px, transparent 1.2px);
   z-index: 1;
+  /* Breathing so the stars gently fade in and out. */
+  animation: starBreathe 7s ease-in-out infinite;
 }
 
 @keyframes heroNebulaDrift {
@@ -99,21 +109,65 @@
     transform: translate3d(0%, 0%, 0) scale(1);
   }
   25% {
-    transform: translate3d(-1.5%, -0.8%, 0) scale(1.015);
+    transform: translate3d(-3%, -1.6%, 0) scale(1.03);
   }
   50% {
-    transform: translate3d(1.2%, -1.5%, 0) scale(1.025);
+    transform: translate3d(2.6%, -3%, 0) scale(1.05);
   }
   75% {
-    transform: translate3d(-0.8%, 1.2%, 0) scale(1.012);
+    transform: translate3d(-1.8%, 2.4%, 0) scale(1.025);
   }
   100% {
     transform: translate3d(0%, 0%, 0) scale(1);
   }
 }
 
+/* Barely-perceptible colour drift for the nebula. */
+@keyframes nebulaHue {
+  0%,
+  100% {
+    filter: hue-rotate(-18deg) saturate(1);
+  }
+  50% {
+    filter: hue-rotate(34deg) saturate(1.15);
+  }
+}
+
+/* Gentle fade in/out for the starfield. */
+@keyframes starBreathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* Slow diagonal-arc sweep of the whole scene — out along a diagonal,
+ * curving, and back to the start every loop. */
+@keyframes cosmicArc {
+  0% {
+    transform: translate3d(0%, 0%, 0);
+  }
+  25% {
+    transform: translate3d(2.4%, -1.4%, 0);
+  }
+  50% {
+    transform: translate3d(3%, 1.6%, 0);
+  }
+  75% {
+    transform: translate3d(1.2%, 2.6%, 0);
+  }
+  100% {
+    transform: translate3d(0%, 0%, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cosmicBg::after {
+  .cosmicBg,
+  .cosmicBg::after,
+  .cosmicBg::before {
     animation: none;
   }
 }

@@ -165,3 +165,32 @@ the `/xqrq` XQ·RQ landing page.
 - Files: `invitation/{RosterCarousel.tsx,page.tsx,page.module.css}`,
   `admin/studio-members/MembersTable.tsx`,
   `admin/studio-approvals/ApprovalsTable.tsx`.
+
+## Follow-up 5 — invitation XQ/Snowdrift redesign + /xqrq background motion
+
+Invitation page:
+- Section-order tweak: "What this is" → renamed **"How we do it"** and moved
+  above the pull-quote.
+- **Snowdrift** newsletter line promoted to a bold headline; the ad is now
+  its own dark, starry **card with a live snowfall animation** (reused the
+  /snowdrift `SnowParticles` via a new `contained` prop + ResizeObserver so
+  it sizes to a container instead of the viewport).
+- Bottom section is now the **white page background** with two equal-width
+  (1024, matching the co-founders/features grids) cards: the **XQ tile**
+  (inverted to a light card; the XQ map kept in a dark → then **inverted to
+  a white panel** with dark text labels, darker crosshairs, and a soft drop
+  shadow) and the **Snowdrift tile** (dark + snow). Fixed the XQ tile not
+  reaching full width (its `ScrollFadeUp` wrapper was shrink-wrapping under
+  `align-items:center` → added a full-width `.tileReveal`).
+- "Take the XQ" CTA switched to the **branded-yellow** button (`#fbad25`,
+  matching /xqrq + the xq-quiz pages).
+
+/xqrq cosmic background motion (all respect prefers-reduced-motion):
+- Nebula: faster **70s drift** (bigger movement) + a **55s hue shift**
+  (−18°→+34°) so the gradients visibly move and slowly change colour.
+- Starfield: **7s breathing** opacity fade (0.5 ↔ 0.95).
+- Whole scene: a slow **diagonal-arc sweep looping every 3 min** on the
+  `.cosmicBg` container (with a 4% bleed so it never reveals an edge).
+
+Files: `invitation/{page.tsx,page.module.css}`, `snowdrift/SnowParticles.tsx`,
+`xqrq/page.module.css`.

@@ -823,15 +823,15 @@
 /* Dark band — the heavy-visual assessment ad from what-is-this. */
 .ctaSection {
   padding: calc(var(--gs-n-96) * var(--gs-px)) var(--edge-pad);
-  background: var(--gs-tw-neutral-950, #0a0a0d);
 }
 
 .cta {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
+  gap: calc(var(--gs-n-40) * var(--gs-px));
   text-align: center;
+  width: 100%;
 }
 
 .ctaTitle {
@@ -841,7 +841,7 @@
   line-height: 1.25;
   font-weight: var(--gs-font-weight-semibold, 600);
   letter-spacing: -0.01em;
-  color: var(--gs-tw-white, #ffffff);
+  color: var(--gs-foreground);
 }
 
 .ctaActions {
@@ -977,8 +977,17 @@
 
 /* --- Snowdrift ---------------------------------------------------- */
 
-.snowdriftSection {
-  padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);
+/* Snowdrift newsletter ad card — dark + starry, same width as the XQ
+   tile; the live snowfall canvas fills it behind the content. */
+.snowdriftCard {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: calc(var(--gs-n-1024) * var(--gs-px));
+  margin-inline: auto;
+  padding: calc(var(--gs-n-72) * var(--gs-px)) calc(var(--gs-n-48) * var(--gs-px));
+  border-radius: calc(var(--gs-n-28) * var(--gs-px));
+  border: 1px solid rgb(255 255 255 / 8%);
   background-color: var(--gs-tw-neutral-950, #0a0a0d);
   background-image:
     radial-gradient(circle at 20% 30%, rgb(255 255 255 / 15%) 1px, transparent 1px),
@@ -989,7 +998,16 @@
     radial-gradient(circle at 10% 60%, rgb(255 255 255 / 10%) 1px, transparent 1px);
 }
 
+.snowdriftSnow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .snowdrift {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1005,10 +1023,12 @@
 
 .snowdriftBody {
   margin: 0;
-  max-width: calc(var(--gs-n-576) * var(--gs-px));
-  font-size: var(--gs-text-base-size);
-  line-height: 1.7;
-  color: rgb(255 255 255 / 75%);
+  max-width: calc(var(--gs-n-768) * var(--gs-px));
+  font-size: var(--gs-text-3xl-size);
+  line-height: 1.35;
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: -0.01em;
+  color: rgb(255 255 255 / 92%);
 }
 
 /* --- Responsive --------------------------------------------------- */
@@ -1071,6 +1091,24 @@
   width: 100%;
   max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
   margin-inline: auto;
+  /* Inverted map panel — white to match the tile. Text is darkened
+   * below; the colourful character marks stay as they are. */
+  padding: calc(var(--gs-n-20) * var(--gs-px));
+  border-radius: calc(var(--gs-n-20) * var(--gs-px));
+  border: 1px solid var(--gs-border);
+  background: var(--gs-background);
+  box-shadow: 0 12px 32px -14px rgba(15, 23, 42, 0.22);
+}
+
+/* Invert the map's text (archetype names, code chips, axis labels) to
+   dark, and darken the crosshair lines, so they read on the white
+   panel. The character marks (not <text>) keep their own colours. */
+.xqMapWrap :global(svg) text {
+  fill: var(--gs-foreground);
+}
+
+.xqMapWrap :global(svg) > g > line {
+  stroke: rgb(0 0 0 / 24%);
 }
 
 /* Short XQ summary under the CTA-section title (dark band). */
@@ -1079,7 +1117,7 @@
   max-width: calc(var(--gs-n-640) * var(--gs-px));
   font-size: var(--gs-text-lg-size);
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--gs-muted-foreground);
 }
 
 /* Same glassy tile as the /xqrq XQ column (rounded, cyan hairline,
@@ -1090,13 +1128,14 @@
   align-items: center;
   gap: calc(var(--gs-n-16) * var(--gs-px));
   width: 100%;
-  max-width: calc(var(--gs-n-820, 820) * var(--gs-px));
+  max-width: calc(var(--gs-n-1024) * var(--gs-px));
   margin-inline: auto;
   padding: calc(var(--gs-n-48) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
-  border: 1px solid rgba(199, 249, 255, 0.15);
+  border: 1px solid var(--gs-border);
   border-radius: calc(var(--gs-n-28) * var(--gs-px));
-  background: rgba(10, 14, 26, 0.45);
-  backdrop-filter: blur(4px);
+  /* Light card matching the rest of the page. The XQ map keeps its own
+   * dark panel (see .xqMapWrap) since its labels/marks are light. */
+  background: var(--gs-background);
   text-align: center;
 }
 
@@ -1111,4 +1150,32 @@
   display: block;
   height: clamp(52px, 6vw, 84px);
   width: auto;
+}
+
+/* Full-width reveal wrapper so the tile inside can reach its max-width
+   (align-items:center on .cta otherwise shrink-wraps the wrapper). */
+.tileReveal {
+  width: 100%;
+}
+
+/* Branded-yellow CTA (matches the /xqrq + xq-quiz buttons) — used for
+   "Take the XQ" on the light XQ tile. */
+.ctaYellow {
+  display: inline-block;
+  padding: calc(var(--gs-n-14) * var(--gs-px)) calc(var(--gs-n-32) * var(--gs-px));
+  background: #fbad25;
+  color: #1a1a1a;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-semibold);
+  font-size: var(--gs-text-md-size);
+  text-decoration: none;
+  border-radius: 8px;
+  transition:
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.ctaYellow:hover {
+  background: #ffbe4d;
+  transform: translateY(-2px);
 }

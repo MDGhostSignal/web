@@ -1,8 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { XQ3DWordmark } from "@/app/xq-quiz/Wordmarks3D";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { XQMapCard } from "@/app/xqrq/XQMapCard";
+import SnowParticles from "@/app/snowdrift/SnowParticles";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui";
@@ -150,24 +152,11 @@ export default function InvitationPage() {
         </Container>
       </Section>
 
-      {/* Pull-quote bridging the roster into the explainer below */}
-      <Section className={styles.quoteSection}>
-        <Container className={styles.quote}>
-          <div className={styles.morse} aria-hidden="true" />
-          <SplitLinesReveal duration={2}>
-            <p className={styles.quoteText}>
-              &ldquo;We help brands zoom in on the right people.&rdquo;
-            </p>
-          </SplitLinesReveal>
-        </Container>
-      </Section>
-
-      {/* What this is — the description panel, now below the roster
-          with a plain (white) background. */}
+      {/* How we do it — the description panel, now above the pull-quote */}
       <Section className={styles.aboutSection}>
         <Container className={styles.about}>
           <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>What this is</p>
+            <p className={styles.eyebrow}>How we do it</p>
           </ScrollFadeUp>
           <div className={styles.featuresGrid}>
             {FEATURES.map((feature, i) => (
@@ -180,6 +169,18 @@ export default function InvitationPage() {
               </ScrollFadeUp>
             ))}
           </div>
+        </Container>
+      </Section>
+
+      {/* Pull-quote — now below the explainer */}
+      <Section className={styles.quoteSection}>
+        <Container className={styles.quote}>
+          <div className={styles.morse} aria-hidden="true" />
+          <SplitLinesReveal duration={2}>
+            <p className={styles.quoteText}>
+              &ldquo;We help brands zoom in on the right people.&rdquo;
+            </p>
+          </SplitLinesReveal>
         </Container>
       </Section>
 
@@ -222,10 +223,10 @@ export default function InvitationPage() {
         </Container>
       </Section>
 
-      {/* CTA — the two assessments + an example spectrum read */}
+      {/* XQ + Snowdrift — two dark cards on the white page. */}
       <Section className={styles.ctaSection}>
         <Container className={styles.cta}>
-          <ScrollFadeUp index={0} duration={1.7}>
+          <ScrollFadeUp index={0} duration={1.7} className={styles.tileReveal}>
             {/* Same glassy tile as the XQ column on /xqrq. */}
             <div className={styles.xqTile}>
               <div className={styles.xqTileLogo}>
@@ -242,45 +243,47 @@ export default function InvitationPage() {
                 <XQMapCard />
               </div>
               <div className={styles.ctaActions}>
-                <Button href="/xq-quiz?start=1" variant="secondary">
+                <Link href="/xq-quiz?start=1" className={styles.ctaYellow}>
                   Take the XQ &mdash; it&rsquo;s free
-                </Button>
+                </Link>
               </div>
             </div>
           </ScrollFadeUp>
-        </Container>
-      </Section>
 
-      {/* Snowdrift — the starry ad unit from the email, full width */}
-      <Section className={styles.snowdriftSection}>
-        <Container className={styles.snowdrift}>
-          <ScrollFadeUp index={0} duration={1.6}>
-            <Image
-              src="/images/brand/snowdrift-logo-white.png"
-              alt="Snowdrift"
-              width={120}
-              height={120}
-              className={styles.snowdriftLogo}
-            />
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.6}>
-            <p className={styles.snowdriftBody}>
-              Snowdrift is a <BrandedGhostSignal variant="light" />{" "}
-              transmission &mdash; thoughts for a community of world
-              makers.
-            </p>
-          </ScrollFadeUp>
-          <ScrollFadeUp index={2} duration={1.6}>
-            <div className={styles.ctaActions}>
-              <Button
-                href="https://snowdriftghostsignal.substack.com/"
-                external
-                variant="secondary"
-              >
-                Subscribe to the Snowdrift Newsletter
-              </Button>
+          {/* Snowdrift newsletter ad — its own dark card with live
+              snowfall, sitting on the white page. */}
+          <div className={styles.snowdriftCard}>
+            <SnowParticles contained className={styles.snowdriftSnow} />
+            <div className={styles.snowdrift}>
+            <ScrollFadeUp index={1} duration={1.6}>
+              <Image
+                src="/images/brand/snowdrift-logo-white.png"
+                alt="Snowdrift"
+                width={120}
+                height={120}
+                className={styles.snowdriftLogo}
+              />
+            </ScrollFadeUp>
+            <ScrollFadeUp index={2} duration={1.6}>
+              <p className={styles.snowdriftBody}>
+                Snowdrift is a <BrandedGhostSignal variant="light" />{" "}
+                transmission &mdash; thoughts for a community of world
+                makers.
+              </p>
+            </ScrollFadeUp>
+            <ScrollFadeUp index={3} duration={1.6}>
+              <div className={styles.ctaActions}>
+                <Button
+                  href="https://snowdriftghostsignal.substack.com/"
+                  external
+                  variant="secondary"
+                >
+                  Subscribe to the Snowdrift Newsletter
+                </Button>
+              </div>
+            </ScrollFadeUp>
             </div>
-          </ScrollFadeUp>
+          </div>
         </Container>
       </Section>
 
