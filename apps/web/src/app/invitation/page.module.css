@@ -186,11 +186,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .featureCard {
+  .featureCard,
+  .founderCard {
     transition: none;
   }
 
-  .featureCard:hover {
+  .featureCard:hover,
+  .founderCard:hover {
     transform: none;
   }
 }
@@ -255,6 +257,17 @@
   border: 1px solid var(--gs-border);
   border-radius: calc(var(--gs-n-18) * var(--gs-px));
   height: 100%;
+  /* Same hover lift + drop shadow + violet border as the feature tiles. */
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.founderCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.28);
+  border-color: var(--gs-tw-violet-500);
 }
 
 .founderPhoto {

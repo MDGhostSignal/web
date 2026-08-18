@@ -212,7 +212,7 @@ const ROSTER: Client[] = [
   },
   {
     kind: "creator",
-    name: "Rabbit Room",
+    name: "The Rabbit Room",
     slug: "rabbit-room",
     logo: `${ASSETS}/rabbit-room-logo.png`,
     banner: `${ASSETS}/rabbit-room-bg.png`,

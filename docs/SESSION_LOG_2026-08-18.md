@@ -118,3 +118,16 @@ rotating too fast. Re-captured from the live `/invitation` carousel with a
 
 All lint/typecheck clean. `next dev`'s auto-regenerated `AGENTS.md` block left
 uncommitted (not our change).
+
+## Follow-up 2 — co-founder hover + The Rabbit Room logo/name
+
+- **Co-founder tiles** now get the same mouse-over as the three feature tiles:
+  `.founderCard` gained the −4px lift + soft drop shadow + violet border on a
+  220ms transition (added to the `prefers-reduced-motion` off-switch too).
+- **The Rabbit Room** roster card:
+  - Name "Rabbit Room" → **"The Rabbit Room"** in `RosterCarousel.tsx`.
+  - Replaced the pixelated **28×28** logo with the official **rabbit-and-pipe
+    roundel** at **192×192** (pulled from rabbitroom.com's favicon; transparent
+    corners, the pipe reads clearly). `rabbit-room-logo.png` 386B → ~14KB.
+- ⚠️ Note: the email's 3-card roster GIF is a baked capture, so it still shows
+  the OLD Rabbit Room logo + name — regenerate it when the email needs to match.
