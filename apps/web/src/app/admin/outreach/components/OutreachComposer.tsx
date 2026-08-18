@@ -119,7 +119,7 @@ export function OutreachComposer({
     <Modal
       open
       onClose={close}
-      size={previewHtml && phase.kind !== "sent" ? "lg" : "sm"}
+      size={previewHtml && phase.kind !== "sent" ? "xl" : "sm"}
       dismissible={phase.kind !== "sending"}
       title={
         phase.kind === "sent"

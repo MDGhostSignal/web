@@ -139,8 +139,13 @@
 /* Neutral canvas — the email HTML brings its own page background
  * (light #fafbff or dark #0f1219 depending on the toggled theme). */
 .previewFrame {
-  width: 100%;
-  height: 62vh;
+  /* Render the email at its true width (the card maxes at 584px) so the
+   * copy is full-size and readable, not pinched by the modal. Centered,
+   * and falls back to the modal width on a narrow screen. */
+  width: 600px;
+  max-width: 100%;
+  margin-inline: auto;
+  height: 74vh;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-md);
   background: transparent;
