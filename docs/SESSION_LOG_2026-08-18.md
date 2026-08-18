@@ -84,3 +84,37 @@ rotating too fast. Re-captured from the live `/invitation` carousel with a
 - Optional: build the verified claim-flow + `member_emails` if this recurs.
 - Still open from 08‑17: Sunshine duplicate rows **(resolved today)**;
   `/for-advertisers` reorder; the ART19 migration video (brief written, in Grok).
+
+## Follow-up — invitation hero background video + polish
+
+- **Cold-email preview at true size** (`admin/outreach`): the preview modal was
+  `lg` (640px) and pinched the 584px email. Bumped it to `xl` (880px) and the
+  iframe renders the email at its native width (centred, taller), so it's
+  full-size and readable for Mike instead of scaled down.
+- **3-card roster GIF**: the 5-card fan made each card too small to read.
+  Re-captured the `/invitation` carousel as a **3-up** (bigger cards: centre +
+  one each side; `--card-w`/`--shift-1` overridden, outer pair hidden), cycling
+  the full roster slowly (~1.5s/card, 6fps, ~2.0 MB). Names/blurbs/XQ read now.
+- **Hero background video** on `/invitation`:
+  - Removed the spinning glyph + GHOSTSignal wordmark, briefly went left-third,
+    then reverted the headline + subhead to **centred** (per Martin).
+  - Added a full-bleed looping **cloud video** behind the hero via a new
+    reduced-motion-aware client cmp `HeroBackgroundVideo.tsx` (muted · autoplay ·
+    loop · playsInline; `prefers-reduced-motion` → poster still, no video fetch).
+    Section is `position:relative; isolation:isolate; overflow:hidden;
+    min-height:min(86vh,880px)`, content centred over it; a soft **white radial
+    scrim** keeps the dark headline crisp on the bright clouds.
+  - **Optimized the source** (`assets/grok/video/cl-invitation-locked.mp4`,
+    4.9 MB) → `public/videos/`: **WebM/VP9 200 KB** + **MP4/H.264 1.3 MB**
+    fallback + **32 KB poster** (ffmpeg, `-an`, faststart).
+  - **Brought back the spinning mark** on top of the signal bar — but *just* the
+    logo, no tile/shadow. Its white ground defeated `mix-blend-mode:multiply`
+    (white × white scrim = white), so keyed the white out into a transparent
+    **APNG** (`public/images/brand/logo-spin-transparent.png`, 176 KB, full
+    alpha) via `colorkey=0xffffff:0.12`.
+- **Roster popup banner taller**: `.profileBanner` 224 → **300px** and
+  `.profileCard` padding-top 160 → 236 (same +76, so the disc keeps its ~64px
+  overlap) — portrait banners (The Pivot, Holly Mackle) no longer crop faces.
+
+All lint/typecheck clean. `next dev`'s auto-regenerated `AGENTS.md` block left
+uncommitted (not our change).

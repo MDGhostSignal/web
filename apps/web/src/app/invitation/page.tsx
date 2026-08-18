@@ -13,6 +13,7 @@ import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { navLinks } from "@/lib/nav";
 
+import { HeroBackgroundVideo } from "./HeroBackgroundVideo";
 import { RosterCarousel } from "./RosterCarousel";
 import styles from "./page.module.css";
 
@@ -97,12 +98,14 @@ export default function InvitationPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
 
-      {/* Entrance — spinning glyph, wordmark, two-line invitation */}
+      {/* Entrance — centered two-line invitation over a looping cloud video */}
       <Section className={styles.heroSection}>
+        <HeroBackgroundVideo />
+        <div className={styles.heroScrim} aria-hidden="true" />
         <Container className={styles.hero}>
           <ScrollFadeUp index={0} duration={1.4}>
             <Image
-              src="/images/email/logo-spin.gif"
+              src="/images/brand/logo-spin-transparent.png"
               alt=""
               width={120}
               height={120}
@@ -110,11 +113,6 @@ export default function InvitationPage() {
               unoptimized
               priority
             />
-          </ScrollFadeUp>
-          <ScrollFadeUp index={1} duration={1.4}>
-            <p className={styles.heroWordmark}>
-              <BrandedGhostSignal />
-            </p>
           </ScrollFadeUp>
           <div className={styles.morse} aria-hidden="true" />
           <h1 className={styles.heroHeadline}>
@@ -127,7 +125,7 @@ export default function InvitationPage() {
               </span>
             </SplitLinesReveal>
           </h1>
-          <ScrollFadeUp index={2} duration={1.8}>
+          <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroLede}>
               GHOSTSignal is the values-based podcast advertising network.
               We create partnerships that feel good, because they are

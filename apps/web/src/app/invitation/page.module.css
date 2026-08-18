@@ -41,11 +41,50 @@
 /* --- Hero -------------------------------------------------------- */
 
 .heroSection {
-  padding: calc(var(--gs-n-160) * var(--gs-px)) var(--edge-pad)
-    calc(var(--gs-n-80) * var(--gs-px));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: min(86vh, 880px);
+  padding: calc(var(--gs-n-96) * var(--gs-px)) var(--edge-pad);
+}
+
+/* Full-bleed looping cloud video behind the hero. The reduced-motion
+ * poster <img> shares these positioning + object-fit rules. */
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.heroVideoMedia {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Soft white glow behind the centred text so the dark headline stays
+ * crisp over the bright clouds, fading out so the cloud edges stay
+ * vivid. */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 62% 58% at 50% 46%,
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(255, 255, 255, 0.42) 46%,
+    rgba(255, 255, 255, 0.06) 78%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 .hero {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,15 +92,12 @@
   text-align: center;
 }
 
-/* The spin GIF has an opaque white ground (generated for the email's
- * white card) — framed as a rounded chip so it reads as intentional
- * on the striped page background. */
+/* Transparent APNG of the spinning mark (white ground keyed out of the
+ * email GIF) — just the logo over the cloud video, no tile, no shadow. */
 .heroGlyph {
   display: block;
   width: calc(var(--gs-n-112) * var(--gs-px));
   height: calc(var(--gs-n-112) * var(--gs-px));
-  border-radius: calc(var(--gs-n-24) * var(--gs-px));
-  box-shadow: 0 20px 48px -24px rgba(15, 23, 42, 0.3);
 }
 
 .heroWordmark {
@@ -627,7 +663,7 @@
   min-height: min(calc(var(--gs-n-768, 768) * var(--gs-px)), 84vh);
   max-height: 92vh;
   overflow-y: auto;
-  padding: calc(var(--gs-n-160, 160) * var(--gs-px))
+  padding: calc(var(--gs-n-236, 236) * var(--gs-px))
     calc(var(--gs-n-48) * var(--gs-px)) calc(var(--gs-n-48) * var(--gs-px));
   background: var(--gs-background);
   border: 1px solid var(--gs-border);
@@ -636,11 +672,13 @@
   animation: profile-card-in 420ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
 }
 
-/* Popup banner — same client-chosen image, taller crop. */
+/* Popup banner — same client-chosen image, taller crop so portrait
+ * banners show the full face instead of cropping it. Content padding-top
+ * grows with this so the disc keeps its ~64px overlap on the banner. */
 .profileBanner {
   position: absolute;
   inset: 0 0 auto 0;
-  height: calc(var(--gs-n-224, 224) * var(--gs-px));
+  height: calc(var(--gs-n-300, 300) * var(--gs-px));
   border-radius: calc(var(--gs-n-20) * var(--gs-px))
     calc(var(--gs-n-20) * var(--gs-px)) 0 0;
   background-size: cover;
