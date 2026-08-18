@@ -684,7 +684,10 @@ export async function sendLeadNotificationEmail(payload: SubmissionPayload) {
   return { attempted: true, sent: true };
 }
 
-export async function sendNotificationEmail(payload: SubmissionPayload) {
+export async function sendNotificationEmail(
+  payload: SubmissionPayload,
+  link?: { status: string; candidateCount: number },
+) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const resendFrom = process.env.RESEND_FROM;
 
@@ -719,7 +722,17 @@ export async function sendNotificationEmail(payload: SubmissionPayload) {
     `Referrer: ${payload.meta?.referrer ?? "-"}`,
   ].join("\n");
 
+  const linkWarn =
+    link && (link.status === "no_match" || link.status === "ambiguous")
+      ? `<div style="background:#fff4e5;border:1px solid #f0b849;border-radius:8px;padding:12px 14px;margin:0 0 16px;font-size:13px;color:#8a5a00;">⚠️ <strong>Not auto-linked to a member.</strong> ${
+          link.status === "ambiguous"
+            ? `${link.candidateCount} members share this email`
+            : "no member matches this email"
+        } — link it by hand in the admin, or this result won't show in their Studio.</div>`
+      : "";
+
   const html = `
+    ${linkWarn}
     <h2>New <span style="white-space: nowrap;"><span style="font-weight: 700;">GHOST</span><span style="font-weight: 300;">Signal</span></span> RQ submission</h2>
     <p><strong>Name:</strong> ${escapeHtml(fullName || "Unknown")}</p>
     <p><strong>Type:</strong> ${escapeHtml(basics.type ?? "Unknown")}</p>

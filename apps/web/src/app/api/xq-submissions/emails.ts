@@ -329,6 +329,7 @@ export async function sendLeadNotificationEmail(
  * ===================================================================== */
 export async function sendNotificationEmail(
   payload: XQSubmissionPayload,
+  link?: { status: string; candidateCount: number },
 ): Promise<SendResult> {
   const resendApiKey = process.env.RESEND_API_KEY;
   const resendFrom = process.env.RESEND_FROM;
@@ -347,7 +348,19 @@ export async function sendNotificationEmail(
 
   const subject = `XQ complete — ${fullName} · ${archetypeName}`;
 
+  // When the result couldn't be auto-linked to a member, warn loudly so
+  // a human links it — otherwise it silently never reaches their Studio.
+  const linkWarn =
+    link && (link.status === "no_match" || link.status === "ambiguous")
+      ? `<div style="background:#fff4e5;border:1px solid #f0b849;border-radius:8px;padding:12px 14px;margin:0 0 16px;font-size:13px;color:#8a5a00;">⚠️ <strong>Not auto-linked to a member.</strong> ${
+          link.status === "ambiguous"
+            ? `${link.candidateCount} members share this email`
+            : "no member matches this email"
+        } — link it by hand in the admin, or this result won't show in their Studio.</div>`
+      : "";
+
   const html = `<!DOCTYPE html><html><body style="font-family: -apple-system, sans-serif; color: #1a1a1a;">
+    ${linkWarn}
     <h2 style="margin: 0 0 8px;">XQ submission complete</h2>
     <p style="color: #666; margin: 0 0 16px;"><strong>${escapeHtml(fullName)}</strong> · ${escapeHtml(basics.email ?? "")}</p>
     <table cellspacing="0" cellpadding="4" style="font-size: 14px; margin-bottom: 16px;">

@@ -21,15 +21,29 @@ const EMAIL_TO = process.env.XQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
  * is still complete + the dossier email still sends; the link can be
  * fixed manually later via the admin.
  */
+type LinkOutcome = {
+  status: "linked" | "no_match" | "ambiguous" | "skipped";
+  candidateCount: number;
+};
+
 async function linkSubmissionToMember(
   submissionId: string,
   email: string | null | undefined,
   xqCode: string | null | undefined,
-): Promise<void> {
-  if (!submissionId || !email || !email.includes("@")) return;
+): Promise<LinkOutcome> {
+  if (!submissionId || !email || !email.includes("@")) {
+    return { status: "skipped", candidateCount: 0 };
+  }
   try {
     const matches = await findMembersByEmail(email);
-    if (matches.length !== 1) return;
+    // Only an exact single match is safe to auto-link. 0 or >1 are NOT
+    // silently dropped anymore — the caller surfaces them (console + a
+    // banner on the admin notification email) so the result gets linked
+    // by hand instead of stranding on no member / the wrong member.
+    if (matches.length === 0) return { status: "no_match", candidateCount: 0 };
+    if (matches.length > 1) {
+      return { status: "ambiguous", candidateCount: matches.length };
+    }
     const memberId = matches[0].id;
     // Backfill BOTH the submission link AND the denormalized
     // xq_archetype column. The latter powers the world avatar, the
@@ -42,8 +56,10 @@ async function linkSubmissionToMember(
       body: JSON.stringify(patch),
       prefer: "return=minimal",
     });
+    return { status: "linked", candidateCount: 1 };
   } catch (err) {
     console.warn("XQ → member link skipped:", err);
+    return { status: "skipped", candidateCount: 0 };
   }
 }
 
@@ -260,16 +276,25 @@ export async function POST(request: Request) {
   // marketplace pool / contacts views can surface the dossier next to
   // the existing member record. Best-effort — quiz user gets their
   // email no matter what.
+  let linkOutcome: LinkOutcome = { status: "skipped", candidateCount: 0 };
   if (typeof insertedId === "string") {
-    await linkSubmissionToMember(
+    linkOutcome = await linkSubmissionToMember(
       insertedId,
       payload.basics?.email,
       result.code ?? null,
     );
+    if (linkOutcome.status === "no_match" || linkOutcome.status === "ambiguous") {
+      console.warn(
+        `[xq-link] submission ${insertedId} not auto-linked ` +
+          `(${linkOutcome.status}, ${linkOutcome.candidateCount} candidate(s)) ` +
+          `for email ${payload.basics?.email ?? "—"}`,
+      );
+    }
   }
 
-  // Complete: admin notification + user summary emails.
-  const emailResult = await sendNotificationEmail(payload);
+  // Complete: admin notification + user summary emails. The notification
+  // carries a warning banner when the result couldn't be auto-linked.
+  const emailResult = await sendNotificationEmail(payload, linkOutcome);
   const userEmailResult = await sendUserSummaryEmail(payload);
 
   return json(

@@ -181,8 +181,19 @@ export async function PATCH(
 
   // Completion-stage side-effects. Member link first — this PATCH is
   // the moment the submission gains its scored rq_code.
-  await linkRqSubmissionToMember(id, payload.basics?.email, payload.result?.rq ?? null);
-  const emailResult = await sendNotificationEmail(payload);
+  const linkOutcome = await linkRqSubmissionToMember(
+    id,
+    payload.basics?.email,
+    payload.result?.rq ?? null,
+  );
+  if (linkOutcome.status === "no_match" || linkOutcome.status === "ambiguous") {
+    console.warn(
+      `[rq-link] submission ${id} not auto-linked ` +
+        `(${linkOutcome.status}, ${linkOutcome.candidateCount} candidate(s)) ` +
+        `for email ${payload.basics?.email ?? "—"}`,
+    );
+  }
+  const emailResult = await sendNotificationEmail(payload, linkOutcome);
   const userEmailResult = await sendUserSummaryEmail(payload);
   const sheetsResult = await postToGoogleSheetsWebhook(payload);
 

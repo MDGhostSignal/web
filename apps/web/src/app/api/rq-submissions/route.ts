@@ -6,7 +6,7 @@ import {
   sendNotificationEmail,
   sendUserSummaryEmail,
 } from "./emails";
-import { linkRqSubmissionToMember } from "./link-member";
+import { linkRqSubmissionToMember, type LinkOutcome } from "./link-member";
 
 const TABLE_NAME = process.env.RQ_SUBMISSIONS_TABLE ?? "rq_submissions";
 const EMAIL_TO = process.env.RQ_NOTIFY_TO ?? "hello@ghostsignal.cloud";
@@ -256,16 +256,25 @@ export async function POST(request: Request) {
 
   // Complete: link to Member by email (if exactly one match) so Studio
   // + admin surfaces show the result instead of prompting a retake.
+  let linkOutcome: LinkOutcome = { status: "skipped", candidateCount: 0 };
   if (typeof insertedId === "string") {
-    await linkRqSubmissionToMember(
+    linkOutcome = await linkRqSubmissionToMember(
       insertedId,
       payload.basics?.email,
       payload.result?.rq ?? null,
     );
+    if (linkOutcome.status === "no_match" || linkOutcome.status === "ambiguous") {
+      console.warn(
+        `[rq-link] submission ${insertedId} not auto-linked ` +
+          `(${linkOutcome.status}, ${linkOutcome.candidateCount} candidate(s)) ` +
+          `for email ${payload.basics?.email ?? "—"}`,
+      );
+    }
   }
 
-  // Send email notification to admin
-  const emailResult = await sendNotificationEmail(payload);
+  // Send email notification to admin (with a warning banner when the
+  // result couldn't be auto-linked to a member).
+  const emailResult = await sendNotificationEmail(payload, linkOutcome);
 
   // Send summary email to user
   const userEmailResult = await sendUserSummaryEmail(payload);
