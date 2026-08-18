@@ -201,7 +201,7 @@ ${founders}
 
 Snowdrift is a GHOSTSignal transmission — thoughts for a community of world makers. Subscribe: ${SNOWDRIFT_URL}
 
-Want to talk? Just hit reply — it goes straight to Mike, a real person on our team.
+Let's Talk. Just hit reply. It goes straight to Mike, our co-founder.
 
 - The GHOSTSignal team
 We reached out because we think your brand fits podcasts on our network. Not relevant? You can simply ignore this email.`;
@@ -400,7 +400,7 @@ ${FOUNDERS.map(
             <td style="padding: 28px 40px 30px;">
               <div style="border-top: 1px solid ${t.cardBorder};"></div>
               <p style="margin: 20px 0 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.7;">
-                <strong style="color: ${t.textPrimary};">Want to talk?</strong> Just hit reply &mdash; it goes straight to Mike, a real person on our team.
+                <strong style="color: ${t.textPrimary};">Let&rsquo;s Talk.</strong> Just hit reply. It goes straight to Mike, our co-founder.
               </p>
               <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.7;">
                 &mdash; The ${wordmark} team<br>

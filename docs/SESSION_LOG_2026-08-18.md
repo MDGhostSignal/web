@@ -152,8 +152,8 @@ uncommitted (not our change).
     (fallback drops the name), replacing "…your brand on the right podcasts".
   - **Inbox preview = the personal note**: added a hidden preheader so the
     snippet is Mike's message, not the wordmark/headline.
-  - **Reply cue** (Jack): footer now says "Want to talk? Just hit reply — it
-    goes straight to Mike, a real person on our team" (HTML + text).
+  - **Reply cue** (Jack): footer now says "Let's Talk. Just hit reply. It goes
+    straight to Mike, our co-founder." (HTML + text; Martin's final wording).
   - **Trimmed** the roster caption to "Brands in blue, creators in ember."
     (dropped "a card for every client on the network" — Jack).
   - ⚠️ Verify a test send: sending *from* mike@ works because the domain is
