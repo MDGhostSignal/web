@@ -145,10 +145,16 @@ export async function POST(req: NextRequest) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: resendFrom,
+      // Send from a human at the verified domain (not the noreply address)
+      // so a cold reachout reads personal AND replies land in Mike's inbox
+      // — hitting reply just works. Overridable via OUTREACH_FROM.
+      from:
+        process.env.OUTREACH_FROM ||
+        "Mike from GHOSTSignal <mike@ghostsignal.cloud>",
       to: [email],
-      // Replies go to a monitored human inbox, not the noreply From.
-      reply_to: process.env.OUTREACH_REPLY_TO || "Mike Sense <mike@ghostsignal.cloud>",
+      // Belt-and-suspenders: reply_to matches the From so replies reach Mike
+      // even in clients that key off reply_to.
+      reply_to: process.env.OUTREACH_REPLY_TO || "Mike from GHOSTSignal <mike@ghostsignal.cloud>",
       subject: coldOutreachSubject(name),
       html: coldOutreachEmailHtml({ name, message: finalMessage, theme }),
       text: coldOutreachEmailText({ name, message: finalMessage }),

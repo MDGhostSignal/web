@@ -131,3 +131,30 @@ uncommitted (not our change).
     corners, the pipe reads clearly). `rabbit-room-logo.png` 386B → ~14KB.
 - ⚠️ Note: the email's 3-card roster GIF is a baked capture, so it still shows
   the OLD Rabbit Room logo + name — regenerate it when the email needs to match.
+  **(Resolved:** regenerated the 3-up GIF so the email now shows "The Rabbit
+  Room" + the new roundel.)
+
+## Follow-up 3 — hero video swap + cold-email feedback (Jack + Martin)
+
+- **New hero background video** on `/invitation`: swapped in a new Grok cloud
+  clip (`assets/grok/video/grok-video-d4da...mp4`). Trimmed the first **1s**
+  (15→14s), cropped 1088→1080, stripped audio, and ran the same optimization →
+  same `public/videos/invitation-hero.*` filenames (no code change): **WebM
+  488KB + MP4 1.7MB + 48KB poster** (from 12MB). Same bright-cloud look, so the
+  dark headline + scrim treatment holds.
+- **Cold email — Jack's + Martin's feedback** (`lib/cold-outreach-email.ts` +
+  `api/admin/outreach/route.ts`):
+  - **Sends from a human**: `from` is now `Mike from GHOSTSignal
+    <mike@ghostsignal.cloud>` (was the `noreply@` RESEND_FROM) — reads personal
+    AND replies just work (same monitored inbox). Env-overridable via
+    `OUTREACH_FROM`; reply_to aligned to match.
+  - **Subject** (Martin): `"{name}, you have been invited to join GHOSTSignal"`
+    (fallback drops the name), replacing "…your brand on the right podcasts".
+  - **Inbox preview = the personal note**: added a hidden preheader so the
+    snippet is Mike's message, not the wordmark/headline.
+  - **Reply cue** (Jack): footer now says "Want to talk? Just hit reply — it
+    goes straight to Mike, a real person on our team" (HTML + text).
+  - **Trimmed** the roster caption to "Brands in blue, creators in ember."
+    (dropped "a card for every client on the network" — Jack).
+  - ⚠️ Verify a test send: sending *from* mike@ works because the domain is
+    Resend-verified, but confirm inbox placement before a real batch.

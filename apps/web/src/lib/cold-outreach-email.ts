@@ -135,9 +135,11 @@ function greeting(name: string): string {
 }
 
 export function coldOutreachSubject(name: string): string {
-  // Plain and descriptive on purpose — "not overly eager" (Mike).
-  const base = "your brand on the right podcasts";
-  return name ? `${name} — ${base}` : `Your brand on the right podcasts`;
+  // Personal invitation framing (Martin, 2026-08-18). The inbox preview
+  // is the personal note itself — see the preheader in coldOutreachEmailHtml.
+  return name
+    ? `${name}, you have been invited to join GHOSTSignal`
+    : `You have been invited to join GHOSTSignal`;
 }
 
 export function escapeHtml(s: string): string {
@@ -199,6 +201,8 @@ ${founders}
 
 Snowdrift is a GHOSTSignal transmission — thoughts for a community of world makers. Subscribe: ${SNOWDRIFT_URL}
 
+Want to talk? Just hit reply — it goes straight to Mike, a real person on our team.
+
 - The GHOSTSignal team
 We reached out because we think your brand fits podcasts on our network. Not relevant? You can simply ignore this email.`;
 }
@@ -222,7 +226,12 @@ export function coldOutreachEmailHtml({
 }): string {
   const t = THEMES[theme];
   const hello = name ? `Hello ${escapeHtml(name)},` : "Hello,";
-  const body = textToHtml(message.trim() || defaultOutreachMessage());
+  const rawMessage = message.trim() || defaultOutreachMessage();
+  const body = textToHtml(rawMessage);
+  // Inbox preview snippet = the personal note itself (rendered by the
+  // hidden preheader below), so the email reads personal before it's even
+  // opened — not the wordmark + headline the client would otherwise grab.
+  const preview = escapeHtml(rawMessage.replace(/\s+/g, " ").slice(0, 140));
   const wordmark = `<span style="white-space: nowrap;"><span style="font-weight: 800;">GHOST</span><span style="font-weight: 300;">Signal</span></span>`;
   const morse = (width: string) =>
     `<div style="height: 3px; width: ${width}; border-radius: 2px; background-color: ${t.accent}; background-image: repeating-linear-gradient(90deg, ${t.accent} 0 5px, ${t.card} 5px 13px, ${t.accent} 13px 33px, ${t.card} 33px 41px, ${t.accent} 41px 46px, ${t.card} 46px 58px);"></div>`;
@@ -230,6 +239,10 @@ export function coldOutreachEmailHtml({
   return `<!DOCTYPE html>
 <html>
 <body style="margin: 0; padding: 0; background-color: ${t.pageBg}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <!-- Hidden preheader: makes the inbox preview snippet the personal note.
+       Trailing zero-width joiners "eat" the rest of the preview so no
+       boilerplate leaks in after it. -->
+  <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: ${t.pageBg}; opacity: 0;">${preview}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.pageBg}" style="background-color: ${t.pageBg};">
     <tr>
       <td align="center" style="padding: 44px 16px;">
@@ -290,7 +303,7 @@ export function coldOutreachEmailHtml({
                    mirrors the invitation carousel's five-up view. -->
               <img src="${assetOrigin}${t.rosterGif}" alt="Brand and creator cards from the GHOSTSignal client roster" width="520" style="display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto;">
               <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.6;">
-                Brands in blue, creators in ember &mdash; a card for every client on the network.
+                Brands in blue, creators in ember.
               </p>
             </td>
           </tr>
@@ -386,7 +399,10 @@ ${FOUNDERS.map(
           <tr>
             <td style="padding: 28px 40px 30px;">
               <div style="border-top: 1px solid ${t.cardBorder};"></div>
-              <p style="margin: 20px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.7;">
+              <p style="margin: 20px 0 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.7;">
+                <strong style="color: ${t.textPrimary};">Want to talk?</strong> Just hit reply &mdash; it goes straight to Mike, a real person on our team.
+              </p>
+              <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.7;">
                 &mdash; The ${wordmark} team<br>
                 We reached out because we think your brand fits podcasts on our network. Not relevant? You can simply ignore this email.
               </p>
