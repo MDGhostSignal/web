@@ -24,9 +24,12 @@ import { supabaseRest } from "@/lib/supabase-admin";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/** Don't touch a row until its send time has passed by this margin, so
- *  we never race Resend at the exact delivery minute. */
-const GRACE_MS = 10 * 60 * 1000;
+/** Small settle margin past the send time before we check Resend. We
+ *  don't need much: the status only flips when Resend *confirms* a
+ *  terminal delivery state (mapEvent), so checking early just no-ops
+ *  until Resend has actually sent it. Kept short so a delivered send
+ *  stops reading "sending…" within a minute rather than ten. */
+const GRACE_MS = 60 * 1000;
 /** Cap per run so a backlog can't blow the function timeout. */
 const BATCH_LIMIT = 100;
 

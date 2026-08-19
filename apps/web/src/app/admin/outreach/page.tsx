@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Badge,
@@ -132,6 +132,32 @@ export default function OutreachPage() {
     () => (state.kind === "ready" ? state.rows : []),
     [state],
   );
+
+  // Self-heal: if a scheduled send's time has already passed but the row
+  // still reads "scheduled" (Resend delivered it, our row hasn't been
+  // reconciled yet), true it up once on load rather than leaving it
+  // looking stuck as "sending…". The cron does this on prod; this covers
+  // the moment the tab is open (and local dev, where no cron runs).
+  const autoReconciled = useRef(false);
+  useEffect(() => {
+    if (autoReconciled.current) return;
+    const pastDue = rows.some(
+      (r) =>
+        r.status === "scheduled" &&
+        r.scheduled_at &&
+        new Date(r.scheduled_at).getTime() <= Date.now(),
+    );
+    if (!pastDue) return;
+    autoReconciled.current = true;
+    (async () => {
+      try {
+        await fetch("/api/admin/outreach/reconcile", { method: "POST" });
+        setRefresh((n) => n + 1);
+      } catch {
+        /* the cron / manual "Refresh statuses" will catch it */
+      }
+    })();
+  }, [rows]);
 
   // Epoch-ms of every still-scheduled send — fed to the composer +
   // reschedule modal so new picks auto-space around them.

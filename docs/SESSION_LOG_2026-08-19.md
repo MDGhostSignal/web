@@ -155,6 +155,24 @@ native controls — also fixes the scheduler's native date/time pickers), and
 the option bg switched to the opaque `--admin-bg-elevated`. `tokens.css` loads
 only on admin routes, so the public site is untouched.
 
+### Email wording — role-neutral (Martin)
+`cold-outreach-email.ts` footer line "We reached out because we think **your
+brand fits podcasts** on our network" → "…we think **you'd be a great fit for
+our network**" (both HTML + plain-text variants; HTML uses `&rsquo;`, text a
+literal apostrophe). We don't always know if a recipient is a brand or a
+creator, so the copy is now ambiguous by design.
+
+### Fix — scheduled sends looked stuck on "sending…"
+Martin: a just-delivered scheduled send still showed status `scheduled` / a
+`sending…` countdown. Not stuck — the row awaits **reconciliation** (Resend
+delivered; our row flips to `sent` only when reconcile confirms). The lag was
+baked in: reconcile skipped rows <10 min past due, and no cron runs locally.
+Fixes: (1) reconcile `GRACE_MS` 10 min → **60s** (safe — status only flips on a
+confirmed terminal Resend event); (2) **auto-reconcile on page load** when a
+past-due scheduled row exists (`page.tsx`, once per mount, guarded ref) so it
+self-heals even without the cron. Verified: the stuck HEYMATVOND row flipped
+to `sent` (sent_at 12:13:39). tsc/eslint clean.
+
 ### Advice given (no code): cloud video in the email hero
 Recommended **against** a `<video>` background (Gmail + all Outlook strip it;
 only Apple Mail renders it) and against a heavy cloud GIF (2–5 MB vs the

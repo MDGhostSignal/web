@@ -204,7 +204,7 @@ Snowdrift is a GHOSTSignal transmission — thoughts for a community of world ma
 Let's Talk. Just hit reply. It goes straight to Mike, our co-founder.
 
 - The GHOSTSignal team
-We reached out because we think your brand fits podcasts on our network. Not relevant? You can simply ignore this email.`;
+We reached out because we think you'd be a great fit for our network. Not relevant? You can simply ignore this email.`;
 }
 
 export function coldOutreachEmailHtml({
@@ -404,7 +404,7 @@ ${FOUNDERS.map(
               </p>
               <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.7;">
                 &mdash; The ${wordmark} team<br>
-                We reached out because we think your brand fits podcasts on our network. Not relevant? You can simply ignore this email.
+                We reached out because we think you&rsquo;d be a great fit for our network. Not relevant? You can simply ignore this email.
               </p>
             </td>
           </tr>
