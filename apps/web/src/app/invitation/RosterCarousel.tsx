@@ -525,7 +525,21 @@ export function RosterCarousel() {
               aria-label="Close profile"
               autoFocus
             >
-              &times;
+              <svg
+                className={styles.profileCloseIcon}
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M7 7l10 10M17 7L7 17"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                />
+              </svg>
             </button>
             <span
               className={styles.profileBanner}
