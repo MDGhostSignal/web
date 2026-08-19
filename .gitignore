@@ -73,3 +73,10 @@ docs/nimble_*
 # local. Restore via apps/web/scripts/restore-from-snapshot.mjs.
 backups/
 
+
+# Personal local-only tools served off the dev server (never deployed).
+# The social-posting checklist is Martin's private tick-list; it lives
+# in public/ so `next dev` serves it at /social-checklist.html, but it
+# must not ship to prod.
+apps/web/public/social-checklist.html
+apps/web/public/social-checklist.js
