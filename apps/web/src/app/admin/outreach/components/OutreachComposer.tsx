@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Button, Modal } from "@/components/admin";
 import { defaultOutreachMessage } from "@/lib/cold-outreach-email";
+import { formatInZone, localTimeZone } from "@/lib/timezone";
 
+import { ScheduleFields, type ScheduleResolution } from "./ScheduleFields";
 import styles from "../outreach.module.css";
 
 type Phase =
   | { kind: "form" }
   | { kind: "sending" }
-  | { kind: "sent"; email: string };
+  | { kind: "sent"; email: string; scheduledAt: Date | null; tz: string | null };
+
+type Timing = "now" | "schedule";
 
 /**
  * Cold-email composer modal — name, email, personal message. "Preview
@@ -23,13 +27,19 @@ type Phase =
 export function OutreachComposer({
   onClose,
   onSent,
+  scheduledPeers = [],
 }: {
   onClose: () => void;
   onSent: () => void;
+  /** Epoch-ms of already-scheduled sends, for collision-aware stagger. */
+  scheduledPeers?: number[];
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "form" });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [timing, setTiming] = useState<Timing>("now");
+  const [schedule, setSchedule] = useState<ScheduleResolution>(null);
+  const onResolve = useCallback((r: ScheduleResolution) => setSchedule(r), []);
   // Prefilled with the standard template text (same pattern as the
   // studio invite form) — edit it per-send to make it personal.
   const [message, setMessage] = useState(defaultOutreachMessage());
@@ -48,6 +58,12 @@ export function OutreachComposer({
   }
 
   async function send(force: boolean) {
+    // Guard: scheduling chosen but the picker hasn't resolved a valid
+    // future instant yet.
+    if (timing === "schedule" && !schedule) {
+      setError("Pick a valid delivery time before scheduling.");
+      return;
+    }
     setError(null);
     setPhase({ kind: "sending" });
     try {
@@ -60,6 +76,12 @@ export function OutreachComposer({
           message,
           theme,
           force: force || undefined,
+          scheduledAt:
+            timing === "schedule" && schedule
+              ? schedule.utc.toISOString()
+              : undefined,
+          recipientTz:
+            timing === "schedule" && schedule ? schedule.tz : undefined,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -72,7 +94,13 @@ export function OutreachComposer({
       if (!res.ok) {
         throw new Error(body.error ?? `Send failed (${res.status}).`);
       }
-      setPhase({ kind: "sent", email });
+      setPhase({
+        kind: "sent",
+        email,
+        scheduledAt:
+          timing === "schedule" && schedule ? schedule.utc : null,
+        tz: timing === "schedule" && schedule ? schedule.tz : null,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setPhase({ kind: "form" });
@@ -115,15 +143,25 @@ export function OutreachComposer({
       })
     : null;
 
+  // Sizing per state: the compose form goes wide (two-column, no
+  // scrolling); the email preview keeps the centred-iframe width; the
+  // sent confirmation stays compact.
+  const isSent = phase.kind === "sent";
+  const isPreview = Boolean(previewHtml) && !isSent;
+  const isForm = !isSent && !isPreview;
+
   return (
     <Modal
       open
       onClose={close}
-      size={previewHtml && phase.kind !== "sent" ? "xl" : "sm"}
+      size={isForm ? "xl" : isPreview ? "xl" : "sm"}
+      className={isForm ? styles.composerWide : undefined}
       dismissible={phase.kind !== "sending"}
       title={
         phase.kind === "sent"
-          ? "Reachout sent"
+          ? phase.scheduledAt
+            ? "Reachout scheduled"
+            : "Reachout sent"
           : previewHtml
             ? "Email preview"
             : "New cold reachout"
@@ -138,13 +176,33 @@ export function OutreachComposer({
     >
       {phase.kind === "sent" ? (
         <div className={styles.sentBox}>
-          <p className={styles.sentLead}>
-            The cold email is on its way to <strong>{phase.email}</strong>.
-          </p>
-          <p className={styles.sentHint}>
-            It&apos;s filed in the list below — status updates to
-            &ldquo;failed&rdquo; if the send bounces at the provider.
-          </p>
+          {phase.scheduledAt ? (
+            <>
+              <p className={styles.sentLead}>
+                Queued to arrive for <strong>{phase.email}</strong> at{" "}
+                <strong>
+                  {formatInZone(phase.scheduledAt, phase.tz ?? localTimeZone())}
+                </strong>
+                .
+              </p>
+              <p className={styles.sentHint}>
+                That&apos;s{" "}
+                {formatInZone(phase.scheduledAt, localTimeZone())} your time.
+                It&apos;s in the list below as &ldquo;scheduled&rdquo; — you can
+                reschedule or cancel it right up until it sends.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className={styles.sentLead}>
+                The cold email is on its way to <strong>{phase.email}</strong>.
+              </p>
+              <p className={styles.sentHint}>
+                It&apos;s filed in the list below — status updates to
+                &ldquo;failed&rdquo; if the send bounces at the provider.
+              </p>
+            </>
+          )}
           <div className={styles.formActions}>
             <Button variant="primary" onClick={close}>
               Done
@@ -190,16 +248,24 @@ export function OutreachComposer({
               onClick={() => void send(false)}
               disabled={phase.kind === "sending"}
             >
-              {phase.kind === "sending" ? "Sending…" : "Send reachout"}
+              {phase.kind === "sending"
+                ? timing === "schedule"
+                  ? "Scheduling…"
+                  : "Sending…"
+                : timing === "schedule"
+                  ? "Schedule reachout"
+                  : "Send reachout"}
             </Button>
           </div>
         </div>
       ) : (
-        <form className={styles.form} onSubmit={submit}>
-          {error && <div className={styles.formError}>{error}</div>}
+        <form className={`${styles.form} ${styles.formGrid}`} onSubmit={submit}>
+          {error && (
+            <div className={`${styles.formError} ${styles.spanAll}`}>{error}</div>
+          )}
 
           {duplicateAt && (
-            <div className={styles.duplicateWarn}>
+            <div className={`${styles.duplicateWarn} ${styles.spanAll}`}>
               <span>
                 This address was already contacted
                 {duplicateDate ? ` on ${duplicateDate}` : ""}. Send again
@@ -215,6 +281,28 @@ export function OutreachComposer({
               </Button>
             </div>
           )}
+
+          <fieldset className={`${styles.themeField} ${styles.spanAll}`}>
+            <legend className={styles.fieldLabel}>Timing</legend>
+            <div className={styles.timingToggle}>
+              <button
+                type="button"
+                className={`${styles.timingOption} ${timing === "now" ? styles.timingActive : ""}`}
+                onClick={() => setTiming("now")}
+                aria-pressed={timing === "now"}
+              >
+                Send now
+              </button>
+              <button
+                type="button"
+                className={`${styles.timingOption} ${timing === "schedule" ? styles.timingActive : ""}`}
+                onClick={() => setTiming("schedule")}
+                aria-pressed={timing === "schedule"}
+              >
+                Schedule for later
+              </button>
+            </div>
+          </fieldset>
 
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Name</span>
@@ -243,7 +331,7 @@ export function OutreachComposer({
             />
           </label>
 
-          <fieldset className={styles.themeField}>
+          <fieldset className={`${styles.themeField} ${styles.spanAll}`}>
             <legend className={styles.fieldLabel}>Email template</legend>
             <div className={styles.themeChoices}>
               <label className={styles.themeChoice}>
@@ -269,19 +357,25 @@ export function OutreachComposer({
             </div>
           </fieldset>
 
-          <label className={styles.field}>
+          <label className={`${styles.field} ${styles.spanAll}`}>
             <span className={styles.fieldLabel}>Personal message</span>
             <textarea
               className={styles.textarea}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={2000}
-              rows={6}
+              rows={5}
               placeholder="Why this brand fits the network — written like a person, not a campaign. Left blank, the standard template text is sent."
             />
           </label>
 
-          <div className={styles.formActions}>
+          {timing === "schedule" && (
+            <div className={styles.spanAll}>
+              <ScheduleFields peers={scheduledPeers} onResolve={onResolve} />
+            </div>
+          )}
+
+          <div className={`${styles.formActions} ${styles.spanAll}`}>
             <Button
               variant="ghost"
               onClick={() => void loadPreview()}
@@ -301,7 +395,13 @@ export function OutreachComposer({
               type="submit"
               disabled={phase.kind === "sending"}
             >
-              {phase.kind === "sending" ? "Sending…" : "Send reachout"}
+              {phase.kind === "sending"
+                ? timing === "schedule"
+                  ? "Scheduling…"
+                  : "Sending…"
+                : timing === "schedule"
+                  ? "Schedule reachout"
+                  : "Send reachout"}
             </Button>
           </div>
         </form>

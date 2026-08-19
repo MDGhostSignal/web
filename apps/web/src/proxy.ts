@@ -61,6 +61,11 @@ const PUBLIC_SUBPATHS = [
   // CRON_SECRET bearer. Route also accepts the admin cookie so the
   // in-app "Refresh now" button (Phase B) can hit it.
   "/api/admin/art19/sync",
+  // Scheduled cold-outreach reconcile — periodic GitHub Actions job
+  // (Bearer CRON_SECRET) that trues 'scheduled' rows up against
+  // Resend's delivery state once their send time has passed. Also
+  // accepts the admin cookie for the in-app "Refresh statuses" button.
+  "/api/admin/outreach/reconcile",
 ];
 
 export async function proxy(req: NextRequest) {

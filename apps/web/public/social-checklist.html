@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Social Posts — 2026-08-19 · Posting Checklist</title>
+<style>
+  :root {
+    --ground: #f7f8f6;
+    --surface: #ffffff;
+    --surface-2: #fbfcfb;
+    --ink: #1a1e1c;
+    --muted: #5d655f;
+    --faint: #8b938c;
+    --border: #e4e7e2;
+    --border-strong: #d3d8d1;
+    --terracotta: #d66157;
+    --wine: #9f71af;
+    --green: #00b29c;
+    --signal: #3e6e8e;
+    --shadow: 0 1px 2px rgb(26 30 28 / 6%), 0 8px 24px -16px rgb(26 30 28 / 22%);
+    --done-bg: #eef2ee;
+    font-synthesis-weight: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #101311;
+      --surface: #181c19;
+      --surface-2: #141815;
+      --ink: #ecefe9;
+      --muted: #9aa39c;
+      --faint: #6e766f;
+      --border: #2a2f2a;
+      --border-strong: #363d36;
+      --terracotta: #e27568;
+      --wine: #bd8fcc;
+      --green: #22c7b0;
+      --signal: #79aecb;
+      --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 10px 28px -18px rgb(0 0 0 / 60%);
+      --done-bg: #1e241f;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Work Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin-inline: auto;
+    padding: 0 20px 96px;
+  }
+
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    margin: 0 0 32px;
+    padding: 18px 20px 16px;
+  }
+  .top-inner { max-width: 860px; margin-inline: auto; }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .top-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .meter-label {
+    font-size: 13px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .meter-label b { color: var(--ink); font-weight: 650; }
+  .meter {
+    height: 7px;
+    border-radius: 99px;
+    background: var(--border);
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .meter-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--signal), var(--green));
+    transition: width 420ms cubic-bezier(0.22, 0.9, 0.3, 1);
+  }
+  .actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 5px 11px;
+    cursor: pointer;
+    transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+  }
+  .btn:hover { color: var(--ink); border-color: var(--muted); }
+  .btn:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+    --accent: var(--faint);
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px 14px;
+    border-left: 4px solid var(--accent);
+  }
+  .chip {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 13%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    padding: 3px 9px;
+    border-radius: 99px;
+    white-space: nowrap;
+  }
+  .card-title {
+    font-size: 16.5px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+  .card-count {
+    font-size: 12px;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .morse {
+    height: 3px;
+    margin: 0 18px;
+    border-radius: 99px;
+    color: var(--accent);
+    opacity: 0.5;
+    background-image: repeating-linear-gradient(90deg,
+      currentColor 0 5px, transparent 5px 13px,
+      currentColor 13px 33px, transparent 33px 41px,
+      currentColor 41px 46px, transparent 46px 58px);
+  }
+
+  .rows { padding: 6px 8px 12px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 12px 10px;
+    border-radius: 10px;
+    transition: background 140ms ease;
+  }
+  .row + .row { border-top: 1px solid var(--border); }
+  .row:hover { background: var(--surface-2); }
+
+  .row input[type="checkbox"] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    position: relative;
+    transition: background 130ms ease, border-color 130ms ease;
+    flex: none;
+  }
+  .row input[type="checkbox"]:hover { border-color: var(--accent); }
+  .row input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .row input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px; top: 2.5px;
+    width: 5px; height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(43deg);
+  }
+  .row input[type="checkbox"]:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+  .body { min-width: 0; }
+  .platform {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .platform .dot { width: 6px; height: 6px; border-radius: 99px; background: var(--accent); flex: none; }
+  .text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+  }
+  .tags { color: var(--signal); }
+  .row.done .body { opacity: 0.5; }
+  .row.done .text { text-decoration: line-through; text-decoration-color: var(--faint); }
+  .row.done { background: var(--done-bg); }
+
+  .copy {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    align-self: start;
+    transition: color 130ms ease, border-color 130ms ease, background 130ms ease;
+  }
+  .copy:hover { color: var(--ink); border-color: var(--muted); }
+  .copy:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .copy.copied { color: var(--green); border-color: var(--green); }
+
+  .foot {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 36px;
+    line-height: 1.7;
+  }
+  .foot code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 24px 1fr; }
+    .copy { grid-column: 2; justify-self: start; margin-top: 6px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <p class="eyebrow">GHOSTSignal · Batch 2026-08-19</p>
+    <div class="top-row">
+      <h1>Social Posts — Posting Checklist</h1>
+      <span class="meter-label"><b id="doneCount">0</b> / <span id="totalCount">0</span> tuned in</span>
+    </div>
+    <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+    <div class="actions">
+      <button class="btn" id="resetBtn" type="button">Reset all</button>
+      <button class="btn" id="collapseDone" type="button">Hide completed</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="list"></div>
+  <p class="foot">
+    Replace every <code>[link]</code> with the live URL before posting · IG uses &ldquo;link in bio&rdquo;.<br>
+    Confirm the <b>XQ quiz</b> and <b>Snow Drift</b> URLs before Posts 2 &amp; 3 go out. Tick state saves in this browser.
+  </p>
+</main>
+
+<script src="/social-checklist.js"></script>
+</body>
+</html>

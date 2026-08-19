@@ -1,12 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import {
-  coldOutreachEmailHtml,
-  coldOutreachEmailText,
-  coldOutreachSubject,
-  defaultOutreachMessage,
-} from "@/lib/cold-outreach-email";
+import { sendColdOutreach } from "@/lib/cold-outreach-send";
+import { defaultOutreachMessage } from "@/lib/cold-outreach-email";
 import { supabaseRest } from "@/lib/supabase-admin";
+import { isUsTimezone } from "@/lib/timezone";
 
 /**
  * /api/admin/outreach — cold-email brand outreach (Mike's tab).
@@ -14,13 +11,22 @@ import { supabaseRest } from "@/lib/supabase-admin";
  * GET  — the reachout list, newest first, for /admin/outreach.
  *        Tolerates a missing table (returns tableMissing so the page
  *        can point at docs/OUTREACH_SUPABASE_SCHEMA.sql).
- * POST — { name?, email, message?, theme?, force? }: files a
- *        cold_outreach row,
- *        then sends the email via Resend (template in
- *        lib/cold-outreach-email.ts; a blank message falls back to
- *        defaultOutreachMessage()).
- *        Repeat sends to an email Mike already contacted 409 unless
- *        force is set, so nobody gets double-cold-emailed by accident.
+ * POST — { name?, email, message?, theme?, force?, scheduledAt?,
+ *        recipientTz? }: files a cold_outreach row, then hands the
+ *        email to Resend (lib/cold-outreach-send.ts).
+ *
+ *        When `scheduledAt` (ISO 8601 UTC) is set, the row is filed
+ *        status='scheduled' and Resend holds the mail for delivery at
+ *        that exact instant (native scheduled_at, up to 30 days out);
+ *        we keep the returned resend_id so it can be rescheduled or
+ *        canceled (see [id]/route.ts). Without it, the mail sends
+ *        immediately and the row is status='sent' as before.
+ *
+ *        Repeat contact of an address that's already 'sent' or
+ *        'scheduled' 409s unless `force` is set, so nobody gets
+ *        double-cold-emailed by accident. Prior 'canceled'/'failed'
+ *        rows don't block a fresh attempt.
+ *
  *        A Resend failure marks the row status 'failed' (visible in
  *        the list) and returns 502.
  *
@@ -35,12 +41,23 @@ export type OutreachRow = {
   message: string | null;
   status: string;
   sent_at: string | null;
+  scheduled_at: string | null;
+  recipient_tz: string | null;
+  resend_id: string | null;
   created_at: string | null;
 };
 
+const SELECT =
+  "select=id,name,email,message,status,sent_at,scheduled_at,recipient_tz,resend_id,created_at";
+
+/** How far ahead Resend allows a scheduled send. */
+const MAX_SCHEDULE_MS = 30 * 24 * 60 * 60 * 1000;
+/** A little lead so "now-ish" clicks don't land in the past at Resend. */
+const MIN_LEAD_MS = 60 * 1000;
+
 export async function GET() {
   const res = await supabaseRest<OutreachRow[]>(
-    "cold_outreach?select=id,name,email,message,status,sent_at,created_at&order=created_at.desc&limit=500",
+    `cold_outreach?${SELECT}&order=created_at.desc&limit=500`,
   );
   if (!res.ok) {
     // Table not created yet — an empty tab with a setup hint beats a 502.
@@ -62,6 +79,8 @@ export async function POST(req: NextRequest) {
     message?: string;
     theme?: string;
     force?: boolean;
+    scheduledAt?: string;
+    recipientTz?: string;
   };
   try {
     body = await req.json();
@@ -83,24 +102,55 @@ export async function POST(req: NextRequest) {
   // Which visual template goes out — picked in the composer.
   const theme = body.theme === "dark" ? "dark" : "light";
 
-  const resendKey = process.env.RESEND_API_KEY;
-  const resendFrom = process.env.RESEND_FROM;
-  if (!resendKey || !resendFrom) {
+  // --- Scheduling validation -------------------------------------
+  let scheduledAt: Date | null = null;
+  let recipientTz: string | null = null;
+  if (body.scheduledAt != null && body.scheduledAt !== "") {
+    const d = new Date(body.scheduledAt);
+    if (Number.isNaN(d.getTime())) {
+      return NextResponse.json(
+        { error: "scheduledAt is not a valid date." },
+        { status: 400 },
+      );
+    }
+    const delta = d.getTime() - Date.now();
+    if (delta < MIN_LEAD_MS) {
+      return NextResponse.json(
+        { error: "Scheduled time must be at least a minute in the future." },
+        { status: 400 },
+      );
+    }
+    if (delta > MAX_SCHEDULE_MS) {
+      return NextResponse.json(
+        { error: "Scheduled time can be at most 30 days out (Resend's limit)." },
+        { status: 400 },
+      );
+    }
+    scheduledAt = d;
+    // recipientTz is display metadata; validate but don't hard-require.
+    if (body.recipientTz && isUsTimezone(body.recipientTz)) {
+      recipientTz = body.recipientTz;
+    }
+  }
+
+  if (!process.env.RESEND_API_KEY) {
     return NextResponse.json(
-      { error: "Email sending is not configured (RESEND_API_KEY / RESEND_FROM)." },
+      { error: "Email sending is not configured (RESEND_API_KEY)." },
       { status: 500 },
     );
   }
 
   // --- Duplicate guard -------------------------------------------
-  const dupRes = await supabaseRest<Array<{ created_at: string | null }>>(
-    `cold_outreach?select=created_at&email=ilike.${encodeURIComponent(email)}&order=created_at.desc&limit=1`,
+  // Only a live prior contact blocks — 'sent' (already emailed) or
+  // 'scheduled' (queued). Canceled/failed attempts don't count.
+  const dupRes = await supabaseRest<Array<{ created_at: string | null; status: string }>>(
+    `cold_outreach?select=created_at,status&email=ilike.${encodeURIComponent(email)}&status=in.(sent,scheduled)&order=created_at.desc&limit=1`,
   );
   if (!dupRes.ok && dupRes.detail.includes("cold_outreach")) {
     return NextResponse.json(
       {
         error:
-          "The cold_outreach table doesn't exist yet — run docs/OUTREACH_SUPABASE_SCHEMA.sql in the Supabase SQL editor first.",
+          "The cold_outreach table doesn't exist yet — run docs/OUTREACH_SUPABASE_SCHEMA.sql (and OUTREACH_SCHEDULING_SCHEMA.sql) in the Supabase SQL editor first.",
       },
       { status: 500 },
     );
@@ -111,6 +161,7 @@ export async function POST(req: NextRequest) {
       {
         error: "This address was already contacted.",
         alreadyContactedAt: previous.created_at,
+        alreadyStatus: previous.status,
       },
       { status: 409 },
     );
@@ -119,13 +170,24 @@ export async function POST(req: NextRequest) {
   // --- 1 · File the row ------------------------------------------
   const ins = await supabaseRest<Array<{ id: string }>>("cold_outreach", {
     method: "POST",
-    body: JSON.stringify({
-      name,
-      email,
-      message: finalMessage,
-      status: "sent",
-      sent_at: new Date().toISOString(),
-    }),
+    body: JSON.stringify(
+      scheduledAt
+        ? {
+            name,
+            email,
+            message: finalMessage,
+            status: "scheduled",
+            scheduled_at: scheduledAt.toISOString(),
+            recipient_tz: recipientTz,
+          }
+        : {
+            name,
+            email,
+            message: finalMessage,
+            status: "sent",
+            sent_at: new Date().toISOString(),
+          },
+    ),
     prefer: "return=representation",
   });
   if (!ins.ok || !ins.data?.[0]?.id) {
@@ -137,31 +199,15 @@ export async function POST(req: NextRequest) {
   }
   const rowId = ins.data[0].id;
 
-  // --- 2 · Send the email ----------------------------------------
-  const sendRes = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      // Send from a human at the verified domain (not the noreply address)
-      // so a cold reachout reads personal AND replies land in Mike's inbox
-      // — hitting reply just works. Overridable via OUTREACH_FROM.
-      from:
-        process.env.OUTREACH_FROM ||
-        "Mike from GHOSTSignal <mike@ghostsignal.cloud>",
-      to: [email],
-      // Belt-and-suspenders: reply_to matches the From so replies reach Mike
-      // even in clients that key off reply_to.
-      reply_to: process.env.OUTREACH_REPLY_TO || "Mike from GHOSTSignal <mike@ghostsignal.cloud>",
-      subject: coldOutreachSubject(name),
-      html: coldOutreachEmailHtml({ name, message: finalMessage, theme }),
-      text: coldOutreachEmailText({ name, message: finalMessage }),
-    }),
+  // --- 2 · Hand to Resend (immediate or scheduled) ---------------
+  const sendRes = await sendColdOutreach({
+    name,
+    email,
+    message: finalMessage,
+    theme,
+    scheduledAt: scheduledAt ?? undefined,
   });
   if (!sendRes.ok) {
-    const detail = await sendRes.text();
     await supabaseRest(`cold_outreach?id=eq.${encodeURIComponent(rowId)}`, {
       method: "PATCH",
       body: JSON.stringify({ status: "failed" }),
@@ -169,11 +215,28 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(
       {
-        error: `Reachout filed, but the email failed to send (${sendRes.status}): ${detail.slice(0, 200)}`,
+        error: scheduledAt
+          ? `Reachout filed, but Resend rejected the scheduled send: ${sendRes.error}`
+          : `Reachout filed, but the email failed to send: ${sendRes.error}`,
       },
-      { status: 502 },
+      { status: sendRes.status },
     );
   }
 
-  return NextResponse.json({ ok: true, id: rowId });
+  // Store Resend's id so a scheduled send can later be rescheduled /
+  // canceled. (Harmless to store for immediate sends too.)
+  if (sendRes.resendId) {
+    await supabaseRest(`cold_outreach?id=eq.${encodeURIComponent(rowId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ resend_id: sendRes.resendId }),
+      prefer: "return=minimal",
+    });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    id: rowId,
+    scheduled: Boolean(scheduledAt),
+    scheduledAt: scheduledAt?.toISOString() ?? null,
+  });
 }

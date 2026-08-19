@@ -1,0 +1,51 @@
+# Scheduled cold-outreach reconcile — trues 'scheduled' rows up against
+# Resend's delivery state after their send time has passed.
+#
+# Resend owns the actual delivery timing (native scheduled_at), so this
+# is only a safety net: it flips 'scheduled' → 'sent' (or 'failed' /
+# 'canceled') once a queued send has gone out, so the /admin/outreach
+# queue never drifts even if no one had the tab open at delivery time.
+#
+# Setup
+# ─────
+# Repo secrets (Settings → Secrets → Actions):
+#   - CRON_SECRET               — shared with the other cron workflows
+#   - OUTREACH_RECONCILE_URL    — full URL to production, e.g.
+#                                 https://www.ghostsignal.cloud/api/admin/outreach/reconcile
+#
+# Vercel env vars (Settings → Environment Variables):
+#   - RESEND_API_KEY            — required to read delivery state
+#   - CRON_SECRET               — must match the repo secret
+#
+# The route also accepts the admin cookie, so the in-app "Refresh
+# statuses" button hits the same endpoint.
+
+name: Outreach reconcile
+
+on:
+  schedule:
+    # Every 15 minutes — cheap GET-per-due-row, low volume.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: outreach-reconcile
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/admin/outreach/reconcile
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          OUTREACH_RECONCILE_URL: ${{ secrets.OUTREACH_RECONCILE_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$OUTREACH_RECONCILE_URL" ]; then
+            echo "::error::Missing CRON_SECRET or OUTREACH_RECONCILE_URL."
+            exit 1
+          fi
+          curl -fsS -i -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$OUTREACH_RECONCILE_URL"

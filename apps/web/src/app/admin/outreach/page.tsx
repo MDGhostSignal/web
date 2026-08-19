@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Badge,
@@ -10,10 +10,13 @@ import {
   ErrorCard,
   Loading,
   PageHeader,
+  type BadgeVariant,
   type Column,
 } from "@/components/admin";
+import { formatInZone, localTimeZone } from "@/lib/timezone";
 
 import { OutreachComposer } from "./components/OutreachComposer";
+import { RescheduleModal } from "./components/RescheduleModal";
 import styles from "./outreach.module.css";
 
 /** One reachout row as returned by GET /api/admin/outreach. */
@@ -24,6 +27,9 @@ export type OutreachRow = {
   message: string | null;
   status: string;
   sent_at: string | null;
+  scheduled_at: string | null;
+  recipient_tz: string | null;
+  resend_id: string | null;
   created_at: string | null;
 };
 
@@ -31,6 +37,15 @@ type LoadState =
   | { kind: "loading" }
   | { kind: "error"; message: string }
   | { kind: "ready"; rows: OutreachRow[]; tableMissing: boolean };
+
+type Filter = "scheduled" | "sent" | "all";
+
+const STATUS_VARIANT: Record<string, BadgeVariant> = {
+  sent: "success",
+  scheduled: "info",
+  canceled: "neutral",
+  failed: "danger",
+};
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
@@ -43,18 +58,45 @@ function formatDate(iso: string | null): string {
   });
 }
 
+/** "in 3h 20m" / "in 2 days" / "any moment" — coarse, human countdown
+ *  to a scheduled send. Past-due shows "sending…". */
+function countdown(iso: string | null, now: number): string {
+  if (!iso) return "";
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return "";
+  const ms = t - now;
+  if (ms <= 0) return "sending…";
+  const mins = Math.round(ms / 60000);
+  if (mins < 1) return "any moment";
+  if (mins < 60) return `in ${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `in ${hours}h ${mins % 60}m`;
+  const days = Math.floor(hours / 24);
+  return `in ${days} day${days === 1 ? "" : "s"}`;
+}
+
 /**
  * /admin/outreach — Mike's cold-email brand prospecting surface.
- * Compose a personalized cold email (name, email, personal message),
- * preview it exactly as it sends, and track every reachout in the
- * list below. Email template: lib/cold-outreach-email.ts (pitch copy
- * is a placeholder until the team finalizes it).
+ * Compose a personalized cold email, send it now or *schedule* it to
+ * land at the perfect moment in the recipient's US inbox, and track
+ * every reachout below. Scheduled sends can be rescheduled or canceled
+ * right up until they go out. Email template: lib/cold-outreach-email.ts.
  */
 export default function OutreachPage() {
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [composerOpen, setComposerOpen] = useState(false);
-  // Bumped after a send so the effect refetches the list.
+  const [filter, setFilter] = useState<Filter>("all");
+  const [rescheduling, setRescheduling] = useState<OutreachRow | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(0);
+  const [reconciling, setReconciling] = useState(false);
+  // Ticks every 30s so countdowns stay live without a refetch.
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,10 +106,7 @@ export default function OutreachPage() {
         const body = await res.json();
         if (cancelled) return;
         if (!res.ok || !body.ok) {
-          setState({
-            kind: "error",
-            message: body.error ?? `HTTP ${res.status}`,
-          });
+          setState({ kind: "error", message: body.error ?? `HTTP ${res.status}` });
           return;
         }
         setState({
@@ -89,11 +128,81 @@ export default function OutreachPage() {
     };
   }, [refresh]);
 
+  const rows = useMemo(
+    () => (state.kind === "ready" ? state.rows : []),
+    [state],
+  );
+
+  // Epoch-ms of every still-scheduled send — fed to the composer +
+  // reschedule modal so new picks auto-space around them.
+  const scheduledPeers = useMemo(
+    () =>
+      rows
+        .filter((r) => r.status === "scheduled" && r.scheduled_at)
+        .map((r) => new Date(r.scheduled_at as string).getTime())
+        .filter((n) => !Number.isNaN(n)),
+    [rows],
+  );
+
+  const counts = useMemo(
+    () => ({
+      scheduled: rows.filter((r) => r.status === "scheduled").length,
+      sent: rows.filter((r) => r.status === "sent").length,
+      all: rows.length,
+    }),
+    [rows],
+  );
+
+  const visibleRows = useMemo(() => {
+    if (filter === "all") return rows;
+    if (filter === "scheduled")
+      return rows.filter((r) => r.status === "scheduled");
+    return rows.filter((r) => r.status === "sent");
+  }, [rows, filter]);
+
+  const cancelSend = useCallback(
+    async (row: OutreachRow) => {
+      if (
+        !window.confirm(
+          `Cancel the scheduled send to ${row.email}? It won't go out, and you'd need a fresh reachout to contact them again.`,
+        )
+      ) {
+        return;
+      }
+      setBusyId(row.id);
+      try {
+        const res = await fetch(`/api/admin/outreach/${row.id}`, {
+          method: "DELETE",
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error ?? `Cancel failed (${res.status}).`);
+        setRefresh((n) => n + 1);
+      } catch (err) {
+        window.alert(err instanceof Error ? err.message : String(err));
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [],
+  );
+
+  const refreshStatuses = useCallback(async () => {
+    setReconciling(true);
+    try {
+      await fetch("/api/admin/outreach/reconcile", { method: "POST" });
+      setRefresh((n) => n + 1);
+    } catch {
+      /* best-effort — the cron covers it anyway */
+    } finally {
+      setReconciling(false);
+    }
+  }, []);
+
   const columns: Column<OutreachRow>[] = [
     {
       key: "name",
       header: "Name",
-      cell: (r) => <span className={styles.rowName}>{r.name}</span>,
+      cell: (r) => <span className={styles.rowName}>{r.name || "—"}</span>,
       sort: (a, b) => a.name.localeCompare(b.name),
     },
     {
@@ -113,20 +222,59 @@ export default function OutreachPage() {
       key: "status",
       header: "Status",
       cell: (r) => (
-        <Badge variant={r.status === "failed" ? "danger" : "success"}>
-          {r.status}
-        </Badge>
+        <Badge variant={STATUS_VARIANT[r.status] ?? "neutral"}>{r.status}</Badge>
       ),
     },
     {
-      key: "sent",
-      header: "Sent",
+      key: "when",
+      header: "When",
       variant: "nowrap",
-      cell: (r) => formatDate(r.sent_at ?? r.created_at),
+      cell: (r) => {
+        if (r.status === "scheduled" && r.scheduled_at) {
+          const tz = r.recipient_tz ?? localTimeZone();
+          return (
+            <div className={styles.whenCell}>
+              <span className={styles.whenPrimary}>
+                {formatInZone(new Date(r.scheduled_at), tz)}
+              </span>
+              <span className={styles.whenCountdown}>
+                {countdown(r.scheduled_at, now)}
+              </span>
+            </div>
+          );
+        }
+        return formatDate(r.sent_at ?? r.created_at);
+      },
       sort: (a, b) =>
-        (a.sent_at ?? a.created_at ?? "").localeCompare(
-          b.sent_at ?? b.created_at ?? "",
+        (a.scheduled_at ?? a.sent_at ?? a.created_at ?? "").localeCompare(
+          b.scheduled_at ?? b.sent_at ?? b.created_at ?? "",
         ),
+    },
+    {
+      key: "actions",
+      header: "",
+      variant: "nowrap",
+      cell: (r) =>
+        r.status === "scheduled" ? (
+          <div className={styles.rowActions}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRescheduling(r)}
+              disabled={busyId === r.id}
+            >
+              Reschedule
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => void cancelSend(r)}
+              disabled={busyId === r.id}
+            >
+              {busyId === r.id ? "…" : "Cancel"}
+            </Button>
+          </div>
+        ) : null,
     },
   ];
 
@@ -134,7 +282,7 @@ export default function OutreachPage() {
     <div className={styles.page}>
       <PageHeader
         title="Cold Outreach"
-        subtitle="Brand prospecting — send a personalized cold email and track every reachout. Onboarding brands is the current company focus."
+        subtitle="Brand prospecting — send a personalized cold email now, or schedule it to land at the perfect US inbox moment. Onboarding brands is the current company focus."
         actions={
           <Button variant="primary" onClick={() => setComposerOpen(true)}>
             + New reachout
@@ -156,16 +304,47 @@ export default function OutreachPage() {
           message={
             <>
               The <code>cold_outreach</code> table doesn&apos;t exist yet — run{" "}
-              <code>docs/OUTREACH_SUPABASE_SCHEMA.sql</code> in the Supabase SQL
+              <code>docs/OUTREACH_SUPABASE_SCHEMA.sql</code> and{" "}
+              <code>docs/OUTREACH_SCHEDULING_SCHEMA.sql</code> in the Supabase SQL
               editor, then reload this page.
             </>
           }
         />
       )}
 
+      {state.kind === "ready" && !state.tableMissing && rows.length > 0 && (
+        <div className={styles.toolbar}>
+          <div className={styles.filterRow} role="tablist" aria-label="Filter reachouts">
+            {(["scheduled", "sent", "all"] as Filter[]).map((f) => (
+              <button
+                key={f}
+                type="button"
+                role="tab"
+                aria-selected={filter === f}
+                className={`${styles.filterChip} ${filter === f ? styles.filterActive : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "scheduled" ? "Scheduled" : f === "sent" ? "Sent" : "All"}
+                <span className={styles.filterCount}>{counts[f]}</span>
+              </button>
+            ))}
+          </div>
+          {counts.scheduled > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void refreshStatuses()}
+              disabled={reconciling}
+            >
+              {reconciling ? "Refreshing…" : "Refresh statuses"}
+            </Button>
+          )}
+        </div>
+      )}
+
       {state.kind === "ready" &&
         !state.tableMissing &&
-        (state.rows.length === 0 ? (
+        (rows.length === 0 ? (
           <EmptyState
             title="No reachouts yet"
             message="Start the brand push — compose the first cold email."
@@ -175,14 +354,39 @@ export default function OutreachPage() {
               </Button>
             }
           />
+        ) : visibleRows.length === 0 ? (
+          <EmptyState
+            title={`No ${filter} reachouts`}
+            message={
+              filter === "scheduled"
+                ? "Nothing queued right now — schedule a reachout to line one up."
+                : "Nothing here yet."
+            }
+          />
         ) : (
-          <DataTable rows={state.rows} columns={columns} />
+          <DataTable rows={visibleRows} columns={columns} />
         ))}
 
       {composerOpen && (
         <OutreachComposer
           onClose={() => setComposerOpen(false)}
           onSent={() => setRefresh((n) => n + 1)}
+          scheduledPeers={scheduledPeers}
+        />
+      )}
+
+      {rescheduling && (
+        <RescheduleModal
+          row={rescheduling}
+          peers={scheduledPeers.filter(
+            (ms) =>
+              ms !==
+              (rescheduling.scheduled_at
+                ? new Date(rescheduling.scheduled_at).getTime()
+                : NaN),
+          )}
+          onClose={() => setRescheduling(null)}
+          onDone={() => setRefresh((n) => n + 1)}
         />
       )}
     </div>

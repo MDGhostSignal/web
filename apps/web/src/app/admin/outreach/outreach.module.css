@@ -18,10 +18,37 @@
 
 /* --- Composer modal ------------------------------------------- */
 
+/* Wide compose card so the form breathes across the desktop instead of
+ * a narrow scrolling column. Doubled class beats the Modal primitive's
+ * own single-class size cap regardless of stylesheet order. */
+.composerWide.composerWide {
+  max-width: min(1040px, 94vw);
+}
+
 .form {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* Two-column layout for the compose form — Name/Email and
+ * Template/Timing pair up per row; message, schedule, and actions span
+ * the full width. Collapses to one column on a narrow viewport. */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  align-items: start;
+}
+
+.spanAll {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 620px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
@@ -170,4 +197,281 @@
   font-size: 12px;
   color: var(--admin-text-muted);
   line-height: 1.5;
+}
+
+/* --- Timing toggle (Send now / Schedule) ---------------------- */
+
+/* Full-width segmented control — the two options split the container
+ * evenly so it reads as one dominant top-row decision. */
+.timingToggle {
+  display: flex;
+  width: 100%;
+  padding: 4px;
+  gap: 4px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.timingOption {
+  flex: 1 1 0;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--admin-text-muted);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  padding: 12px 18px;
+  border-radius: var(--admin-radius-sm);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.timingOption:hover {
+  color: var(--admin-text-primary);
+}
+
+.timingActive {
+  background: var(--admin-accent);
+  color: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
+}
+
+.timingActive:hover {
+  color: #fff;
+}
+
+/* --- Scheduling picker ---------------------------------------- */
+
+.schedule {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  align-items: start;
+  padding: 14px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+/* Zone + presets pair across the top row; date/time, the stagger
+ * toggle, and the readout each span the full width. */
+.schedule > .scheduleGrid,
+.schedule > .staggerToggle,
+.schedule > .readout,
+.schedule > .readoutInvalid {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 560px) {
+  .schedule {
+    grid-template-columns: 1fr;
+  }
+}
+
+.select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--admin-border-strong);
+}
+
+.presetRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.presetChip {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-accent-strong);
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-softer);
+  border-radius: var(--admin-radius-pill);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.presetChip:hover {
+  background: var(--admin-accent-softer);
+  border-color: var(--admin-accent);
+}
+
+.scheduleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.staggerToggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--admin-text-primary);
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.staggerToggle input {
+  margin-top: 2px;
+  accent-color: var(--admin-accent);
+  cursor: pointer;
+}
+
+.staggerHint {
+  color: var(--admin-text-muted);
+}
+
+/* Live dual-time readout */
+.readout {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--admin-info-soft);
+  border: 1px solid var(--admin-info);
+  border-radius: var(--admin-radius-md);
+}
+
+.readoutLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--admin-text-primary);
+}
+
+.readoutTag {
+  flex: none;
+  width: 68px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+}
+
+.readoutMuted {
+  color: var(--admin-text-secondary);
+}
+
+.readoutNudge {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  font-style: italic;
+}
+
+.readoutInvalid {
+  padding: 10px 14px;
+  background: var(--admin-warn-soft);
+  border: 1px solid var(--admin-warn);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-primary);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* --- List toolbar / filters ----------------------------------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterRow {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.filterChip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.filterChip:hover {
+  color: var(--admin-text-primary);
+}
+
+.filterActive {
+  color: var(--admin-text-primary);
+  background: var(--admin-accent-soft);
+  border-color: var(--admin-accent);
+}
+
+.filterCount {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-1);
+  border-radius: var(--admin-radius-pill);
+  padding: 1px 7px;
+}
+
+.filterActive .filterCount {
+  color: var(--admin-accent-strong);
+}
+
+/* --- Scheduled "When" cell + row actions ---------------------- */
+
+.whenCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.whenPrimary {
+  color: var(--admin-text-primary);
+  font-size: 13px;
+}
+
+.whenCountdown {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--admin-accent-strong);
+}
+
+.rowActions {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: flex-end;
 }
