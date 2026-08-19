@@ -290,6 +290,15 @@
   border-color: var(--admin-border-strong);
 }
 
+/* The native dropdown popup is themed via `color-scheme` (set on the
+ * admin root in tokens.css). Also paint options with an OPAQUE bg for
+ * the browsers that honour option colors — `--admin-surface-1` is a
+ * translucent white, so it can't serve here; use the opaque elevated bg. */
+.select option {
+  background: var(--admin-bg-elevated);
+  color: var(--admin-text-primary);
+}
+
 .presetRow {
   display: flex;
   flex-wrap: wrap;

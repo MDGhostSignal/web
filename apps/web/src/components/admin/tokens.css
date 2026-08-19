@@ -15,6 +15,11 @@
 
 :root,
 .admin-root {
+  /* Tell the browser to render native controls (select popups, date/
+     time pickers, scrollbars) in the dark scheme — the default admin
+     theme. Without this, Windows paints select dropdowns on a white
+     ground, hiding light option text. The light block flips it. */
+  color-scheme: dark;
   /* ---- Color: surface ------------------------------------------------- */
   --admin-bg: #0a0a0b;
   --admin-bg-elevated: #141418;
@@ -151,6 +156,8 @@
 
 :root[data-theme="light"],
 .admin-root[data-theme="light"] {
+  /* Native controls follow the light scheme in the light theme. */
+  color-scheme: light;
   /* ---- Color: surface ------------------------------------------------- */
   --admin-bg: #f6f6f8;
   --admin-bg-elevated: #ffffff;

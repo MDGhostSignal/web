@@ -143,6 +143,18 @@ active side gets accent fill + shadow), so the two buttons fill the container
 instead of a narrow inline pill. Email-template field spans full width so
 nothing is orphaned in the 2-col grid.
 
+### Fix — unreadable time-zone dropdown (Martin)
+The `ScheduleFields` recipient time-zone `<select>` showed white-on-white
+options. Root cause: the admin theme set **no `color-scheme`**, so Windows
+rendered the native `<select>` popup in light scheme (white ground) while the
+option text stayed light — and a first attempt failed because
+`--admin-surface-1` is a *translucent white*, useless as an opaque option bg.
+Fix: `color-scheme: dark` on the admin root + `color-scheme: light` on the
+`[data-theme="light"]` block in `components/admin/tokens.css` (themes all
+native controls — also fixes the scheduler's native date/time pickers), and
+the option bg switched to the opaque `--admin-bg-elevated`. `tokens.css` loads
+only on admin routes, so the public site is untouched.
+
 ### Advice given (no code): cloud video in the email hero
 Recommended **against** a `<video>` background (Gmail + all Outlook strip it;
 only Apple Mail renders it) and against a heavy cloud GIF (2–5 MB vs the
