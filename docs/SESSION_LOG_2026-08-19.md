@@ -185,3 +185,58 @@ that links to `/invitation` where the real video plays. Left untouched.
 The reconcile route + `outreach-reconcile.yml` exist only in the local tree —
 push + Vercel deploy is required before the GitHub Actions cron (and the prod
 endpoint it calls) actually run. Everything testable pre-deploy is green.
+
+(Scheduling + reconcile shipped and verified across several later commits;
+`OUTREACH_RECONCILE_URL` secret set by Martin; reconcile grace lowered to 60s
++ auto-reconcile on page load added after a "stuck on sending…" report.)
+
+## Outreach click tracking — BUILT, then PARKED on a branch
+
+Deliverability-safe **click** tracking (not opens). Built end to end and
+verified in isolation, then **parked on branch `feature/outreach-click-tracking`
+(commit f071252) — NOT on main/prod** — because it can't be finished today:
+
+- Pieces: `docs/OUTREACH_CLICK_TRACKING_SCHEMA.sql` (`clicked_at`/`opened_at`),
+  `api/admin/outreach/webhook` (Resend `email.clicked` → stamp `clicked_at` by
+  `resend_id`; **Svix HMAC signature verify** vs `RESEND_WEBHOOK_SECRET` —
+  tested with a sign/verify roundtrip, all cases pass), proxy.ts allow-list,
+  GET selects the new cols, **Sent/Clicked stats** top-right of the list.
+- **Blocker:** Resend requires a *verified custom tracking subdomain* (no
+  default fallback — confirmed in their docs). That needs a CNAME
+  `click.ghostsignal.cloud → links1.resend-dns.com.` in the `ghostsignal.cloud`
+  **Google Cloud DNS** zone. Confirmed via SOA it's Cloud DNS; but **none of
+  Martin's GCP projects have the DNS API enabled** (checked all 7 via Cloud
+  Shell) — the zone lives under a **co-founder's Google account**. So Martin
+  can't add the record himself.
+- Parked cleanly: `main` returned to a working state (the GET-selects-new-cols
+  change is what made the list show the setup hint, so it's off main). To
+  resume: add the CNAME (co-founder or granted DNS-admin) → apply the schema →
+  merge the branch → verify in Resend → add the `email.clicked` webhook +
+  `RESEND_WEBHOOK_SECRET`. Documented in `[[project-outreach-tab]]` memory.
+
+## Admin dropdown readability fix (committed `6b0e0b6`)
+`<select>` popups rendered white-on-white in the dark admin theme. Root cause:
+admin theme set no `color-scheme`, so Windows painted native dropdowns in light
+scheme. Added `color-scheme: dark` (+ `light` on the light block) in
+`components/admin/tokens.css` — themes all native controls, incl. the
+scheduler's date/time pickers. Scoped to admin (tokens.css loads only there).
+
+## ART19 migration reporting — task revisited + email to Bill drafted
+
+Revisited "ART19 migration reporting on the dashboard" (**Phase D of the ART19
+integration: Daily / date-ranged listens**). Our side is fully built and
+waiting: `art19_listens_daily` table, `/api/admin/art19/listens?range=30d`, and
+the "Listens · last 30d" KPI tile (reads "pending ART19 metrics access", lights
+up once rows land). **The blocker is data**: the ART19 API only exposes
+lifetime `listen_count`, no rolling/daily window — that comes from ART19's
+**scheduled S3 daily export**. Bill (ART19 Support) set up our API credential on
+2026-06-01 and said the daily export was "in hand, will follow up," but it never
+arrived (`art19_listens_daily` still 0 rows as of 2026-08-07).
+
+Drafted a prompt email to Bill → `docs/ART19_BILL_EMAIL_DRAFT.md`, framed around
+**Mike's ask**: a last-30-days listen figure for the **whole network combined
+(all sources)** and **per individual show**, powered by a **daily per-show
+download feed**. Includes network ID `d40f1918-…-55b357b3ce18` and logistics
+questions (delivery/S3 ownership, format/schema, cadence, backfill). Open before
+sending: Bill's email, sender name, and whether to fold in the June open
+question (active campaigns show impressions but `current_spend = 0`).
