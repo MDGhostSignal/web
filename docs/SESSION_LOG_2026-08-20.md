@@ -80,7 +80,7 @@ fixed her XQ; RQ was assumed done because the submission id existed.)
    William (tektones), Mike, Mark. The 6 surviving `complete` rows went via
    the POST-fallback (no lead id → public POST-complete).
 
-**Fix (committed `395df29`, verified E2E, NOT yet deployed at time of log):**
+**Fix (committed `395df29`, verified E2E, DEPLOYED + verified live):**
 - `proxy.ts` — allow `PATCH /api/{rq,xq}-submissions/{uuid}` through the gate;
   DELETE stays admin-only. (Method-aware regex check before the admin gate.)
 - `rq-quiz/durable-submit.ts` (new) — defense-in-depth: **keepalive + retry +
@@ -98,9 +98,18 @@ a StrictMode double-submit mid-test); forced network failure → pending
 retained (self-heals). All test rows cleaned up (service-role delete); `tsc`/
 `eslint` clean.
 
+**Deployed + verified in prod (2026-08-20):** pushed to `origin/main` →
+Vercel. Live PATCH probe flipped **401 → 400** (proxy now lets the completion
+through). Then a **full real click-through of the live quiz** on
+`www.ghostsignal.cloud`: `POST` lead → **201**, completion `PATCH` → **200**
+(was 401), result shown + "emailed to you", and the DB row landed as **one**
+row, `status=complete`, **17 answers**, code + name + profile — the exact case
+that used to strand. Test row deleted; the one admin email + Google-Sheets row
+it produced are the only residue.
+
 **Consequence:** the 4 stranded users' answers are **unrecoverable** (never
-transmitted). After deploy they must **retake**. Elizabeth's retake (and the
-others') can be watched landing in the DB.
+transmitted). They must **retake** — and now it sticks. Retakes can be watched
+landing in the DB.
 
 ## XQ "everyone's a Steward" — investigation + parked proposal
 
@@ -130,8 +139,12 @@ and copy). Memory: `[[project-xq-steward-bias]]`.
   (Phase D code-complete). Memory `[[project-art19-listens-export]]`.
 
 ## Open / next
-- **Deploy** the RQ fix (push `main` → Vercel) so completion works in prod;
-  verify the live PATCH no longer 401s.
-- **Ask the 4 stranded users to retake** the RQ; watch each land + link.
-- XQ Steward fix: awaiting Jeremy.
+- ✅ RQ fix **deployed + verified live** (real prod quiz run persisted a
+  complete row; PATCH 401→200).
+- **Ask the 4 stranded users to retake** the RQ (Elizabeth, William/tektones,
+  Mike, Mark); watch each land + link. Their old answers are gone.
+- Delete the one test row's leftover **Google-Sheets row** (name "RQLiveTest",
+  `rq-live-…@example.com`) if it matters.
+- XQ Steward fix: awaiting Jeremy (`docs/XQ_STEWARD_BIAS_FIX_PROPOSAL.md`).
 - A gibberish junk RQ lead (`email: "adwd"`) from today was left in place.
+- Not committed: the reusable dark-GIF capture script (session scratchpad).
