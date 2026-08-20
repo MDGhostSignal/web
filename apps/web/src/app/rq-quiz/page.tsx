@@ -10,6 +10,12 @@ import { IntroStep } from "./IntroStep";
 import { ResultsScreen } from "./ResultsScreen";
 import { computeRQ, computeSignalClarity, type RQAnswers, type RQResult, type SignalClarity } from "@/lib/rq/scoring";
 import { BRAND } from "@/lib/rq/constants";
+import {
+  clearPending,
+  loadPending,
+  savePending,
+  sendRqCompletion,
+} from "./durable-submit";
 import "./rq-quiz.css";
 
 type FormState = {
@@ -544,79 +550,112 @@ export default function RQIndexPage() {
     setClarity(signalClarity);
     setSubmitting(true);
 
-    try {
-      const body = JSON.stringify({
-        source: "native-rq-index-v2",
-        status: "complete",
-        submittedAt: new Date().toISOString(),
-        brand: { company: BRAND.company, acronym: BRAND.acronym, title: BRAND.title },
-        basics: {
-          type: form.TYPE,
-          first: form.FIRST,
-          last: form.LAST,
-          role: form.ROLE,
-          org: form.ORG,
-          industry: form.INDUSTRY,
-          website: form.WEBSITE,
-          email: form.EMAIL,
-        },
-        answers: {
-          VO1: form.VO1, VO2: form.VO2, VO3: form.VO3, VO4: form.VO4, VO5: form.VO5,
-          AE1: form.AE1, AE2: form.AE2, AE3: form.AE3, AE4: form.AE4, AE5: form.AE5,
-          FH1: form.FH1, FH2: form.FH2, FH3: form.FH3, FH4: form.FH4, FH5: form.FH5,
-          npCount, totalCount,
-        },
-        result: {
-          rq: rqResult.rq,
-          rqName: rqResult.rqName,
-          profile: rqResult.profile,
-          details: rqResult.details,
-          clarity: signalClarity,
-          undertone: form.U1,
-        },
-        meta: {
-          pageUrl: window.location.href,
-          referrer: document.referrer || "",
-          userAgent: navigator.userAgent,
-        },
+    const body = JSON.stringify({
+      source: "native-rq-index-v2",
+      status: "complete",
+      submittedAt: new Date().toISOString(),
+      brand: { company: BRAND.company, acronym: BRAND.acronym, title: BRAND.title },
+      basics: {
+        type: form.TYPE,
+        first: form.FIRST,
+        last: form.LAST,
+        role: form.ROLE,
+        org: form.ORG,
+        industry: form.INDUSTRY,
+        website: form.WEBSITE,
+        email: form.EMAIL,
+      },
+      answers: {
+        VO1: form.VO1, VO2: form.VO2, VO3: form.VO3, VO4: form.VO4, VO5: form.VO5,
+        AE1: form.AE1, AE2: form.AE2, AE3: form.AE3, AE4: form.AE4, AE5: form.AE5,
+        FH1: form.FH1, FH2: form.FH2, FH3: form.FH3, FH4: form.FH4, FH5: form.FH5,
+        npCount, totalCount,
+      },
+      result: {
+        rq: rqResult.rq,
+        rqName: rqResult.rqName,
+        profile: rqResult.profile,
+        details: rqResult.details,
+        clarity: signalClarity,
+        undertone: form.U1,
+      },
+      meta: {
+        pageUrl: window.location.href,
+        referrer: document.referrer || "",
+        userAgent: navigator.userAgent,
+      },
+    });
+
+    // Persist the completion durably: stash it locally FIRST (so a
+    // dropped save self-heals on the next load), then send with a
+    // keepalive+retry that PATCHes the lead row up to 'complete' — or
+    // POSTs a fresh row if the lead capture didn't return an id. The
+    // reveal is already on screen; this is purely about not losing it.
+    const pending = { body, incompleteId: incompleteIdRef.current, savedAt: Date.now() };
+    savePending(pending);
+    const { ok, id } = await sendRqCompletion(pending);
+    if (id) incompleteIdRef.current = id;
+    if (ok) {
+      clearPending();
+      setSubmitStatus({
+        type: "success",
+        message: "Your RQ Quotient has been emailed to you.",
       });
-
-      // If we captured the lead at the contact step, PATCH that same
-      // row up to 'complete' so we don't end up with two rows for
-      // the same user. Falls back to POST if the lead capture
-      // didn't return an id (network failure, direct-jump edge case).
-      const incompleteId = incompleteIdRef.current;
-      const response = incompleteId
-        ? await fetch(`/api/rq-submissions/${incompleteId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body,
-          })
-        : await fetch("/api/rq-submissions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body,
-          });
-
-      if (response.ok) {
-        await response.json();
-        setSubmitStatus({
-          type: "success",
-          message: "Your RQ Quotient has been emailed to you.",
-        });
-      } else {
-        throw new Error("Submission failed");
-      }
-    } catch (err) {
-      console.error(err);
+    } else {
+      // Kept in localStorage — resumeOnMount / Retry will finish it.
       setSubmitStatus({
         type: "error",
-        message: "Could not save your results. Please try again.",
+        message:
+          "We saved your result on this device and are still trying to sync it. Tap Retry, or reopen this page later — it'll finish on its own.",
       });
-    } finally {
-      setSubmitting(false);
     }
+    setSubmitting(false);
   };
+
+  // Retry the un-synced completion from the results screen.
+  const retrySubmit = async () => {
+    const pending = loadPending();
+    if (!pending || submitting) return;
+    setSubmitting(true);
+    const { ok, id } = await sendRqCompletion(pending);
+    if (id) incompleteIdRef.current = id;
+    if (ok) {
+      clearPending();
+      setStatusVisible(true);
+      setSubmitStatus({
+        type: "success",
+        message: "Saved — your RQ Quotient has been emailed to you.",
+      });
+    } else {
+      setSubmitStatus({
+        type: "error",
+        message:
+          "Still couldn't sync — check your connection and tap Retry. Your result is safe on this device.",
+      });
+    }
+    setSubmitting(false);
+  };
+
+  // Self-heal: if a prior session left an un-synced completion in
+  // localStorage (closed tab mid-save, offline), finish it silently on
+  // load. We CLAIM the pending synchronously (clear it before the async
+  // send) so a concurrent second invocation — React StrictMode's dev
+  // double-invoke, or any remount — finds nothing and can't duplicate a
+  // POST-fallback row. On failure we re-queue it for the next load.
+  useEffect(() => {
+    const pending = loadPending();
+    if (!pending) return;
+    clearPending();
+    void sendRqCompletion(pending).then(({ ok, id }) => {
+      if (!ok) {
+        savePending(
+          id && id !== pending.incompleteId
+            ? { ...pending, incompleteId: id }
+            : pending,
+        );
+      }
+    });
+  }, []);
 
   const renderField = (field: Step["fields"][0]) => {
     const fieldId = field.id as keyof FormState;
@@ -683,6 +722,8 @@ export default function RQIndexPage() {
         clarity={clarity}
         submitStatus={submitStatus}
         statusVisible={statusVisible}
+        onRetry={retrySubmit}
+        retrying={submitting}
       />
     );
   }

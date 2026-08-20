@@ -1014,6 +1014,35 @@ html:has(.rq-results-page) {
   background: rgba(255, 100, 100, 0.15);
   color: #ff6464;
   border: 1px solid rgba(255, 100, 100, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rq-status-retry {
+  flex: none;
+  appearance: none;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 100, 100, 0.25);
+  border: 1px solid rgba(255, 100, 100, 0.55);
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.rq-status-retry:hover:not(:disabled) {
+  background: rgba(255, 100, 100, 0.4);
+  border-color: rgba(255, 100, 100, 0.8);
+}
+
+.rq-status-retry:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .rq-status-fadeout {

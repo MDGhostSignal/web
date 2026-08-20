@@ -68,6 +68,18 @@ const PUBLIC_SUBPATHS = [
   "/api/admin/outreach/reconcile",
 ];
 
+// The RQ/XQ per-id routes are matched by the config below so the
+// admin-only DELETE stays gated — but a Next matcher can't filter by
+// method, and the *completion PATCH* on those same paths is a PUBLIC
+// action: the quiz page POSTs a lead to the base endpoint pre-auth
+// (status 'incomplete'), then upgrades it to 'complete' via
+// PATCH /api/{rq,xq}-submissions/{id}. This regex lets that PATCH
+// through; only DELETE stays behind the admin gate. Without it every
+// taker who captured a lead (got past the contact step) has their
+// completion 401'd and stranded as 'incomplete'.
+const SUBMISSION_ITEM_PATH =
+  /^\/api\/(?:rq|xq)-submissions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
@@ -110,6 +122,12 @@ export async function proxy(req: NextRequest) {
   }
 
   // === HQ + legacy admin gates (shared-password cookie) ==================
+  // Public quiz completion: PATCH on the RQ/XQ per-id route upgrades a
+  // pre-auth lead to 'complete'. Only DELETE on these paths is admin-only.
+  if (req.method === "PATCH" && SUBMISSION_ITEM_PATH.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // Let the login page through unconditionally.
   if (PUBLIC_SUBPATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next();

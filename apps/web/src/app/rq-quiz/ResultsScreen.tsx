@@ -131,6 +131,8 @@ type ResultsScreenProps = {
   clarity: SignalClarity | null;
   submitStatus: { type: "success" | "error"; message: string } | null;
   statusVisible: boolean;
+  onRetry?: () => void;
+  retrying?: boolean;
 };
 
 export function ResultsScreen({
@@ -138,6 +140,8 @@ export function ResultsScreen({
   clarity,
   submitStatus,
   statusVisible,
+  onRetry,
+  retrying = false,
 }: ResultsScreenProps) {
   return (
     <main className="rq-modern-page rq-results-page">
@@ -159,12 +163,31 @@ export function ResultsScreen({
             </h1>
           </header>
 
-          {submitStatus && statusVisible && (
-            <div
-              className={`rq-status-modern rq-status-${submitStatus.type} rq-status-fadeout`}
-            >
-              {submitStatus.message}
+          {submitStatus && submitStatus.type === "error" ? (
+            // Persistent (non-fading) so a taker whose result didn't sync
+            // can act on it — with a working Retry.
+            <div className="rq-status-modern rq-status-error" role="alert">
+              <span>{submitStatus.message}</span>
+              {onRetry && (
+                <button
+                  type="button"
+                  className="rq-status-retry"
+                  onClick={onRetry}
+                  disabled={retrying}
+                >
+                  {retrying ? "Retrying…" : "Retry"}
+                </button>
+              )}
             </div>
+          ) : (
+            submitStatus &&
+            statusVisible && (
+              <div
+                className={`rq-status-modern rq-status-${submitStatus.type} rq-status-fadeout`}
+              >
+                {submitStatus.message}
+              </div>
+            )
           )}
 
           <article className="rq-results-hero">
