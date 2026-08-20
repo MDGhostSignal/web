@@ -13,29 +13,32 @@ import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { navLinks } from "@/lib/nav";
 
-import { HeroBackgroundVideo } from "./HeroBackgroundVideo";
-import { RosterCarousel } from "./RosterCarousel";
-import styles from "./page.module.css";
+import { HeroBackgroundVideo } from "../HeroBackgroundVideo";
+import { RosterCarousel } from "../RosterCarousel";
+import styles from "../page.module.css";
 
 /**
- * /invitation — the full-page version of the cold-outreach email
- * (lib/cold-outreach-email.ts). The email links here as "the full
- * version"; same section order, expanded for desktop width:
+ * /invitation/creators — the creator-facing twin of /invitation. Same
+ * design shell and section order (spinning glyph + wordmark → invitation
+ * headline → intro → who-we-work-with carousel → why-this-works value
+ * props → pull-quote → co-founders → XQ + Snowdrift CTA → footer), but
+ * the persuasion copy speaks to podcasters, not advertisers.
  *
- *   spinning glyph + wordmark → two-line invitation headline →
- *   intro copy → what-is-GHOSTSignal (+ the three value props) →
- *   co-founders (full bios + LinkedIn) → pull-quote →
- *   client-card carousel (interactive: arrows + ← → keys) →
- *   CTA → Snowdrift ad → footer.
+ * Where /invitation addresses brands ("we place you in front of
+ * audiences… without individual podcaster deals"), this page mirrors the
+ * creator voice from /for-creators ("your voice is not for sale… we
+ * protect your voice, honor your audience"). It shares the same CSS
+ * module and the RosterCarousel/HeroBackgroundVideo components with the
+ * brand page — keep both in step when the shell changes.
  *
- * Copy is kept in lockstep with the email template by hand — when the
- * email's constants change, mirror them here.
+ * Copy is kept in lockstep with /for-creators by hand — when its
+ * value props change, mirror them here.
  */
 
 export const metadata = {
-  title: "You're invited — the GHOSTSignal ecosystem",
+  title: "You're invited — GHOSTSignal for creators",
   description:
-    "GHOSTSignal is a podcast network that pairs brands with shows whose audiences already share their values. This is your invitation to the GHOSTSignal ecosystem.",
+    "GHOSTSignal is the values-based podcast advertising network. Your voice isn't for sale and your audience isn't a data point — this is your invitation to monetize your show without compromising what it's for.",
 };
 
 /** Mirrored from who-are-we/FoundersSection.tsx — update together. */
@@ -74,26 +77,26 @@ const FOUNDERS = [
   },
 ] as const;
 
-/** The email's pitch, given room — value props from /for-advertisers. */
+/** Creator value props — mirrored from /for-creators, given room. */
 const FEATURES = [
   {
-    title: "Highly-attuned audiences",
+    title: "Soul-aligned partnerships",
     description:
-      "We place you in front of considered communities where alignment runs deep — listeners who already share your values.",
+      "We match you with brands whose mission and products align with your own — never a bolt-on ad, always a fit your audience can feel.",
   },
   {
-    title: "Zero admin overhead",
+    title: "Premium revenue, zero admin",
     description:
-      "Contracts, ad creation, transparent reporting — handled under one membership, without individual podcaster deals.",
+      "We reach for monetization true to your show's reach and values, and handle the contracts, ad creation, reporting, and payments — so you're freed up to create.",
   },
   {
-    title: "Real conversion",
+    title: "A community of world-makers",
     description:
-      "Audiences who are aligned and feel seen are far more likely to become customers. Resonance beats reach.",
+      "You join a network of like-minded podcasters and brands who care about the kind of future we're building together.",
   },
 ] as const;
 
-export default function InvitationPage() {
+export default function CreatorInvitationPage() {
   return (
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
@@ -128,16 +131,18 @@ export default function InvitationPage() {
           <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroLede}>
               GHOSTSignal is the values-based podcast advertising network.
-              We create partnerships that feel good, because they are
-              good. When brands and creators are values-aligned,
-              advertising contributes to the world we all want to make.
+              Your voice isn&rsquo;t for sale and your audience isn&rsquo;t a
+              data point &mdash; so we protect both, handle the admin, and
+              match you with brands who want to build the world alongside
+              you. Monetization that&rsquo;s true to your show, and to the
+              people who listen.
             </p>
           </ScrollFadeUp>
         </Container>
       </Section>
 
       {/* Who we work with — interactive five-card carousel.
-          Swapped above "What this is" so it owns the purple band. */}
+          Swapped above "Why this works" so it owns the purple band. */}
       <Section className={styles.rosterSection}>
         <Container className={styles.roster}>
           <ScrollFadeUp index={0} duration={1.6}>
@@ -149,11 +154,11 @@ export default function InvitationPage() {
         </Container>
       </Section>
 
-      {/* How we do it — the description panel, now above the pull-quote */}
+      {/* Why this works — the creator value props */}
       <Section className={styles.aboutSection}>
         <Container className={styles.about}>
           <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>How we do it</p>
+            <p className={styles.eyebrow}>Why this works</p>
           </ScrollFadeUp>
           <div className={styles.featuresGrid}>
             {FEATURES.map((feature, i) => (
@@ -169,19 +174,19 @@ export default function InvitationPage() {
         </Container>
       </Section>
 
-      {/* Pull-quote — now below the explainer */}
+      {/* Pull-quote — the for-creators rallying line */}
       <Section className={styles.quoteSection}>
         <Container className={styles.quote}>
           <div className={styles.morse} aria-hidden="true" />
           <SplitLinesReveal duration={2}>
             <p className={styles.quoteText}>
-              &ldquo;We help brands zoom in on the right people.&rdquo;
+              &ldquo;You don&rsquo;t need a million downloads to matter.&rdquo;
             </p>
           </SplitLinesReveal>
         </Container>
       </Section>
 
-      {/* The co-founders — full bios, the email only had room for faces */}
+      {/* The co-founders — full bios */}
       <Section className={styles.foundersSection}>
         <Container className={styles.founders}>
           <ScrollFadeUp index={0} duration={1.6}>
