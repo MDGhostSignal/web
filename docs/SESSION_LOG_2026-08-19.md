@@ -240,3 +240,36 @@ download feed**. Includes network ID `d40f1918-…-55b357b3ce18` and logistics
 questions (delivery/S3 ownership, format/schema, cadence, backfill). Open before
 sending: Bill's email, sender name, and whether to fold in the June open
 question (active campaigns show impressions but `current_spend = 0`).
+
+## IG carousels redone (social stills)
+
+First pass reused photos on the 8-slide roster and used generic type. Full redo
+of all 7 carousels under `assets/grok/stills/social-2026-08-19/ig/`:
+
+- **No duplicate photos** inside a carousel (builder asserts this). Roster is
+  8 distinct frames: TV static, Rabbit Room house, Habit pinecone, Hutchmoot
+  studio, Biblical Mind art, Tonja's toffee, Sunshine living room, GS mark.
+- **Type** matches invitation hero + design-system: Work Sans Bold 60px,
+  line-height 1.12, tracking −0.02em, uppercase 0.14em eyebrow, morse strip,
+  photo scrim. Copy is the real IG lines / official roster blurbs.
+- **Roster discs** match invitation `.cardDisc` (rounded square + ring),
+  official logos — no white plates. Biblical Mind dotted ring redrawn at disc
+  resolution (source logo is 70×70).
+- Rebuild: `python assets/grok/stills/social-2026-08-19/_build_carousels.py`
+
+Files: `_build_carousels.py`, `ig/01-roster` … `ig/07-invited`, `README.md`,
+`assets/grok/LOG.md`.
+
+## FB / LinkedIn / X squares (social stills)
+
+IG carousels were posting-ready; the 1:1 heroes for the other platforms were
+still untyped stills, and `p1-roster-grid.jpg` still used the first-pass white
+plates with tiny logos. Built branded 1080×1080 squares:
+
+- Output: `assets/grok/stills/social-2026-08-19/squares/01-roster.jpg` …
+  `07-invited.jpg`.
+- Same invitation type (Work Sans, morse eyebrow, photo scrim).
+- Roster square: official discs on the Persian Green field (color bars cropped
+  out). Not the Imagine polaroid grid.
+- Invited square uses the empty stone arch so the headline does not sit on
+  the chair.
