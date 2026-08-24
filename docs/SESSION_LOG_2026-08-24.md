@@ -10,7 +10,7 @@ Replaced the three mid-page benefit cards on `/invitation` ("How we do it") with
 2. World-Making Membership
 3. Values-Aligned Conversion
 
-Same three bodies copied into the cold-outreach email (`VALUE_PROPS`) so the page and Mike's invite mail stay in lockstep. `/invitation/creators` left unchanged (creator-facing props).
+Same three titles in the cold-outreach email (`VALUE_PROPS`); bodies then shortened to one tight beat each so they fit the 584px mail column. `/invitation` keeps the long page copy. `/invitation/creators` left unchanged.
 
 ## Files
 

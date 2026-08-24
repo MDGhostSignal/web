@@ -102,19 +102,20 @@ const WHAT_IS_THIS =
 /** The pull-quote above the card rotation. */
 const QUOTE = "We help brands zoom in on the right people.";
 
-/** "How we do it" — the three value-props from the /invitation page. */
+/** "How we do it" — same three claims as /invitation, shortened to
+ *  fit the 584px mail column (the page keeps the long bodies). */
 const VALUE_PROPS = [
   {
     title: "Podcast Ad Resonance",
-    body: "Podcasting gives your brand an intimate voice, turning passive listeners into active participants. With host-read podcast ads driving 70% brand recall (double social banners), it is an effective, relational way to speak to an engaged audience.",
+    body: "Host-read ads give your brand an intimate voice and 70% recall — double social banners — with listeners who actually take part.",
   },
   {
     title: "World-Making Membership",
-    body: "Join a community of values-aware creators and brands who understand they are making the world through their work. GHOSTSignal handles matching tech, contracts, campaigns, and reporting — giving you network-wide resonance and reach without the hassle of individual deals.",
+    body: "Join values-aware creators and brands making the world through their work. We handle matching, contracts, campaigns, and reporting.",
   },
   {
     title: "Values-Aligned Conversion",
-    body: "We find a place for your brand among values-aligned communities you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust, and high-trust environments see superior economic value.",
+    body: "We place your brand among values-aligned communities you can be proud of. Alignment builds trust — Acemoglu's finding — and superior economic value.",
   },
 ] as const;
 
