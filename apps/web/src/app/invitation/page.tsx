@@ -77,19 +77,19 @@ const FOUNDERS = [
 /** The email's pitch, given room — value props from /for-advertisers. */
 const FEATURES = [
   {
-    title: "Highly-attuned audiences",
+    title: "Podcast Ad Resonance",
     description:
-      "We place you in front of considered communities where alignment runs deep — listeners who already share your values.",
+      "Podcasting gives your brand an intimate voice, turning passive listeners into active participants. With host-read podcast ads driving 70% brand recall (double social banners), it is an effective, relational way to speak to an engaged audience.",
   },
   {
-    title: "Zero admin overhead",
+    title: "World-Making Membership",
     description:
-      "Contracts, ad creation, transparent reporting — handled under one membership, without individual podcaster deals.",
+      "Join a community of values-aware creators and brands who understand they are making the world through their work. GHOSTSignal handles matching tech, contracts, campaigns, and reporting — giving you network-wide resonance and reach without the hassle of individual deals.",
   },
   {
-    title: "Real conversion",
+    title: "Values-Aligned Conversion",
     description:
-      "Audiences who are aligned and feel seen are far more likely to become customers. Resonance beats reach.",
+      "We find a place for your brand among values-aligned communities you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust, and high-trust environments see superior economic value.",
   },
 ] as const;
 
