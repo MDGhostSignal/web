@@ -48,14 +48,21 @@ export function inviteEmailHtml({
   welcome,
   note,
   inviteUrl,
+  alreadyHasAccount = false,
 }: {
   firstName: string;
   /** The welcome paragraph — template or the team's personal text. */
   welcome: string;
   note: string | null;
   inviteUrl: string;
+  /** True when this email already has a Studio login — CTA is sign-in. */
+  alreadyHasAccount?: boolean;
 }): string {
   const name = escapeHtml(firstName);
+  const ctaLabel = alreadyHasAccount ? "Sign in to Studio" : "Set up your account";
+  const ctaHint = alreadyHasAccount
+    ? "You already have a Studio login for this email &mdash; use the password you set before. Forgot it? Use &ldquo;Forgot password&rdquo; on the sign-in page."
+    : "Your details are already filled in &mdash; check them, set a password, confirm your email and you&rsquo;re in. This link is personal to <strong style=\"color: #0e1119;\">this email address</strong> and expires in 30 days; Studio is invite-only, so it&rsquo;s your key in.";
   const noteBlock = note
     ? `
           <tr>
@@ -108,7 +115,7 @@ export function inviteEmailHtml({
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td bgcolor="#7c58d6" style="background-color: #7c58d6; border: 1px solid #6a45c7; border-radius: 10px;">
-                    <a href="${inviteUrl}" style="display: inline-block; padding: 12px 26px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">Set up your account</a>
+                    <a href="${inviteUrl}" style="display: inline-block; padding: 12px 26px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none;">${ctaLabel}</a>
                   </td>
                 </tr>
               </table>
@@ -125,7 +132,7 @@ export function inviteEmailHtml({
                 <tr>
                   <td style="padding: 16px 20px;">
                     <p style="margin: 0; font-size: 13px; color: #5a5e66; line-height: 1.7;">
-                      Your details are already filled in &mdash; check them, set a password, confirm your email and you&rsquo;re in. This link is personal to <strong style="color: #0e1119;">this email address</strong> and expires in 30 days; Studio is invite-only, so it&rsquo;s your key in.
+                      ${ctaHint}
                     </p>
                   </td>
                 </tr>

@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
  *  statically prerendered. */
 export const dynamic = "force-dynamic";
 
-import { loadCurrentStudioMember } from "@/lib/studio-auth";
+import {
+  bounceUnlinkedStudioSession,
+  loadCurrentStudioMember,
+} from "@/lib/studio-auth";
 import {
   loadMemberIntake,
   loadStudioOrgProfile,
@@ -27,6 +30,7 @@ import styles from "../studio.module.css";
  *  through the team. */
 export default async function StudioProfilePage() {
   const member = await loadCurrentStudioMember();
+  await bounceUnlinkedStudioSession(member);
   if (!member) redirect("/studio/login");
   if (!member.isApproved) redirect("/studio/pending");
 

@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { loadCurrentStudioMember } from "@/lib/studio-auth";
+import {
+  bounceUnlinkedStudioSession,
+  loadCurrentStudioMember,
+} from "@/lib/studio-auth";
 
 /** Auth-gated state page; render every request. */
 export const dynamic = "force-dynamic";
@@ -12,6 +15,7 @@ import styles from "../studio.module.css";
  *  doesn't get bookmarked as a holding pen. */
 export default async function StudioPendingPage() {
   const member = await loadCurrentStudioMember();
+  await bounceUnlinkedStudioSession(member);
   if (member?.isApproved) redirect("/studio");
 
   return (

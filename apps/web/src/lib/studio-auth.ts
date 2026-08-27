@@ -30,6 +30,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { linkMemberSubmissionsByEmail } from "@/lib/members";
 
@@ -158,6 +159,39 @@ export async function scopedUpdate(
   if (error) throw new StudioAuthError(error.message, 500);
 }
 
+const UNLINKED_LOGIN = "/studio/login?auth_error=unlinked";
+
+/** Auth user for this request, or null. Used to tell a cold visitor
+ *  apart from a leftover login whose CRM row is gone. */
+export async function getStudioAuthUser() {
+  const supabase = await createStudioServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+}
+
+/** Sign out the Studio cookie session. */
+export async function signOutStudioSession() {
+  const supabase = await createStudioServerClient();
+  await supabase.auth.signOut();
+}
+
+/**
+ * If this request has an Auth session but no members row, sign out
+ * and send them to login with a clear error — never the public
+ * /studio landing, which looks like sign-in silently failed.
+ */
+export async function bounceUnlinkedStudioSession(
+  member: StudioMember | null,
+): Promise<void> {
+  if (member) return;
+  const user = await getStudioAuthUser();
+  if (!user) return;
+  await signOutStudioSession();
+  redirect(UNLINKED_LOGIN);
+}
+
 /** Load the currently-signed-in member from the database. Returns
  *  null when no auth session is active OR when the auth user isn't
  *  yet linked to a member row (shouldn't happen after registration,
@@ -174,14 +208,33 @@ export async function loadCurrentStudioMember(): Promise<StudioMember | null> {
   // for the members table aren't authored yet, so we go through the
   // admin client. Scoped to the authed user's id only.
   const admin = createStudioAdminClient();
-  const { data, error } = await admin
+  const memberSelect =
+    "id, auth_user_id, email, first_name, last_name, member_type, brand_id, creator_id, activated_at, xq_archetype, xq_submission_id, rq_code, rq_submission_id";
+  const { data: byAuth, error } = await admin
     .from("members")
-    .select(
-      "id, auth_user_id, email, first_name, last_name, member_type, brand_id, creator_id, activated_at, xq_archetype, xq_submission_id, rq_code, rq_submission_id",
-    )
+    .select(memberSelect)
     .eq("auth_user_id", user.id)
     .maybeSingle();
-  if (error || !data) return null;
+  let data = byAuth;
+  if (error) return null;
+  // CRM row was deleted and re-invited: new row exists by email but
+  // auth_user_id is still null, so password sign-in succeeds and
+  // /studio renders the public landing. Re-attach once.
+  if (!data && user.email) {
+    const { data: byEmail } = await admin
+      .from("members")
+      .select(memberSelect)
+      .ilike("email", user.email)
+      .maybeSingle();
+    if (byEmail && !byEmail.auth_user_id) {
+      await admin
+        .from("members")
+        .update({ auth_user_id: user.id })
+        .eq("id", byEmail.id);
+      data = { ...byEmail, auth_user_id: user.id };
+    }
+  }
+  if (!data) return null;
 
   let xqSubmissionId = data.xq_submission_id as string | null;
   let xqArchetype = data.xq_archetype as string | null;

@@ -7,6 +7,7 @@ import {
   type Member,
   type MemberWritable,
 } from "@/lib/members";
+import { createStudioAdminClient } from "@/lib/studio-auth";
 import { supabaseRest } from "@/lib/supabase-admin";
 
 const TABLE = process.env.MEMBERS_TABLE ?? "members";
@@ -165,6 +166,14 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     );
   }
 
+  const before = await supabaseRest<Array<{ auth_user_id: string | null }>>(
+    `${TABLE}?id=eq.${id}&select=auth_user_id`,
+  );
+  const authUserId =
+    before.ok && Array.isArray(before.data)
+      ? before.data[0]?.auth_user_id
+      : null;
+
   const res = await supabaseRest<Member[]>(`${TABLE}?id=eq.${id}`, {
     method: "DELETE",
     prefer: "return=representation",
@@ -183,6 +192,18 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       { ok: false, error: "Member not found." },
       { status: 404 },
     );
+  }
+
+  // Don't leave a Studio Auth user behind — that's the empty loop:
+  // password sign-in succeeds, /studio finds no members row, landing
+  // looks like a failed login. Best-effort; CRM delete still succeeds
+  // if Auth is already gone.
+  if (authUserId) {
+    try {
+      await createStudioAdminClient().auth.admin.deleteUser(authUserId);
+    } catch (err) {
+      console.warn("[members DELETE] Auth user cleanup skipped:", err);
+    }
   }
 
   return NextResponse.json({ ok: true, id });

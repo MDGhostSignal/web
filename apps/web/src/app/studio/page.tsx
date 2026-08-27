@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
  *  on the missing auth context. Render every request. */
 export const dynamic = "force-dynamic";
 
-import { loadCurrentStudioMember } from "@/lib/studio-auth";
+import {
+  bounceUnlinkedStudioSession,
+  loadCurrentStudioMember,
+} from "@/lib/studio-auth";
 import {
   formatDuration,
   formatListens,
@@ -33,6 +36,9 @@ import { StudioHeader } from "./StudioHeader";
  *  their own performance numbers. */
 export default async function StudioDashboardPage() {
   const member = await loadCurrentStudioMember();
+  // Session with no CRM row used to render this landing, so sign-in
+  // looked like a no-op. Bounce those logins to a real error instead.
+  await bounceUnlinkedStudioSession(member);
   // Public landing page — visitors without an authenticated member
   // (i.e. prospective brands or creators who land at /studio cold)
   // see the marketing front door. The "Sign in" CTA in the landing

@@ -47,6 +47,17 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<LoginError | null>(() => {
     if (!callbackErrorCode) return null;
+    if (callbackErrorCode === "unlinked") {
+      return {
+        kind: "structured",
+        title: "Your Studio profile isn't connected",
+        reasons: [
+          "Your login still exists, but the Studio record it belongs to is gone — usually after the contact was deleted from the CRM.",
+        ],
+        footer:
+          "Ask the GHOSTSignal team to invite this email again, then sign in with the same password. Don't create a new account.",
+      };
+    }
     if (
       callbackErrorCode === "otp_expired" ||
       callbackErrorCode === "access_denied"
