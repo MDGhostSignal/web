@@ -275,8 +275,10 @@ export default function Art19Page() {
       <Link href="/admin/art19/cpm" className={styles.toolLink}>
         <span className={styles.toolLinkIcon}>◐</span>
         <span>
-          <strong>Signal Fidelity CPM Calculator</strong>
-          <span className={styles.toolLinkSub}>Ballpark a CPM from position, type & length</span>
+          <strong>Rate & Revenue Calculator</strong>
+          <span className={styles.toolLinkSub}>
+            Direct ad sales · 70/30 split from budget, position, length & read
+          </span>
         </span>
         <span className={styles.toolLinkArrow}>→</span>
       </Link>

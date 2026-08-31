@@ -2,77 +2,45 @@
 
 import { useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/admin";
+import { Modal, PageHeader } from "@/components/admin";
+import { IconHelp } from "@/components/admin/icons";
 
 import styles from "./page.module.css";
 
 /**
- * Signal Fidelity CPM Calculator — Jack's "ballpark" tool.
+ * Rate & Revenue Calculator — Jack's direct-ad-sales 70/30 desk.
  *
- * Inputs (per Jack's brief 2026-06-15, XQ/RQ match removed 2026-07-20):
- *  1. Industry benchmark CPM — base reference
- *  2. Ad position — pre / mid / post-roll
- *  3. Ad type — Host-read vs. Spot
- *  4. Ad length — seconds
+ * Brand budget is split 70% creator / 30% GhostSignal. Position, length,
+ * and creative type only change Gross CPM (and therefore how many
+ * impressions the same budget buys). Constants are the rate card —
+ * change them here and the UI labels follow.
  *
- * Output: a ballpark CPM estimate with a ±15% confidence band.
- *
- * Multipliers below are placeholder defaults — every constant is
- * tunable in one block at the top of the file. When Jack has real
- * data, swap the numbers and the rest of the tool falls in line.
+ * Replaces the earlier Signal Fidelity ballpark (benchmark × multipliers
+ * ±15%). Same route: /admin/art19/cpm.
  */
 
-// === Tunable formula constants ===
-const POSITION_MULT = { pre: 0.85, mid: 1.0, post: 0.65 } as const;
-const TYPE_MULT = { host: 1.3, spot: 0.85 } as const;
-/** Piecewise length curve. Linearly interpolated between points. */
-const LENGTH_CURVE: Array<[seconds: number, mult: number]> = [
-  [15, 0.7],
-  [30, 1.0],
-  [60, 1.5],
-  [90, 1.8],
-];
-const CONFIDENCE_BAND = 0.15;
+const CREATOR_SHARE = 0.7;
+const PLATFORM_SHARE = 0.3;
 
-type AdPosition = keyof typeof POSITION_MULT;
-type AdType = keyof typeof TYPE_MULT;
+const POSITION = {
+  pre: { label: "Pre-roll", cpm: 25 },
+  mid: { label: "Mid-roll", cpm: 35 },
+  post: { label: "Post-roll", cpm: 20 },
+} as const;
 
-function lengthMultiplier(seconds: number): number {
-  if (seconds <= LENGTH_CURVE[0][0]) return LENGTH_CURVE[0][1];
-  if (seconds >= LENGTH_CURVE[LENGTH_CURVE.length - 1][0]) {
-    return LENGTH_CURVE[LENGTH_CURVE.length - 1][1];
-  }
-  for (let i = 0; i < LENGTH_CURVE.length - 1; i++) {
-    const [a, av] = LENGTH_CURVE[i];
-    const [b, bv] = LENGTH_CURVE[i + 1];
-    if (seconds >= a && seconds <= b) {
-      return av + ((seconds - a) / (b - a)) * (bv - av);
-    }
-  }
-  return 1.0;
-}
+const LENGTH = {
+  "30": { label: "30 seconds", mult: 1.0 },
+  "60": { label: "60 seconds", mult: 1.2 },
+} as const;
 
-function calculateCpm(opts: {
-  benchmark: number;
-  position: AdPosition;
-  type: AdType;
-  length: number;
-}): { estimate: number; lo: number; hi: number; mults: Record<string, number> } {
-  const positionMult = POSITION_MULT[opts.position];
-  const typeMult = TYPE_MULT[opts.type];
-  const lengthMult = lengthMultiplier(opts.length);
-  const estimate = opts.benchmark * positionMult * typeMult * lengthMult;
-  return {
-    estimate,
-    lo: estimate * (1 - CONFIDENCE_BAND),
-    hi: estimate * (1 + CONFIDENCE_BAND),
-    mults: {
-      position: positionMult,
-      type: typeMult,
-      length: lengthMult,
-    },
-  };
-}
+const CREATIVE = {
+  host: { label: "Host-read", mult: 1.3 },
+  producer: { label: "Producer spot", mult: 1.0 },
+} as const;
+
+type Position = keyof typeof POSITION;
+type Length = keyof typeof LENGTH;
+type Creative = keyof typeof CREATIVE;
 
 const fmtMoney = (n: number) =>
   n.toLocaleString("en-US", {
@@ -81,257 +49,173 @@ const fmtMoney = (n: number) =>
     maximumFractionDigits: 2,
   });
 
-const fmtMult = (n: number) => `× ${n.toFixed(2)}`;
+const fmtCount = (n: number) => Math.round(n).toLocaleString("en-US");
+
+const pct = (n: number) => `${Math.round(n * 100)}%`;
 
 export default function CpmCalculatorPage() {
-  const [benchmark, setBenchmark] = useState(25);
-  const [position, setPosition] = useState<AdPosition>("mid");
-  const [type, setType] = useState<AdType>("host");
-  const [length, setLength] = useState(30);
+  const [budget, setBudget] = useState(1500);
+  const [position, setPosition] = useState<Position>("mid");
+  const [length, setLength] = useState<Length>("30");
+  const [creative, setCreative] = useState<Creative>("host");
+  const [helpOpen, setHelpOpen] = useState(false);
 
-  const result = useMemo(
-    () => calculateCpm({ benchmark, position, type, length }),
-    [benchmark, position, type, length],
-  );
+  const result = useMemo(() => {
+    const grossCpm =
+      POSITION[position].cpm * LENGTH[length].mult * CREATIVE[creative].mult;
+    const impressions = grossCpm > 0 ? (budget / grossCpm) * 1000 : 0;
+    return {
+      grossCpm,
+      impressions,
+      creatorPayout: budget * CREATOR_SHARE,
+      netRpm: grossCpm * CREATOR_SHARE,
+      platformProfit: budget * PLATFORM_SHARE,
+      platformSpread: grossCpm * PLATFORM_SHARE,
+    };
+  }, [budget, position, length, creative]);
 
   return (
     <div className={styles.page}>
       <PageHeader
-        title="Signal Fidelity CPM Calculator"
-        subtitle="Ballpark CPM estimator. Dial in the deal characteristics; the estimate updates live. Multipliers are placeholder defaults — refine the constants in page.tsx as the model matures."
+        title="Rate & Revenue Calculator"
+        subtitle="Direct ad sales · 70/30 split"
+        count={
+          <button
+            type="button"
+            className={styles.infoButton}
+            onClick={() => setHelpOpen(true)}
+            aria-label="How this calculator works"
+            title="How this works"
+          >
+            <IconHelp className={styles.infoIcon} />
+          </button>
+        }
       />
 
-      <div className={styles.controls}>
-        <Slider
-          label="Industry Benchmark"
-          unit="$"
-          suffix="CPM"
-          value={benchmark}
-          min={5}
-          max={150}
-          step={1}
-          display={`${benchmark}`}
-          onChange={setBenchmark}
-        />
-        <Slider
-          label="Ad Length"
-          suffix="s"
-          value={length}
-          min={10}
-          max={120}
-          step={5}
-          display={`${length}`}
-          onChange={setLength}
-        />
-        <Segmented<AdPosition>
-          label="Position"
-          value={position}
-          options={[
-            { value: "pre", label: "Pre" },
-            { value: "mid", label: "Mid" },
-            { value: "post", label: "Post" },
-          ]}
-          onChange={setPosition}
-        />
-        <Segmented<AdType>
-          label="Read Type"
-          value={type}
-          options={[
-            { value: "host", label: "Host-read" },
-            { value: "spot", label: "Spot" },
-          ]}
-          onChange={setType}
-        />
+      <div className={styles.workspace}>
+        <aside className={styles.controls}>
+          <label className={styles.control}>
+            <span className={styles.controlLabel}>Campaign budget</span>
+            <span className={styles.budgetField}>
+              <span className={styles.budgetPrefix} aria-hidden="true">
+                $
+              </span>
+              <input
+                type="number"
+                min={0}
+                step={50}
+                className={styles.budgetInput}
+                value={Number.isFinite(budget) ? budget : 0}
+                onChange={(e) => setBudget(Number(e.target.value) || 0)}
+              />
+            </span>
+          </label>
+
+          <Segmented<Position>
+            label="Ad position"
+            value={position}
+            options={(Object.keys(POSITION) as Position[]).map((key) => ({
+              value: key,
+              label: `${POSITION[key].label} · $${POSITION[key].cpm}`,
+            }))}
+            onChange={setPosition}
+          />
+          <Segmented<Length>
+            label="Ad length"
+            value={length}
+            options={(Object.keys(LENGTH) as Length[]).map((key) => ({
+              value: key,
+              label: `${LENGTH[key].label}${LENGTH[key].mult === 1 ? "" : ` · +${Math.round((LENGTH[key].mult - 1) * 100)}%`}`,
+            }))}
+            onChange={setLength}
+          />
+          <Segmented<Creative>
+            label="Creative type"
+            value={creative}
+            options={(Object.keys(CREATIVE) as Creative[]).map((key) => ({
+              value: key,
+              label: `${CREATIVE[key].label}${CREATIVE[key].mult === 1 ? "" : ` · +${Math.round((CREATIVE[key].mult - 1) * 100)}%`}`,
+            }))}
+            onChange={setCreative}
+          />
+        </aside>
+
+        <div className={styles.dashboard}>
+          <article className={styles.column}>
+            <h2 className={styles.columnTitle}>Brand cost</h2>
+            <Metric label="Gross CPM" value={fmtMoney(result.grossCpm)} />
+            <Metric
+              label="Total impressions"
+              value={fmtCount(result.impressions)}
+            />
+          </article>
+
+          <article className={styles.column}>
+            <h2 className={styles.columnTitle}>Creator payout</h2>
+            <Metric
+              label={`Net RPM (${pct(CREATOR_SHARE)})`}
+              value={fmtMoney(result.netRpm)}
+              accent
+            />
+            <Metric
+              label="Total creator payout"
+              value={fmtMoney(result.creatorPayout)}
+              accent
+            />
+          </article>
+
+          <article className={styles.column}>
+            <h2 className={styles.columnTitle}>GhostSignal</h2>
+            <Metric
+              label={`Platform spread (${pct(PLATFORM_SHARE)})`}
+              value={fmtMoney(result.platformSpread)}
+            />
+            <Metric
+              label="Total GS profit"
+              value={fmtMoney(result.platformProfit)}
+            />
+          </article>
+
+          <p className={styles.footerNote}>
+            Matching, data, and routing are included in the Gross CPM. No
+            extra fee on top.
+          </p>
+        </div>
       </div>
 
-      <div className={styles.resultRow}>
-        <div className={styles.output}>
-          <span className={styles.outputLabel}>Estimated CPM</span>
-          <span className={styles.outputValue}>{fmtMoney(result.estimate)}</span>
-          <span className={styles.outputHint}>
-            Range {fmtMoney(result.lo)} – {fmtMoney(result.hi)} (±15%)
-          </span>
-        </div>
-
-        <div className={styles.breakdown}>
-          <div className={styles.breakdownTitle}>Signal chain</div>
-          <BreakdownRow name="Base" value={fmtMoney(benchmark)} />
-          <BreakdownRow name="Position" value={fmtMult(result.mults.position)} />
-          <BreakdownRow name="Type" value={fmtMult(result.mults.type)} />
-          <BreakdownRow name="Length" value={fmtMult(result.mults.length)} />
-        </div>
-      </div>
-
-      <HowItWorks />
+      {helpOpen && (
+        <Modal
+          open
+          onClose={() => setHelpOpen(false)}
+          title="How this works"
+          subtitle="The whole calculator in plain language."
+          size="sm"
+        >
+          <p>
+            The brand sets a <strong>budget</strong> — that is all the money
+            in the deal.
+          </p>
+          <p>
+            We split that money the same way every time: the creator gets{" "}
+            <strong>{pct(CREATOR_SHARE)}</strong>, GhostSignal keeps{" "}
+            <strong>{pct(PLATFORM_SHARE)}</strong>.
+          </p>
+          <p>
+            Where the ad sits, how long it is, and who reads it only change
+            the <strong>CPM</strong> — the price for every 1,000 listens. A
+            higher CPM means the same budget buys fewer listens. A lower CPM
+            buys more.
+          </p>
+          <p>
+            Right now, with these settings, the brand pays{" "}
+            <strong>{fmtMoney(budget)}</strong> and gets about{" "}
+            <strong>{fmtCount(result.impressions)}</strong> listens. The
+            creator takes <strong>{fmtMoney(result.creatorPayout)}</strong>.
+            GhostSignal takes <strong>{fmtMoney(result.platformProfit)}</strong>.
+          </p>
+        </Modal>
+      )}
     </div>
-  );
-}
-
-// === Small sub-components ===
-
-/**
- * Expandable how-to panel for first-time users (written for Mike).
- * Multiplier tables render from the formula constants above, so
- * tuning the constants updates this documentation automatically.
- */
-function HowItWorks() {
-  const positionRows: Array<[string, number]> = [
-    ["Pre-roll", POSITION_MULT.pre],
-    ["Mid-roll", POSITION_MULT.mid],
-    ["Post-roll", POSITION_MULT.post],
-  ];
-  const typeRows: Array<[string, number]> = [
-    ["Host-read", TYPE_MULT.host],
-    ["Spot", TYPE_MULT.spot],
-  ];
-
-  return (
-    <details className={styles.help}>
-      <summary className={styles.helpSummary}>
-        <span className={styles.helpIcon} aria-hidden="true">
-          ?
-        </span>
-        How this calculator works
-        <span className={styles.helpChevron} aria-hidden="true">
-          ▾
-        </span>
-      </summary>
-
-      <div className={styles.helpBody}>
-        <p>
-          This tool produces a <strong>ballpark CPM</strong> (cost per 1,000
-          impressions) for a podcast ad deal. It is an estimating aid for
-          quick conversations — not a rate card and not a quote.
-        </p>
-
-        <h4 className={styles.helpHeading}>Using it</h4>
-        <ol className={styles.helpList}>
-          <li>
-            Set the <strong>Industry Benchmark</strong> slider to the going
-            CPM for comparable shows in the genre — this is the starting
-            number everything else adjusts.
-          </li>
-          <li>
-            Set the <strong>Ad Length</strong> slider to the spot duration in
-            seconds.
-          </li>
-          <li>
-            Pick the <strong>Position</strong> (where the ad sits in the
-            episode) and the <strong>Read Type</strong> (host-read vs. a
-            produced spot).
-          </li>
-          <li>
-            Read the result — the big amber number is the estimate, and the
-            range below it is a ±{Math.round(CONFIDENCE_BAND * 100)}%
-            confidence band. Quote the range, not the single number.
-          </li>
-        </ol>
-
-        <h4 className={styles.helpHeading}>The math</h4>
-        <p>
-          The benchmark is multiplied by three factors. The{" "}
-          <strong>Signal chain</strong> card shows each factor for the
-          current settings, so you can see exactly why the estimate is what
-          it is.
-        </p>
-        <div className={styles.helpTables}>
-          <table className={styles.helpTable}>
-            <caption className={styles.helpTableCaption}>Position</caption>
-            <tbody>
-              {positionRows.map(([name, mult]) => (
-                <tr key={name}>
-                  <td>{name}</td>
-                  <td className={styles.helpTableValue}>{fmtMult(mult)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <table className={styles.helpTable}>
-            <caption className={styles.helpTableCaption}>Read type</caption>
-            <tbody>
-              {typeRows.map(([name, mult]) => (
-                <tr key={name}>
-                  <td>{name}</td>
-                  <td className={styles.helpTableValue}>{fmtMult(mult)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <table className={styles.helpTable}>
-            <caption className={styles.helpTableCaption}>
-              Length (interpolated between)
-            </caption>
-            <tbody>
-              {LENGTH_CURVE.map(([seconds, mult]) => (
-                <tr key={seconds}>
-                  <td>{seconds}s</td>
-                  <td className={styles.helpTableValue}>{fmtMult(mult)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p>
-          Example: a $25 benchmark, mid-roll, host-read, 30s →{" "}
-          <span className={styles.helpMono}>
-            $25 × {POSITION_MULT.mid.toFixed(2)} × {TYPE_MULT.host.toFixed(2)}{" "}
-            × 1.00 = {fmtMoney(25 * POSITION_MULT.mid * TYPE_MULT.host)}
-          </span>
-          .
-        </p>
-
-        <p className={styles.helpCaveat}>
-          The multiplier values are placeholder defaults until we calibrate
-          them against real campaign data — treat estimates as
-          conversation-starters, and sanity-check against recent comparable
-          deals in the ART19 Campaigns dashboard.
-        </p>
-      </div>
-    </details>
-  );
-}
-
-function Slider({
-  label,
-  unit,
-  suffix,
-  value,
-  min,
-  max,
-  step,
-  display,
-  onChange,
-}: {
-  label: string;
-  unit?: string;
-  suffix?: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  display: string;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <label className={styles.control}>
-      <div className={styles.controlHead}>
-        <span className={styles.controlLabel}>{label}</span>
-        <span className={styles.controlReadout}>
-          {unit ? <span className={styles.controlUnit}>{unit}</span> : null}
-          {display}
-          {suffix ? <span className={styles.controlSuffix}>{suffix}</span> : null}
-        </span>
-      </div>
-      <input
-        type="range"
-        className={styles.slider}
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        onChange={(e) => onChange(Number(e.target.value))}
-      />
-    </label>
   );
 }
 
@@ -348,9 +232,7 @@ function Segmented<T extends string>({
 }) {
   return (
     <div className={styles.control}>
-      <div className={styles.controlHead}>
-        <span className={styles.controlLabel}>{label}</span>
-      </div>
+      <span className={styles.controlLabel}>{label}</span>
       <div className={styles.chipGroup} role="radiogroup" aria-label={label}>
         {options.map((opt) => {
           const active = opt.value === value;
@@ -372,11 +254,23 @@ function Segmented<T extends string>({
   );
 }
 
-function BreakdownRow({ name, value }: { name: string; value: string }) {
+function Metric({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div className={styles.breakdownRow}>
-      <span className={styles.breakdownName}>{name}</span>
-      <span className={styles.breakdownValue}>{value}</span>
+    <div className={styles.metric}>
+      <div className={styles.metricLabel}>{label}</div>
+      <div
+        className={`${styles.metricValue} ${accent ? styles.metricAccent : ""}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }

@@ -275,8 +275,8 @@ const CATEGORIES: Category[] = [
       },
       {
         path: "/admin/art19/cpm",
-        name: "Signal Fidelity CPM Calculator",
-        description: "Ballpark-CPM estimation from benchmark, position, type & length (Jack's spec).",
+        name: "Rate & Revenue Calculator",
+        description: "Direct ad sales 70/30 desk — budget, position, length, read type (Jack's spec).",
         tags: ["internal", "auth-gated"],
       },
       {

@@ -1,41 +1,69 @@
-/* Signal Fidelity CPM Calculator — standard admin look.
- * Everything themes through the --admin-* tokens (see
- * components/admin/tokens.css), so dark + light flip together with
- * the rest of the admin tree — no per-theme overrides needed here.
- * Card / chip / kpi shapes mirror the ART19 dashboard this tool
- * lives under. */
+/* Rate & Revenue Calculator — admin tokens only.
+ * Card / chip shapes follow the ART19 dashboard this tool lives under. */
 
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--admin-space-5);
   padding: var(--admin-space-6);
-  max-width: 1080px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 
-/* ===== Controls ===== */
-
-.controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--admin-space-4);
+.infoButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  transition:
+    color var(--admin-transition-base),
+    background var(--admin-transition-base),
+    border-color var(--admin-transition-base);
 }
 
-.control {
+.infoButton:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border-color: var(--admin-border-strong);
+}
+
+.infoButton:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.infoIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--admin-space-5);
+  align-items: start;
+}
+
+.controls {
   display: flex;
   flex-direction: column;
-  gap: var(--admin-space-3);
-  padding: var(--admin-space-4) 18px;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-5);
   background: var(--admin-surface-1);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
 }
 
-.controlHead {
+.control {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  flex-direction: column;
   gap: var(--admin-space-3);
 }
 
@@ -47,73 +75,46 @@
   font-weight: var(--admin-weight-semibold);
 }
 
-.controlReadout {
+.budgetField {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  padding: 0 var(--admin-space-3);
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+}
+
+.budgetField:focus-within {
+  border-color: var(--admin-accent);
+}
+
+.budgetPrefix {
+  font-family: var(--admin-font-mono);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+}
+
+.budgetInput {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--admin-text-primary);
   font-family: var(--admin-font-mono);
   font-size: var(--admin-text-lg);
   font-weight: var(--admin-weight-bold);
-  color: var(--admin-accent);
-}
-
-.controlUnit,
-.controlSuffix {
-  font-size: var(--admin-text-sm);
-  font-weight: var(--admin-weight-medium);
-  opacity: 0.7;
-  margin: 0 2px;
-}
-
-/* Range slider — accent thumb on a surface track. */
-.slider {
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: var(--admin-surface-3);
-  border-radius: 3px;
+  padding: 10px 0;
   outline: none;
 }
 
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--admin-accent);
-  border: 2px solid var(--admin-bg-elevated);
-  box-shadow: var(--admin-shadow-sm);
-  cursor: pointer;
-  transition: transform var(--admin-transition-fast);
-}
-
-.slider::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-}
-
-.slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--admin-accent);
-  border: 2px solid var(--admin-bg-elevated);
-  box-shadow: var(--admin-shadow-sm);
-  cursor: pointer;
-  transition: transform var(--admin-transition-fast);
-}
-
-.slider::-moz-range-thumb:hover {
-  transform: scale(1.1);
-}
-
-/* ===== Segmented toggles — chip pattern from the ART19 filters ===== */
-
 .chipGroup {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--admin-space-2);
 }
 
 .chip {
-  padding: 6px 10px;
+  padding: 8px 10px;
   background: transparent;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-pill);
@@ -121,7 +122,9 @@
   font-weight: var(--admin-weight-medium);
   color: var(--admin-text-secondary);
   cursor: pointer;
-  transition: background var(--admin-transition-fast),
+  text-align: left;
+  transition:
+    background var(--admin-transition-fast),
     color var(--admin-transition-fast),
     border-color var(--admin-transition-fast);
 }
@@ -144,242 +147,74 @@
   color: var(--admin-bg);
 }
 
-/* ===== Result row — output card + breakdown side by side ===== */
-
-.resultRow {
+.dashboard {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--admin-space-4);
-  align-items: stretch;
 }
 
-.output {
+.column {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: var(--admin-space-1);
-  padding: var(--admin-space-6) var(--admin-space-8);
-  background: var(--admin-accent-softer);
-  border: 1px solid var(--admin-border-focus);
+  gap: var(--admin-space-5);
+  padding: var(--admin-space-5);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
+  min-height: 100%;
+}
+
+.columnTitle {
+  margin: 0;
+  padding-bottom: var(--admin-space-3);
+  border-bottom: 1px solid var(--admin-border);
+  font-size: var(--admin-text-md);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-primary);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metricLabel {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: var(--admin-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-text-primary);
+  line-height: 1.2;
+}
+
+.metricAccent {
+  color: var(--admin-accent);
+}
+
+.footerNote {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--admin-space-4);
   text-align: center;
-}
-
-.outputLabel {
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--admin-text-muted);
-  font-weight: var(--admin-weight-semibold);
-}
-
-.outputValue {
-  font-size: 44px;
-  font-weight: var(--admin-weight-bold);
-  color: var(--admin-accent);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.outputHint {
   font-size: var(--admin-text-sm);
+  line-height: 1.5;
   color: var(--admin-text-muted);
-}
-
-/* ===== Breakdown card (signal chain) ===== */
-
-.breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: var(--admin-space-2);
-  padding: var(--admin-space-4) 18px;
   background: var(--admin-surface-1);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-lg);
-}
-
-.breakdownTitle {
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--admin-text-muted);
-  font-weight: var(--admin-weight-semibold);
-  padding-bottom: var(--admin-space-2);
-  border-bottom: 1px solid var(--admin-border);
-}
-
-.breakdownRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--admin-text-base);
-}
-
-.breakdownName {
-  color: var(--admin-text-secondary);
-}
-
-.breakdownValue {
-  font-family: var(--admin-font-mono);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ===== How-it-works disclosure panel ===== */
-
-.help {
-  background: var(--admin-surface-1);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-lg);
-  overflow: hidden;
-}
-
-.helpSummary {
-  display: flex;
-  align-items: center;
-  gap: var(--admin-space-3);
-  padding: var(--admin-space-4) 18px;
-  font-size: var(--admin-text-base);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-secondary);
-  cursor: pointer;
-  list-style: none;
-  transition: background var(--admin-transition-fast),
-    color var(--admin-transition-fast);
-}
-
-.helpSummary::-webkit-details-marker {
-  display: none;
-}
-
-.helpSummary:hover {
-  background: var(--admin-surface-hover);
-  color: var(--admin-text-primary);
-}
-
-.helpIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--admin-accent-soft);
-  color: var(--admin-accent);
-  font-size: var(--admin-text-sm);
-  font-weight: var(--admin-weight-bold);
-  flex-shrink: 0;
-}
-
-.helpChevron {
-  margin-left: auto;
-  color: var(--admin-text-muted);
-  transition: transform var(--admin-transition-fast);
-}
-
-.help[open] .helpChevron {
-  transform: rotate(180deg);
-}
-
-.helpBody {
-  display: flex;
-  flex-direction: column;
-  gap: var(--admin-space-3);
-  padding: var(--admin-space-4) 18px var(--admin-space-5);
-  border-top: 1px solid var(--admin-border);
-  font-size: var(--admin-text-base);
-  line-height: 1.6;
-  color: var(--admin-text-secondary);
-  max-width: 72ch;
-}
-
-.helpBody strong {
-  color: var(--admin-text-primary);
-}
-
-.helpHeading {
-  margin: var(--admin-space-2) 0 0;
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--admin-text-muted);
-  font-weight: var(--admin-weight-semibold);
-}
-
-.helpList {
-  margin: 0;
-  padding-left: var(--admin-space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--admin-space-2);
-}
-
-.helpTables {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--admin-space-3);
-}
-
-.helpTable {
-  border-collapse: collapse;
-  font-size: var(--admin-text-sm);
-}
-
-.helpTableCaption {
-  text-align: left;
-  font-size: var(--admin-text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--admin-text-muted);
-  font-weight: var(--admin-weight-semibold);
-  padding-bottom: var(--admin-space-1);
-}
-
-.helpTable td {
-  padding: 3px 0;
-  border-bottom: 1px solid var(--admin-border);
-  color: var(--admin-text-secondary);
-}
-
-.helpTable tr:last-child td {
-  border-bottom: none;
-}
-
-.helpTableValue {
-  text-align: right;
-  font-family: var(--admin-font-mono);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-primary);
-  font-variant-numeric: tabular-nums;
-  padding-left: var(--admin-space-6);
-}
-
-.helpMono {
-  font-family: var(--admin-font-mono);
-  font-size: var(--admin-text-sm);
-  color: var(--admin-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.helpCaveat {
-  margin: 0;
-  padding: var(--admin-space-3) var(--admin-space-4);
-  background: var(--admin-warn-soft);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-md);
-  color: var(--admin-text-secondary);
-  font-size: var(--admin-text-sm);
 }
 
-/* ===== Mobile ===== */
-
-@media (max-width: 760px) {
-  .resultRow {
+@media (max-width: 900px) {
+  .workspace {
     grid-template-columns: 1fr;
   }
 
-  .outputValue {
-    font-size: 34px;
+  .dashboard {
+    grid-template-columns: 1fr;
   }
 }
