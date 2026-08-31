@@ -24,7 +24,7 @@ import styles from "./page.module.css";
  *
  *   spinning glyph + wordmark → two-line invitation headline →
  *   intro copy → what-is-GHOSTSignal (+ the three value props) →
- *   co-founders (full bios + LinkedIn) → pull-quote →
+ *   co-founders (one-sentence bios + LinkedIn) → pull-quote →
  *   client-card carousel (interactive: arrows + ← → keys) →
  *   CTA → Snowdrift ad → footer.
  *
@@ -38,14 +38,15 @@ export const metadata = {
     "GHOSTSignal is a podcast network that pairs brands with shows whose audiences already share their values. This is your invitation to the GHOSTSignal ecosystem.",
 };
 
-/** Mirrored from who-are-we/FoundersSection.tsx — update together. */
+/** Names/roles/images mirrored from who-are-we/FoundersSection.tsx.
+ *  Invitation uses a one-sentence bio; who-are-we keeps the full one. */
 const FOUNDERS = [
   {
     name: "Mike Sense",
     role: "Vision & Partnerships",
     location: "Prague, Czechia",
     linkedin: "https://www.linkedin.com/in/mike-sense/",
-    bio: "Mike is good at understanding two important questions: What is a person? And what is shaping the future? He has an appetite for risk-taking adventures, which has resulted in starting two companies that solve real problems that real people encounter in the real world. For him, GHOSTSignal is not just a fun company with friends, but a mission fuelled by curiosity and conviction.",
+    bio: "Mike is good at two questions — what is a person, and what is shaping the future — and GHOSTSignal is his mission, not just a company with friends.",
     image: "/images/who-are-we/mike6.jpg",
   },
   {
@@ -53,7 +54,7 @@ const FOUNDERS = [
     role: "Cultural & Business Strategist",
     location: "Cambridge, UK",
     linkedin: "https://www.linkedin.com/in/jackwharding",
-    bio: "Jack is animated by the belief that the world changes when good creators and good brands find each other. With a background in business strategy, research, and podcasting, he loves to help meaningful ideas reach their audience. His aim is to amplify good signals that cut through static that dulls culture.",
+    bio: "Jack works so good creators and good brands find each other, amplifying the signals that cut through the static that dulls culture.",
     image: "/images/who-are-we/jack11.jpg",
   },
   {
@@ -61,7 +62,7 @@ const FOUNDERS = [
     role: "Design",
     location: "Munich, Germany",
     linkedin: "https://www.linkedin.com/in/whoismartindrexler/",
-    bio: "Martin is an award-winning German designer known for blending creativity, strategy, and measurable impact. With more than 25 international honors, he has led branding and digital experience projects across Europe and the U.S. He brings his passion for shaping meaningful experiences to a new frontier of creator–brand partnership.",
+    bio: "Martin is an award-winning German designer who blends creativity, strategy, and measurable impact at the frontier of creator–brand partnership.",
     image: "/images/who-are-we/martin3.jpg",
   },
   {
@@ -69,7 +70,7 @@ const FOUNDERS = [
     role: "Creative Strategist",
     location: "Colorado Springs, CO",
     linkedin: "https://www.linkedin.com/in/jeremy-reeves-5365b036a/",
-    bio: "Jeremy is driven by the moment a person sees something new — an insight, a possibility, a truer version of themselves — and by helping them reach it. His motivation is to help build a future where good creators and good companies meet in alignment and make the kind of world we all want.",
+    bio: "Jeremy is driven by the moment a person sees something new — an insight, a possibility, a truer version of themselves.",
     image: "/images/who-are-we/jeremy4.jpg",
   },
 ] as const;
@@ -181,7 +182,7 @@ export default function InvitationPage() {
         </Container>
       </Section>
 
-      {/* The co-founders — full bios, the email only had room for faces */}
+      {/* The co-founders — one-sentence bios; the email only had room for faces */}
       <Section className={styles.foundersSection}>
         <Container className={styles.founders}>
           <ScrollFadeUp index={0} duration={1.6}>
