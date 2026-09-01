@@ -349,8 +349,16 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
                     type="button"
                     className={circleCls}
                     {...tintAttr}
-                    aria-label={`Set lifecycle to ${row.label}`}
-                    title={`Click to set status: ${row.label}`}
+                    aria-label={
+                      status === row.target && row.target === "first-reachout"
+                        ? `Clear ${row.label}`
+                        : `Set lifecycle to ${row.label}`
+                    }
+                    title={
+                      status === row.target && row.target === "first-reachout"
+                        ? `Click to clear: ${row.label}`
+                        : `Click to set status: ${row.label}`
+                    }
                     onClick={(e) => {
                       e.stopPropagation();
                       onSetStatus(row.target);

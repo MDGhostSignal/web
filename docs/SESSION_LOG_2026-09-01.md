@@ -1,5 +1,26 @@
 # Session Log — 2026-09-01
 
+## Contacts: unclick First reach out
+
+Clicking First reach out on an expanded contact while it was already
+the current step re-applied the same patch, so Jack could not undo it.
+A second click now maps to Not started (clears `phase`, `last_contact_at`,
+and the `first_reachout` marker). Clicking it from a later stage still
+backtracks to First reach out.
+
+### Files
+
+- `apps/web/src/app/admin/contacts/page.tsx`
+- `apps/web/src/app/admin/contacts/ContactLifecycleStepper.tsx`
+
+### Validation
+
+- Playwright: PlusPlus First reach out → Clear → Not started → restored
+- `npm run typecheck` — pass
+- `npm run lint` — 0 errors (5 pre-existing warnings)
+- `npm run lint:css` — pass
+- `npm run assets:audit` — OK 67
+
 ## Campaign-complete emails firing more than once
 
 Jack was getting multiple emails for the same campaign completion. Live

@@ -67,9 +67,10 @@ import styles from "./contacts.module.css";
  * lives in `response_kind`; the free-text `last_response` stays as-is
  * so the founder can write context independently of the bucket.
  *
- * Backtracking semantics: clicking "Discern" or "Reached out" clears
+ * Backtracking semantics: clicking an earlier stage clears
  * `response_kind` so the stepper doesn't keep displaying a downstream
- * (more-advanced) state.
+ * (more-advanced) state. Clicking First reach out while it is already
+ * the current status unclicks it back to Not started.
  */
 function statusToPatch(
   next: DerivedStatus,
@@ -77,6 +78,17 @@ function statusToPatch(
 ): MemberWritable {
   const nowIso = new Date().toISOString();
   const contactAt = current.last_contact_at ?? nowIso;
+
+  // Toggle: First reach out is the first on-pipeline circle, so there
+  // is no earlier circle to click. A second click on the current step
+  // returns the contact to untouched (clears phase / last_contact_at /
+  // the first_reachout marker so deriveStatus doesn't keep it lit).
+  if (
+    next === "first-reachout" &&
+    deriveStatus(current) === "first-reachout"
+  ) {
+    next = "untouched";
+  }
 
   switch (next) {
     case "untouched":
