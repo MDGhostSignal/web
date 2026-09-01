@@ -34,23 +34,18 @@ export function Art19MigrationChecklist({ member, onToggle }: Props) {
       aria-label="ART19 Migration"
     >
       <header className={styles.migrationHeader}>
-        <div>
-          <h4 className={styles.migrationTitle}>ART19 Migration</h4>
-          <p className={styles.migrationSummary}>
-            {isComplete ? (
-              <span className={styles.migrationSummaryComplete}>
-                All {total} steps complete
-              </span>
-            ) : (
-              <>
-                <strong>
-                  {done} of {total}
-                </strong>
-                {" complete"}
-              </>
-            )}
-          </p>
-        </div>
+        <h4 className={styles.migrationTitle}>ART19 Migration</h4>
+        <p className={styles.migrationSummary}>
+          {isComplete ? (
+            <span className={styles.migrationSummaryComplete}>
+              {total}/{total}
+            </span>
+          ) : (
+            <>
+              {done}/{total}
+            </>
+          )}
+        </p>
       </header>
       <ul className={styles.migrationList}>
         {ART19_MIGRATION_STEPS.map((step) => {

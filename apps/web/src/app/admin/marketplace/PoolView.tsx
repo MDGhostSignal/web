@@ -400,27 +400,30 @@ export function PoolView({
                   </div>
                 )}
 
-                {/* 1. Lifecycle stepper — promoted to the top of the
-                       panel as the most important "where are we / what's
-                       next" signal. Clicking a circle toggles done/undo.
-                       The detailed checklist (with owner role + per-step
-                       date) lives further down inside a collapsible. */}
-                {sourceMember && onMemberPatch && (
+                {/* 1. Lifecycle + ART19 Migration — 50/50 on creators
+                       so the two cards share a row. Brands only get
+                       the stepper. */}
+                {sourceMember &&
+                onMemberPatch &&
+                sourceMember.member_type === "creator" ? (
+                  <div className={styles.mmLifecycleMigrationGrid}>
+                    <LifecycleStepper
+                      member={sourceMember}
+                      variant="full"
+                      onToggle={patchStep}
+                    />
+                    <Art19MigrationChecklist
+                      member={sourceMember}
+                      onToggle={patchStep}
+                    />
+                  </div>
+                ) : sourceMember && onMemberPatch ? (
                   <LifecycleStepper
                     member={sourceMember}
                     variant="full"
                     onToggle={patchStep}
                   />
-                )}
-
-                {sourceMember &&
-                  onMemberPatch &&
-                  sourceMember.member_type === "creator" && (
-                    <Art19MigrationChecklist
-                      member={sourceMember}
-                      onToggle={patchStep}
-                    />
-                  )}
+                ) : null}
 
                 {/* 2. Member details — ContactCard + editable outreach
                        fields. Real members only. */}

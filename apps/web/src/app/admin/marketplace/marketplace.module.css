@@ -1271,6 +1271,27 @@
   margin-bottom: var(--admin-space-3);
 }
 
+/* Lifecycle stepper + ART19 Migration — equal columns on the
+   expanded creator row. Stacks below 860px. */
+.mmLifecycleMigrationGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-4);
+  align-items: stretch;
+}
+
+.mmLifecycleMigrationGrid .stepperFull,
+.mmLifecycleMigrationGrid .migrationBlock {
+  min-width: 0;
+  height: 100%;
+}
+
+@media (max-width: 860px) {
+  .mmLifecycleMigrationGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* The legacy MembershipBlock checkbox checklist + its
    `.mmLifecycleCommentsGrid` / `.mmLifecycleDetails*` / `.mmStep*` /
    `.mmPhaseGroup*` / `.mmLifecycleBlock` / `.mmProgressPill*` family
@@ -2277,23 +2298,25 @@
   border-radius: var(--admin-radius-lg);
 }
 
-/* ART19 platform-migration checklist — sits under the lifecycle
-   stepper on an expanded creator. Same card chrome as .stepperFull. */
+/* ART19 platform-migration checklist — right-hand 50% card next to
+   Lifecycle. Compact column so the three ticks fill the pane. */
 .migrationBlock {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--admin-space-3);
-  padding: var(--admin-space-5);
+  padding: var(--admin-space-4) var(--admin-space-5);
   background: var(--admin-bg-elevated);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-lg);
+  box-sizing: border-box;
 }
 
 .migrationHeader {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--admin-space-4);
+  align-items: baseline;
+  gap: var(--admin-space-2);
+  flex-shrink: 0;
 }
 
 .migrationTitle {
@@ -2306,25 +2329,21 @@
 }
 
 .migrationSummary {
-  margin: 2px 0 0;
-  font-size: var(--admin-text-md);
-  color: var(--admin-text-secondary);
-}
-
-.migrationSummary strong {
-  color: var(--admin-text-primary);
+  margin: 0;
+  font-size: var(--admin-text-sm);
   font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .migrationSummaryComplete {
   color: var(--admin-success);
-  font-weight: var(--admin-weight-semibold);
 }
 
 .migrationList {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--admin-space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -2333,49 +2352,45 @@
 .migrationRow {
   display: flex;
   align-items: center;
-  gap: var(--admin-space-3);
-  padding: 6px 8px;
-  border-radius: var(--admin-radius-sm);
-}
-
-.migrationRow:hover {
-  background: var(--admin-surface-2);
+  gap: var(--admin-space-2);
+  padding: 2px 0;
+  min-width: 0;
 }
 
 .migrationLabel {
   display: flex;
   align-items: center;
-  gap: var(--admin-space-3);
-  flex: 1;
+  gap: var(--admin-space-2);
   min-width: 0;
   cursor: pointer;
 }
 
 .migrationCheckbox {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   accent-color: var(--admin-accent);
   cursor: pointer;
 }
 
-.migrationLabelText {
-  font-size: var(--admin-text-md);
+.migrationLabelText,
+.migrationLabelDone {
+  font-size: var(--admin-text-sm);
   color: var(--admin-text-primary);
 }
 
 .migrationLabelDone {
-  font-size: var(--admin-text-md);
   color: var(--admin-text-muted);
   text-decoration: line-through;
 }
 
 .migrationLink {
   flex-shrink: 0;
-  font-size: var(--admin-text-sm);
+  font-size: var(--admin-text-xs);
   font-weight: var(--admin-weight-semibold);
   color: var(--admin-accent);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .migrationLink:hover {

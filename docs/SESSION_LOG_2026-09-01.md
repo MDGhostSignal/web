@@ -1,5 +1,35 @@
 # Session Log — 2026-09-01
 
+## Lifecycle + ART19 Migration 50/50
+
+Expanded creator rows put Lifecycle and ART19 Migration in equal
+columns. Brands still get a full-width stepper. Stacks below 860px.
+
+### Files
+
+- `apps/web/src/app/admin/marketplace/PoolView.tsx`
+- `apps/web/src/app/admin/marketplace/marketplace.module.css`
+
+### Validation
+
+- Playwright: desktop 528/528 side by side; mobile stacked
+- eslint PoolView + lint:css — pass
+
+## ART19 Migration checklist — horizontal compact bar
+
+Three ticks sit in one row next to the title (wraps on narrow
+viewports) so the block takes less vertical space.
+
+### Files
+
+- `apps/web/src/app/admin/marketplace/Art19MigrationChecklist.tsx`
+- `apps/web/src/app/admin/marketplace/marketplace.module.css`
+
+### Validation
+
+- Playwright: desktop bar 1071×48; three steps present
+- eslint + lint:css — pass
+
 ## Website hrefs on marketplace (and other admin cards)
 
 The Contacts-only `websiteHref` never applied to marketplace member
