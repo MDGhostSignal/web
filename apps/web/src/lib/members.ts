@@ -148,6 +148,30 @@ export const CONTACT_STEPPER_STEP_KEYS = [
   "heard_maybe",
 ] as const;
 
+/** ART19 platform-migration checklist on the marketplace expanded
+ *  creator row. Not part of onboarding progress; allowlisted so
+ *  sanitizeLifecycleSteps does not drop the ticks. */
+export const ART19_MIGRATION_STEPS = [
+  {
+    key: "art19_a19_form",
+    label: "A19Form",
+    href: "https://art19.zendesk.com/hc/en-us/requests/new",
+    hrefLabel: "Open form",
+  },
+  {
+    key: "art19_owner_4_creator",
+    label: "4 & Creator as 'Owner'",
+  },
+  {
+    key: "art19_default_ad_markers",
+    label: "Default Ad Markers (Pre & Post)",
+  },
+] as const;
+
+export const ART19_MIGRATION_STEP_KEYS = ART19_MIGRATION_STEPS.map(
+  (s) => s.key,
+);
+
 /**
  * Step keys that surface on the marketplace pool expanded row — the
  * post-graduation onboarding slice (Sign + Onboard + Run phases). Today

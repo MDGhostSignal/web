@@ -29,6 +29,7 @@ import { XQSummaryCard } from "@/components/admin/XQSummaryCard";
 
 import { MemberEditModal } from "../components/MemberEditModal";
 
+import { Art19MigrationChecklist } from "./Art19MigrationChecklist";
 import { LifecycleStepper } from "./LifecycleStepper";
 import styles from "./marketplace.module.css";
 import {
@@ -361,6 +362,23 @@ export function PoolView({
               memberId && members
                 ? members.find((m) => m.id === memberId)
                 : null;
+            const patchStep = async (stepKey: string, nextDone: boolean) => {
+              if (!sourceMember || !onMemberPatch) return;
+              const today = new Date().toISOString().slice(0, 10);
+              const stored = sourceMember.lifecycle_steps?.[stepKey];
+              const merged: LifecycleSteps = {
+                ...(sourceMember.lifecycle_steps ?? {}),
+                [stepKey]: {
+                  status: (nextDone ? "done" : "todo") as StepStatus,
+                  completed_at: nextDone
+                    ? (stored?.completed_at ?? today)
+                    : null,
+                },
+              };
+              await onMemberPatch(sourceMember.id, {
+                lifecycle_steps: merged,
+              });
+            };
             return (
               <>
                 {/* 0. Full-edit action — opens the modal with every
@@ -391,25 +409,18 @@ export function PoolView({
                   <LifecycleStepper
                     member={sourceMember}
                     variant="full"
-                    onToggle={async (stepKey, nextDone) => {
-                      const today = new Date().toISOString().slice(0, 10);
-                      const stored =
-                        sourceMember.lifecycle_steps?.[stepKey];
-                      const merged: LifecycleSteps = {
-                        ...(sourceMember.lifecycle_steps ?? {}),
-                        [stepKey]: {
-                          status: (nextDone ? "done" : "todo") as StepStatus,
-                          completed_at: nextDone
-                            ? (stored?.completed_at ?? today)
-                            : null,
-                        },
-                      };
-                      await onMemberPatch(sourceMember.id, {
-                        lifecycle_steps: merged,
-                      });
-                    }}
+                    onToggle={patchStep}
                   />
                 )}
+
+                {sourceMember &&
+                  onMemberPatch &&
+                  sourceMember.member_type === "creator" && (
+                    <Art19MigrationChecklist
+                      member={sourceMember}
+                      onToggle={patchStep}
+                    />
+                  )}
 
                 {/* 2. Member details — ContactCard + editable outreach
                        fields. Real members only. */}

@@ -1,5 +1,29 @@
 # Session Log — 2026-09-01
 
+## Marketplace: ART19 Migration checklist
+
+Expanded creator rows on `/admin/marketplace` now have an ART19
+Migration checklist under Lifecycle: A19Form (link to the Zendesk
+request form), 4 & Creator as 'Owner', Default Ad Markers (Pre &
+Post). Ticks store on `lifecycle_steps` (allowlisted). Brands skip
+the block.
+
+### Files
+
+- `apps/web/src/lib/members.ts`
+- `apps/web/src/app/api/members/route.ts`
+- `apps/web/src/app/admin/marketplace/Art19MigrationChecklist.tsx`
+- `apps/web/src/app/admin/marketplace/PoolView.tsx`
+- `apps/web/src/app/admin/marketplace/marketplace.module.css`
+
+### Validation
+
+- Playwright: Unseriously expanded creator shows ART19 Migration, Zendesk form link, three steps, tick persists and restores
+- `npm run typecheck` — pass
+- eslint on touched files — clean
+- `npm run lint:css` — pass
+- `npm run assets:audit` — OK 67
+
 ## Contacts: website links open off-site
 
 Bare hosts in the contact card (`plusplususa.com`) were used as hrefs

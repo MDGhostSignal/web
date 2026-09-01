@@ -2277,6 +2277,111 @@
   border-radius: var(--admin-radius-lg);
 }
 
+/* ART19 platform-migration checklist — sits under the lifecycle
+   stepper on an expanded creator. Same card chrome as .stepperFull. */
+.migrationBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-5);
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+}
+
+.migrationHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+}
+
+.migrationTitle {
+  margin: 0;
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.migrationSummary {
+  margin: 2px 0 0;
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-secondary);
+}
+
+.migrationSummary strong {
+  color: var(--admin-text-primary);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.migrationSummaryComplete {
+  color: var(--admin-success);
+  font-weight: var(--admin-weight-semibold);
+}
+
+.migrationList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.migrationRow {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: 6px 8px;
+  border-radius: var(--admin-radius-sm);
+}
+
+.migrationRow:hover {
+  background: var(--admin-surface-2);
+}
+
+.migrationLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.migrationCheckbox {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--admin-accent);
+  cursor: pointer;
+}
+
+.migrationLabelText {
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+}
+
+.migrationLabelDone {
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-muted);
+  text-decoration: line-through;
+}
+
+.migrationLink {
+  flex-shrink: 0;
+  font-size: var(--admin-text-sm);
+  font-weight: var(--admin-weight-semibold);
+  color: var(--admin-accent);
+  text-decoration: none;
+}
+
+.migrationLink:hover {
+  text-decoration: underline;
+}
+
 .stepperFullHeader {
   display: flex;
   align-items: flex-start;
