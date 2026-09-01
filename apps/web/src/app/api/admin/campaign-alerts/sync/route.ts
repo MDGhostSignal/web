@@ -4,6 +4,7 @@ import { ADMIN_COOKIE_NAME, verifyAdminCookie } from "@/lib/admin-auth";
 import type { CampaignAlertSnapshot, CrmAlert } from "@/lib/alerts";
 import {
   type CampaignCandidate,
+  alreadyNotifiedCampaignIds,
   detectCampaignEndingAlert,
   campaignAlertRecipients,
   sendCampaignEndingEmail,
@@ -20,11 +21,12 @@ export const dynamic = "force-dynamic";
  * CRON_SECRET); also reachable from the admin UI via cookie. A campaign
  * qualifies when it has reached 100% of its run time (within the grace
  * window) OR ART19 has marked it concluded but it carries no end_date
- * (internal host-read reads). For each newly-qualifying campaign with no
- * open alert, it inserts a `campaign_ending` crm_alerts row AND sends the
+ * (internal host-read reads). For each newly-qualifying campaign that has
+ * never had a `campaign_ending` row, it inserts one AND sends the
  * one-time email to Jack + Mike. Campaigns that no longer qualify get
- * their open alert resolved. Idempotent — the open-alert set is the
- * fire-once guard, so re-runs never double-email.
+ * their open alert resolved. Idempotent — any existing campaign_ending
+ * row (open or resolved) is the fire-once guard, so dismissing the
+ * in-app alert never re-emails.
  */
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization");
@@ -74,21 +76,28 @@ export async function POST(req: Request) {
     if (hit) desired.set(hit.campaign_id, hit);
   }
 
-  // Currently-open campaign alerts.
-  const openRes = await supabaseRest<Pick<CrmAlert, "id" | "campaign_id">[]>(
-    "crm_alerts?select=id,campaign_id&kind=eq.campaign_ending&resolved_at=is.null",
-  );
-  if (!openRes.ok) {
-    return NextResponse.json({ ok: false, error: openRes.detail }, { status: openRes.status });
+  // Every campaign_ending row, including resolved. Fire-once is "has
+  // this campaign ever been alerted?", not "is there an open one?" —
+  // host-read campaigns with no end_date stay qualifying forever, so
+  // dismissing the bell used to insert + email again the next morning.
+  const existingRes = await supabaseRest<
+    Pick<CrmAlert, "id" | "campaign_id" | "resolved_at">[]
+  >("crm_alerts?select=id,campaign_id,resolved_at&kind=eq.campaign_ending");
+  if (!existingRes.ok) {
+    return NextResponse.json(
+      { ok: false, error: existingRes.detail },
+      { status: existingRes.status },
+    );
   }
+  const alreadyNotified = alreadyNotifiedCampaignIds(existingRes.data ?? []);
   const openByCampaign = new Map<string, string>();
-  for (const a of openRes.data ?? []) {
-    if (a.campaign_id) openByCampaign.set(a.campaign_id, a.id);
+  for (const a of existingRes.data ?? []) {
+    if (a.campaign_id && !a.resolved_at) openByCampaign.set(a.campaign_id, a.id);
   }
 
-  // Insert alerts for newly-qualifying campaigns, then email each once.
+  // Insert + email only campaigns that have never had a campaign_ending row.
   const toInsert = [...desired.values()].filter(
-    (d) => !openByCampaign.has(d.campaign_id),
+    (d) => !alreadyNotified.has(d.campaign_id),
   );
   let emailed = 0;
   const emailFailures: string[] = [];
@@ -134,6 +143,9 @@ export async function POST(req: Request) {
     ok: true,
     scanned: campRes.data?.length ?? 0,
     qualifying: desired.size,
+    already_notified: [...desired.keys()].filter((id) =>
+      alreadyNotified.has(id),
+    ).length,
     opened: toInsert.length,
     emailed,
     resolved,

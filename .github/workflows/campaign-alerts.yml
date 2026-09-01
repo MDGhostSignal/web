@@ -4,7 +4,8 @@
 # newly-qualifying one, inserts an in-app alert and sends a one-time
 # email to Jack + Mike.
 #
-# Idempotent: the open-alert set is the fire-once guard, so re-runs never
+# Idempotent: any existing campaign_ending row (open or resolved) is the
+# fire-once guard, so re-runs and dismissed in-app alerts never
 # double-email. Daily cadence is safe because run-time detection qualifies
 # for a grace period past the end date (CAMPAIGN_ENDING_GRACE_DAYS) — a run
 # that lands just after 100% still fires once.

@@ -3,10 +3,13 @@
  *
  * Trigger: an ART19 campaign has elapsed 100% of its RUN TIME (not its
  * impression goal — campaigns routinely over-deliver impressions, so a
- * volume threshold would misfire). Detection runs hourly from
+ * volume threshold would misfire). Detection runs daily from
  * /api/admin/campaign-alerts/sync; the crm_alerts row it inserts is both
  * the in-app record (bell + dashboard) and the fire-once dedup guard, so
  * the email below is sent exactly once as the campaign completes.
+ *
+ * Fire-once is any existing `campaign_ending` row for that campaign_id
+ * (open or resolved). Dismissing the in-app alert must not re-email.
  *
  * Recipients: Jack + Mike (the contract/campaign owners), resolved from
  * the same ALERT_EMAIL_<SLUG> env vars the CRM digest uses.
@@ -25,10 +28,10 @@ export const CAMPAIGN_ENDING_RUN_PCT = 100;
  * fire. This decouples detection cadence from the trigger: run time hits
  * 100% exactly at the end_date, an instant a daily/every-few-days cron
  * would otherwise step right over. The grace keeps a just-completed
- * campaign qualifying for a few days after its end (fire-once via the
- * crm_alerts row), while excluding long-concluded history so a redeploy
- * never blasts old campaigns. Keep it comfortably larger than the cron
- * interval (currently daily).
+ * campaign qualifying for a few days after its end (fire-once via any
+ * existing crm_alerts row for that campaign), while excluding
+ * long-concluded history so a redeploy never blasts old campaigns. Keep
+ * it comfortably larger than the cron interval (currently daily).
  */
 export const CAMPAIGN_ENDING_GRACE_DAYS = 7;
 
@@ -137,8 +140,9 @@ export function buildCampaignSnapshot(
  * and keeps qualifying up to `CAMPAIGN_ENDING_GRACE_DAYS` past the end
  * date — so a slow cron never skips the moment of completion, yet
  * long-concluded campaigns (end date older than the grace) never fire, so
- * a redeploy can't blast history. Fire-once is enforced by the open
- * crm_alerts row.
+ * a redeploy can't blast history. Fire-once is enforced by any existing
+ * campaign_ending row (open or resolved) — dismissing the in-app alert
+ * must not send another email.
  */
 export function detectCampaignEndingAlert(
   c: CampaignCandidate,
@@ -153,7 +157,8 @@ export function detectCampaignEndingAlert(
   // window ago, so a redeploy can't blast old history. This can only be
   // measured when there's an end_date — status-concluded campaigns with
   // no end_date (internal host-read reads) have no date to range-check,
-  // and the fire-once crm_alerts row is their sufficient dedup guard.
+  // and any existing campaign_ending row (open or resolved) is their
+  // sufficient fire-once guard.
   const end = snap.end_date ? Date.parse(snap.end_date) : NaN;
   if (!Number.isNaN(end)) {
     if (end < nowMs - CAMPAIGN_ENDING_GRACE_DAYS * MS_PER_DAY) return null;
@@ -163,6 +168,19 @@ export function detectCampaignEndingAlert(
     return null;
   }
   return { campaign_id: c.id, reason: { campaign: snap } };
+}
+
+/** Campaign ids that have already had a `campaign_ending` alert (and
+ *  therefore already been emailed). Resolved rows count — dismissing the
+ *  in-app alert must not re-open a new one. */
+export function alreadyNotifiedCampaignIds(
+  rows: { campaign_id: string | null }[],
+): Set<string> {
+  const ids = new Set<string>();
+  for (const r of rows) {
+    if (r.campaign_id) ids.add(r.campaign_id);
+  }
+  return ids;
 }
 
 /* ------------------------- Recipients ------------------------------- */
