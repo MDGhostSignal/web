@@ -187,6 +187,54 @@ function formatDate(value: string | null): string {
   });
 }
 
+const DATE_ADDED_FILTERS = [
+  "all",
+  "today",
+  "7d",
+  "30d",
+  "90d",
+  "year",
+] as const;
+type DateAddedFilter = (typeof DATE_ADDED_FILTERS)[number];
+
+const DATE_ADDED_FILTER_LABELS: Record<DateAddedFilter, string> = {
+  all: "All",
+  today: "Today",
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  "90d": "Last 90 days",
+  year: "This year",
+};
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+function startOfLocalDay(d = new Date()): number {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+function matchesDateAdded(
+  iso: string | null | undefined,
+  filter: DateAddedFilter,
+): boolean {
+  if (filter === "all") return true;
+  if (!iso) return false;
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return false;
+  const today = startOfLocalDay();
+  switch (filter) {
+    case "today":
+      return t >= today;
+    case "7d":
+      return t >= today - 6 * MS_PER_DAY;
+    case "30d":
+      return t >= today - 29 * MS_PER_DAY;
+    case "90d":
+      return t >= today - 89 * MS_PER_DAY;
+    case "year":
+      return t >= new Date(new Date().getFullYear(), 0, 1).getTime();
+  }
+}
+
 function fullName(m: Member): string {
   const first = m.first_name ?? "";
   const last = m.last_name ?? "";
@@ -307,6 +355,8 @@ export default function MembersPage() {
   );
   const [filterType, setFilterType] = useState<MemberType | "all">("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
+  const [filterDateAdded, setFilterDateAdded] =
+    useState<DateAddedFilter>("all");
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
@@ -539,6 +589,7 @@ export default function MembersPage() {
     if (filterStatus !== "all" && deriveStatus(m) !== filterStatus) return false;
     if (filterType !== "all" && m.member_type !== filterType) return false;
     if (filterOwner !== "all" && (m.owner ?? "") !== filterOwner) return false;
+    if (!matchesDateAdded(m.created_at, filterDateAdded)) return false;
     const q = searchTerm.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -547,7 +598,8 @@ export default function MembersPage() {
       m.email?.toLowerCase().includes(q) ||
       m.organization?.toLowerCase().includes(q) ||
       m.role?.toLowerCase().includes(q) ||
-      m.tags.some((t) => t.toLowerCase().includes(q))
+      m.tags.some((t) => t.toLowerCase().includes(q)) ||
+      formatDate(m.created_at).toLowerCase().includes(q)
     );
   });
 
@@ -572,6 +624,8 @@ export default function MembersPage() {
         setFilterType={setFilterType}
         filterOwner={filterOwner}
         setFilterOwner={setFilterOwner}
+        filterDateAdded={filterDateAdded}
+        setFilterDateAdded={setFilterDateAdded}
         onCreate={openCreateModal}
       />
 
@@ -648,6 +702,8 @@ type HeaderProps = {
   setFilterType: (v: MemberType | "all") => void;
   filterOwner: string;
   setFilterOwner: (v: string) => void;
+  filterDateAdded: DateAddedFilter;
+  setFilterDateAdded: (v: DateAddedFilter) => void;
   onCreate: () => void;
 };
 
@@ -661,6 +717,8 @@ function PageHeaderBlock({
   setFilterType,
   filterOwner,
   setFilterOwner,
+  filterDateAdded,
+  setFilterDateAdded,
   onCreate,
 }: HeaderProps) {
   return (
@@ -733,6 +791,22 @@ function PageHeaderBlock({
               ))}
             </select>
           </div>
+          <div className={styles.filterGroup}>
+            <span className={styles.filterLabel}>Date added</span>
+            <select
+              className={styles.filterSelect}
+              value={filterDateAdded}
+              onChange={(e) =>
+                setFilterDateAdded(e.target.value as DateAddedFilter)
+              }
+            >
+              {DATE_ADDED_FILTERS.map((f) => (
+                <option key={f} value={f}>
+                  {DATE_ADDED_FILTER_LABELS[f]}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       }
     />
@@ -796,6 +870,23 @@ function MembersTable({
         return av.localeCompare(bv);
       },
       cell: (m) => fullName(m),
+    },
+    {
+      key: "date_added",
+      header: "Date added",
+      variant: "muted",
+      // ISO created_at is lexicographically sortable. Empty / invalid
+      // timestamps park at the end on asc, matching Last contact.
+      sort: (a, b) => {
+        const av = a.created_at ?? "";
+        const bv = b.created_at ?? "";
+        if (av === "" && bv !== "") return 1;
+        if (bv === "" && av !== "") return -1;
+        return av.localeCompare(bv);
+      },
+      cell: (m) => (
+        <span className={styles.date}>{formatDate(m.created_at)}</span>
+      ),
     },
     {
       key: "email",
@@ -1445,6 +1536,10 @@ function ContactCard({ member }: { member: Member }) {
           <dd>{member.organization || "—"}</dd>
         </div>
         <div>
+          <dt>Date added</dt>
+          <dd>{formatDate(member.created_at)}</dd>
+        </div>
+        <div>
           <dt>Email</dt>
           <dd>
             {member.email ? (
@@ -1672,7 +1767,7 @@ function PipelineCard({ member, onPatch }: PipelineCardProps) {
           <dd>{member.next_step || "—"}</dd>
         </div>
         <div>
-          <dt>Added</dt>
+          <dt>Date added</dt>
           <dd>{formatDate(member.created_at)}</dd>
         </div>
       </dl>
