@@ -1,5 +1,10 @@
 # Session Log — 2026-08-27
 
+## Studio nav / profile
+
+- Tab label in `StudioHeader`: **My results** → **My character** (`/studio/results` route unchanged).
+- Removed **Current podcast host** from `/studio/profile` (`ProfileForm`). CRM `pod_provider` column and admin display left in place so existing values are not wiped.
+
 ## Snowdrift stills — Work at the Speed of Human
 
 New ink-on-white set (Taste / Last Human Advantage hand) vaulted at `assets/grok/stills/substack-work-at-the-speed-of-human/` (gitignored). Hero: helmet and clouds removed. Family table: kids on the floor past the table. Author footer for Jeremy + Martin is `assets/grok/references/snowdrift-published/outsource-footer.png`.

@@ -55,13 +55,13 @@ export function StudioHeader({
             </Link>
           </>
         )}
-        {/* My results — the member's XQ/RQ reveal. Always available so
+        {/* My character — the member's XQ/RQ reveal. Always available so
             they can revisit what they saw right after the quiz. */}
         <Link
           href="/studio/results"
           className={`${styles.headerNavTab} ${activeTab === "results" ? styles.headerNavTabActive : ""}`}
         >
-          My results
+          My character
         </Link>
         {/* Roster is paused, not removed — its page also redirects
             while STUDIO_ROSTER_HIDDEN is on. */}

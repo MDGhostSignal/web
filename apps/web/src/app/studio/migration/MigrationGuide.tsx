@@ -234,7 +234,10 @@ const TUTORIAL_STEPS: Array<{
     body: (
       <>
         Insert <strong>6 markers</strong>: 2 pre-roll at the beginning, 2
-        mid-roll at a convenient break, and 2 post-roll at the end.
+        mid-roll at a convenient break, and 2 post-roll at the end.{" "}
+        (We insert the pre &amp; post roll ad markers as default, you
+        place 2 mid roll markers of 120s each at a natural break in the
+        episode).
       </>
     ),
     image: "/images/studio/art19-tutorial/step-3-ad-markers.webp",

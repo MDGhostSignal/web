@@ -35,7 +35,6 @@ export function ProfileForm({
   const [website, setWebsite] = useState(org?.website ?? "");
   const [podcastUrl, setPodcastUrl] = useState(org?.podcastUrl ?? "");
   const [rssUrl, setRssUrl] = useState(org?.rssUrl ?? "");
-  const [podProvider, setPodProvider] = useState(intake?.podProvider ?? "");
   const [podMonthlyListens, setPodMonthlyListens] = useState(
     intake?.podMonthlyListens ?? "",
   );
@@ -98,7 +97,6 @@ export function ProfileForm({
       // Podcast info (docs/STUDIO_POD_INFO.sql) — creator-kind only;
       // always sent so clears persist.
       if (member.kind === "creator" || org?.kind === "creator") {
-        body.podProvider = podProvider;
         body.podMonthlyListens = podMonthlyListens;
         body.podFrequency = podFrequency;
       }
@@ -325,7 +323,7 @@ export function ProfileForm({
         {(isCreator || member.kind === "creator") && (
           <div className={styles.field}>
             <label className={styles.label} htmlFor="profile-rss-url">
-              Your show&apos;s RSS feed URL
+              Your show&apos;s current RSS feed URL
             </label>
             <input
               id="profile-rss-url"
@@ -365,18 +363,6 @@ export function ProfileForm({
         {(isCreator || member.kind === "creator") && (
           <>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-pod-provider">
-                Current podcast host
-              </label>
-              <input
-                id="profile-pod-provider"
-                className={styles.input}
-                value={podProvider}
-                onChange={(e) => setPodProvider(e.target.value)}
-                placeholder="e.g. Buzzsprout, Libsyn, Spotify for Creators"
-              />
-            </div>
-            <div className={styles.field}>
               <label className={styles.label} htmlFor="profile-pod-listens">
                 Average listens per month
               </label>
@@ -390,7 +376,7 @@ export function ProfileForm({
             </div>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="profile-pod-frequency">
-                Podcast frequency
+                Episode frequency
               </label>
               <input
                 id="profile-pod-frequency"

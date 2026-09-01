@@ -255,7 +255,7 @@ export function WelcomeSplash({
         {isCreator && (
           <div className={styles.field}>
             <label className={styles.fieldLabel} htmlFor="welcome-rss">
-              Your show&apos;s RSS feed URL
+              Your show&apos;s current RSS feed URL
               <span className={styles.required}>required</span>
             </label>
             <input
