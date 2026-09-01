@@ -15,6 +15,8 @@ function xqArchetypeName(code: string | null): string | null {
   return (ARCHETYPES as Record<string, { name: string }>)[code]?.name ?? code;
 }
 
+import { websiteHref } from "@/lib/website-href";
+
 import type { StudioMemberRow } from "./page";
 import styles from "./page.module.css";
 
@@ -606,7 +608,7 @@ function ValueRow({ label, values }: { label: string; values: string[] }) {
 
 function ExtLink({ href, label }: { href: string; label: string }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer" className={styles.extLink}>
+    <a href={websiteHref(href)} target="_blank" rel="noreferrer" className={styles.extLink}>
       {label} ↗
     </a>
   );

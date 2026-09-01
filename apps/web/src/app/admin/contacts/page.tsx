@@ -29,6 +29,7 @@ import {
   type MemberType,
   type MemberWritable,
 } from "@/lib/members";
+import { websiteHref } from "@/lib/website-href";
 
 /** Returns the member's lifecycle_steps with `discernment` flipped to
  *  "done" — the marker used by `deriveStatus()` to tell an explicitly-
@@ -232,16 +233,6 @@ function formatDate(value: string | null): string {
     month: "short",
     day: "numeric",
   });
-}
-
-/** Bare hosts like `plusplususa.com` are stored without a scheme, so
- *  a raw href would resolve against /admin/. Prefix https:// unless
- *  a scheme (or protocol-relative //) is already present. */
-function websiteHref(raw: string): string {
-  const v = raw.trim();
-  if (!v) return v;
-  if (/^https?:\/\//i.test(v) || v.startsWith("//")) return v;
-  return `https://${v}`;
 }
 
 const DATE_ADDED_FILTERS = [

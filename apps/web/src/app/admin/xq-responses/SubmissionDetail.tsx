@@ -1,5 +1,7 @@
 "use client";
 
+import { websiteHref } from "@/lib/website-href";
+
 import styles from "./xq-responses.module.css";
 
 /** Local shape — only what we actually read off the row in the
@@ -116,7 +118,7 @@ export function SubmissionDetail({ submission }: Props) {
         <Meta label="Website">
           {submission.website ? (
             <a
-              href={submission.website}
+              href={websiteHref(submission.website)}
               target="_blank"
               rel="noopener noreferrer"
             >

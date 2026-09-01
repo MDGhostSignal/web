@@ -22,6 +22,7 @@ import {
 } from "@/components/admin";
 import { RQResultsGraph } from "@/components/rq/RQResultsGraph";
 import type { RQResult } from "@/lib/rq/scoring";
+import { websiteHref } from "@/lib/website-href";
 import styles from "./rq-responses.module.css";
 
 type AxisDetail = {
@@ -456,7 +457,7 @@ export default function RQDashboardPage() {
                       <strong>Website:</strong>{" "}
                       {sub.website ? (
                         <a
-                          href={sub.website}
+                          href={websiteHref(sub.website)}
                           target="_blank"
                           rel="noopener noreferrer"
                         >

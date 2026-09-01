@@ -18,6 +18,7 @@ import {
   MEMBER_PHASE_LABELS,
   MEMBER_TYPE_LABELS,
 } from "@/lib/members";
+import { websiteHref } from "@/lib/website-href";
 
 import styles from "./marketplace.module.css";
 
@@ -359,7 +360,7 @@ function ContactCard({ member }: { member: Member }) {
           <dd>
             {member.website ? (
               <a
-                href={member.website}
+                href={websiteHref(member.website)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

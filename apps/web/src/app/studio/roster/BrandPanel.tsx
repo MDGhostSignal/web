@@ -7,6 +7,8 @@ import { CHARACTERS } from "@/lib/xq/characters";
 import { ARCHETYPES, type ArchetypeCode } from "@/lib/xq/constants";
 import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 
+import { websiteHref } from "@/lib/website-href";
+
 import type { RosterBrandCard } from "./BrandDeck";
 import styles from "../studio.module.css";
 import deckStyles from "./roster-deck.module.css";
@@ -160,7 +162,7 @@ export function BrandPanel({
           {brand.website && (
             <a
               className={styles.wcDetailSite}
-              href={brand.website}
+              href={websiteHref(brand.website)}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -1,5 +1,31 @@
 # Session Log — 2026-09-01
 
+## Website hrefs on marketplace (and other admin cards)
+
+The Contacts-only `websiteHref` never applied to marketplace member
+detail. Tektones (`www.tektones.com`) opened as
+`/admin/www.tektones.com`. Helper now lives in `lib/website-href.ts`
+and is used on Contacts, Marketplace, XQ/RQ submissions, studio
+members, and the studio brand panel.
+
+### Files
+
+- `apps/web/src/lib/website-href.ts`
+- `apps/web/src/app/admin/contacts/page.tsx`
+- `apps/web/src/app/admin/marketplace/MarketplaceMemberDetails.tsx`
+- `apps/web/src/app/admin/xq-responses/SubmissionDetail.tsx`
+- `apps/web/src/app/admin/rq-responses/page.tsx`
+- `apps/web/src/app/admin/studio-members/MembersTable.tsx`
+- `apps/web/src/app/studio/roster/BrandPanel.tsx`
+
+### Validation
+
+- Playwright: Tektones marketplace href is `https://www.tektones.com`
+- `npm run typecheck` — pass
+- eslint on touched files — clean
+- `npm run lint:css` — pass
+- `npm run assets:audit` — OK 67
+
 ## Marketplace: ART19 Migration checklist
 
 Expanded creator rows on `/admin/marketplace` now have an ART19
