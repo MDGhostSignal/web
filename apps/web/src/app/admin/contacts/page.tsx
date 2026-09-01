@@ -18,20 +18,16 @@ import {
   typeVariant,
 } from "@/components/admin";
 import {
-  countCompleted,
-  LIFECYCLE_STEPS,
   MEMBER_OWNERS,
   MEMBER_PHASE_LABELS,
   MEMBER_PHASES,
   MEMBER_TYPE_LABELS,
   MEMBER_TYPES,
-  type LifecycleStepDef,
   type LifecycleSteps,
   type Member,
   type MemberPhase,
   type MemberType,
   type MemberWritable,
-  type StepStatus,
 } from "@/lib/members";
 
 /** Returns the member's lifecycle_steps with `discernment` flipped to
@@ -236,6 +232,16 @@ function formatDate(value: string | null): string {
     month: "short",
     day: "numeric",
   });
+}
+
+/** Bare hosts like `plusplususa.com` are stored without a scheme, so
+ *  a raw href would resolve against /admin/. Prefix https:// unless
+ *  a scheme (or protocol-relative //) is already present. */
+function websiteHref(raw: string): string {
+  const v = raw.trim();
+  if (!v) return v;
+  if (/^https?:\/\//i.test(v) || v.startsWith("//")) return v;
+  return `https://${v}`;
 }
 
 const DATE_ADDED_FILTERS = [
@@ -511,65 +517,10 @@ export default function MembersPage() {
     [form, editingId, isSaving],
   );
 
-  const handleStepToggle = useCallback(
-    async (
-      memberId: string,
-      stepKey: string,
-      nextStatus: StepStatus,
-    ) => {
-      const current = members.find((m) => m.id === memberId);
-      if (!current) return;
-
-      const today = new Date().toISOString().slice(0, 10);
-      const nextState = {
-        status: nextStatus,
-        completed_at:
-          nextStatus === "done"
-            ? (current.lifecycle_steps?.[stepKey]?.completed_at ?? today)
-            : null,
-      };
-      const merged: LifecycleSteps = {
-        ...(current.lifecycle_steps ?? {}),
-        [stepKey]: nextState,
-      };
-
-      // Optimistic update — roll back on failure.
-      setMembers((prev) =>
-        prev.map((m) =>
-          m.id === memberId ? { ...m, lifecycle_steps: merged } : m,
-        ),
-      );
-
-      try {
-        const res = await fetch(`/api/members/${memberId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lifecycle_steps: merged }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.ok) {
-          setError(data.error || "Failed to save step.");
-          setMembers((prev) =>
-            prev.map((m) => (m.id === memberId ? current : m)),
-          );
-          return;
-        }
-        const saved = data.member as Member;
-        setMembers((prev) => prev.map((m) => (m.id === memberId ? saved : m)));
-      } catch {
-        setError("Failed to connect to the server.");
-        setMembers((prev) =>
-          prev.map((m) => (m.id === memberId ? current : m)),
-        );
-      }
-    },
-    [members],
-  );
-
-  // Generic inline-edit handler for the expanded card. Same optimistic
-  // update + rollback pattern as handleStepToggle, but accepts any
-  // partial MemberWritable so a single callback covers notes,
-  // contact_count, last_response, and any future inline fields.
+  // Generic inline-edit handler for the expanded card. Optimistic
+  // update + rollback; accepts any partial MemberWritable so a single
+  // callback covers notes, contact_count, last_response, and any
+  // future inline fields.
   // Returns true on success so the field editor can show its own
   // "Saving / Saved / Error" indicator.
   const handleMemberPatch = useCallback(
@@ -713,7 +664,6 @@ export default function MembersPage() {
             setDeleteError(null);
             setConfirmDelete(m);
           }}
-          onStepToggle={handleStepToggle}
           onMemberPatch={handleMemberPatch}
         />
       )}
@@ -870,11 +820,6 @@ type TableProps = {
   setExpandedRow: (id: string | null) => void;
   onEdit: (m: Member) => void;
   onDelete: (m: Member) => void;
-  onStepToggle: (
-    memberId: string,
-    stepKey: string,
-    nextStatus: StepStatus,
-  ) => void;
   onMemberPatch: (
     memberId: string,
     partial: MemberWritable,
@@ -887,7 +832,6 @@ function MembersTable({
   setExpandedRow,
   onEdit,
   onDelete,
-  onStepToggle,
   onMemberPatch,
 }: TableProps) {
   const columns: Column<Member>[] = [
@@ -1110,31 +1054,7 @@ function MembersTable({
             </div>
           )}
 
-          {/* Lifecycle (6 steps) + Comments thread side-by-side on a
-              horizontal plane — uses the available width rather than
-              stacking the two blocks vertically, which made the
-              expanded panel disproportionately tall after the
-              lifecycle was trimmed from 13 → 6 steps. */}
-          <div className={styles.lifecycleCommentsGrid}>
-            {/* The 6-step Discern+Court checklist is now secondary —
-                the new ContactLifecycleStepper at the top of the panel
-                is the primary lifecycle view. Keeps the granular steps
-                one click away for per-step tracking (first contact,
-                meeting, deck sent, etc.). */}
-            <details className={styles.lifecycleDetails}>
-              <summary className={styles.lifecycleDetailsSummary}>
-                <span>Show step details</span>
-                <span aria-hidden="true">▾</span>
-              </summary>
-              <LifecycleChecklist
-                member={m}
-                onStepToggle={(stepKey, nextStatus) =>
-                  onStepToggle(m.id, stepKey, nextStatus)
-                }
-              />
-            </details>
-            <MemberComments memberId={m.id} />
-          </div>
+          <MemberComments memberId={m.id} />
         </div>
       )}
     />
@@ -1526,10 +1446,6 @@ function DeleteConfirmModal({
 }
 
 /* =====================================================================
- * Lifecycle checklist — Jack's 12 checkpoints grouped by phase.
- * ===================================================================== */
-
-/* =====================================================================
  * Contact ID card + Pipeline card — top row of the expanded panel.
  * Replaces the older DetailsGrid (Contact / Pipeline two-column block)
  * with two visually distinct cards: a compact ID-card-style contact
@@ -1600,7 +1516,7 @@ function ContactCard({ member }: { member: Member }) {
           <dd>
             {member.website ? (
               <a
-                href={member.website}
+                href={websiteHref(member.website)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1877,128 +1793,6 @@ function PipelineCard({ member, onPatch }: PipelineCardProps) {
         />
       </div>
     </section>
-  );
-}
-
-type ChecklistProps = {
-  member: Member;
-  onStepToggle: (stepKey: string, nextStatus: StepStatus) => void;
-};
-
-function LifecycleChecklist({ member, onStepToggle }: ChecklistProps) {
-  // Group steps by phase, preserving the canonical order from the lib.
-  const byPhase = new Map<string, LifecycleStepDef[]>();
-  for (const step of LIFECYCLE_STEPS) {
-    const list = byPhase.get(step.phase) ?? [];
-    list.push(step);
-    byPhase.set(step.phase, list);
-  }
-
-  const { done, total } = countCompleted(
-    member.lifecycle_steps,
-    member.member_type,
-  );
-
-  // Render a single phase group (badge header + step rows). Pulled out
-  // of the loop so the new column layout can place specific phases
-  // into specific slots: discern + court in the left column, sign +
-  // onboard in the right column, run as a full-width row below.
-  const renderPhase = (phaseKey: MemberPhase) => {
-    const steps = byPhase.get(phaseKey);
-    if (!steps || steps.length === 0) return null;
-    return (
-      <div className={styles.phaseGroup} key={phaseKey}>
-        <div className={styles.phaseGroupHeader}>
-          <Badge variant={phaseVariant(phaseKey)}>
-            {MEMBER_PHASE_LABELS[phaseKey]}
-          </Badge>
-        </div>
-        <div className={styles.stepList}>
-          {steps.map((step) => (
-            <StepRow
-              key={step.key}
-              step={step}
-              member={member}
-              onToggle={onStepToggle}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className={styles.lifecycleBlock}>
-      <h4>
-        Lifecycle
-        <span
-          className={styles.progressPill}
-          style={{ marginLeft: 12, verticalAlign: "middle" }}
-        >
-          {done}/{total}
-        </span>
-      </h4>
-
-      {/* Lead-stage checklist is 6 steps across discern + court only —
-          sign / onboard / run live in the marketplace lifecycle and no
-          longer surface here. A single-column stack reads cleanly at
-          this size; revisit if more lead-stage steps are added. */}
-      {renderPhase("discern")}
-      {renderPhase("court")}
-    </div>
-  );
-}
-
-type StepRowProps = {
-  step: LifecycleStepDef;
-  member: Member;
-  onToggle: (stepKey: string, nextStatus: StepStatus) => void;
-};
-
-function StepRow({ step, member, onToggle }: StepRowProps) {
-  const stored = member.lifecycle_steps?.[step.key];
-  const isNa =
-    stored?.status === "na" ||
-    (step.creatorOnly && member.member_type !== "creator" && !stored);
-  const status: StepStatus = stored?.status ?? (isNa ? "na" : "todo");
-  const isDone = status === "done";
-
-  const rowCls = [styles.stepRow, isNa ? styles.stepRowNa : ""]
-    .filter(Boolean)
-    .join(" ");
-  const labelCls = [styles.stepLabel, isDone ? styles.stepLabelDone : ""]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <label
-      className={rowCls}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <input
-        type="checkbox"
-        className={styles.stepCheckbox}
-        checked={isDone}
-        disabled={isNa}
-        onChange={(e) =>
-          onToggle(step.key, e.target.checked ? "done" : "todo")
-        }
-      />
-      <span className={labelCls}>
-        {step.label}
-        {isNa && " (N/A)"}
-      </span>
-      <span className={styles.stepRoleTag}>{step.ownerRole}</span>
-      <span className={styles.stepDate}>
-        {isDone && stored?.completed_at
-          ? new Date(stored.completed_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })
-          : ""}
-      </span>
-    </label>
   );
 }
 

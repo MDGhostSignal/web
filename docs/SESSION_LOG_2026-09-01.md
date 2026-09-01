@@ -1,5 +1,39 @@
 # Session Log — 2026-09-01
 
+## Contacts: website links open off-site
+
+Bare hosts in the contact card (`plusplususa.com`) were used as hrefs
+and resolved under `/admin/`. `websiteHref` prefixes `https://` when
+no scheme is present. Display text is unchanged.
+
+### Files
+
+- `apps/web/src/app/admin/contacts/page.tsx`
+
+### Validation
+
+- Playwright: PlusPlus website href is `https://plusplususa.com`
+- eslint contacts/page.tsx — clean
+
+## Contacts: remove Show step details
+
+Dropped the collapsible Discern/Court checklist from the expanded
+contact panel. The traffic-light stepper at the top is the lifecycle
+UI; comments stay.
+
+### Files
+
+- `apps/web/src/app/admin/contacts/page.tsx`
+- `apps/web/src/app/admin/contacts/contacts.module.css`
+
+### Validation
+
+- Playwright: Show step details gone; Heard back stepper + comments remain
+- `npm run typecheck` — pass
+- eslint contacts/page.tsx — clean
+- `npm run lint:css` — pass
+- `npm run assets:audit` — OK 67
+
 ## Contacts: Maybe save + drop list columns
 
 Maybe failed with "Failed to update member" because the live

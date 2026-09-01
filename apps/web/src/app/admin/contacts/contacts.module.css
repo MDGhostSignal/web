@@ -69,127 +69,12 @@
   border-color: var(--admin-accent);
 }
 
-
-/* Lifecycle checklist (expanded row). */
-.lifecycleBlock {
-  padding: var(--admin-space-4);
-  background: var(--admin-surface-1);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-md);
-}
-
-.lifecycleBlock h4 {
-  margin: 0 0 var(--admin-space-3);
-  font-size: var(--admin-text-sm);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.phaseGroup {
-  margin-top: var(--admin-space-4);
-}
-
-.phaseGroup:first-of-type {
-  margin-top: var(--admin-space-3);
-}
-
-.phaseGroupHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--admin-space-2);
-  margin-bottom: var(--admin-space-2);
-  font-size: var(--admin-text-xs);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.stepList {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.stepRow {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
-  align-items: center;
-  gap: var(--admin-space-3);
-  padding: 6px 8px;
-  border-radius: var(--admin-radius-sm);
-  transition: background 120ms ease;
-}
-
-.stepRow:hover {
-  background: var(--admin-surface-2);
-}
-
-.stepRowNa {
-  opacity: 0.45;
-}
-
-.stepCheckbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--admin-accent);
-  cursor: pointer;
-}
-
-.stepCheckbox:disabled {
-  cursor: not-allowed;
-}
-
-.stepLabel {
-  font-size: var(--admin-text-md);
-  color: var(--admin-text-primary);
-}
-
-.stepLabelDone {
-  text-decoration: line-through;
-  color: var(--admin-text-muted);
-}
-
-.stepRoleTag {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 8px;
-  font-size: var(--admin-text-xs);
-  font-weight: var(--admin-weight-semibold);
-  color: var(--admin-text-secondary);
-  background: var(--admin-surface-2);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-pill);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.stepDate {
-  padding: 4px 6px;
-  font-family: var(--admin-font);
-  font-size: var(--admin-text-xs);
-  color: var(--admin-text-secondary);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--admin-radius-sm);
-  min-width: 110px;
-}
-
-.stepDate:hover,
-.stepDate:focus {
-  border-color: var(--admin-border);
-  background: var(--admin-surface-2);
-  outline: none;
-}
-
 /* =============================================================================
    Comments panel
    =============================================================================
-   Threaded notes log rendered inside the expanded row, below the lifecycle
-   checklist and above the Edit/Delete action buttons. Each comment is
-   stamped with one of the four founder names + a timestamp. Newest first.
+   Threaded notes log rendered inside the expanded contact. Each comment
+   is stamped with one of the four founder names + a timestamp. Newest
+   first.
    ============================================================================= */
 
 .commentsBlock {
@@ -411,30 +296,6 @@
 
 @media (max-width: 760px) {
   .topGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =============================================================================
-   Bottom row — lifecycle checklist + comments thread side-by-side.
-   With only 6 lifecycle steps left (vs the prior 13), the block doesn't
-   need full width any more; pairing it with the comments thread
-   horizontally cuts the panel's height roughly in half. Stacks to a
-   single column below 860 px.
-   ============================================================================= */
-
-.lifecycleCommentsGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--admin-space-4);
-  /* `stretch` (not `start`) so the lifecycle + comments blocks share a
-     row height — whichever is taller drives, the other extends its
-     card chrome to match. */
-  align-items: stretch;
-}
-
-@media (max-width: 860px) {
-  .lifecycleCommentsGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -1046,48 +907,6 @@
 
 .graduatedRow .memberStatusBadge {
   opacity: 1;
-}
-
-/* Collapsible wrapper around the legacy 6-step LifecycleChecklist —
-   matches the marketplace pool's `.mmLifecycleDetails` pattern. */
-
-.lifecycleDetails {
-  display: flex;
-  flex-direction: column;
-  gap: var(--admin-space-3);
-}
-
-.lifecycleDetailsSummary {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--admin-space-2);
-  padding: var(--admin-space-2) var(--admin-space-3);
-  background: var(--admin-surface-1);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-md);
-  font-size: var(--admin-text-sm);
-  font-weight: var(--admin-weight-medium);
-  color: var(--admin-text-secondary);
-  list-style: none;
-  transition: background 120ms ease;
-}
-
-.lifecycleDetailsSummary::-webkit-details-marker {
-  display: none;
-}
-
-.lifecycleDetailsSummary:hover {
-  background: var(--admin-surface-2);
-  color: var(--admin-text-primary);
-}
-
-.lifecycleDetails[open] .lifecycleDetailsSummary {
-  background: var(--admin-surface-2);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  border-bottom-color: transparent;
 }
 
 /* =====================================================================
