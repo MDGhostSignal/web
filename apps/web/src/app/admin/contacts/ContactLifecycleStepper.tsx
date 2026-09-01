@@ -135,7 +135,15 @@ export function deriveStatus(m: Member): DerivedStatus {
   // `last_response` stays for the founder's actual words but isn't
   // consulted here (too easy to misclassify).
   if (m.response_kind === "interested") return "heard-interested";
-  if (m.response_kind === "maybe") return "heard-maybe";
+  // Maybe is stored on lifecycle_steps.heard_maybe because the live
+  // response_kind CHECK still rejects 'maybe'. Prefer the jsonb marker;
+  // also honor response_kind if the CHECK is ever widened.
+  if (
+    m.response_kind === "maybe" ||
+    m.lifecycle_steps?.heard_maybe?.status === "done"
+  ) {
+    return "heard-maybe";
+  }
   if (m.response_kind === "no") return "heard-no";
   if (m.lifecycle_steps?.second_reachout?.status === "done") {
     return "second-reachout";
@@ -191,10 +199,15 @@ const STEP_TEMPLATE: Omit<StepRow, "state">[] = [
   { key: "member", label: "Signed up as member", tint: "success", target: "member" },
 ];
 
-function heardTint(kind: Member["response_kind"]): TrafficTint {
-  if (kind === "no") return "danger";
-  if (kind === "maybe") return "info";
-  if (kind === "interested") return "success";
+function heardTint(member: Member): TrafficTint {
+  if (member.response_kind === "no") return "danger";
+  if (
+    member.response_kind === "maybe" ||
+    member.lifecycle_steps?.heard_maybe?.status === "done"
+  ) {
+    return "info";
+  }
+  if (member.response_kind === "interested") return "success";
   return "neutral";
 }
 
@@ -220,15 +233,16 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
   const isStopped = status === "stopped";
   const isMember = status === "member";
 
+  const kindTint = heardTint(member);
   const rows: StepRow[] = useMemo(
     () =>
       STEP_TEMPLATE.map((s, i) => ({
         ...s,
         state: stateFor(status, i),
         label: s.key === "heard" ? heardBackLabel(status) : s.label,
-        tint: s.key === "heard" ? heardTint(member.response_kind) : s.tint,
+        tint: s.key === "heard" ? kindTint : s.tint,
       })),
-    [status, member.response_kind],
+    [status, kindTint],
   );
 
   // "Done count" includes the current step so the X/5 progress pill
@@ -414,7 +428,12 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     {row.choices.map((choice) => {
-                      const active = member.response_kind === choice.kind;
+                      const active =
+                        choice.kind === "maybe"
+                          ? member.response_kind === "maybe" ||
+                            member.lifecycle_steps?.heard_maybe?.status ===
+                              "done"
+                          : member.response_kind === choice.kind;
                       return (
                         <button
                           key={choice.kind}
@@ -471,5 +490,7 @@ export const ContactLifecycleStepper = memo(
     prev.member.lifecycle_steps?.first_reachout?.status ===
       next.member.lifecycle_steps?.first_reachout?.status &&
     prev.member.lifecycle_steps?.second_reachout?.status ===
-      next.member.lifecycle_steps?.second_reachout?.status,
+      next.member.lifecycle_steps?.second_reachout?.status &&
+    prev.member.lifecycle_steps?.heard_maybe?.status ===
+      next.member.lifecycle_steps?.heard_maybe?.status,
 );

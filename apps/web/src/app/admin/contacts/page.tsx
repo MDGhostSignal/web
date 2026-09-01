@@ -25,14 +25,12 @@ import {
   MEMBER_PHASES,
   MEMBER_TYPE_LABELS,
   MEMBER_TYPES,
-  RESPONSE_KIND_LABELS,
   type LifecycleStepDef,
   type LifecycleSteps,
   type Member,
   type MemberPhase,
   type MemberType,
   type MemberWritable,
-  type ResponseKind,
   type StepStatus,
 } from "@/lib/members";
 
@@ -119,6 +117,7 @@ function statusToPatch(
           ...(current.lifecycle_steps ?? {}),
           first_reachout: { status: "todo", completed_at: null },
           second_reachout: { status: "todo", completed_at: null },
+          heard_maybe: { status: "todo", completed_at: null },
         },
       };
     case "first-reachout":
@@ -130,6 +129,7 @@ function statusToPatch(
         lifecycle_steps: {
           ...withStepsDone(current, ["first_reachout"]),
           second_reachout: { status: "todo", completed_at: null },
+          heard_maybe: { status: "todo", completed_at: null },
         },
       };
     case "second-reachout":
@@ -138,10 +138,10 @@ function statusToPatch(
         became_member_at: null,
         last_contact_at: contactAt,
         response_kind: null,
-        lifecycle_steps: withStepsDone(current, [
-          "first_reachout",
-          "second_reachout",
-        ]),
+        lifecycle_steps: {
+          ...withStepsDone(current, ["first_reachout", "second_reachout"]),
+          heard_maybe: { status: "todo", completed_at: null },
+        },
       };
     case "heard-no":
       return {
@@ -149,15 +149,24 @@ function statusToPatch(
         became_member_at: null,
         last_contact_at: contactAt,
         response_kind: "no",
-        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
+        lifecycle_steps: {
+          ...withStepsDone(current, ["first_reachout"]),
+          heard_maybe: { status: "todo", completed_at: null },
+        },
       };
     case "heard-maybe":
+      // `response_kind` stays null: the live CHECK still only allows
+      // no/interested, so Maybe rides on lifecycle_steps.heard_maybe
+      // (jsonb, unconstrained). deriveStatus reads that marker.
       return {
         phase: "court",
         became_member_at: null,
         last_contact_at: contactAt,
-        response_kind: "maybe",
-        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
+        response_kind: null,
+        lifecycle_steps: withStepsDone(current, [
+          "first_reachout",
+          "heard_maybe",
+        ]),
       };
     case "heard-interested":
       return {
@@ -165,7 +174,10 @@ function statusToPatch(
         became_member_at: null,
         last_contact_at: contactAt,
         response_kind: "interested",
-        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
+        lifecycle_steps: {
+          ...withStepsDone(current, ["first_reachout"]),
+          heard_maybe: { status: "todo", completed_at: null },
+        },
       };
     case "agreements-sent":
       // Agreement sent, awaiting signature — phase `sign`. Interested is
@@ -174,7 +186,10 @@ function statusToPatch(
         phase: "sign",
         became_member_at: null,
         response_kind: "interested",
-        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
+        lifecycle_steps: {
+          ...withStepsDone(current, ["first_reachout"]),
+          heard_maybe: { status: "todo", completed_at: null },
+        },
       };
     case "member":
       // became_member_at is the authoritative "is a member" signal, so
@@ -210,24 +225,6 @@ function phaseVariant(phase: MemberPhase): BadgeVariant {
     case "churned":
       return "danger";
   }
-}
-
-function replyVariant(kind: ResponseKind): BadgeVariant {
-  switch (kind) {
-    case "no":
-      return "danger";
-    case "maybe":
-      return "info";
-    case "interested":
-      return "success";
-  }
-}
-
-function replySortRank(kind: Member["response_kind"]): number {
-  if (kind === "no") return 1;
-  if (kind === "maybe") return 2;
-  if (kind === "interested") return 3;
-  return 0;
 }
 
 function formatDate(value: string | null): string {
@@ -983,42 +980,6 @@ function MembersTable({
       sort: (a, b) =>
         LIFECYCLE_RANK[deriveStatus(a)] - LIFECYCLE_RANK[deriveStatus(b)],
       cell: (m) => <ContactLifecycleStepper member={m} variant="compact" />,
-    },
-    {
-      key: "reply",
-      header: "Yes / No / Maybe",
-      // No < Maybe < Yes. Empty (no heard-back answer) parks at the
-      // end on asc, matching Owner / Date added.
-      sort: (a, b) => {
-        const av = replySortRank(a.response_kind);
-        const bv = replySortRank(b.response_kind);
-        if (av === 0 && bv !== 0) return 1;
-        if (bv === 0 && av !== 0) return -1;
-        return av - bv;
-      },
-      cell: (m) =>
-        m.response_kind ? (
-          <Badge variant={replyVariant(m.response_kind)}>
-            {RESPONSE_KIND_LABELS[m.response_kind]}
-          </Badge>
-        ) : (
-          "—"
-        ),
-    },
-    {
-      key: "owner",
-      header: "Owner",
-      variant: "muted",
-      // Unassigned rows ("") sort to the bottom on asc, top on desc —
-      // the empty string would otherwise sort first alphabetically.
-      sort: (a, b) => {
-        const av = a.owner ?? "";
-        const bv = b.owner ?? "";
-        if (av === "" && bv !== "") return 1;
-        if (bv === "" && av !== "") return -1;
-        return av.localeCompare(bv);
-      },
-      cell: (m) => m.owner || "—",
     },
     {
       key: "last_contact",

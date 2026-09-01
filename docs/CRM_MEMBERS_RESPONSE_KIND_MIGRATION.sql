@@ -21,7 +21,7 @@ alter table public.members
   drop constraint if exists members_response_kind_check;
 alter table public.members
   add constraint members_response_kind_check
-    check (response_kind is null or response_kind in ('no', 'interested'));
+    check (response_kind is null or response_kind in ('no', 'maybe', 'interested'));
 
 comment on column public.members.response_kind is
   'Traffic-light categorisation of the most recent response from this contact: ''no'' (rejected), ''interested'' (positive), or NULL (no categorical reply recorded). Drives the lifecycle stepper on /admin/contacts; separate from `last_response` which captures free-text context.';

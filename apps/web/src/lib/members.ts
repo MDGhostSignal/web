@@ -145,6 +145,7 @@ export const LIFECYCLE_STEPS: readonly LifecycleStepDef[] = [
 export const CONTACT_STEPPER_STEP_KEYS = [
   "first_reachout",
   "second_reachout",
+  "heard_maybe",
 ] as const;
 
 /**

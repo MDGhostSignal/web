@@ -1,5 +1,26 @@
 # Session Log — 2026-09-01
 
+## Contacts: Maybe save + drop list columns
+
+Maybe failed with "Failed to update member" because the live
+`response_kind` CHECK still rejects `'maybe'`. Maybe now stores on
+`lifecycle_steps.heard_maybe` (jsonb) so it saves without that CHECK.
+Removed the **Yes / No / Maybe** and **Owner** list columns.
+
+### Files
+
+- `apps/web/src/app/admin/contacts/page.tsx`
+- `apps/web/src/app/admin/contacts/ContactLifecycleStepper.tsx`
+- `apps/web/src/lib/members.ts`
+
+### Validation
+
+- Playwright: columns gone; Maybe stays selected (aria-pressed=true), no error; PlusPlus restored to No
+- `npm run typecheck` — pass
+- eslint on touched files — clean
+- `npm run lint:css` — pass
+- `npm run assets:audit` — OK 67
+
 ## Contacts: Heard back No / Maybe / Yes
 
 Combined Heard back — no and Heard back — interested into one stepper
@@ -7,7 +28,12 @@ step with three answers (No / Maybe / Yes). Maybe is a new
 `response_kind`. List column **Yes / No / Maybe** is sortable. Filter
 dropdown still lists each answer separately.
 
-SQL applied: `docs/CRM_MEMBERS_RESPONSE_KIND_MAYBE_MIGRATION.sql`.
+SQL: live PATCH of `response_kind = 'maybe'` still 23514 (old
+no/interested check). Re-run
+`docs/CRM_MEMBERS_RESPONSE_KIND_MAYBE_MIGRATION.sql` — it now drops
+every response_kind CHECK and `NOTIFY pgrst`. The original
+`CRM_MEMBERS_RESPONSE_KIND_MIGRATION.sql` was also updated so a
+re-run cannot clobber `maybe`.
 
 ### Files
 
