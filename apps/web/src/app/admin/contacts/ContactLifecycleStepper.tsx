@@ -2,7 +2,11 @@
 
 import { Fragment, memo, useMemo } from "react";
 
-import type { Member } from "@/lib/members";
+import {
+  RESPONSE_KIND_LABELS,
+  type Member,
+  type ResponseKind,
+} from "@/lib/members";
 
 import styles from "./contacts.module.css";
 
@@ -26,38 +30,39 @@ type Props = {
  */
 
 /**
- * Reach-out lifecycle (Martin's 2026-08-07 spec) — six progression
- * stages plus two off-pipeline states:
+ * Reach-out lifecycle — five progression stages plus two off-pipeline
+ * states. Heard back is one step with three answers (No / Maybe / Yes):
  *   1. first-reachout    — first outreach sent, awaiting reply
  *   2. second-reachout   — a follow-up went out, still awaiting reply
- *   3. heard-no          — they replied "no" / not interested (dead-end)
- *   4. heard-interested  — they replied positively
- *   5. agreements-sent   — membership agreement sent, awaiting signature
- *   6. member            — signed up as a GhostSignal member
+ *   3. heard-back        — they replied: no / maybe / yes (interested)
+ *   4. agreements-sent   — membership agreement sent, awaiting signature
+ *   5. member            — signed up as a GhostSignal member
  * Off-pipeline (surfaced in the filter, not counted as progress):
  *   - untouched → no outreach yet (default for freshly-imported rows)
  *   - stopped   → paused / churned
  *
- * Derived from existing Member fields — no schema change:
+ * Derived from existing Member fields:
  *   - phase paused/churned                 → stopped
  *   - became_member_at set OR phase run    → member
  *   - phase sign                           → agreements-sent
  *   - response_kind "interested"           → heard-interested
+ *   - response_kind "maybe"                → heard-maybe
  *   - response_kind "no"                   → heard-no
  *   - lifecycle_steps.second_reachout done → second-reachout
  *   - first reach-out recorded             → first-reachout
  *   - otherwise                            → untouched
  *
- * The 1st-vs-2nd reach-out split is the one genuinely new bit of state;
- * it rides in the free-form `lifecycle_steps` jsonb (keys
- * `first_reachout` / `second_reachout`) so no migration is needed. The
- * marketplace stepper ignores keys outside its own catalog.
+ * The 1st-vs-2nd reach-out split rides in `lifecycle_steps` jsonb
+ * (`first_reachout` / `second_reachout`). Heard-back answers live on
+ * `response_kind` (`maybe` added in
+ * docs/CRM_MEMBERS_RESPONSE_KIND_MAYBE_MIGRATION.sql).
  */
 export type DerivedStatus =
   | "untouched"
   | "first-reachout"
   | "second-reachout"
   | "heard-no"
+  | "heard-maybe"
   | "heard-interested"
   | "agreements-sent"
   | "member"
@@ -70,6 +75,7 @@ export const DERIVED_STATUSES: readonly DerivedStatus[] = [
   "first-reachout",
   "second-reachout",
   "heard-no",
+  "heard-maybe",
   "heard-interested",
   "agreements-sent",
   "member",
@@ -82,7 +88,8 @@ export const DERIVED_STATUS_LABELS: Record<DerivedStatus, string> = {
   "first-reachout": "First reach out",
   "second-reachout": "2nd reach out",
   "heard-no": "Heard back — no",
-  "heard-interested": "Heard back — interested",
+  "heard-maybe": "Heard back — maybe",
+  "heard-interested": "Heard back — yes",
   "agreements-sent": "Agreements sent",
   member: "Signed up as member",
   stopped: "Stopped",
@@ -91,8 +98,10 @@ export const DERIVED_STATUS_LABELS: Record<DerivedStatus, string> = {
 /**
  * Progress rank — how far along the success path a contact is. Higher =
  * closer to "all steps succeeded" (member). Used by the Contacts list's
- * Lifecycle sort. Off-pipeline states sort to the bottom: `stopped` and
- * `untouched` are 0 so they trail every contact that has real progress.
+ * Lifecycle sort AND the stepper's done/current/upcoming paint.
+ * Heard-back answers (no / maybe / yes) share rank 3 — they are
+ * alternative replies, not sequential steps. Sort Yes/No/Maybe via
+ * the Reply column instead.
  */
 export const LIFECYCLE_RANK: Record<DerivedStatus, number> = {
   stopped: 0,
@@ -100,9 +109,10 @@ export const LIFECYCLE_RANK: Record<DerivedStatus, number> = {
   "first-reachout": 1,
   "second-reachout": 2,
   "heard-no": 3,
-  "heard-interested": 4,
-  "agreements-sent": 5,
-  member: 6,
+  "heard-maybe": 3,
+  "heard-interested": 3,
+  "agreements-sent": 4,
+  member: 5,
 };
 
 /** True once a first reach-out has been recorded for this contact —
@@ -125,6 +135,7 @@ export function deriveStatus(m: Member): DerivedStatus {
   // `last_response` stays for the founder's actual words but isn't
   // consulted here (too easy to misclassify).
   if (m.response_kind === "interested") return "heard-interested";
+  if (m.response_kind === "maybe") return "heard-maybe";
   if (m.response_kind === "no") return "heard-no";
   if (m.lifecycle_steps?.second_reachout?.status === "done") {
     return "second-reachout";
@@ -142,53 +153,63 @@ type StepState = "done" | "current" | "upcoming";
  *   - danger      (replied no)     — red, rejected
  *   - success     (replied interested) — green, positive
  */
-type TrafficTint = "neutral" | "warn" | "danger" | "success";
+type TrafficTint = "neutral" | "warn" | "danger" | "success" | "info";
+
+type HeardChoice = {
+  kind: ResponseKind;
+  label: string;
+  target: DerivedStatus;
+  tint: TrafficTint;
+};
+
+const HEARD_CHOICES: HeardChoice[] = [
+  { kind: "no", label: RESPONSE_KIND_LABELS.no, target: "heard-no", tint: "danger" },
+  { kind: "maybe", label: RESPONSE_KIND_LABELS.maybe, target: "heard-maybe", tint: "info" },
+  { kind: "interested", label: RESPONSE_KIND_LABELS.interested, target: "heard-interested", tint: "success" },
+];
 
 type StepRow = {
   key: string;
   label: string;
   state: StepState;
   tint: TrafficTint;
-  target: DerivedStatus;
+  target: DerivedStatus | null;
+  choices?: HeardChoice[];
 };
 
 /**
- * The four traffic-light positions, in lifecycle order. State
- * (done/current/upcoming) is filled in per render based on the derived
- * status. The `target` field is the DerivedStatus that clicking the
- * circle should set the member to — consumed by the parent's
- * onSetStatus callback. `tint` drives the traffic-light color.
- *
- * Replied-no and replied-interested are mutually-exclusive outcomes of
- * the same upstream event (the reply itself), not sequential steps —
- * see `stateFor` for how that's reflected in done/current/upcoming.
+ * Five pipeline positions. Heard back is one circle with No / Maybe /
+ * Yes choices underneath — those answers are alternatives, not extra
+ * steps. `target` is the DerivedStatus a circle click sets; null on
+ * Heard back because the pills own the selection.
  */
-const STEP_TEMPLATE: (Omit<StepRow, "state">)[] = [
-  { key: "first",      label: "First reach out",        tint: "warn",    target: "first-reachout" },
-  { key: "second",     label: "2nd reach out",          tint: "warn",    target: "second-reachout" },
-  { key: "no",         label: "Heard back — no",        tint: "danger",  target: "heard-no" },
-  { key: "interested", label: "Heard back — interested", tint: "success", target: "heard-interested" },
-  { key: "agreements", label: "Agreements sent",        tint: "neutral", target: "agreements-sent" },
-  { key: "member",     label: "Signed up as member",    tint: "success", target: "member" },
+const STEP_TEMPLATE: Omit<StepRow, "state">[] = [
+  { key: "first", label: "First reach out", tint: "warn", target: "first-reachout" },
+  { key: "second", label: "2nd reach out", tint: "warn", target: "second-reachout" },
+  { key: "heard", label: "Heard back", tint: "neutral", target: null, choices: HEARD_CHOICES },
+  { key: "agreements", label: "Agreements sent", tint: "neutral", target: "agreements-sent" },
+  { key: "member", label: "Signed up as member", tint: "success", target: "member" },
 ];
 
-function stateFor(status: DerivedStatus, stepIndex: number): StepState {
-  // Untouched + stopped = all circles upcoming (hollow). Counts as 0/6.
-  if (status === "untouched" || status === "stopped") return "upcoming";
+function heardTint(kind: Member["response_kind"]): TrafficTint {
+  if (kind === "no") return "danger";
+  if (kind === "maybe") return "info";
+  if (kind === "interested") return "success";
+  return "neutral";
+}
 
-  // Step ranks map 1:1 to STEP_TEMPLATE order (first=1 … member=6),
-  // matching LIFECYCLE_RANK. `cur` is how far this contact has advanced.
+function heardBackLabel(status: DerivedStatus): string {
+  if (status === "heard-no") return DERIVED_STATUS_LABELS["heard-no"];
+  if (status === "heard-maybe") return DERIVED_STATUS_LABELS["heard-maybe"];
+  if (status === "heard-interested") return DERIVED_STATUS_LABELS["heard-interested"];
+  return "Heard back";
+}
+
+function stateFor(status: DerivedStatus, stepIndex: number): StepState {
+  if (status === "untouched" || status === "stopped") return "upcoming";
   const stepRank = stepIndex + 1;
   const cur = LIFECYCLE_RANK[status];
-
-  // "Heard back — no" (rank 3) is the alternative outcome to
-  // "interested" — only paint it when the contact actually went that
-  // route. Anyone who progressed past the reply (rank ≥ 4) never took it.
-  if (stepRank === 3 && cur >= 4) return "upcoming";
-
-  // Graduated members: every earned position is consumed history.
   if (status === "member") return "done";
-
   if (stepRank === cur) return "current";
   if (stepRank < cur) return "done";
   return "upcoming";
@@ -204,13 +225,14 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
       STEP_TEMPLATE.map((s, i) => ({
         ...s,
         state: stateFor(status, i),
+        label: s.key === "heard" ? heardBackLabel(status) : s.label,
+        tint: s.key === "heard" ? heardTint(member.response_kind) : s.tint,
       })),
-    [status],
+    [status, member.response_kind],
   );
 
-  // "Done count" includes the current step so the X/4 progress pill
-  // jumps from 0/4 (untouched) → 1/4 (Discern clicked) → 2/4 (Reached
-  // out current) etc. — matches the visible filled-circle count.
+  // "Done count" includes the current step so the X/5 progress pill
+  // jumps from 0/5 (untouched) → 1/5 (First reach out) etc.
   const doneCount = rows.filter(
     (r) => r.state === "done" || r.state === "current",
   ).length;
@@ -343,8 +365,15 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
                   aria-hidden="true"
                 />
               )}
-              <div className={styles.stepperFullStep}>
-                {onSetStatus ? (
+              <div
+                className={[
+                  styles.stepperFullStep,
+                  row.choices ? styles.stepperFullStepHeard : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {onSetStatus && row.target ? (
                   <button
                     type="button"
                     className={circleCls}
@@ -361,7 +390,7 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
                     }
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSetStatus(row.target);
+                      onSetStatus(row.target!);
                     }}
                   >
                     {isDone || isCurrent ? "✓" : ""}
@@ -377,6 +406,39 @@ function ContactLifecycleStepperImpl({ member, variant, onSetStatus }: Props) {
                   </div>
                 )}
                 <div className={styles.stepperFullStepLabel}>{row.label}</div>
+                {row.choices && onSetStatus ? (
+                  <div
+                    className={styles.heardChoices}
+                    role="group"
+                    aria-label="Heard back"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {row.choices.map((choice) => {
+                      const active = member.response_kind === choice.kind;
+                      return (
+                        <button
+                          key={choice.kind}
+                          type="button"
+                          className={styles.heardChoice}
+                          data-kind={choice.kind}
+                          data-active={active ? "true" : "false"}
+                          aria-pressed={active}
+                          aria-label={
+                            active
+                              ? `Clear Heard back — ${choice.label}`
+                              : `Heard back — ${choice.label}`
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSetStatus(choice.target);
+                          }}
+                        >
+                          {choice.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
             </Fragment>
           );

@@ -25,12 +25,14 @@ import {
   MEMBER_PHASES,
   MEMBER_TYPE_LABELS,
   MEMBER_TYPES,
+  RESPONSE_KIND_LABELS,
   type LifecycleStepDef,
   type LifecycleSteps,
   type Member,
   type MemberPhase,
   type MemberType,
   type MemberWritable,
+  type ResponseKind,
   type StepStatus,
 } from "@/lib/members";
 
@@ -83,11 +85,25 @@ function statusToPatch(
   // is no earlier circle to click. A second click on the current step
   // returns the contact to untouched (clears phase / last_contact_at /
   // the first_reachout marker so deriveStatus doesn't keep it lit).
+  const currentStatus = deriveStatus(current);
   if (
     next === "first-reachout" &&
-    deriveStatus(current) === "first-reachout"
+    currentStatus === "first-reachout"
   ) {
     next = "untouched";
+  }
+  // Clicking the already-selected Heard back answer (No / Maybe / Yes)
+  // clears it and falls back to the latest reach-out step.
+  if (
+    (next === "heard-no" ||
+      next === "heard-maybe" ||
+      next === "heard-interested") &&
+    next === currentStatus
+  ) {
+    next =
+      current.lifecycle_steps?.second_reachout?.status === "done"
+        ? "second-reachout"
+        : "first-reachout";
   }
 
   switch (next) {
@@ -133,6 +149,14 @@ function statusToPatch(
         became_member_at: null,
         last_contact_at: contactAt,
         response_kind: "no",
+        lifecycle_steps: withStepsDone(current, ["first_reachout"]),
+      };
+    case "heard-maybe":
+      return {
+        phase: "court",
+        became_member_at: null,
+        last_contact_at: contactAt,
+        response_kind: "maybe",
         lifecycle_steps: withStepsDone(current, ["first_reachout"]),
       };
     case "heard-interested":
@@ -186,6 +210,24 @@ function phaseVariant(phase: MemberPhase): BadgeVariant {
     case "churned":
       return "danger";
   }
+}
+
+function replyVariant(kind: ResponseKind): BadgeVariant {
+  switch (kind) {
+    case "no":
+      return "danger";
+    case "maybe":
+      return "info";
+    case "interested":
+      return "success";
+  }
+}
+
+function replySortRank(kind: Member["response_kind"]): number {
+  if (kind === "no") return 1;
+  if (kind === "maybe") return 2;
+  if (kind === "interested") return 3;
+  return 0;
 }
 
 function formatDate(value: string | null): string {
@@ -941,6 +983,27 @@ function MembersTable({
       sort: (a, b) =>
         LIFECYCLE_RANK[deriveStatus(a)] - LIFECYCLE_RANK[deriveStatus(b)],
       cell: (m) => <ContactLifecycleStepper member={m} variant="compact" />,
+    },
+    {
+      key: "reply",
+      header: "Yes / No / Maybe",
+      // No < Maybe < Yes. Empty (no heard-back answer) parks at the
+      // end on asc, matching Owner / Date added.
+      sort: (a, b) => {
+        const av = replySortRank(a.response_kind);
+        const bv = replySortRank(b.response_kind);
+        if (av === 0 && bv !== 0) return 1;
+        if (bv === 0 && av !== 0) return -1;
+        return av - bv;
+      },
+      cell: (m) =>
+        m.response_kind ? (
+          <Badge variant={replyVariant(m.response_kind)}>
+            {RESPONSE_KIND_LABELS[m.response_kind]}
+          </Badge>
+        ) : (
+          "—"
+        ),
     },
     {
       key: "owner",

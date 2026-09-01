@@ -1334,6 +1334,58 @@
   max-width: 160px;
 }
 
+.stepperFullStepHeard {
+  max-width: 220px;
+}
+
+.heardChoices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.heardChoice {
+  padding: 2px 8px;
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-xs);
+  font-weight: var(--admin-weight-semibold);
+  line-height: 1.3;
+  color: var(--admin-text-secondary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-pill);
+  cursor: pointer;
+}
+
+.heardChoice:hover {
+  border-color: var(--admin-text-muted);
+  color: var(--admin-text-primary);
+}
+
+.heardChoice:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.heardChoice[data-kind="no"][data-active="true"] {
+  background: var(--admin-destructive-soft);
+  border-color: var(--admin-destructive);
+  color: var(--admin-destructive);
+}
+
+.heardChoice[data-kind="maybe"][data-active="true"] {
+  background: var(--admin-info-soft);
+  border-color: var(--admin-info);
+  color: var(--admin-info);
+}
+
+.heardChoice[data-kind="interested"][data-active="true"] {
+  background: var(--admin-success-soft);
+  border-color: var(--admin-success);
+  color: var(--admin-success);
+}
+
 .stepperFullConnector {
   flex-shrink: 0;
   align-self: flex-start;
@@ -1466,6 +1518,20 @@
   border-color: var(--admin-success-soft);
 }
 
+/* ---- Info (Heard back — maybe) — teal caution, distinct from reach-out yellow ---- */
+.stepperFullCircle[data-tint="info"].stepperFullCircleDone,
+.stepperFullCircle[data-tint="info"].stepperFullCircleCurrent {
+  background: var(--admin-info);
+  border-color: var(--admin-info);
+  color: var(--admin-bg);
+}
+.stepperFullCircle[data-tint="info"].stepperFullCircleCurrent {
+  box-shadow: 0 0 0 3px var(--admin-info-soft);
+}
+.stepperFullCircle[data-tint="info"]:not(.stepperFullCircleDone):not(.stepperFullCircleCurrent) {
+  border-color: var(--admin-info-soft);
+}
+
 /* Compact pip tints — mirror the same color identity in the row-level
    stepper that lives in the table column. */
 .stepperCompactPip[data-tint="warn"].stepperCompactPipCurrent,
@@ -1479,6 +1545,10 @@
 .stepperCompactPip[data-tint="success"].stepperCompactPipCurrent,
 .stepperCompactPip[data-tint="success"].stepperCompactPipDone {
   background: var(--admin-success);
+}
+.stepperCompactPip[data-tint="info"].stepperCompactPipCurrent,
+.stepperCompactPip[data-tint="info"].stepperCompactPipDone {
+  background: var(--admin-info);
 }
 
 .stepperFullStepLabel {

@@ -45,6 +45,16 @@ export const MEMBER_TYPE_LABELS: Record<MemberType, string> = {
   other: "Other",
 };
 
+/** Heard-back answers on /admin/contacts. `interested` displays as Yes. */
+export const RESPONSE_KINDS = ["no", "maybe", "interested"] as const;
+export type ResponseKind = (typeof RESPONSE_KINDS)[number];
+
+export const RESPONSE_KIND_LABELS: Record<ResponseKind, string> = {
+  no: "No",
+  maybe: "Maybe",
+  interested: "Yes",
+};
+
 /**
  * Canonical team owners for the `owner` column. Kept here so the UI
  * dropdown doesn't drift from what the API / DB expects.
@@ -284,8 +294,9 @@ export type Member = {
       Drives the lifecycle stepper on /admin/contacts. NULL means
       "no categorical reply recorded" — the contact may still have
       free-text `last_response` content. See
-      docs/CRM_MEMBERS_RESPONSE_KIND_MIGRATION.sql. */
-  response_kind: "no" | "interested" | null;
+      docs/CRM_MEMBERS_RESPONSE_KIND_MIGRATION.sql and
+      docs/CRM_MEMBERS_RESPONSE_KIND_MAYBE_MIGRATION.sql. */
+  response_kind: ResponseKind | null;
   /** Number of outreach touches against this lead. Incremented manually
       by the founders as they reach out (call, email, DM, etc.). */
   contact_count: number | null;

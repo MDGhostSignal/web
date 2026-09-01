@@ -223,7 +223,11 @@ export function sanitizePayload(input: MemberWritable): MemberWritable {
   }
 
   // Traffic-light response bucket — enum-checked, NULL clears it.
-  if (input.response_kind === "no" || input.response_kind === "interested") {
+  if (
+    input.response_kind === "no" ||
+    input.response_kind === "maybe" ||
+    input.response_kind === "interested"
+  ) {
     out.response_kind = input.response_kind;
   } else if (input.response_kind === null) {
     out.response_kind = null;

@@ -1,5 +1,31 @@
 # Session Log — 2026-09-01
 
+## Contacts: Heard back No / Maybe / Yes
+
+Combined Heard back — no and Heard back — interested into one stepper
+step with three answers (No / Maybe / Yes). Maybe is a new
+`response_kind`. List column **Yes / No / Maybe** is sortable. Filter
+dropdown still lists each answer separately.
+
+SQL applied: `docs/CRM_MEMBERS_RESPONSE_KIND_MAYBE_MIGRATION.sql`.
+
+### Files
+
+- `apps/web/src/lib/members.ts`
+- `apps/web/src/app/api/members/route.ts`
+- `apps/web/src/app/admin/contacts/ContactLifecycleStepper.tsx`
+- `apps/web/src/app/admin/contacts/page.tsx`
+- `apps/web/src/app/admin/contacts/contacts.module.css`
+- `docs/CRM_MEMBERS_RESPONSE_KIND_MAYBE_MIGRATION.sql`
+
+### Validation
+
+- Playwright desktop + mobile: column after Lifecycle; filter has Heard back — maybe; one Heard back step with No/Maybe/Yes pills
+- `npm run typecheck` — pass
+- `npm run lint` — 0 errors (5 pre-existing warnings)
+- `npm run lint:css` — pass
+- `npm run assets:audit` — OK 67
+
 ## Contacts: unclick First reach out
 
 Clicking First reach out on an expanded contact while it was already
