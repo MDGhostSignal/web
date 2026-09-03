@@ -256,3 +256,59 @@ card + pipeline card. Column is sortable.
   03:59 UTC and have never been emailed. Hitting sync would send their
   first real mail. Next daily cron will. Code fix still unpushed; SQL
   alone is what blocks Jack's re-emails on production today.
+
+## ART19 migration explainer — Longwave stills lock
+
+From-scratch Longwave package for the creator-only ART19 move film
+(gallery metaphor, 6 clips, 10–15s). Stills first; no takes yet.
+
+### Files
+
+- `production/longwave/art19-migration/PF.md`
+- `production/longwave/art19-migration/clip-01.txt` … `clip-06.txt`
+- `production/longwave/art19-migration/refs/` — ENV-GALLERY (canonical),
+  PROP-ARTWORK (canonical), LAYOUT-HOOK / CATALOG / ARRIVAL / REDIRECT /
+  OPENING / HOME
+
+### Notes
+
+- ENV-bold leaked a gothic church; not loaded in clips.
+- First LAYOUT pass invented a gold crest on the painting; stripped.
+- HOOK pass-1 cropped; restaged wide from ENV+PROP identity.
+- Next: `reference_to_video` takes when asked to generate.
+
+## ART19 migration — Longwave first takes
+
+Six 720p R2V takes via ZDR tunnel pipe (`run_takes.py`). Build R2V
+blocked. Assembly `a19-assembly-v1.mp4` (~80s, stream copy).
+
+### Files
+
+- `production/longwave/art19-migration/take_iter1.mp4` … `take_iter6.mp4`
+- `production/longwave/art19-migration/a19-assembly-v1.mp4`
+- `production/longwave/art19-migration/clip-01.r2v.txt` … `clip-06.r2v.txt`
+
+### QC
+
+- Keepers: 1 hook, 6 home
+- Notes: 2 extra wall paintings; 3 cloud went literal; 4 mid-clip morph
+  (REPLACE candidate); 5 faces sharper than silhouette
+- First takes, not a locked cut. VO / captions / score still post.
+
+## ART19 technical explainer (replaces gallery cut)
+
+Creator walkthrough with real `/studio/migration` screenshots, on-screen
+callouts, and spoken instructions. Not the Longwave gallery film.
+
+- `production/art19-explainer/art19-explainer-v1.mp4` (~3:56, 1920×1080)
+- Four switch steps + three publishing screens (login, publish, markers)
+- VO: edge-tts Jenny, rate −12%. SRT next to the master.
+- Rebuild: `python production/art19-explainer/build.py`
+
+## ART19 explainer v2 (2026-09-02)
+
+Shorter cut (~47s). Ava multilingual VO at +8%. Four-step board
+from `/studio/migration` copy, then the three real ART19 click
+screenshots, then founders + hello@ghostsignal.cloud.
+
+- `production/art19-explainer/art19-explainer-v2.mp4`

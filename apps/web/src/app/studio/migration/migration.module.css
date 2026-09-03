@@ -1,42 +1,300 @@
 /* /studio/migration — ART19 RSS-migration guide.
  *
- * One-screen desktop layout: compact header row (intro + progress +
- * help cards) above the four steps side by side. The board fills the
- * viewport below the 64px studio header — step cards stretch into the
- * leftover vertical space instead of leaving a dead band at the
- * bottom. Columns collapse 4 → 2 → 1 as space shrinks (scrolling
- * returns on smaller screens, by design).
+ * Three chapters, top to bottom:
+ *   1. Video guide
+ *   2. Four-step move checklist (same 4-up board as the video)
+ *   3. Once you've moved in — publishing on ART19
+ *
+ * The board no longer fills the viewport. That used to hide chapter 3
+ * below a full-screen checklist. Columns still collapse 4 → 2 → 1.
  *
  * Step identity: all four steps use GhostSignal brand purple, walking
- * from a light lavender (step 1) to a deep violet (step 4) so the
- * sequence itself reads as a progression. Each card carries its shade
- * via three custom properties set per :nth-child — --step-accent
- * (solid), --step-tint (background wash), --step-line (border) — with
- * dark-theme overrides. No colored top bars: the shade shows up as a
- * gradient wash, a tinted border, a filled number badge, and a large
- * watermark numeral. */
+ * from a light lavender (step 1) to a deep violet (step 4). Each card
+ * carries --step-accent / --step-tint / --step-line. */
 
 .main {
   max-width: none;
   margin: 0;
-  padding: 24px 48px 40px;
-  min-height: calc(100dvh - 64px);
-  display: flex;
-  flex-direction: column;
+  padding: 20px 48px 56px;
 }
 
 @media (max-width: 900px) {
   .main {
-    padding: 16px 20px 24px;
-    min-height: 0;
+    padding: 16px 20px 32px;
   }
 }
 
 .guide {
   display: flex;
   flex-direction: column;
+  gap: 36px;
+}
+
+.watch,
+.move,
+.tutorial {
+  scroll-margin-top: 84px;
+}
+
+/* --- Chapter rail ------------------------------------------------- */
+
+.chapters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  padding: 10px 0 12px;
+  background: var(--studio-bg);
+  border-bottom: 1px solid var(--studio-border);
+}
+
+.chapter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-surface-1);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.chapter:hover {
+  border-color: var(--studio-accent);
+  background: var(--studio-surface-hover);
+}
+
+.chapterNum {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--studio-accent);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.chapterText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.chapterLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+}
+
+.chapterName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--studio-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 720px) {
+  .chapters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- 1. Video ----------------------------------------------------- */
+
+.watch {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.watchCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-width: 760px;
+}
+
+.watchStage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
+  align-items: stretch;
+}
+
+@media (max-width: 980px) {
+  .watchStage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.playerShell {
+  position: relative;
+  min-width: 0;
+}
+
+.player {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+  background: #0a0a0a;
+  box-shadow: var(--studio-shadow-soft);
+}
+
+.playButton {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: auto;
+  width: 96px;
+  height: 96px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--studio-accent);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.playButton:hover,
+.playButton:focus-visible {
+  transform: scale(1.07);
+  background: var(--studio-accent-strong);
+}
+
+.playIcon {
+  display: block;
+  width: 0;
+  height: 0;
+  margin-left: 6px;
+  border-style: solid;
+  border-width: 16px 0 16px 28px;
+  border-color: transparent transparent transparent #ffffff;
+}
+
+.watchToc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.watchToc li {
   flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.watchToc a {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 28px 32px;
+  border: 1px solid var(--studio-border);
+  border-radius: 18px;
+  background: var(--studio-surface-1);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.watchToc a:hover {
+  border-color: var(--studio-accent);
+  background: var(--studio-surface-hover);
+}
+
+.watchTocNum {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--studio-accent);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.watchToc strong {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--studio-text-primary);
+}
+
+.watchToc span:not(.watchTocNum) {
+  font-size: 16px;
+  color: var(--studio-text-secondary);
+  line-height: 1.4;
+}
+
+/* --- 2. Move checklist -------------------------------------------- */
+
+.move {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.nextChapter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  border: 1px dashed var(--studio-accent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--studio-accent) 8%, var(--studio-surface-1));
+  color: inherit;
+  text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.nextChapter:hover {
+  background: color-mix(in srgb, var(--studio-accent) 14%, var(--studio-surface-1));
+}
+
+.nextChapterKicker {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
+.nextChapterTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--studio-text-primary);
+}
+
+.nextChapterHint {
+  font-size: 13px;
+  color: var(--studio-text-secondary);
 }
 
 /* --- Header row --------------------------------------------------- */
@@ -201,7 +459,6 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
   align-items: stretch;
-  flex: 1;
   counter-reset: step;
 }
 
@@ -493,17 +750,13 @@
   line-height: 1.55;
 }
 
-/* --- Part 2: platform tutorial ------------------------------------ */
+/* --- 3. Once you've moved in -------------------------------------- */
 
-/* Lives below the fold, under the one-screen migration board — a
- * calmer, vertical read: three numbered steps, each with a real
- * platform screenshot. */
 .tutorial {
   display: flex;
   flex-direction: column;
   gap: 26px;
-  margin-top: 34px;
-  padding-top: 34px;
+  padding-top: 28px;
   border-top: 1px solid var(--studio-border);
 }
 

@@ -1,24 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import styles from "./migration.module.css";
 
 /**
- * Two vertical parts:
+ * Three chapters, in this order:
  *
- * 1. The four-step ART19 migration map from the GS-RSS-Migration PDF,
- *    rendered as a wide working checklist. Steps sit side by side on
- *    a big screen so the whole move is visible at once; checkmarks
- *    persist in localStorage so the page survives tab-switching to
- *    the old host mid-migration.
- * 2. The ART19 platform tutorial — the three-screen publishing
- *    routine (login → publish → ad markers), each step with a real
- *    screenshot from the platform so members know exactly where to
- *    click. Screenshot files live in
- *    public/images/studio/art19-tutorial/ — replacing a file there
- *    updates the page with no code change.
+ * 1. The video guide — watch first.
+ * 2. The four-step move checklist (same 4-up board the video shows).
+ * 3. Once you've moved in: publishing on ART19 (three screenshots).
+ *
+ * The 4-column board stays: that's the map in the video. It no longer
+ * fills the viewport, so chapter 3 isn't trapped below a full-screen
+ * board. Checkmarks persist in localStorage.
  */
 
 type StepItem = {
@@ -276,6 +278,49 @@ function getChecksServerSnapshot(): string {
   return "[]";
 }
 
+function ExplainerPlayer() {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const play = useCallback(() => {
+    void ref.current?.play();
+  }, []);
+
+  return (
+    <div className={styles.playerShell}>
+      <video
+        ref={ref}
+        className={styles.player}
+        controls
+        playsInline
+        preload="metadata"
+        poster="/videos/art19-explainer-poster.jpg"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+      >
+        <source src="/videos/art19-explainer.mp4" type="video/mp4" />
+        <track
+          kind="captions"
+          src="/videos/art19-explainer.vtt"
+          srcLang="en"
+          label="English"
+        />
+      </video>
+      {!playing ? (
+        <button
+          type="button"
+          className={styles.playButton}
+          onClick={play}
+          aria-label="Play video"
+        >
+          <span className={styles.playIcon} aria-hidden />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 export function MigrationGuide({ firstName }: { firstName: string | null }) {
   const rawChecked = useSyncExternalStore(
     subscribeToChecks,
@@ -309,19 +354,82 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
 
   return (
     <div className={styles.guide}>
-      {/* --- Compact header row ----------------------------------- */}
-      <header className={styles.intro}>
-        <div className={styles.introText}>
-          <p className={styles.eyebrow}>Member guide · ART19 migration</p>
-          <h1 className={styles.title}>
+      <nav className={styles.chapters} aria-label="On this page">
+        <a className={styles.chapter} href="#watch">
+          <span className={styles.chapterNum}>1</span>
+          <span className={styles.chapterText}>
+            <span className={styles.chapterLabel}>Watch</span>
+            <span className={styles.chapterName}>Video guide</span>
+          </span>
+        </a>
+        <a className={styles.chapter} href="#move">
+          <span className={styles.chapterNum}>2</span>
+          <span className={styles.chapterText}>
+            <span className={styles.chapterLabel}>Move</span>
+            <span className={styles.chapterName}>Checklist to ART19</span>
+          </span>
+        </a>
+        <a className={styles.chapter} href="#publish">
+          <span className={styles.chapterNum}>3</span>
+          <span className={styles.chapterText}>
+            <span className={styles.chapterLabel}>Then</span>
+            <span className={styles.chapterName}>Once you&apos;ve moved in</span>
+          </span>
+        </a>
+      </nav>
+
+      <section
+        id="watch"
+        className={styles.watch}
+        aria-labelledby="art19-watch-title"
+      >
+        <div className={styles.watchCopy}>
+          <p className={styles.eyebrow}>1 · Video guide</p>
+          <h1 id="art19-watch-title" className={styles.title}>
             Moving your show to ART19{firstName ? `, ${firstName}` : ""}.
           </h1>
           <p className={styles.lede}>
-            Like moving artwork between galleries — everything protected, us
-            on hand throughout. ART19 (an Amazon company) is where your show
-            and its ads will live. Keep this tab open next to your current
-            host and tick things off as you go — checkmarks save on this
-            device.
+            Start here. Two and a half minutes — then use the checklist
+            on this page to tick the move off, and the publishing
+            screens further down once you&apos;re in.
+          </p>
+        </div>
+        <div className={styles.watchStage}>
+          <ExplainerPlayer />
+          <ol className={styles.watchToc} aria-label="What follows the video">
+            <li>
+              <a href="#move">
+                <span className={styles.watchTocNum}>2</span>
+                <strong>Move your show</strong>
+                <span>Migration checklist</span>
+              </a>
+            </li>
+            <li>
+              <a href="#publish">
+                <span className={styles.watchTocNum}>3</span>
+                <strong>How to publish</strong>
+                <span>Once you&apos;ve moved in — three screens</span>
+              </a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section
+        id="move"
+        className={styles.move}
+        aria-labelledby="art19-move-title"
+      >
+      <header className={styles.intro}>
+        <div className={styles.introText}>
+          <p className={styles.eyebrow}>2 · Move your show</p>
+          <h2 id="art19-move-title" className={styles.title}>
+            Checklist: moving you to ART19.
+          </h2>
+          <p className={styles.lede}>
+            Same four steps as the video. Keep this tab open next to
+            your current host and tick things off as you go —
+            checkmarks save on this device.
           </p>
         </div>
 
@@ -432,15 +540,27 @@ export function MigrationGuide({ firstName }: { firstName: string | null }) {
         })}
       </ol>
 
-      {/* --- Part 2: the platform tutorial ------------------------ */}
+      <a className={styles.nextChapter} href="#publish">
+        <span className={styles.nextChapterKicker}>Still on this page</span>
+        <span className={styles.nextChapterTitle}>
+          Next: once you&apos;ve moved in — publishing on ART19
+        </span>
+        <span className={styles.nextChapterHint}>
+          Three real screens. Jump here when the move above is done.
+        </span>
+      </a>
+      </section>
+
+      {/* --- Part 3: the platform tutorial ------------------------ */}
       <section
+        id="publish"
         className={styles.tutorial}
         aria-labelledby="art19-tutorial-title"
       >
         <header className={styles.tutorialHead}>
-          <p className={styles.eyebrow}>Member guide · ART19 platform tutorial</p>
+          <p className={styles.eyebrow}>3 · Once you&apos;ve moved in</p>
           <h2 id="art19-tutorial-title" className={styles.tutorialTitle}>
-            Once you&apos;ve moved in: publishing on ART19.
+            Publishing on ART19.
           </h2>
           <p className={styles.lede}>
             The whole routine is three screens. These are actual screenshots

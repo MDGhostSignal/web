@@ -36,9 +36,8 @@ export default async function StudioMigrationPage() {
           attention: !member.xqSubmissionId || !member.rqSubmissionId,
         }}
       />
-      {/* Own main wrapper (not .dashMain): slimmer gutters + vertical
-          padding so the four-step board fits a desktop screen without
-          scrolling. */}
+      {/* Own main wrapper (not .dashMain): three chapters, so the
+          page is allowed to scroll. */}
       <main className={styles.main}>
         <MigrationGuide firstName={member.firstName} />
       </main>
