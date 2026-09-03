@@ -61,7 +61,7 @@ export function StudioHeader({
           href="/studio/results"
           className={`${styles.headerNavTab} ${activeTab === "results" ? styles.headerNavTabActive : ""}`}
         >
-          My character
+          My Character
         </Link>
         {/* Roster is paused, not removed — its page also redirects
             while STUDIO_ROSTER_HIDDEN is on. */}
@@ -77,7 +77,7 @@ export function StudioHeader({
           href="/studio/migration"
           className={`${styles.headerNavTab} ${activeTab === "migration" ? styles.headerNavTabActive : ""}`}
         >
-          ART19 Migration and Tutorial
+          ART19 Tutorial
         </Link>
         {/* No Profile tab — the avatar circle in the trail is the way
             to /studio/profile. */}

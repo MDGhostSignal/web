@@ -1,15 +1,10 @@
-/* /studio/migration — ART19 RSS-migration guide.
+/* /studio/migration — ART19 Tutorial.
  *
- * Three chapters, top to bottom:
- *   1. Video guide
- *   2. Four-step move checklist (same 4-up board as the video)
- *   3. Once you've moved in — publishing on ART19
+ * Two chapters, top to bottom:
+ *   1. Two-step move checklist (Pre-Move Cataloging, Making the Switch)
+ *   2. Inserting ad markers on ART19
  *
- * The board no longer fills the viewport. That used to hide chapter 3
- * below a full-screen checklist. Columns still collapse 4 → 2 → 1.
- *
- * Step identity: all four steps use GhostSignal brand purple, walking
- * from a light lavender (step 1) to a deep violet (step 4). Each card
+ * Step identity: both steps use GhostSignal brand purple. Each card
  * carries --step-accent / --step-tint / --step-line. */
 
 .main {
@@ -30,7 +25,6 @@
   gap: 36px;
 }
 
-.watch,
 .move,
 .tutorial {
   scroll-margin-top: 84px;
@@ -40,7 +34,7 @@
 
 .chapters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   position: sticky;
   top: 0;
@@ -107,152 +101,15 @@
   text-overflow: ellipsis;
 }
 
-@media (max-width: 720px) {
-  .chapters {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* --- 1. Video ----------------------------------------------------- */
-
-.watch {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.watchCopy {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  max-width: 760px;
-}
-
-.watchStage {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: stretch;
-}
-
-@media (max-width: 980px) {
-  .watchStage {
-    grid-template-columns: 1fr;
-  }
-}
-
-.playerShell {
-  position: relative;
-  min-width: 0;
-}
-
-.player {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border: 1px solid var(--studio-border);
-  border-radius: 14px;
-  background: #0a0a0a;
-  box-shadow: var(--studio-shadow-soft);
-}
-
-.playButton {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  margin: auto;
-  width: 96px;
-  height: 96px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--studio-accent);
-  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 160ms ease, background 160ms ease;
-}
-
-.playButton:hover,
-.playButton:focus-visible {
-  transform: scale(1.07);
-  background: var(--studio-accent-strong);
-}
-
-.playIcon {
-  display: block;
-  width: 0;
-  height: 0;
-  margin-left: 6px;
-  border-style: solid;
-  border-width: 16px 0 16px 28px;
-  border-color: transparent transparent transparent #ffffff;
-}
-
-.watchToc {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.watchToc li {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-}
-
-.watchToc a {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 28px 32px;
-  border: 1px solid var(--studio-border);
-  border-radius: 18px;
-  background: var(--studio-surface-1);
-  color: inherit;
-  text-decoration: none;
-  transition: border-color 160ms ease, background 160ms ease;
-}
-
-.watchToc a:hover {
-  border-color: var(--studio-accent);
-  background: var(--studio-surface-hover);
-}
-
-.watchTocNum {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: var(--studio-accent);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.watchToc strong {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+.chapterNameShort {
+  display: none;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--studio-text-primary);
+  line-height: 1.2;
 }
 
-.watchToc span:not(.watchTocNum) {
-  font-size: 16px;
-  color: var(--studio-text-secondary);
-  line-height: 1.4;
-}
-
-/* --- 2. Move checklist -------------------------------------------- */
+/* --- 1. Move checklist -------------------------------------------- */
 
 .move {
   display: flex;
@@ -456,25 +313,19 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   align-items: stretch;
   counter-reset: step;
 }
 
-@media (max-width: 1180px) {
-  .steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 680px) {
+@media (max-width: 900px) {
   .steps {
     grid-template-columns: 1fr;
   }
 }
 
-/* Brand-purple ramp, light lavender → deep violet. Light theme. */
+/* Brand-purple ramp. Light theme. */
 .step:nth-child(1) {
   --step-accent: #9a79dd;
   --step-tint: rgba(154, 121, 221, 0.1);
@@ -482,21 +333,9 @@
 }
 
 .step:nth-child(2) {
-  --step-accent: #8460d6;
-  --step-tint: rgba(132, 96, 214, 0.1);
-  --step-line: rgba(132, 96, 214, 0.38);
-}
-
-.step:nth-child(3) {
   --step-accent: #6e46cd;
   --step-tint: rgba(110, 70, 205, 0.1);
   --step-line: rgba(110, 70, 205, 0.38);
-}
-
-.step:nth-child(4) {
-  --step-accent: #5731ae;
-  --step-tint: rgba(87, 49, 174, 0.1);
-  --step-line: rgba(87, 49, 174, 0.38);
 }
 
 /* Dark theme: same walk, lifted so every shade stays legible on the
@@ -508,21 +347,9 @@
 }
 
 :global(.studio-root[data-theme="dark"]) .step:nth-child(2) {
-  --step-accent: #b49ded;
-  --step-tint: rgba(180, 157, 237, 0.09);
-  --step-line: rgba(180, 157, 237, 0.3);
-}
-
-:global(.studio-root[data-theme="dark"]) .step:nth-child(3) {
   --step-accent: #9b7ee6;
   --step-tint: rgba(155, 126, 230, 0.09);
   --step-line: rgba(155, 126, 230, 0.3);
-}
-
-:global(.studio-root[data-theme="dark"]) .step:nth-child(4) {
-  --step-accent: #8060dc;
-  --step-tint: rgba(128, 96, 220, 0.11);
-  --step-line: rgba(128, 96, 220, 0.34);
 }
 
 .step {
@@ -667,6 +494,15 @@
   flex: 1;
 }
 
+.checkGroup {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--step-accent);
+}
+
 .check {
   display: flex;
   gap: 10px;
@@ -739,6 +575,24 @@
   color: inherit;
 }
 
+.checkText a {
+  color: var(--studio-accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.itemNote {
+  margin: 6px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--step-accent);
+  border-radius: 8px;
+  background: var(--step-tint);
+  font-size: 11.5px;
+  color: var(--studio-text-secondary);
+  line-height: 1.55;
+}
+
 .stepNote {
   margin: 0;
   padding: 10px 12px;
@@ -750,7 +604,7 @@
   line-height: 1.55;
 }
 
-/* --- 3. Once you've moved in -------------------------------------- */
+/* --- 2. Inserting ad markers -------------------------------------- */
 
 .tutorial {
   display: flex;
@@ -782,27 +636,20 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 36px;
 }
 
 .tutorialStep {
-  display: grid;
-  grid-template-columns: minmax(220px, 300px) minmax(0, 780px);
-  gap: 28px;
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .tutorialStep {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .tutorialStepText {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-width: 760px;
 }
 
 .tutorialStepNumber {
@@ -837,6 +684,34 @@
   color: var(--studio-text-primary);
 }
 
+.tutorialPaths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .tutorialPaths {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tutorialPath {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pathLabel {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--studio-accent);
+}
+
 .tutorialShot {
   margin: 0;
   border: 1px solid var(--studio-border);
@@ -846,18 +721,144 @@
   box-shadow: var(--studio-shadow-soft);
 }
 
+.tutorialShots {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 960px;
+}
+
 .tutorialShotImg {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.tutorialOutro {
+.tutorialShotCaption {
   margin: 0;
-  font-size: 14px;
+  padding: 8px 12px 10px;
+  font-size: 12px;
   color: var(--studio-text-secondary);
+  line-height: 1.45;
+  background: var(--studio-surface-1);
+  border-top: 1px solid var(--studio-border);
 }
 
-.tutorialOutro strong {
-  color: var(--studio-text-primary);
+.tutorialReminder {
+  margin: 0;
+  max-width: 760px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--studio-accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--studio-accent) 8%, var(--studio-surface-1));
+  font-size: 13px;
+  color: var(--studio-text-secondary);
+  line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .main {
+    padding: 12px 14px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .guide {
+    gap: 28px;
+  }
+
+  .move,
+  .tutorial {
+    scroll-margin-top: 64px;
+  }
+
+  .chapters {
+    gap: 6px;
+    padding: 8px 0 10px;
+  }
+
+  .chapter {
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 4px 10px;
+    text-align: center;
+  }
+
+  .chapterLabel {
+    display: none;
+  }
+
+  .chapterName {
+    display: none;
+  }
+
+  .chapterNameShort {
+    display: block;
+  }
+
+  .chapterNum {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    border-radius: 7px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .lede {
+    font-size: 13px;
+  }
+
+  .sideCards {
+    flex-direction: column;
+  }
+
+  .progressCard,
+  .helpCard {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .step {
+    padding: 16px 14px 18px;
+  }
+
+  .step::after {
+    font-size: 88px;
+    top: -14px;
+    right: 2px;
+  }
+
+  .check {
+    padding: 14px 12px;
+    gap: 12px;
+    min-height: 48px;
+  }
+
+  .checkBox {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+  }
+
+  .tutorialShot {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tutorialShotImg {
+    min-width: 680px;
+    width: 680px;
+    max-width: none;
+  }
+
+  .nextChapter {
+    padding: 14px 16px;
+  }
+
+  .nextChapterTitle {
+    font-size: 15px;
+  }
 }

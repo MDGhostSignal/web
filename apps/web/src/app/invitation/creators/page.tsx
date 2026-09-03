@@ -24,15 +24,11 @@ import styles from "../page.module.css";
  * props → pull-quote → co-founders → XQ + Snowdrift CTA → footer), but
  * the persuasion copy speaks to podcasters, not advertisers.
  *
- * Where /invitation addresses brands ("we place you in front of
- * audiences… without individual podcaster deals"), this page mirrors the
- * creator voice from /for-creators ("your voice is not for sale… we
- * protect your voice, honor your audience"). It shares the same CSS
- * module and the RosterCarousel/HeroBackgroundVideo components with the
- * brand page — keep both in step when the shell changes.
- *
- * Copy is kept in lockstep with /for-creators by hand — when its
- * value props change, mirror them here.
+ * Where /invitation addresses brands, this page is the one Mike sends
+ * when he reaches out to creators. Same "How we do it" three-card
+ * shape, creator language. Pull-quote is the honor-your-audience line
+ * from /for-creators. Shares CSS + RosterCarousel/HeroBackgroundVideo
+ * with the brand invitation — keep the shell in step.
  */
 
 export const metadata = {
@@ -78,22 +74,24 @@ const FOUNDERS = [
   },
 ] as const;
 
-/** Creator value props — mirrored from /for-creators, given room. */
+/** "How we do it" — same three claims as /invitation, spoken to the
+ *  creator. Brand page talks recall and conversion; this one talks
+ *  voice, admin, and the audience they already have. */
 const FEATURES = [
   {
-    title: "Soul-aligned partnerships",
+    title: "Podcast Ad Resonance",
     description:
-      "We match you with brands whose mission and products align with your own — never a bolt-on ad, always a fit your audience can feel.",
+      "Your show already gives brands an intimate voice, turning listeners into participants. Host-read ads that fit your mission drive 70% brand recall (double social banners) — a relational way to be supported by an audience you already honor.",
   },
   {
-    title: "Premium revenue, zero admin",
+    title: "World-Making Membership",
     description:
-      "We reach for monetization true to your show's reach and values, and handle the contracts, ad creation, reporting, and payments — so you're freed up to create.",
+      "Join a community of values-aware creators and brands who understand they are making the world through their work. GHOSTSignal handles matching tech, contracts, campaigns, and reporting — giving you network-wide resonance without the hassle of individual brand deals.",
   },
   {
-    title: "A community of world-makers",
+    title: "Values-Aligned Conversion",
     description:
-      "You join a network of like-minded podcasters and brands who care about the kind of future we're building together.",
+      "We find a place for brands among the values-aligned community you have built — partners you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust, and high-trust environments see superior economic value.",
   },
 ] as const;
 
@@ -155,11 +153,11 @@ export default function CreatorInvitationPage() {
         </Container>
       </Section>
 
-      {/* Why this works — the creator value props */}
+      {/* How we do it — creator language of the brand invitation's three cards */}
       <Section className={styles.aboutSection}>
         <Container className={styles.about}>
           <ScrollFadeUp index={0} duration={1.6}>
-            <p className={styles.eyebrow}>Why this works</p>
+            <p className={styles.eyebrow}>How we do it</p>
           </ScrollFadeUp>
           <div className={styles.featuresGrid}>
             {FEATURES.map((feature, i) => (
@@ -175,13 +173,13 @@ export default function CreatorInvitationPage() {
         </Container>
       </Section>
 
-      {/* Pull-quote — the for-creators rallying line */}
+      {/* Pull-quote — honor the audience (from /for-creators) */}
       <Section className={styles.quoteSection}>
         <Container className={styles.quote}>
           <div className={styles.morse} aria-hidden="true" />
           <SplitLinesReveal duration={2}>
             <p className={styles.quoteText}>
-              &ldquo;You don&rsquo;t need a million downloads to matter.&rdquo;
+              &ldquo;We protect your voice, honor your audience, and help you find the partners who will make the world alongside you.&rdquo;
             </p>
           </SplitLinesReveal>
         </Container>

@@ -13,11 +13,9 @@ import { MigrationGuide } from "./MigrationGuide";
 import styles from "./migration.module.css";
 
 /**
- * /studio/migration — the ART19 RSS-migration guide, browser edition
- * of docs' GS-RSS-Migration PDF (v1 04.29). One wide page laid out so
- * a podcaster can keep it open in one tab while working through the
- * actual move on their current host in another. Checklist state
- * persists per device (localStorage) inside MigrationGuide.
+ * /studio/migration — ART19 Tutorial. Two chapters: the move
+ * checklist, then inserting ad markers. Checklist state persists per
+ * device (localStorage) inside MigrationGuide.
  */
 export default async function StudioMigrationPage() {
   const member = await loadCurrentStudioMember();
@@ -36,7 +34,7 @@ export default async function StudioMigrationPage() {
           attention: !member.xqSubmissionId || !member.rqSubmissionId,
         }}
       />
-      {/* Own main wrapper (not .dashMain): three chapters, so the
+      {/* Own main wrapper (not .dashMain): two chapters, so the
           page is allowed to scroll. */}
       <main className={styles.main}>
         <MigrationGuide firstName={member.firstName} />
