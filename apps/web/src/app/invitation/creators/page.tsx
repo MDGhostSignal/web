@@ -32,7 +32,7 @@ import styles from "../page.module.css";
  */
 
 export const metadata = {
-  title: "You're invited — GHOSTSignal for creators",
+  title: "Advertising that builds trust with your audience — GHOSTSignal",
   description:
     "GHOSTSignal is the values-based podcast advertising network. Your voice isn't for sale and your audience isn't a data point — this is your invitation to monetize your show without compromising what it's for.",
 };
@@ -119,12 +119,10 @@ export default function CreatorInvitationPage() {
           <div className={styles.morse} aria-hidden="true" />
           <h1 className={styles.heroHeadline}>
             <SplitLinesReveal duration={2}>
-              You&rsquo;re invited
+              Advertising that builds trust
             </SplitLinesReveal>
             <SplitLinesReveal duration={2} delay={0.3}>
-              <span>
-                to <BrandedGhostSignal />!
-              </span>
+              with your audience
             </SplitLinesReveal>
           </h1>
           <ScrollFadeUp index={1} duration={1.8}>

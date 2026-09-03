@@ -71,3 +71,9 @@ The item now points people to input the feed URL in their profile
 Shipped the ART19 Tutorial rewrite, new screenshots, creators
 invitation copy, session log, and `docs/ART19_S3_BUCKET_SETUP.md`.
 Left `production/` untracked (local render vault).
+
+## Creators invitation headline
+
+`/invitation/creators` hero is now two lines: "Advertising that
+builds trust" / "with your audience" (was "You're invited to
+GHOSTSignal!").
