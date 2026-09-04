@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#FF6A00"/>
+  <rect x="40" y="40" width="720" height="920" fill="none" stroke="#000" stroke-width="8" stroke-opacity="0.25"/>
+  <text x="400" y="480" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" fill="#000" fill-opacity="0.35">ORANGE</text>
+  <text x="400" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#000" fill-opacity="0.4">PLACEHOLDER</text>
+</svg>
