@@ -2,8 +2,12 @@
  * WIT v2 chapter config — structural map inspired by Santioni
  * Notturno's HydraX sceneConfigs (heights in viewport multiples).
  *
- * Copy is placeholder scaffolding for motion/layout work. Replace with
- * locked GhostSignal voice before any live swap.
+ * LOCKED (2026-09-07): chapter order, ids, kinds, and story points.
+ * See docs/WIT_V2_STORY_MAP.md. Each chapter keeps its own independent
+ * animation + story role — do not collapse into a shared template.
+ *
+ * Wording may still be polished into locked GhostSignal voice before
+ * any live swap; do not reorder or drop beats without an explicit reopen.
  */
 
 export type ChapterBand = "void" | "night" | "dawn" | "signal" | "day";
