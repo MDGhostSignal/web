@@ -210,7 +210,7 @@
   background: color-mix(in srgb, #000 28%, transparent);
 }
 
-/* ========== WANDER — horizontal parallax strip ========== */
+/* ========== WANDER — space-magic paper-cutout parallax ========== */
 .stageWander {
   display: flex;
   flex-direction: column;
@@ -219,46 +219,100 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 .wanderLayer {
   position: absolute;
   display: flex;
-  gap: calc(var(--gs-n-24) * var(--gs-px));
-  will-change: transform;
+  align-items: center;
+  gap: calc(var(--gs-n-48) * var(--gs-px));
+  will-change: transform, opacity;
+}
+.wanderPlate {
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  /* JPG voids drop out against the night band */
+  mix-blend-mode: screen;
 }
 .wanderFar {
-  top: 8%;
+  top: 0;
   left: 0;
-  width: 220%;
-  opacity: 0.35;
-  filter: blur(2px);
+  width: 210%;
+  height: 100%;
+  opacity: 0.55;
+  filter: blur(1.5px);
+  gap: calc(var(--gs-n-16) * var(--gs-px));
 }
-.wanderFar img {
-  width: 45%;
-  height: auto;
-  border: calc(var(--gs-n-4) * var(--gs-px)) solid #000;
+.wanderFar .wanderPlate {
+  width: 48%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .wanderMid {
-  top: 18%;
-  left: 5%;
-  width: 260%;
+  top: 12%;
+  left: 4%;
+  width: 240%;
+  height: 76%;
+  z-index: 1;
 }
-.wanderMid img {
-  width: min(32vw, 320px);
-  height: auto;
-  border: calc(var(--gs-n-5) * var(--gs-px)) solid #000;
-  box-shadow: 0 20px 60px color-mix(in srgb, #000 50%, transparent);
+.wanderWorldFrame {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(38vw, 420px);
+  aspect-ratio: 1;
+  border-radius: var(--gs-radius-full);
+  overflow: hidden;
+  /* Soft falloff so the circular crop dissolves into the void */
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 62%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 62%, transparent 78%);
+}
+.wanderWorldPlate {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .wanderNear {
-  bottom: 6%;
-  left: -5%;
-  width: 280%;
+  bottom: 4%;
+  left: -4%;
+  width: 250%;
+  height: 55%;
   z-index: 2;
 }
-.wanderNear img {
-  width: min(28vw, 280px);
+.wanderAccentPlate {
+  width: min(52vw, 640px);
   height: auto;
-  border: calc(var(--gs-n-6) * var(--gs-px)) solid #000;
+  object-fit: cover;
+}
+.wanderOrbFrame {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(22vw, 240px);
+  aspect-ratio: 1;
+  border-radius: var(--gs-radius-full);
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 55%, transparent 74%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 55%, transparent 74%);
+}
+.wanderOrbPlate {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wanderLight {
+  position: absolute;
+  inset: -8%;
+  z-index: 3;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.stageWander .copyCorner {
+  text-shadow:
+    0 0 calc(var(--gs-n-24) * var(--gs-px)) color-mix(in srgb, #000 70%, transparent),
+    0 calc(var(--gs-n-2) * var(--gs-px)) calc(var(--gs-n-12) * var(--gs-px))
+      color-mix(in srgb, #000 55%, transparent);
 }
 
 /* ========== PROFILE — crop zoom ========== */
@@ -704,9 +758,18 @@
 }
 
 @media (max-width: 767px) {
-  .wanderMid img,
-  .wanderNear img {
-    width: 42vw;
+  .wanderWorldFrame {
+    width: min(48vw, 280px);
+  }
+  .wanderAccentPlate {
+    width: min(70vw, 420px);
+  }
+  .wanderOrbFrame {
+    width: min(28vw, 160px);
+  }
+  .wanderMid {
+    top: 18%;
+    gap: calc(var(--gs-n-24) * var(--gs-px));
   }
   .intimateHand {
     left: -5%;
@@ -724,6 +787,7 @@
 @media (prefers-reduced-motion: reduce) {
   .entryPlate,
   .wanderLayer,
+  .wanderLight,
   .approachFrame,
   .intimateHand,
   .transitionShard,

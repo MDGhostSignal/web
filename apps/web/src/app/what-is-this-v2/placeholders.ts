@@ -16,6 +16,8 @@ export type PlaceholderKey = keyof typeof PH;
 /** Per-chapter floating collage keys (Notturno: illustrated layers in space). */
 export const CHAPTER_VISUALS: Record<string, PlaceholderKey[]> = {
   entry: ["violet"],
+  // Wander gold-sample uses dedicated space-magic plates under
+  // /images/what-is-this-v2/wander/ (see WanderScene). Keys kept for demos.
   wander: ["magenta", "cyan", "lime"],
   profile: ["orange", "yellow"],
   approach: ["red", "blue", "violet"],

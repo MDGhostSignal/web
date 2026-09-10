@@ -28,17 +28,6 @@
   color: #ff6a00;
 }
 
-.draftCopy {
-  flex: 1 1 auto;
-  opacity: 0.78;
-}
-
-.draftLink {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-}
-
 .chapterRail {
   display: none;
 }

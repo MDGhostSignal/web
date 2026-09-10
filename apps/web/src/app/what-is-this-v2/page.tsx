@@ -19,13 +19,7 @@ export default function WhatIsThisV2Page() {
   return (
     <main className={styles.page} ref={rootRef}>
       <div className={styles.draftBanner} role="status">
-        <span className={styles.draftBadge}>DRAFT</span>
-        <span className={styles.draftCopy}>
-          WIT v2 · unique scenes · placeholders · local only
-        </span>
-        <Link href="/what-is-this" className={styles.draftLink}>
-          Live page
-        </Link>
+        <span className={styles.draftBadge}>Draft</span>
       </div>
 
       <nav className={styles.chapterRail} aria-label="Story chapters">

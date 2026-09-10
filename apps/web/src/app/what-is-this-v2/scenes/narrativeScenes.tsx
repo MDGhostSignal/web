@@ -39,33 +39,130 @@ export function EntryScene(props: SceneProps) {
   );
 }
 
-/** 01 — Wander: multi-speed horizontal world strip (camera walks). */
+/** 01 — Wander: space-magic multi-layer parallax (worlds meet in the void). */
+const WANDER = {
+  farA: "/images/what-is-this-v2/wander/wander-far-a.jpg",
+  farB: "/images/what-is-this-v2/wander/wander-far-b.jpg",
+  midWarm: "/images/what-is-this-v2/wander/wander-mid-warm.jpg",
+  midCool: "/images/what-is-this-v2/wander/wander-mid-cool.jpg",
+  midSoft: "/images/what-is-this-v2/wander/wander-mid-soft.jpg",
+  nearAlign: "/images/what-is-this-v2/wander/wander-near-align.jpg",
+  nearGold: "/images/what-is-this-v2/wander/wander-near-gold.jpg",
+  light: "/images/what-is-this-v2/wander/wander-light-haze.jpg",
+} as const;
+
 export function WanderScene(props: SceneProps) {
   const p = props.progress;
+  // Slow cinematic rates — far almost still; near clearer enter/exit.
+  const midOpacity = 0.55 + p * 0.45;
+  const nearOpacity = 0.25 + p * 0.75;
+  const lightOpacity = 0.2 + p * 0.45;
+
   return (
     <SceneShell {...props} stageClassName={styles.stageWander}>
       <div className={styles.wanderWorld} aria-hidden="true">
         <div
           className={`${styles.wanderLayer} ${styles.wanderFar}`}
-          style={{ transform: `translate3d(${-p * 18}%, 0, 0)` }}
+          style={{ transform: `translate3d(${-p * 8}%, ${p * 1.5}%, 0)` }}
         >
-          <Image src={PH.blue} alt="" width={900} height={500} unoptimized />
-          <Image src={PH.violet} alt="" width={900} height={500} unoptimized />
+          <Image
+            src={WANDER.farA}
+            alt=""
+            width={1600}
+            height={900}
+            unoptimized
+            className={styles.wanderPlate}
+          />
+          <Image
+            src={WANDER.farB}
+            alt=""
+            width={1600}
+            height={900}
+            unoptimized
+            className={styles.wanderPlate}
+          />
         </div>
+
         <div
           className={`${styles.wanderLayer} ${styles.wanderMid}`}
-          style={{ transform: `translate3d(${-p * 42}%, 0, 0)` }}
+          style={{
+            transform: `translate3d(${-p * 22}%, ${p * -2}%, 0)`,
+            opacity: midOpacity,
+          }}
         >
-          <Image src={PH.magenta} alt="" width={520} height={640} unoptimized />
-          <Image src={PH.cyan} alt="" width={520} height={640} unoptimized />
-          <Image src={PH.lime} alt="" width={520} height={640} unoptimized />
+          <div className={styles.wanderWorldFrame}>
+            <Image
+              src={WANDER.midWarm}
+              alt=""
+              width={900}
+              height={900}
+              unoptimized
+              className={`${styles.wanderPlate} ${styles.wanderWorldPlate}`}
+            />
+          </div>
+          <div className={styles.wanderWorldFrame}>
+            <Image
+              src={WANDER.midSoft}
+              alt=""
+              width={900}
+              height={900}
+              unoptimized
+              className={`${styles.wanderPlate} ${styles.wanderWorldPlate}`}
+            />
+          </div>
+          <div className={styles.wanderWorldFrame}>
+            <Image
+              src={WANDER.midCool}
+              alt=""
+              width={900}
+              height={900}
+              unoptimized
+              className={`${styles.wanderPlate} ${styles.wanderWorldPlate}`}
+            />
+          </div>
         </div>
+
         <div
           className={`${styles.wanderLayer} ${styles.wanderNear}`}
-          style={{ transform: `translate3d(${-p * 70}%, ${p * 6}%, 0) scale(${1 + p * 0.15})` }}
+          style={{
+            transform: `translate3d(${-p * 38}%, ${p * 4}%, 0) scale(${1 + p * 0.06})`,
+            opacity: nearOpacity,
+          }}
         >
-          <Image src={PH.orange} alt="" width={380} height={480} unoptimized />
-          <Image src={PH.yellow} alt="" width={380} height={480} unoptimized />
+          <Image
+            src={WANDER.nearAlign}
+            alt=""
+            width={1600}
+            height={900}
+            unoptimized
+            className={`${styles.wanderPlate} ${styles.wanderAccentPlate}`}
+          />
+          <div className={styles.wanderOrbFrame}>
+            <Image
+              src={WANDER.nearGold}
+              alt=""
+              width={900}
+              height={900}
+              unoptimized
+              className={`${styles.wanderPlate} ${styles.wanderOrbPlate}`}
+            />
+          </div>
+        </div>
+
+        <div
+          className={styles.wanderLight}
+          style={{
+            opacity: lightOpacity,
+            transform: `translate3d(${-p * 5}%, 0, 0) scale(${1.05 + p * 0.08})`,
+          }}
+        >
+          <Image
+            src={WANDER.light}
+            alt=""
+            fill
+            unoptimized
+            className={styles.fillImg}
+          />
         </div>
       </div>
       <SceneCopy chapter={props.chapter} className={styles.copyCorner} />

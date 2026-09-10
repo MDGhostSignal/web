@@ -9,8 +9,9 @@ import styles from "./page.module.css";
  *
  * Muted + autoplay + loop + playsInline so it runs as ambient
  * background everywhere (iOS only autoplays a muted, inline video).
- * Sources are ordered smallest-first: WebM/VP9 (~200 KB) for browsers
- * that take it, H.264 MP4 (~1.3 MB) as the universal fallback.
+ * Sources are ordered smallest-first: WebM/VP9 (~320 KB) for browsers
+ * that take it, H.264 MP4 (~690 KB, 1280×720) as the universal fallback.
+ * Clip is trimmed past the source logo bumper; audio stripped.
  *
  * Under `prefers-reduced-motion: reduce` we render the poster still
  * instead — motion-sensitive users get a calm static image and we never
