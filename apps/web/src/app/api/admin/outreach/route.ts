@@ -1,19 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { sendColdOutreach } from "@/lib/cold-outreach-send";
-import { defaultOutreachMessage } from "@/lib/cold-outreach-email";
+import {
+  defaultOutreachMessage,
+  parseOutreachAudience,
+} from "@/lib/cold-outreach-email";
 import { supabaseRest } from "@/lib/supabase-admin";
 import { isUsTimezone } from "@/lib/timezone";
 
 /**
- * /api/admin/outreach — cold-email brand outreach (Mike's tab).
+ * /api/admin/outreach — cold-email brand/creator outreach (Mike's tab).
  *
  * GET  — the reachout list, newest first, for /admin/outreach.
  *        Tolerates a missing table (returns tableMissing so the page
  *        can point at docs/OUTREACH_SUPABASE_SCHEMA.sql).
- * POST — { name?, email, message?, theme?, force?, scheduledAt?,
- *        recipientTz? }: files a cold_outreach row, then hands the
- *        email to Resend (lib/cold-outreach-send.ts).
+ * POST — { name?, email, message?, theme?, audience?, force?,
+ *        scheduledAt?, recipientTz? }: files a cold_outreach row, then
+ *        hands the email to Resend (lib/cold-outreach-send.ts).
+ *        audience "brand" | "creator" swaps How-we-do-it benefits + quote.
  *
  *        When `scheduledAt` (ISO 8601 UTC) is set, the row is filed
  *        status='scheduled' and Resend holds the mail for delivery at
@@ -78,6 +82,7 @@ export async function POST(req: NextRequest) {
     email?: string;
     message?: string;
     theme?: string;
+    audience?: string;
     force?: boolean;
     scheduledAt?: string;
     recipientTz?: string;
@@ -96,9 +101,11 @@ export async function POST(req: NextRequest) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Valid email required." }, { status: 400 });
   }
+  // Brand vs creator — picked in the composer; defaults to brand.
+  const audience = parseOutreachAudience(body.audience);
   // Blank message → the standard template text, so the stored row
   // reflects what was actually sent.
-  const finalMessage = message || defaultOutreachMessage();
+  const finalMessage = message || defaultOutreachMessage(audience);
   // Which visual template goes out — picked in the composer.
   const theme = body.theme === "dark" ? "dark" : "light";
 
@@ -205,6 +212,7 @@ export async function POST(req: NextRequest) {
     email,
     message: finalMessage,
     theme,
+    audience,
     scheduledAt: scheduledAt ?? undefined,
   });
   if (!sendRes.ok) {

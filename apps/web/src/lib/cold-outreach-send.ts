@@ -2,6 +2,7 @@ import {
   coldOutreachEmailHtml,
   coldOutreachEmailText,
   coldOutreachSubject,
+  type OutreachAudience,
 } from "@/lib/cold-outreach-email";
 
 /**
@@ -23,6 +24,8 @@ export type SendColdOutreachInput = {
   email: string;
   message: string;
   theme: "light" | "dark";
+  /** Brand vs creator — swaps benefits + quote in the template. */
+  audience?: OutreachAudience;
   /** Absolute delivery instant. Omit to send immediately. */
   scheduledAt?: Date;
 };
@@ -54,8 +57,13 @@ export async function sendColdOutreach(
       name: input.name,
       message: input.message,
       theme: input.theme,
+      audience: input.audience ?? "brand",
     }),
-    text: coldOutreachEmailText({ name: input.name, message: input.message }),
+    text: coldOutreachEmailText({
+      name: input.name,
+      message: input.message,
+      audience: input.audience ?? "brand",
+    }),
   };
 
   // Resend native scheduling — ISO 8601 UTC. Only set for future sends.

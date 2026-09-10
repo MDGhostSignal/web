@@ -40,7 +40,36 @@
 - typecheck / lint:css / assets:audit — pass
 - Playwright: invitation heroes load new webm (1280×720, ~14.5s); creators section order matches brand; H1/lede styles identical
 
+---
+
+## Invitation benefits width
+
+- Widened shared How-we-do-it grid (`1024` → `1536`) so creator cards (esp. Values-Aligned Partnerships) sit wider and less tall.
+
+## CRM cold outreach — brand vs creator audience
+
+- Composer adds **Reach out to: Brand | Creator** selector.
+- Email How-we-do-it benefits + pull-quote follow `/invitation` (brand) or `/invitation/creators` (creator); default personal note swaps with audience when still at the stock text.
+- Wired through preview + send APIs (`audience` on body). Not stored on `cold_outreach` yet (same as theme).
+
+### Files
+
+- `apps/web/src/app/invitation/page.module.css`
+- `apps/web/src/lib/cold-outreach-email.ts`
+- `apps/web/src/lib/cold-outreach-send.ts`
+- `apps/web/src/app/api/admin/outreach/route.ts`
+- `apps/web/src/app/api/admin/outreach/preview/route.ts`
+- `apps/web/src/app/admin/outreach/components/OutreachComposer.tsx`
+- `apps/web/src/app/admin/outreach/outreach.module.css`
+- `apps/web/src/app/admin/outreach/page.tsx`
+- `docs/SESSION_LOG_2026-09-10.md`
+
+### Validation
+
+- typecheck / lint:css — pass
+- Scripted email content checks: brand vs creator titles + quotes OK
+
 ### Open / next
 
 - WIT v2: polish Wander or gold-sample Noise; music / page starfield still open; no live swap until called.
-- Invitation: live look at sunny hero after deploy.
+- Optional: persist `audience` on `cold_outreach` if Mike wants list filtering.

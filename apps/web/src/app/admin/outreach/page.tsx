@@ -308,7 +308,7 @@ export default function OutreachPage() {
     <div className={styles.page}>
       <PageHeader
         title="Cold Outreach"
-        subtitle="Brand prospecting — send a personalized cold email now, or schedule it to land at the perfect US inbox moment. Onboarding brands is the current company focus."
+        subtitle="Cold prospecting for brands or creators — send a personalized email now, or schedule it to land at the perfect US inbox moment. Audience choice swaps the three benefits and quote."
         actions={
           <Button variant="primary" onClick={() => setComposerOpen(true)}>
             + New reachout

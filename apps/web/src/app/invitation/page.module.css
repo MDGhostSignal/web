@@ -185,10 +185,11 @@
 .featuresGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: calc(var(--gs-n-24) * var(--gs-px));
+  gap: calc(var(--gs-n-20) * var(--gs-px));
   margin-top: calc(var(--gs-n-24) * var(--gs-px));
   width: 100%;
-  max-width: calc(var(--gs-n-1024) * var(--gs-px));
+  /* Wider than 1024 so long creator copy (esp. Values-Aligned) wraps less tall */
+  max-width: calc(var(--gs-n-1536) * var(--gs-px));
 }
 
 .featureCard {

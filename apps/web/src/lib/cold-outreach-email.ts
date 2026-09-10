@@ -1,5 +1,5 @@
 /**
- * Cold-outreach email — shared template (brand prospecting).
+ * Cold-outreach email — shared template (brand or creator prospecting).
  *
  * Single source of truth for Mike's cold reachout email so the send
  * route (/api/admin/outreach) and the preview endpoint
@@ -7,7 +7,10 @@
  * as lib/studio-invite-email.ts. Pure string building — safe to import
  * from client components (the composer prefills the default message).
  *
- * Section order — mirrors the /invitation page (2026-08-17 redesign):
+ * `audience` ("brand" | "creator") swaps How-we-do-it benefits + the
+ * pull-quote to match /invitation vs /invitation/creators.
+ *
+ * Section order — mirrors the invitation pages (2026-08-17 redesign):
  *   1. spinning cloud glyph + wordmark, then the invitation headline
  *      broken over two lines ("You're invited / to GHOSTSignal!")
  *   2. personal message ("Hello {name}," — or just "Hello," when no
@@ -40,9 +43,18 @@
 
 const PROD_ORIGIN = "https://www.ghostsignal.cloud";
 const ADVERTISERS_PATH = "/for-advertisers";
+const INVITATION_BRAND_PATH = "/invitation";
+const INVITATION_CREATORS_PATH = "/invitation/creators";
 const SNOWDRIFT_URL = "https://snowdriftghostsignal.substack.com/";
 
 export type OutreachTheme = "light" | "dark";
+
+/** Who the reachout is written for — drives benefits + quote. */
+export type OutreachAudience = "brand" | "creator";
+
+export function parseOutreachAudience(raw: unknown): OutreachAudience {
+  return raw === "creator" ? "creator" : "brand";
+}
 
 /** Email-safe palettes mirroring studio-tokens.css light/dark. */
 const THEMES = {
@@ -99,29 +111,61 @@ const WHAT_IS_THIS =
   "creators' are values-aligned, advertising contributes to the world we " +
   "all want to make.";
 
-/** The pull-quote above the card rotation. */
-const QUOTE = "We help brands zoom in on the right people.";
+/** Pull-quotes — match /invitation vs /invitation/creators. */
+const QUOTE_BY_AUDIENCE: Record<OutreachAudience, string> = {
+  brand: "We help brands zoom in on the right people.",
+  creator: "Advertising that builds trust with your audience",
+};
 
-/** "How we do it" — same three claims as /invitation, shortened to
- *  fit the 584px mail column (the page keeps the long bodies). */
-const VALUE_PROPS = [
-  {
-    title: "Podcast Ad Resonance",
-    body: "Host-read ads give your brand an intimate voice and 70% recall — double social banners — with listeners who actually take part.",
-  },
-  {
-    title: "World-Making Membership",
-    body: "Join values-aware creators and brands making the world through their work. We handle matching, contracts, campaigns, and reporting.",
-  },
-  {
-    title: "Values-Aligned Conversion",
-    body: "We place your brand among values-aligned communities you can be proud of. Alignment builds trust — Acemoglu's finding — and superior economic value.",
-  },
-] as const;
+/** "How we do it" — same three claims as the matching invitation page,
+ *  shortened to fit the 584px mail column (pages keep the long bodies). */
+const VALUE_PROPS_BY_AUDIENCE: Record<
+  OutreachAudience,
+  readonly { title: string; body: string }[]
+> = {
+  brand: [
+    {
+      title: "Podcast Ad Resonance",
+      body: "Host-read ads give your brand an intimate voice and 70% recall — double social banners — with listeners who actually take part.",
+    },
+    {
+      title: "World-Making Membership",
+      body: "Join values-aware creators and brands making the world through their work. We handle matching, contracts, campaigns, and reporting.",
+    },
+    {
+      title: "Values-Aligned Conversion",
+      body: "We place your brand among values-aligned communities you can be proud of. Alignment builds trust — Acemoglu's finding — and superior economic value.",
+    },
+  ],
+  creator: [
+    {
+      title: "Creative Freedom",
+      body: "Be freed up to create. We handle matching, contracts, podcast hosting, campaigns, and reporting — network-wide reach without one-off deals.",
+    },
+    {
+      title: "Values-Aligned Partnerships",
+      body: "Your voice and your audience's trust are everything. We connect you with brands you can be proud of. Alignment builds trust — Acemoglu's finding — while you earn without compromising that relationship.",
+    },
+    {
+      title: "World-Making Membership",
+      body: "Join values-aware creators and brands who understand they are making the world through their work.",
+    },
+  ],
+};
 
 /** Standard personal message used when the composer form is left
- *  blank. Prefilled in the form so the team can edit it per-send. */
-export function defaultOutreachMessage(): string {
+ *  blank. Prefills per audience so Mike can edit it per-send. */
+export function defaultOutreachMessage(
+  audience: OutreachAudience = "brand",
+): string {
+  if (audience === "creator") {
+    return (
+      "We came across your show and a few brands on our network came to " +
+      "mind right away. We'd love to show you around — no pitch deck, " +
+      "just a look at how podcast partnerships work when the fit is " +
+      "already true."
+    );
+  }
   return (
     "We came across your brand and a few shows on our network came to " +
     "mind right away. We'd love to show you around — no pitch deck, " +
@@ -170,17 +214,26 @@ function pitchToHtml(s: string, color: string): string {
 export function coldOutreachEmailText({
   name,
   message,
+  audience = "brand",
 }: {
   name: string;
   message: string;
+  audience?: OutreachAudience;
 }): string {
-  const body = message.trim() || defaultOutreachMessage();
+  const body = message.trim() || defaultOutreachMessage(audience);
   const founders = FOUNDERS.map(
     (f) => `- ${f.name}, ${f.role} — ${f.linkedin}`,
   ).join("\n");
-  const valueProps = VALUE_PROPS.map(
-    (v) => `- ${v.title}: ${v.body}`,
-  ).join("\n");
+  const valueProps = VALUE_PROPS_BY_AUDIENCE[audience]
+    .map((v) => `- ${v.title}: ${v.body}`)
+    .join("\n");
+  const quote = QUOTE_BY_AUDIENCE[audience];
+  const invitePath =
+    audience === "creator" ? INVITATION_CREATORS_PATH : INVITATION_BRAND_PATH;
+  const rosterHint =
+    audience === "creator"
+      ? `Brands and creators across the network, matched where the fit is already true. See the invitation: ${PROD_ORIGIN}${invitePath}`
+      : `Brands and creators across the network, matched where the audience already fits. See the roster and how membership works: ${PROD_ORIGIN}${ADVERTISERS_PATH}`;
   return `You're invited to GHOSTSignal!
 
 ${greeting(name)}
@@ -190,12 +243,12 @@ ${body}
 ${WHAT_IS_THIS}
 
 Here are some of our current world-makers
-Brands and creators across the network, matched where the audience already fits. See the roster and how membership works: ${PROD_ORIGIN}${ADVERTISERS_PATH}
+${rosterHint}
 
 How we do it
 ${valueProps}
 
-"${QUOTE}"
+"${quote}"
 
 The co-founders
 ${founders}
@@ -213,6 +266,7 @@ export function coldOutreachEmailHtml({
   message,
   assetOrigin = PROD_ORIGIN,
   theme = "light",
+  audience = "brand",
 }: {
   /** Contact's first name — may be empty (greeting becomes "Hello,"). */
   name: string;
@@ -224,11 +278,19 @@ export function coldOutreachEmailHtml({
   /** Visual theme. Sends default to light; the composer preview can
    *  render either. */
   theme?: OutreachTheme;
+  /** Brand vs creator — swaps How-we-do-it benefits + pull-quote. */
+  audience?: OutreachAudience;
 }): string {
   const t = THEMES[theme];
   const hello = name ? `Hello ${escapeHtml(name)},` : "Hello,";
-  const rawMessage = message.trim() || defaultOutreachMessage();
+  const rawMessage = message.trim() || defaultOutreachMessage(audience);
   const body = textToHtml(rawMessage);
+  const valueProps = VALUE_PROPS_BY_AUDIENCE[audience];
+  const quote = QUOTE_BY_AUDIENCE[audience];
+  const quoteHtml =
+    audience === "brand"
+      ? escapeHtml(quote).replace("right people", "right&nbsp;people")
+      : escapeHtml(quote);
   // Inbox preview snippet = the personal note itself (rendered by the
   // hidden preheader below), so the email reads personal before it's even
   // opened — not the wordmark + headline the client would otherwise grab.
@@ -314,14 +376,16 @@ export function coldOutreachEmailHtml({
             <td style="padding: 30px 40px 0;">
               <p style="margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${t.accent}; text-align: center;">How we do it</p>
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-${VALUE_PROPS.map(
-  (v) => `                <tr>
+${valueProps
+  .map(
+    (v) => `                <tr>
                   <td style="padding: 8px 0;">
                     <p style="margin: 0 0 3px; font-size: 14px; font-weight: 700; color: ${t.textPrimary};">${escapeHtml(v.title)}</p>
                     <p style="margin: 0; font-size: 13px; color: ${t.textSecondary}; line-height: 1.6;">${escapeHtml(v.body)}</p>
                   </td>
                 </tr>`,
-).join("\n")}
+  )
+  .join("\n")}
               </table>
             </td>
           </tr>
@@ -330,7 +394,7 @@ ${VALUE_PROPS.map(
           <tr>
             <td align="center" style="padding: 32px 56px 0;">
               <div style="margin: 0 auto 14px; width: 58px;">${morse("58px")}</div>
-              <p style="margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.5;">&ldquo;${escapeHtml(QUOTE).replace("right people", "right&nbsp;people")}&rdquo;</p>
+              <p style="margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.5;">&ldquo;${quoteHtml}&rdquo;</p>
             </td>
           </tr>
 

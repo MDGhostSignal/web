@@ -3,7 +3,10 @@
 import { useCallback, useState } from "react";
 
 import { Button, Modal } from "@/components/admin";
-import { defaultOutreachMessage } from "@/lib/cold-outreach-email";
+import {
+  defaultOutreachMessage,
+  type OutreachAudience,
+} from "@/lib/cold-outreach-email";
 import { formatInZone, localTimeZone } from "@/lib/timezone";
 
 import { ScheduleFields, type ScheduleResolution } from "./ScheduleFields";
@@ -17,10 +20,10 @@ type Phase =
 type Timing = "now" | "schedule";
 
 /**
- * Cold-email composer modal — name, email, personal message. "Preview
- * email" renders the exact send-side HTML via
- * /api/admin/outreach/preview in a sandboxed iframe (same pattern as
- * the studio invite modal). Sending files the row and fires Resend;
+ * Cold-email composer modal — audience (brand/creator), name, email,
+ * personal message. "Preview email" renders the exact send-side HTML
+ * via /api/admin/outreach/preview in a sandboxed iframe (same pattern
+ * as the studio invite modal). Sending files the row and fires Resend;
  * a 409 means the address was already contacted and offers a
  * send-anyway confirm so nobody double-cold-emails by accident.
  */
@@ -40,9 +43,11 @@ export function OutreachComposer({
   const [timing, setTiming] = useState<Timing>("now");
   const [schedule, setSchedule] = useState<ScheduleResolution>(null);
   const onResolve = useCallback((r: ScheduleResolution) => setSchedule(r), []);
+  // Brand vs creator — swaps How-we-do-it benefits + quote in the shell.
+  const [audience, setAudience] = useState<OutreachAudience>("brand");
   // Prefilled with the standard template text (same pattern as the
   // studio invite form) — edit it per-send to make it personal.
-  const [message, setMessage] = useState(defaultOutreachMessage());
+  const [message, setMessage] = useState(defaultOutreachMessage("brand"));
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   // Which template goes out — picked in the form, mirrored by the
   // preview toggle, and sent with the reachout.
@@ -50,6 +55,20 @@ export function OutreachComposer({
   const [previewLoading, setPreviewLoading] = useState(false);
   const [duplicateAt, setDuplicateAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  function selectAudience(next: OutreachAudience) {
+    setAudience(next);
+    // If Mike hasn't customized the note yet, swap to the matching default.
+    setMessage((prev) => {
+      const brandDefault = defaultOutreachMessage("brand");
+      const creatorDefault = defaultOutreachMessage("creator");
+      if (prev === brandDefault || prev === creatorDefault) {
+        return defaultOutreachMessage(next);
+      }
+      return prev;
+    });
+    setPreviewHtml(null);
+  }
 
   function close() {
     if (phase.kind === "sending") return;
@@ -75,6 +94,7 @@ export function OutreachComposer({
           email,
           message,
           theme,
+          audience,
           force: force || undefined,
           scheduledAt:
             timing === "schedule" && schedule
@@ -121,7 +141,12 @@ export function OutreachComposer({
       const res = await fetch("/api/admin/outreach/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message, theme: nextTheme }),
+        body: JSON.stringify({
+          name,
+          message,
+          theme: nextTheme,
+          audience,
+        }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || typeof body.html !== "string") {
@@ -283,6 +308,36 @@ export function OutreachComposer({
           )}
 
           <fieldset className={`${styles.themeField} ${styles.spanAll}`}>
+            <legend className={styles.fieldLabel}>Reach out to</legend>
+            <div className={styles.timingToggle} role="radiogroup" aria-label="Audience">
+              <button
+                type="button"
+                className={`${styles.timingOption} ${audience === "brand" ? styles.timingActive : ""}`}
+                onClick={() => selectAudience("brand")}
+                aria-pressed={audience === "brand"}
+              >
+                Brand
+              </button>
+              <button
+                type="button"
+                className={`${styles.timingOption} ${audience === "creator" ? styles.timingActive : ""}`}
+                onClick={() => selectAudience("creator")}
+                aria-pressed={audience === "creator"}
+              >
+                Creator
+              </button>
+            </div>
+            <p className={styles.audienceHint}>
+              Swaps the three &ldquo;How we do it&rdquo; benefits and the
+              pull-quote to match{" "}
+              {audience === "creator"
+                ? "/invitation/creators"
+                : "/invitation"}
+              .
+            </p>
+          </fieldset>
+
+          <fieldset className={`${styles.themeField} ${styles.spanAll}`}>
             <legend className={styles.fieldLabel}>Timing</legend>
             <div className={styles.timingToggle}>
               <button
@@ -365,7 +420,11 @@ export function OutreachComposer({
               onChange={(e) => setMessage(e.target.value)}
               maxLength={2000}
               rows={5}
-              placeholder="Why this brand fits the network — written like a person, not a campaign. Left blank, the standard template text is sent."
+              placeholder={
+                audience === "creator"
+                  ? "Why this show fits the network — written like a person, not a campaign. Left blank, the standard creator template text is sent."
+                  : "Why this brand fits the network — written like a person, not a campaign. Left blank, the standard template text is sent."
+              }
             />
           </label>
 

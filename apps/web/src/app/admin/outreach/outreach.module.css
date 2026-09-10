@@ -163,6 +163,13 @@
   cursor: pointer;
 }
 
+.audienceHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--admin-text-muted);
+}
+
 /* Neutral canvas — the email HTML brings its own page background
  * (light #fafbff or dark #0f1219 depending on the toggled theme). */
 .previewFrame {
