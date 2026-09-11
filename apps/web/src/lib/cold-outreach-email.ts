@@ -531,7 +531,6 @@ ${body}
 ${MIKE_SIGNATURE_TEXT}
 
 A Community of World Makers
-GHOSTSignal
 We create partnerships that feel good
 Because they are good.
 ${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
@@ -542,15 +541,12 @@ ${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
  *  family like Snowdrift, but purple-nebula + /what-is-this CTA. */
 function followUpWebsiteAdHtml(theme: OutreachTheme): string {
   const href = `${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
-  const wordmarkDark = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #ffffff;">GHOST</span><span style="font-weight: 300; color: #ffffff;">Signal</span></span>`;
-  const wordmarkLight = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #0e1119;">GHOST</span><span style="font-weight: 300; color: #0e1119;">Signal</span></span>`;
   if (theme === "dark") {
     return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#120f1c" style="background-color: #120f1c; background-image: radial-gradient(ellipse at 30% 20%, rgba(155,126,230,0.28) 0%, transparent 55%), radial-gradient(circle at 18% 35%, rgba(255,255,255,0.16) 1px, transparent 1px), radial-gradient(circle at 72% 22%, rgba(255,255,255,0.12) 1px, transparent 1px), radial-gradient(circle at 88% 68%, rgba(251,173,37,0.35) 1.5px, transparent 1.5px), radial-gradient(circle at 42% 78%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 60% 48%, rgba(155,126,230,0.2) 1px, transparent 1px); border: 1px solid #2a3142; border-radius: 12px;">
                 <tr>
                   <td align="center" style="padding: 22px 24px 24px;">
                     <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #9b7ee6;">A Community of World Makers</p>
                     <p style="margin: 0 0 14px; font-size: 15px; color: rgba(241,243,248,0.78); line-height: 1.55; text-align: center;">
-                      ${wordmarkDark}<br>
                       We create partnerships that feel good<br>
                       Because they are good.
                     </p>
@@ -566,7 +562,6 @@ function followUpWebsiteAdHtml(theme: OutreachTheme): string {
                   <td align="center" style="padding: 22px 24px 24px;">
                     <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #7c58d6;">A Community of World Makers</p>
                     <p style="margin: 0 0 14px; font-size: 15px; color: #5a5e66; line-height: 1.55; text-align: center;">
-                      ${wordmarkLight}<br>
                       We create partnerships that feel good<br>
                       Because they are good.
                     </p>
