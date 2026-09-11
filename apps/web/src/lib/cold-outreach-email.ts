@@ -505,6 +505,11 @@ export function coldOutreachFollowUpSubject(name: string): string {
     : `Following up from GHOSTSignal`;
 }
 
+/** Prefill for the follow-up greeting field — Mike can edit it. */
+export function defaultFollowUpGreeting(name: string): string {
+  return greeting(name);
+}
+
 /** Mike's branded signature GIF — light (w) / dark (b) variants.
  *  Same assets used on XQ/RQ result emails and /who-are-we. */
 const MIKE_SIGNATURE: Record<OutreachTheme, string> = {
@@ -515,16 +520,21 @@ const MIKE_SIGNATURE: Record<OutreachTheme, string> = {
 const MIKE_SIGNATURE_TEXT =
   "Mike Sense\nCo-Founder\nGHOSTSignal\nmike@ghostsignal.cloud\nhttps://www.linkedin.com/in/mike-sense/";
 
-/** Plain-text part for a follow-up (body + Mike's signature). */
+/** Plain-text part for a follow-up (greeting + body + Mike's signature). */
 export function coldOutreachFollowUpEmailText({
   name,
   message,
+  greeting: greetingOverride,
 }: {
   name: string;
   message: string;
+  /** Editable "Hello …," line — falls back to defaultFollowUpGreeting. */
+  greeting?: string;
 }): string {
+  const hello =
+    greetingOverride?.trim() || defaultFollowUpGreeting(name);
   const body = message.trim() || defaultFollowUpMessage();
-  return `${greeting(name)}
+  return `${hello}
 
 ${body}
 
@@ -582,16 +592,21 @@ function followUpWebsiteAdHtml(theme: OutreachTheme): string {
 export function coldOutreachFollowUpEmailHtml({
   name,
   message,
+  greeting: greetingOverride,
   assetOrigin = PROD_ORIGIN,
   theme = "light",
 }: {
   name: string;
   message: string;
+  /** Editable "Hello …," line — falls back to defaultFollowUpGreeting. */
+  greeting?: string;
   assetOrigin?: string;
   theme?: OutreachTheme;
 }): string {
   const t = THEMES[theme];
-  const hello = name ? `Hello ${escapeHtml(name)},` : "Hello,";
+  const hello = escapeHtml(
+    greetingOverride?.trim() || defaultFollowUpGreeting(name),
+  );
   const rawMessage = message.trim() || defaultFollowUpMessage();
   const body = textToHtml(rawMessage);
   const preview = escapeHtml(rawMessage.replace(/\s+/g, " ").slice(0, 140));

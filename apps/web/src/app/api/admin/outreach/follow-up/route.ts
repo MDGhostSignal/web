@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import {
   coldOutreachFollowUpSubject,
+  defaultFollowUpGreeting,
   defaultFollowUpMessage,
 } from "@/lib/cold-outreach-email";
 import { sendColdOutreach } from "@/lib/cold-outreach-send";
@@ -9,17 +10,16 @@ import { supabaseRest } from "@/lib/supabase-admin";
 
 /**
  * POST /api/admin/outreach/follow-up
- * Body: { name?, email, subject?, message?, theme?, parentId? }
+ * Body: { name?, email, subject?, greeting?, message?, theme?, parentId? }
  *
  * Sends a slim follow-up (header lockup + personal note + footer only)
  * to someone already on the outreach list. Always allowed to re-contact
  * (no 409 duplicate guard) — that's the point of a nudge.
  *
- * `subject` is optional; blank falls back to coldOutreachFollowUpSubject.
- * Files a fresh cold_outreach row (status followup_sent / failed) so
- * the overview list shows the nudge distinctly from the initial send.
- * sent_at is stamped at file time. parentId is accepted for future
- * linking and ignored until a parent_id column lands.
+ * `subject` / `greeting` are optional; blank falls back to the defaults
+ * from cold-outreach-email. Files a fresh cold_outreach row (status
+ * followup_sent / failed). sent_at is stamped at file time. parentId is
+ * accepted for future linking and ignored until a parent_id column lands.
  *
  * Cookie-gated by the proxy matcher "/api/admin/outreach/:path*".
  */
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     name?: string;
     email?: string;
     subject?: string;
+    greeting?: string;
     message?: string;
     theme?: string;
     parentId?: string;
@@ -54,6 +55,8 @@ export async function POST(req: NextRequest) {
   const finalMessage = message || defaultFollowUpMessage();
   const subject =
     body.subject?.trim() || coldOutreachFollowUpSubject(name);
+  const greeting =
+    body.greeting?.trim() || defaultFollowUpGreeting(name);
   const theme = body.theme === "dark" ? "dark" : "light";
 
   if (!process.env.RESEND_API_KEY) {
@@ -99,6 +102,7 @@ export async function POST(req: NextRequest) {
     theme,
     variant: "followup",
     subject,
+    greeting,
   });
   if (!sendRes.ok) {
     await supabaseRest(`cold_outreach?id=eq.${encodeURIComponent(rowId)}`, {

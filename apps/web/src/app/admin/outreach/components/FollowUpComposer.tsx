@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button, Modal } from "@/components/admin";
 import {
   coldOutreachFollowUpSubject,
+  defaultFollowUpGreeting,
   defaultFollowUpMessage,
 } from "@/lib/cold-outreach-email";
 
@@ -17,8 +18,8 @@ type Phase =
 
 /**
  * Slim follow-up composer — prefilled name/email from an existing
- * reachout row. Mike edits subject + a short note; the email uses
- * only the branded header lockup + signature + site ad.
+ * reachout row. Mike edits subject, greeting ("Hello Martin,"), and
+ * the note; the email uses the branded header + signature + site ad.
  */
 export function FollowUpComposer({
   row,
@@ -32,6 +33,9 @@ export function FollowUpComposer({
   const [phase, setPhase] = useState<Phase>({ kind: "form" });
   const [subject, setSubject] = useState(() =>
     coldOutreachFollowUpSubject(row.name),
+  );
+  const [greeting, setGreeting] = useState(() =>
+    defaultFollowUpGreeting(row.name),
   );
   const [message, setMessage] = useState(defaultFollowUpMessage());
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -50,6 +54,10 @@ export function FollowUpComposer({
       setError("Add a subject line before sending.");
       return;
     }
+    if (!greeting.trim()) {
+      setError("Add a greeting line before sending.");
+      return;
+    }
     if (!message.trim()) {
       setError("Write a short follow-up note before sending.");
       return;
@@ -64,6 +72,7 @@ export function FollowUpComposer({
           name: row.name,
           email: row.email,
           subject,
+          greeting,
           message,
           theme,
           parentId: row.id,
@@ -91,6 +100,7 @@ export function FollowUpComposer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: row.name,
+          greeting,
           message,
           theme: nextTheme,
           variant: "followup",
@@ -129,8 +139,8 @@ export function FollowUpComposer({
         phase.kind === "sent"
           ? undefined
           : previewHtml
-            ? "Header + note + Mike’s signature + What Is This ad."
-            : `Nudge ${row.email}. Header, your note, Mike’s signature, site ad.`
+            ? "Header + greeting + note + Mike’s signature + site ad."
+            : `Nudge ${row.email}. Edit subject, greeting, and message.`
       }
     >
       {phase.kind === "sent" ? (
@@ -214,7 +224,7 @@ export function FollowUpComposer({
 
           <div className={styles.field}>
             <label className={styles.fieldLabel} htmlFor="followup-subject">
-              Subject
+              Subject line
             </label>
             <input
               id="followup-subject"
@@ -229,8 +239,25 @@ export function FollowUpComposer({
           </div>
 
           <div className={styles.field}>
+            <label className={styles.fieldLabel} htmlFor="followup-greeting">
+              Greeting line
+            </label>
+            <input
+              id="followup-greeting"
+              className={styles.input}
+              type="text"
+              value={greeting}
+              onChange={(e) => setGreeting(e.target.value)}
+              required
+              disabled={phase.kind === "sending"}
+              autoComplete="off"
+              placeholder="Hello Martin,"
+            />
+          </div>
+
+          <div className={styles.field}>
             <label className={styles.fieldLabel} htmlFor="followup-message">
-              Follow-up note
+              Message
             </label>
             <textarea
               id="followup-message"

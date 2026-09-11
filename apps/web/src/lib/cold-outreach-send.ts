@@ -38,6 +38,8 @@ export type SendColdOutreachInput = {
   variant?: "full" | "followup";
   /** Override subject (follow-ups: Mike edits this in the composer). */
   subject?: string;
+  /** Override greeting line (follow-ups: e.g. "Hello Martin,"). */
+  greeting?: string;
 };
 
 export type SendColdOutreachResult =
@@ -71,6 +73,7 @@ export async function sendColdOutreach(
       ? coldOutreachFollowUpEmailHtml({
           name: input.name,
           message: input.message,
+          greeting: input.greeting,
           theme: input.theme,
         })
       : coldOutreachEmailHtml({
@@ -83,6 +86,7 @@ export async function sendColdOutreach(
       ? coldOutreachFollowUpEmailText({
           name: input.name,
           message: input.message,
+          greeting: input.greeting,
         })
       : coldOutreachEmailText({
           name: input.name,

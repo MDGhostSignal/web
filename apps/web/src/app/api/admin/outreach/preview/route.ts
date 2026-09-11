@@ -10,17 +10,17 @@ import {
 
 /**
  * POST /api/admin/outreach/preview
- * Body: { name?, message?, theme?, audience?, variant? }
+ * Body: { name?, message?, greeting?, theme?, audience?, variant? }
  *
  * Renders the cold-outreach email exactly as /api/admin/outreach
  * (or /follow-up) would send it for these form values and returns
  * { html } for the composer's preview iframe. No side effects. Same
  * pattern as /api/admin/studio/invite/preview.
  *
- * variant "followup" → slim header + note + footer (no pitch body).
- * Otherwise the full invitation email. A blank name renders the real
- * no-name greeting ("Hello,"). theme: "dark" for the composer's
- * toggle. audience: "creator" swaps How-we-do-it + quote (full only).
+ * variant "followup" → slim header + note + footer (no pitch body);
+ * optional `greeting` overrides the "Hello …," line. Otherwise the
+ * full invitation email. theme: "dark" for the composer's toggle.
+ * audience: "creator" swaps How-we-do-it + quote (full only).
  *
  * assetOrigin is the request origin so hosted images resolve in local
  * dev; real sends use production.
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
   let body: {
     name?: string;
     message?: string;
+    greeting?: string;
     theme?: string;
     audience?: string;
     variant?: string;
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
     const html = coldOutreachFollowUpEmailHtml({
       name,
       message: body.message?.trim() || defaultFollowUpMessage(),
+      greeting: body.greeting?.trim() || undefined,
       assetOrigin,
       theme,
     });
