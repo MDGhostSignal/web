@@ -530,27 +530,25 @@ ${body}
 
 ${MIKE_SIGNATURE_TEXT}
 
-New here? Meet GHOSTSignal — the values-based podcast advertising network for world makers.
-What is this? ${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
+A Community of World Makers
+GHOSTSignal — we create partnerships that feel good. Because they are good.
+${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
 }
 
 /** Website ad under Mike's signature on follow-ups — light/dark
  *  variants so the unit matches the template Mike picked. Starry
- *  family like Snowdrift, but purple-nebula + What Is This CTA. */
-function followUpWebsiteAdHtml(
-  theme: OutreachTheme,
-  assetOrigin: string,
-  wordmark: string,
-): string {
+ *  family like Snowdrift, but purple-nebula + /what-is-this CTA. */
+function followUpWebsiteAdHtml(theme: OutreachTheme): string {
   const href = `${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
+  const wordmarkDark = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #ffffff;">GHOST</span><span style="font-weight: 300; color: #ffffff;">Signal</span></span>`;
+  const wordmarkLight = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #0e1119;">GHOST</span><span style="font-weight: 300; color: #0e1119;">Signal</span></span>`;
   if (theme === "dark") {
     return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#120f1c" style="background-color: #120f1c; background-image: radial-gradient(ellipse at 30% 20%, rgba(155,126,230,0.28) 0%, transparent 55%), radial-gradient(circle at 18% 35%, rgba(255,255,255,0.16) 1px, transparent 1px), radial-gradient(circle at 72% 22%, rgba(255,255,255,0.12) 1px, transparent 1px), radial-gradient(circle at 88% 68%, rgba(251,173,37,0.35) 1.5px, transparent 1.5px), radial-gradient(circle at 42% 78%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 60% 48%, rgba(155,126,230,0.2) 1px, transparent 1px); border: 1px solid #2a3142; border-radius: 12px;">
                 <tr>
                   <td align="center" style="padding: 22px 24px 24px;">
-                    <img src="${assetOrigin}/images/email/logo-spin-dark.gif" alt="GHOSTSignal" width="64" height="64" style="display: block; margin: 0 auto 10px; width: 64px; height: 64px;">
-                    <p style="margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #9b7ee6;">What is this?</p>
+                    <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #9b7ee6;">A Community of World Makers</p>
                     <p style="margin: 0 0 14px; font-size: 13px; color: rgba(241,243,248,0.78); line-height: 1.65;">
-                      New here? Meet ${wordmark} &mdash; the values-based podcast advertising network for world makers.
+                      ${wordmarkDark} &mdash; we create partnerships that feel good. Because they are good.
                     </p>
                     <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #9b7ee6; color: #0e1119; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #b09cf0;">
                       Explore GHOSTSignal
@@ -562,10 +560,9 @@ function followUpWebsiteAdHtml(
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f3eefc" style="background-color: #f3eefc; background-image: radial-gradient(ellipse at 70% 0%, rgba(124,88,214,0.18) 0%, transparent 50%), radial-gradient(circle at 16% 30%, rgba(124,88,214,0.22) 1.5px, transparent 1.5px), radial-gradient(circle at 78% 24%, rgba(124,88,214,0.16) 1px, transparent 1px), radial-gradient(circle at 52% 72%, rgba(251,173,37,0.35) 1.5px, transparent 1.5px), radial-gradient(circle at 88% 62%, rgba(124,88,214,0.14) 1px, transparent 1px); border: 1px solid #eae3f8; border-radius: 12px;">
                 <tr>
                   <td align="center" style="padding: 22px 24px 24px;">
-                    <img src="${assetOrigin}/images/email/logo-spin.gif" alt="GHOSTSignal" width="64" height="64" style="display: block; margin: 0 auto 10px; width: 64px; height: 64px;">
-                    <p style="margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #7c58d6;">What is this?</p>
+                    <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #7c58d6;">A Community of World Makers</p>
                     <p style="margin: 0 0 14px; font-size: 13px; color: #5a5e66; line-height: 1.65;">
-                      New here? Meet ${wordmark} &mdash; the values-based podcast advertising network for world makers.
+                      ${wordmarkLight} &mdash; we create partnerships that feel good. Because they are good.
                     </p>
                     <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #7c58d6; color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #6a45c7;">
                       Explore GHOSTSignal
@@ -598,12 +595,9 @@ export function coldOutreachFollowUpEmailHtml({
   const body = textToHtml(rawMessage);
   const preview = escapeHtml(rawMessage.replace(/\s+/g, " ").slice(0, 140));
   const wordmark = `<span style="white-space: nowrap;"><span style="font-weight: 800;">GHOST</span><span style="font-weight: 300;">Signal</span></span>`;
-  const wordmarkOnDark = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #ffffff;">GHOST</span><span style="font-weight: 300; color: #ffffff;">Signal</span></span>`;
-  const wordmarkOnLight = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #0e1119;">GHOST</span><span style="font-weight: 300; color: #0e1119;">Signal</span></span>`;
   const morse = (width: string) =>
     `<div style="height: 3px; width: ${width}; border-radius: 2px; background-color: ${t.accent}; background-image: repeating-linear-gradient(90deg, ${t.accent} 0 5px, ${t.card} 5px 13px, ${t.accent} 13px 33px, ${t.card} 33px 41px, ${t.accent} 41px 46px, ${t.card} 46px 58px);"></div>`;
   const signatureSrc = `${assetOrigin}${MIKE_SIGNATURE[theme]}`;
-  const adWordmark = theme === "dark" ? wordmarkOnDark : wordmarkOnLight;
 
   return `<!DOCTYPE html>
 <html>
@@ -649,7 +643,7 @@ export function coldOutreachFollowUpEmailHtml({
           <!-- Website ad → /what-is-this (theme-matched unit) -->
           <tr>
             <td style="padding: 22px 40px 30px;">
-              ${followUpWebsiteAdHtml(theme, assetOrigin, adWordmark)}
+              ${followUpWebsiteAdHtml(theme)}
             </td>
           </tr>
 
