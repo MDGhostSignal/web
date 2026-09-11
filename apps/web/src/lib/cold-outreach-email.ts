@@ -531,7 +531,9 @@ ${body}
 ${MIKE_SIGNATURE_TEXT}
 
 A Community of World Makers
-GHOSTSignal — we create partnerships that feel good. Because they are good.
+GHOSTSignal
+We create partnerships that feel good
+Because they are good.
 ${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
 }
 
@@ -547,8 +549,10 @@ function followUpWebsiteAdHtml(theme: OutreachTheme): string {
                 <tr>
                   <td align="center" style="padding: 22px 24px 24px;">
                     <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #9b7ee6;">A Community of World Makers</p>
-                    <p style="margin: 0 0 14px; font-size: 13px; color: rgba(241,243,248,0.78); line-height: 1.65;">
-                      ${wordmarkDark} &mdash; we create partnerships that feel good. Because they are good.
+                    <p style="margin: 0 0 14px; font-size: 15px; color: rgba(241,243,248,0.78); line-height: 1.55; text-align: center;">
+                      ${wordmarkDark}<br>
+                      We create partnerships that feel good<br>
+                      Because they are good.
                     </p>
                     <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #9b7ee6; color: #0e1119; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #b09cf0;">
                       Explore GHOSTSignal
@@ -561,8 +565,10 @@ function followUpWebsiteAdHtml(theme: OutreachTheme): string {
                 <tr>
                   <td align="center" style="padding: 22px 24px 24px;">
                     <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #7c58d6;">A Community of World Makers</p>
-                    <p style="margin: 0 0 14px; font-size: 13px; color: #5a5e66; line-height: 1.65;">
-                      ${wordmarkLight} &mdash; we create partnerships that feel good. Because they are good.
+                    <p style="margin: 0 0 14px; font-size: 15px; color: #5a5e66; line-height: 1.55; text-align: center;">
+                      ${wordmarkLight}<br>
+                      We create partnerships that feel good<br>
+                      Because they are good.
                     </p>
                     <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #7c58d6; color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #6a45c7;">
                       Explore GHOSTSignal
