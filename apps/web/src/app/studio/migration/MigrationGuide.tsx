@@ -135,7 +135,7 @@ const STEPS: Step[] = [
           <>
             Set a permanent <strong>&ldquo;301 redirect&rdquo;</strong> on
             your old host, pointing directly to your new ART19 RSS (found
-            at: Content &gt; Series &gt; Settings).
+            at: Content &gt; Feeds &gt; Primary Feeds).
           </>
         ),
         afterNote:
