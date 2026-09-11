@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import styles from "./Modal.module.css";
 
@@ -43,6 +43,11 @@ const sizeClass: Record<Size, string> = {
  * optional title / subtitle / footer slots. Escape + overlay-click
  * dismissal is opt-out via `dismissible={false}` for in-flight states.
  *
+ * Backdrop dismiss only fires when the pointer *down* started on the
+ * overlay itself. A text-selection drag that begins in an input and
+ * ends on the dimmed backdrop must NOT close the dialog (that used to
+ * frustrate follow-up / composer edits).
+ *
  * The component does NOT portal — place modals inside `.admin-root` or
  * another token-scope so CSS variables resolve. Consumers wrap the
  * entire render in `{open && <Modal ... />}` conditionally.
@@ -60,6 +65,11 @@ export function Modal({
   titleId = "admin-modal-title",
   className,
 }: Props) {
+  // True only when the current gesture's pointerdown landed on the
+  // backdrop (not the card). Checked again on click so a select-drag
+  // that escapes the card can't dismiss.
+  const pointerDownOnBackdrop = useRef(false);
+
   // Escape key handler — effects only attach while open.
   useEffect(() => {
     if (!open || !dismissible) return;
@@ -93,14 +103,24 @@ export function Modal({
   return (
     <div
       className={styles.overlay}
-      onClick={() => {
-        if (dismissible) onClose();
+      onPointerDown={(e) => {
+        pointerDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (
+          dismissible &&
+          pointerDownOnBackdrop.current &&
+          e.target === e.currentTarget
+        ) {
+          onClose();
+        }
       }}
       role="presentation"
     >
       <div
         className={cardCls}
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
