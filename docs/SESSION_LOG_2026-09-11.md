@@ -21,7 +21,10 @@
 - `npm run assets:audit` — (run with follow-up)
 - Follow-up HTML smoke: header + footer present; no invite headline / pitch body
 
+## Validation (follow-up send)
+- Admin login against local `:3000` — OK
+- `POST /api/admin/outreach/follow-up` → `heymatvond@gmail.com` — **200** (`id=220d791b-b953-4db3-b0cc-eb462ab1b6f2`)
+
 ## Open / next
-- Inspect ART19 checklist at local `/studio/migration` (dev server on :3000).
-- Inspect follow-up at `/admin/outreach` (login required); commit/push follow-up when ready.
+- Confirm the test follow-up arrived in Gmail (check spam if needed).
 - Optional later: `kind`/`parent_id` columns to badge follow-ups vs initial sends.
