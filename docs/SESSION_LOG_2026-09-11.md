@@ -13,7 +13,7 @@
 - Full cold-email footer line → “world-making community” wording.
 - Status `followup_sent` (badge: **follow-up sent**); `sent_at` stamped; Sent filter includes both `sent` and `followup_sent`.
 - When column shows local date + hour:minute for delivered rows.
-- Editable **Subject** in follow-up popup (prefilled, shown above preview).
+- Editable **Subject**, **Greeting** (`Hello {name},`), and **Message** in follow-up popup (prefilled; greeting flows to HTML/text/preview/Resend).
 - Duplicate guard on new full reachouts also treats `followup_sent` as contacted.
 
 ### Admin Modal
