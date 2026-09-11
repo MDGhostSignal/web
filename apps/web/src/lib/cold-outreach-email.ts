@@ -11,7 +11,8 @@
  * `audience` ("brand" | "creator") swaps How-we-do-it benefits + the
  * pull-quote to match /invitation vs /invitation/creators.
  * Follow-ups use coldOutreachFollowUpEmailHtml — header lockup + note
- * + Mike's signature GIF (no pitch body / "Let's Talk" CTA).
+ * + Mike's signature GIF + theme-matched website ad → /what-is-this
+ * (no pitch body / "Let's Talk" CTA).
  *
  * Section order — mirrors the invitation pages (2026-08-17 redesign):
  *   1. spinning cloud glyph + wordmark, then the invitation headline
@@ -48,6 +49,7 @@ const PROD_ORIGIN = "https://www.ghostsignal.cloud";
 const ADVERTISERS_PATH = "/for-advertisers";
 const INVITATION_BRAND_PATH = "/invitation";
 const INVITATION_CREATORS_PATH = "/invitation/creators";
+const WHAT_IS_THIS_PATH = "/what-is-this";
 const SNOWDRIFT_URL = "https://snowdriftghostsignal.substack.com/";
 
 export type OutreachTheme = "light" | "dark";
@@ -526,14 +528,58 @@ export function coldOutreachFollowUpEmailText({
 
 ${body}
 
-${MIKE_SIGNATURE_TEXT}`;
+${MIKE_SIGNATURE_TEXT}
+
+New here? Meet GHOSTSignal — the values-based podcast advertising network for world makers.
+What is this? ${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
+}
+
+/** Website ad under Mike's signature on follow-ups — light/dark
+ *  variants so the unit matches the template Mike picked. Starry
+ *  family like Snowdrift, but purple-nebula + What Is This CTA. */
+function followUpWebsiteAdHtml(
+  theme: OutreachTheme,
+  assetOrigin: string,
+  wordmark: string,
+): string {
+  const href = `${PROD_ORIGIN}${WHAT_IS_THIS_PATH}`;
+  if (theme === "dark") {
+    return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#120f1c" style="background-color: #120f1c; background-image: radial-gradient(ellipse at 30% 20%, rgba(155,126,230,0.28) 0%, transparent 55%), radial-gradient(circle at 18% 35%, rgba(255,255,255,0.16) 1px, transparent 1px), radial-gradient(circle at 72% 22%, rgba(255,255,255,0.12) 1px, transparent 1px), radial-gradient(circle at 88% 68%, rgba(251,173,37,0.35) 1.5px, transparent 1.5px), radial-gradient(circle at 42% 78%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 60% 48%, rgba(155,126,230,0.2) 1px, transparent 1px); border: 1px solid #2a3142; border-radius: 12px;">
+                <tr>
+                  <td align="center" style="padding: 22px 24px 24px;">
+                    <img src="${assetOrigin}/images/email/logo-spin-dark.gif" alt="GHOSTSignal" width="64" height="64" style="display: block; margin: 0 auto 10px; width: 64px; height: 64px;">
+                    <p style="margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #9b7ee6;">What is this?</p>
+                    <p style="margin: 0 0 14px; font-size: 13px; color: rgba(241,243,248,0.78); line-height: 1.65;">
+                      New here? Meet ${wordmark} &mdash; the values-based podcast advertising network for world makers.
+                    </p>
+                    <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #9b7ee6; color: #0e1119; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #b09cf0;">
+                      Explore GHOSTSignal
+                    </a>
+                  </td>
+                </tr>
+              </table>`;
+  }
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#f3eefc" style="background-color: #f3eefc; background-image: radial-gradient(ellipse at 70% 0%, rgba(124,88,214,0.18) 0%, transparent 50%), radial-gradient(circle at 16% 30%, rgba(124,88,214,0.22) 1.5px, transparent 1.5px), radial-gradient(circle at 78% 24%, rgba(124,88,214,0.16) 1px, transparent 1px), radial-gradient(circle at 52% 72%, rgba(251,173,37,0.35) 1.5px, transparent 1.5px), radial-gradient(circle at 88% 62%, rgba(124,88,214,0.14) 1px, transparent 1px); border: 1px solid #eae3f8; border-radius: 12px;">
+                <tr>
+                  <td align="center" style="padding: 22px 24px 24px;">
+                    <img src="${assetOrigin}/images/email/logo-spin.gif" alt="GHOSTSignal" width="64" height="64" style="display: block; margin: 0 auto 10px; width: 64px; height: 64px;">
+                    <p style="margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #7c58d6;">What is this?</p>
+                    <p style="margin: 0 0 14px; font-size: 13px; color: #5a5e66; line-height: 1.65;">
+                      New here? Meet ${wordmark} &mdash; the values-based podcast advertising network for world makers.
+                    </p>
+                    <a href="${href}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #7c58d6; color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #6a45c7;">
+                      Explore GHOSTSignal
+                    </a>
+                  </td>
+                </tr>
+              </table>`;
 }
 
 /**
  * Slim follow-up HTML: entrance lockup (logo + wordmark + morse) +
- * personal note + Mike's email signature. No invitation headline,
- * roster, benefits, founders, XQ, Snowdrift, or "Let's Talk" CTA
- * (Mike is the sender — the signature is the close).
+ * personal note + Mike's email signature + website ad (What Is This).
+ * No invitation headline, roster, benefits, founders, XQ, Snowdrift,
+ * or "Let's Talk" CTA (Mike is the sender — the signature is the close).
  */
 export function coldOutreachFollowUpEmailHtml({
   name,
@@ -552,9 +598,12 @@ export function coldOutreachFollowUpEmailHtml({
   const body = textToHtml(rawMessage);
   const preview = escapeHtml(rawMessage.replace(/\s+/g, " ").slice(0, 140));
   const wordmark = `<span style="white-space: nowrap;"><span style="font-weight: 800;">GHOST</span><span style="font-weight: 300;">Signal</span></span>`;
+  const wordmarkOnDark = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #ffffff;">GHOST</span><span style="font-weight: 300; color: #ffffff;">Signal</span></span>`;
+  const wordmarkOnLight = `<span style="white-space: nowrap;"><span style="font-weight: 800; color: #0e1119;">GHOST</span><span style="font-weight: 300; color: #0e1119;">Signal</span></span>`;
   const morse = (width: string) =>
     `<div style="height: 3px; width: ${width}; border-radius: 2px; background-color: ${t.accent}; background-image: repeating-linear-gradient(90deg, ${t.accent} 0 5px, ${t.card} 5px 13px, ${t.accent} 13px 33px, ${t.card} 33px 41px, ${t.accent} 41px 46px, ${t.card} 46px 58px);"></div>`;
   const signatureSrc = `${assetOrigin}${MIKE_SIGNATURE[theme]}`;
+  const adWordmark = theme === "dark" ? wordmarkOnDark : wordmarkOnLight;
 
   return `<!DOCTYPE html>
 <html>
@@ -591,9 +640,16 @@ export function coldOutreachFollowUpEmailHtml({
 
           <!-- Mike's email signature (theme-matched GIF) -->
           <tr>
-            <td style="padding: 28px 40px 30px;">
+            <td style="padding: 28px 40px 0;">
               <div style="border-top: 1px solid ${t.cardBorder};"></div>
               <img src="${signatureSrc}" alt="Mike Sense, Co-Founder, GHOSTSignal" width="320" height="104" style="display: block; margin: 20px 0 0; width: 320px; max-width: 100%; height: auto; border: 0; border-radius: 8px;">
+            </td>
+          </tr>
+
+          <!-- Website ad → /what-is-this (theme-matched unit) -->
+          <tr>
+            <td style="padding: 22px 40px 30px;">
+              ${followUpWebsiteAdHtml(theme, assetOrigin, adWordmark)}
             </td>
           </tr>
 
