@@ -2,7 +2,8 @@
 
 ## Changes
 - Restored Phase 2 step 1 (`2-review`) copy on the ART19 studio migration checklist: login-email wording, stay-active-until-301 note, and import-window sync request.
-- Cold outreach follow-up: per-row **Follow up** on sent list items; slim email (header lockup + note + footer); preview + send via `/api/admin/outreach/follow-up`.
+- Cold outreach follow-up: per-row **Follow up** on sent list items; slim email (header lockup + note + Mike signature GIF); preview + send via `/api/admin/outreach/follow-up`.
+- Follow-up close: dropped “Let’s Talk / goes straight to Mike”; uses `GS-EmailSignatures-mikew.gif` / `mikeb.gif` by theme.
 
 ## Files
 - `apps/web/src/app/studio/migration/MigrationGuide.tsx` (pushed: `95b06be`)

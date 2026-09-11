@@ -11,7 +11,7 @@
  * `audience` ("brand" | "creator") swaps How-we-do-it benefits + the
  * pull-quote to match /invitation vs /invitation/creators.
  * Follow-ups use coldOutreachFollowUpEmailHtml — header lockup + note
- * + footer only (no pitch body).
+ * + Mike's signature GIF (no pitch body / "Let's Talk" CTA).
  *
  * Section order — mirrors the invitation pages (2026-08-17 redesign):
  *   1. spinning cloud glyph + wordmark, then the invitation headline
@@ -503,7 +503,17 @@ export function coldOutreachFollowUpSubject(name: string): string {
     : `Following up from GHOSTSignal`;
 }
 
-/** Plain-text part for a follow-up (headerless; body + footer sign-off). */
+/** Mike's branded signature GIF — light (w) / dark (b) variants.
+ *  Same assets used on XQ/RQ result emails and /who-are-we. */
+const MIKE_SIGNATURE: Record<OutreachTheme, string> = {
+  light: "/images/brand/GS-EmailSignatures-mikew.gif",
+  dark: "/images/brand/GS-EmailSignatures-mikeb.gif",
+};
+
+const MIKE_SIGNATURE_TEXT =
+  "Mike Sense\nCo-Founder\nGHOSTSignal\nmike@ghostsignal.cloud\nhttps://www.linkedin.com/in/mike-sense/";
+
+/** Plain-text part for a follow-up (body + Mike's signature). */
 export function coldOutreachFollowUpEmailText({
   name,
   message,
@@ -516,16 +526,14 @@ export function coldOutreachFollowUpEmailText({
 
 ${body}
 
-Let's Talk. Just hit reply. It goes straight to Mike, our co-founder.
-
-- The GHOSTSignal team
-We reached out because we think you'd be a great fit for our network. Not relevant? You can simply ignore this email.`;
+${MIKE_SIGNATURE_TEXT}`;
 }
 
 /**
  * Slim follow-up HTML: entrance lockup (logo + wordmark + morse) +
- * personal note + the same closing footer as the full cold email.
- * No invitation headline, roster, benefits, founders, XQ, or Snowdrift.
+ * personal note + Mike's email signature. No invitation headline,
+ * roster, benefits, founders, XQ, Snowdrift, or "Let's Talk" CTA
+ * (Mike is the sender — the signature is the close).
  */
 export function coldOutreachFollowUpEmailHtml({
   name,
@@ -546,6 +554,7 @@ export function coldOutreachFollowUpEmailHtml({
   const wordmark = `<span style="white-space: nowrap;"><span style="font-weight: 800;">GHOST</span><span style="font-weight: 300;">Signal</span></span>`;
   const morse = (width: string) =>
     `<div style="height: 3px; width: ${width}; border-radius: 2px; background-color: ${t.accent}; background-image: repeating-linear-gradient(90deg, ${t.accent} 0 5px, ${t.card} 5px 13px, ${t.accent} 13px 33px, ${t.card} 33px 41px, ${t.accent} 41px 46px, ${t.card} 46px 58px);"></div>`;
+  const signatureSrc = `${assetOrigin}${MIKE_SIGNATURE[theme]}`;
 
   return `<!DOCTYPE html>
 <html>
@@ -580,17 +589,11 @@ export function coldOutreachFollowUpEmailHtml({
             </td>
           </tr>
 
-          <!-- Footer (same close as the full cold email) -->
+          <!-- Mike's email signature (theme-matched GIF) -->
           <tr>
             <td style="padding: 28px 40px 30px;">
               <div style="border-top: 1px solid ${t.cardBorder};"></div>
-              <p style="margin: 20px 0 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.7;">
-                <strong style="color: ${t.textPrimary};">Let&rsquo;s Talk.</strong> Just hit reply. It goes straight to Mike, our co-founder.
-              </p>
-              <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.7;">
-                &mdash; The ${wordmark} team<br>
-                We reached out because we think you&rsquo;d be a great fit for our network. Not relevant? You can simply ignore this email.
-              </p>
+              <img src="${signatureSrc}" alt="Mike Sense, Co-Founder, GHOSTSignal" width="320" height="104" style="display: block; margin: 20px 0 0; width: 320px; max-width: 100%; height: auto; border: 0; border-radius: 8px;">
             </td>
           </tr>
 

@@ -118,8 +118,8 @@ export function FollowUpComposer({
         phase.kind === "sent"
           ? undefined
           : previewHtml
-            ? "Header + your note + footer — no full pitch body."
-            : `Nudge ${row.email}. Same branded shell, short personal note only.`
+            ? "Header + your note + Mike’s signature — no full pitch body."
+            : `Nudge ${row.email}. Branded header, your note, Mike’s signature.`
       }
     >
       {phase.kind === "sent" ? (
