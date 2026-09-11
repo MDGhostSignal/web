@@ -26,10 +26,10 @@ import { isUsTimezone } from "@/lib/timezone";
  *        canceled (see [id]/route.ts). Without it, the mail sends
  *        immediately and the row is status='sent' as before.
  *
- *        Repeat contact of an address that's already 'sent' or
- *        'scheduled' 409s unless `force` is set, so nobody gets
- *        double-cold-emailed by accident. Prior 'canceled'/'failed'
- *        rows don't block a fresh attempt.
+ *        Repeat contact of an address that's already 'sent',
+ *        'followup_sent', or 'scheduled' 409s unless `force` is set,
+ *        so nobody gets double-cold-emailed by accident. Prior
+ *        'canceled'/'failed' rows don't block a fresh attempt.
  *
  *        A Resend failure marks the row status 'failed' (visible in
  *        the list) and returns 502.
@@ -148,10 +148,11 @@ export async function POST(req: NextRequest) {
   }
 
   // --- Duplicate guard -------------------------------------------
-  // Only a live prior contact blocks — 'sent' (already emailed) or
-  // 'scheduled' (queued). Canceled/failed attempts don't count.
+  // Only a live prior contact blocks — 'sent' / 'followup_sent'
+  // (already emailed) or 'scheduled' (queued). Canceled/failed
+  // attempts don't count.
   const dupRes = await supabaseRest<Array<{ created_at: string | null; status: string }>>(
-    `cold_outreach?select=created_at,status&email=ilike.${encodeURIComponent(email)}&status=in.(sent,scheduled)&order=created_at.desc&limit=1`,
+    `cold_outreach?select=created_at,status&email=ilike.${encodeURIComponent(email)}&status=in.(sent,followup_sent,scheduled)&order=created_at.desc&limit=1`,
   );
   if (!dupRes.ok && dupRes.detail.includes("cold_outreach")) {
     return NextResponse.json(

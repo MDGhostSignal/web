@@ -43,19 +43,35 @@ type Filter = "scheduled" | "sent" | "all";
 
 const STATUS_VARIANT: Record<string, BadgeVariant> = {
   sent: "success",
+  followup_sent: "success",
   scheduled: "info",
   canceled: "neutral",
   failed: "danger",
 };
 
-function formatDate(iso: string | null): string {
+const STATUS_LABEL: Record<string, string> = {
+  sent: "sent",
+  followup_sent: "follow-up sent",
+  scheduled: "scheduled",
+  canceled: "canceled",
+  failed: "failed",
+};
+
+function isSentLike(status: string): boolean {
+  return status === "sent" || status === "followup_sent";
+}
+
+/** Date + local hour:minute for delivered rows (sent / follow-up). */
+function formatDateTime(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
@@ -175,7 +191,7 @@ export default function OutreachPage() {
   const counts = useMemo(
     () => ({
       scheduled: rows.filter((r) => r.status === "scheduled").length,
-      sent: rows.filter((r) => r.status === "sent").length,
+      sent: rows.filter((r) => isSentLike(r.status)).length,
       all: rows.length,
     }),
     [rows],
@@ -185,7 +201,7 @@ export default function OutreachPage() {
     if (filter === "all") return rows;
     if (filter === "scheduled")
       return rows.filter((r) => r.status === "scheduled");
-    return rows.filter((r) => r.status === "sent");
+    return rows.filter((r) => isSentLike(r.status));
   }, [rows, filter]);
 
   const cancelSend = useCallback(
@@ -250,7 +266,9 @@ export default function OutreachPage() {
       key: "status",
       header: "Status",
       cell: (r) => (
-        <Badge variant={STATUS_VARIANT[r.status] ?? "neutral"}>{r.status}</Badge>
+        <Badge variant={STATUS_VARIANT[r.status] ?? "neutral"}>
+          {STATUS_LABEL[r.status] ?? r.status}
+        </Badge>
       ),
     },
     {
@@ -271,7 +289,7 @@ export default function OutreachPage() {
             </div>
           );
         }
-        return formatDate(r.sent_at ?? r.created_at);
+        return formatDateTime(r.sent_at ?? r.created_at);
       },
       sort: (a, b) =>
         (a.scheduled_at ?? a.sent_at ?? a.created_at ?? "").localeCompare(
@@ -305,7 +323,7 @@ export default function OutreachPage() {
             </div>
           );
         }
-        if (r.status === "sent") {
+        if (isSentLike(r.status)) {
           return (
             <div className={styles.rowActions}>
               <Button

@@ -128,7 +128,7 @@ export function FollowUpComposer({
             Follow-up is on its way to <strong>{phase.email}</strong>.
           </p>
           <p className={styles.sentHint}>
-            It&apos;s filed in the list below as another sent reachout.
+            It&apos;s filed in the list below as &ldquo;follow-up sent&rdquo;.
           </p>
           <div className={styles.formActions}>
             <Button variant="primary" onClick={close}>

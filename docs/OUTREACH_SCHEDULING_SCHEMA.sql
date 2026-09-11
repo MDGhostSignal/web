@@ -28,11 +28,12 @@ alter table cold_outreach
   add column if not exists resend_id text;
 
 -- Status vocabulary now includes 'scheduled' (queued at Resend, not yet
--- delivered) and 'canceled' (Mike pulled it before it went out),
--- alongside the original 'sent' | 'failed'. Stored as free text (no
--- enum) to stay migration-light, matching the existing column.
+-- delivered), 'canceled' (Mike pulled it before it went out), and
+-- 'followup_sent' (slim nudge after an initial send), alongside the
+-- original 'sent' | 'failed'. Stored as free text (no enum) to stay
+-- migration-light, matching the existing column.
 comment on column cold_outreach.status is
-  'sent | scheduled | canceled | failed';
+  'sent | followup_sent | scheduled | canceled | failed';
 
 -- Find due / upcoming scheduled rows quickly (queue view + reconcile).
 create index if not exists cold_outreach_scheduled_idx

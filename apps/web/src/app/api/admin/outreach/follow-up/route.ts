@@ -14,10 +14,10 @@ import { supabaseRest } from "@/lib/supabase-admin";
  * to someone already on the outreach list. Always allowed to re-contact
  * (no 409 duplicate guard) — that's the point of a nudge.
  *
- * Files a fresh cold_outreach row (status sent/failed) so the overview
- * list shows the follow-up alongside the original. parentId is optional
- * metadata for future linking; not stored until a kind/parent migration
- * lands — accepted and ignored for now so the client can pass it.
+ * Files a fresh cold_outreach row (status followup_sent / failed) so
+ * the overview list shows the nudge distinctly from the initial send.
+ * sent_at is stamped at file time. parentId is accepted for future
+ * linking and ignored until a parent_id column lands.
  *
  * Cookie-gated by the proxy matcher "/api/admin/outreach/:path*".
  */
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       name,
       email,
       message: finalMessage,
-      status: "sent",
+      status: "followup_sent",
       sent_at: new Date().toISOString(),
     }),
     prefer: "return=representation",
