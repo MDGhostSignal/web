@@ -99,11 +99,13 @@ const STEPS: Step[] = [
         id: "2-review",
         text: (
           <>
-            You should have received a login from ART19 —{" "}
-            <strong>review how it&apos;s looking</strong> — formatting and
-            episode numbering should all look right. Your show is still
-            active on your old platform, pending the &lsquo;redirect&rsquo;
-            below. There&apos;s no rush to make the full switch.
+            Shortly you should receive a login email from ART19 —{" "}
+            <strong>login and review your show setup!</strong> (your podcast
+            will stay active on your current platform until you place the 301
+            redirect using the instructions below. If you publish a new episode
+            during this import window, let us know so we can sync your feed
+            before you switch over.) There&apos;s no rush, switch when
+            you&apos;re ready.
           </>
         ),
       },
