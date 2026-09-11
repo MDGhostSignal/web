@@ -16,6 +16,21 @@
   color: var(--admin-text-primary);
 }
 
+.followUpMeta {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--admin-text-primary);
+}
+
+.followUpEmail {
+  font-family: var(--admin-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
 /* --- Composer modal ------------------------------------------- */
 
 /* Wide compose card so the form breathes across the desktop instead of

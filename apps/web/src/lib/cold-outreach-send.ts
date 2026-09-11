@@ -1,6 +1,9 @@
 import {
   coldOutreachEmailHtml,
   coldOutreachEmailText,
+  coldOutreachFollowUpEmailHtml,
+  coldOutreachFollowUpEmailText,
+  coldOutreachFollowUpSubject,
   coldOutreachSubject,
   type OutreachAudience,
 } from "@/lib/cold-outreach-email";
@@ -13,6 +16,9 @@ import {
  * is, we pass Resend's native `scheduled_at`, and Resend holds the mail
  * and delivers it at that exact instant (up to 30 days out), returning
  * an email id we keep so the send can later be rescheduled or canceled.
+ *
+ * `variant: "followup"` swaps in the slim header+footer template (no
+ * pitch body) used for nudges from the outreach overview list.
  *
  * Sends from a human at the verified domain (not the noreply address)
  * so a cold reachout reads personal and replies land in Mike's inbox.
@@ -28,6 +34,8 @@ export type SendColdOutreachInput = {
   audience?: OutreachAudience;
   /** Absolute delivery instant. Omit to send immediately. */
   scheduledAt?: Date;
+  /** Full invitation email (default) or slim follow-up shell. */
+  variant?: "full" | "followup";
 };
 
 export type SendColdOutreachResult =
@@ -48,22 +56,36 @@ export async function sendColdOutreach(
     };
   }
 
+  const isFollowUp = input.variant === "followup";
   const payload: Record<string, unknown> = {
     from: process.env.OUTREACH_FROM || OUTREACH_FROM_DEFAULT,
     to: [input.email],
     reply_to: process.env.OUTREACH_REPLY_TO || OUTREACH_FROM_DEFAULT,
-    subject: coldOutreachSubject(input.name),
-    html: coldOutreachEmailHtml({
-      name: input.name,
-      message: input.message,
-      theme: input.theme,
-      audience: input.audience ?? "brand",
-    }),
-    text: coldOutreachEmailText({
-      name: input.name,
-      message: input.message,
-      audience: input.audience ?? "brand",
-    }),
+    subject: isFollowUp
+      ? coldOutreachFollowUpSubject(input.name)
+      : coldOutreachSubject(input.name),
+    html: isFollowUp
+      ? coldOutreachFollowUpEmailHtml({
+          name: input.name,
+          message: input.message,
+          theme: input.theme,
+        })
+      : coldOutreachEmailHtml({
+          name: input.name,
+          message: input.message,
+          theme: input.theme,
+          audience: input.audience ?? "brand",
+        }),
+    text: isFollowUp
+      ? coldOutreachFollowUpEmailText({
+          name: input.name,
+          message: input.message,
+        })
+      : coldOutreachEmailText({
+          name: input.name,
+          message: input.message,
+          audience: input.audience ?? "brand",
+        }),
   };
 
   // Resend native scheduling — ISO 8601 UTC. Only set for future sends.

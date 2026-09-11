@@ -2,13 +2,16 @@
  * Cold-outreach email — shared template (brand or creator prospecting).
  *
  * Single source of truth for Mike's cold reachout email so the send
- * route (/api/admin/outreach) and the preview endpoint
+ * route (/api/admin/outreach), follow-up route
+ * (/api/admin/outreach/follow-up), and the preview endpoint
  * (/api/admin/outreach/preview) can never drift apart — same pattern
  * as lib/studio-invite-email.ts. Pure string building — safe to import
  * from client components (the composer prefills the default message).
  *
  * `audience` ("brand" | "creator") swaps How-we-do-it benefits + the
  * pull-quote to match /invitation vs /invitation/creators.
+ * Follow-ups use coldOutreachFollowUpEmailHtml — header lockup + note
+ * + footer only (no pitch body).
  *
  * Section order — mirrors the invitation pages (2026-08-17 redesign):
  *   1. spinning cloud glyph + wordmark, then the invitation headline
@@ -461,6 +464,123 @@ ${FOUNDERS.map(
           </tr>
 
           <!-- Footer -->
+          <tr>
+            <td style="padding: 28px 40px 30px;">
+              <div style="border-top: 1px solid ${t.cardBorder};"></div>
+              <p style="margin: 20px 0 0; font-size: 14px; color: ${t.textSecondary}; line-height: 1.7;">
+                <strong style="color: ${t.textPrimary};">Let&rsquo;s Talk.</strong> Just hit reply. It goes straight to Mike, our co-founder.
+              </p>
+              <p style="margin: 12px 0 0; font-size: 12px; color: ${t.textMuted}; line-height: 1.7;">
+                &mdash; The ${wordmark} team<br>
+                We reached out because we think you&rsquo;d be a great fit for our network. Not relevant? You can simply ignore this email.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Follow-up — same branded shell, no pitch body                      */
+/* ------------------------------------------------------------------ */
+
+/** Soft default Mike can edit before sending a nudge. */
+export function defaultFollowUpMessage(): string {
+  return (
+    "Just bumping this to the top of your inbox — happy to share more " +
+    "whenever it's useful. No rush either way."
+  );
+}
+
+export function coldOutreachFollowUpSubject(name: string): string {
+  return name
+    ? `Following up, ${name}`
+    : `Following up from GHOSTSignal`;
+}
+
+/** Plain-text part for a follow-up (headerless; body + footer sign-off). */
+export function coldOutreachFollowUpEmailText({
+  name,
+  message,
+}: {
+  name: string;
+  message: string;
+}): string {
+  const body = message.trim() || defaultFollowUpMessage();
+  return `${greeting(name)}
+
+${body}
+
+Let's Talk. Just hit reply. It goes straight to Mike, our co-founder.
+
+- The GHOSTSignal team
+We reached out because we think you'd be a great fit for our network. Not relevant? You can simply ignore this email.`;
+}
+
+/**
+ * Slim follow-up HTML: entrance lockup (logo + wordmark + morse) +
+ * personal note + the same closing footer as the full cold email.
+ * No invitation headline, roster, benefits, founders, XQ, or Snowdrift.
+ */
+export function coldOutreachFollowUpEmailHtml({
+  name,
+  message,
+  assetOrigin = PROD_ORIGIN,
+  theme = "light",
+}: {
+  name: string;
+  message: string;
+  assetOrigin?: string;
+  theme?: OutreachTheme;
+}): string {
+  const t = THEMES[theme];
+  const hello = name ? `Hello ${escapeHtml(name)},` : "Hello,";
+  const rawMessage = message.trim() || defaultFollowUpMessage();
+  const body = textToHtml(rawMessage);
+  const preview = escapeHtml(rawMessage.replace(/\s+/g, " ").slice(0, 140));
+  const wordmark = `<span style="white-space: nowrap;"><span style="font-weight: 800;">GHOST</span><span style="font-weight: 300;">Signal</span></span>`;
+  const morse = (width: string) =>
+    `<div style="height: 3px; width: ${width}; border-radius: 2px; background-color: ${t.accent}; background-image: repeating-linear-gradient(90deg, ${t.accent} 0 5px, ${t.card} 5px 13px, ${t.accent} 13px 33px, ${t.card} 33px 41px, ${t.accent} 41px 46px, ${t.card} 46px 58px);"></div>`;
+
+  return `<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; background-color: ${t.pageBg}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: ${t.pageBg}; opacity: 0;">${preview}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.pageBg}" style="background-color: ${t.pageBg};">
+    <tr>
+      <td align="center" style="padding: 44px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="${t.card}" style="max-width: 584px; background-color: ${t.card}; border: 1px solid ${t.cardBorder}; border-radius: 18px; box-shadow: ${t.cardShadow};">
+
+          <!-- Entrance: spinning cloud glyph + wordmark -->
+          <tr>
+            <td align="center" style="padding: 34px 40px 0;">
+              <img src="${assetOrigin}${t.logoSpin}" alt="GHOSTSignal" width="96" height="96" style="display: block; width: 96px; height: 96px;">
+              <p style="margin: 8px 0 0; font-size: 21px; letter-spacing: -0.02em; color: ${t.textPrimary};">${wordmark}</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 22px 40px 0;">
+              ${morse("220px")}
+            </td>
+          </tr>
+
+          <!-- Personal follow-up note -->
+          <tr>
+            <td style="padding: 28px 40px 0;">
+              <h2 style="margin: 0 0 12px; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: ${t.textPrimary}; line-height: 1.3;">${hello}</h2>
+              <p style="margin: 0; font-size: 15px; color: ${t.textSecondary}; line-height: 1.75;">
+                ${body}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer (same close as the full cold email) -->
           <tr>
             <td style="padding: 28px 40px 30px;">
               <div style="border-top: 1px solid ${t.cardBorder};"></div>

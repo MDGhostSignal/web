@@ -15,6 +15,7 @@ import {
 } from "@/components/admin";
 import { formatInZone, localTimeZone } from "@/lib/timezone";
 
+import { FollowUpComposer } from "./components/FollowUpComposer";
 import { OutreachComposer } from "./components/OutreachComposer";
 import { RescheduleModal } from "./components/RescheduleModal";
 import styles from "./outreach.module.css";
@@ -87,6 +88,7 @@ export default function OutreachPage() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [rescheduling, setRescheduling] = useState<OutreachRow | null>(null);
+  const [followingUp, setFollowingUp] = useState<OutreachRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(0);
   const [reconciling, setReconciling] = useState(false);
@@ -280,27 +282,45 @@ export default function OutreachPage() {
       key: "actions",
       header: "",
       variant: "nowrap",
-      cell: (r) =>
-        r.status === "scheduled" ? (
-          <div className={styles.rowActions}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setRescheduling(r)}
-              disabled={busyId === r.id}
-            >
-              Reschedule
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => void cancelSend(r)}
-              disabled={busyId === r.id}
-            >
-              {busyId === r.id ? "…" : "Cancel"}
-            </Button>
-          </div>
-        ) : null,
+      cell: (r) => {
+        if (r.status === "scheduled") {
+          return (
+            <div className={styles.rowActions}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setRescheduling(r)}
+                disabled={busyId === r.id}
+              >
+                Reschedule
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => void cancelSend(r)}
+                disabled={busyId === r.id}
+              >
+                {busyId === r.id ? "…" : "Cancel"}
+              </Button>
+            </div>
+          );
+        }
+        if (r.status === "sent") {
+          return (
+            <div className={styles.rowActions}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFollowingUp(r)}
+                disabled={busyId === r.id}
+              >
+                Follow up
+              </Button>
+            </div>
+          );
+        }
+        return null;
+      },
     },
   ];
 
@@ -308,7 +328,7 @@ export default function OutreachPage() {
     <div className={styles.page}>
       <PageHeader
         title="Cold Outreach"
-        subtitle="Cold prospecting for brands or creators — send a personalized email now, or schedule it to land at the perfect US inbox moment. Audience choice swaps the three benefits and quote."
+        subtitle="Cold prospecting for brands or creators — send now or schedule for a US inbox moment. On sent rows, Follow up sends a short header+footer nudge with your own note."
         actions={
           <Button variant="primary" onClick={() => setComposerOpen(true)}>
             + New reachout
@@ -413,6 +433,14 @@ export default function OutreachPage() {
           )}
           onClose={() => setRescheduling(null)}
           onDone={() => setRefresh((n) => n + 1)}
+        />
+      )}
+
+      {followingUp && (
+        <FollowUpComposer
+          row={followingUp}
+          onClose={() => setFollowingUp(null)}
+          onSent={() => setRefresh((n) => n + 1)}
         />
       )}
     </div>
