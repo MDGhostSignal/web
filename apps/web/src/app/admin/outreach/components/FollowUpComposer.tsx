@@ -3,7 +3,10 @@
 import { useState } from "react";
 
 import { Button, Modal } from "@/components/admin";
-import { defaultFollowUpMessage } from "@/lib/cold-outreach-email";
+import {
+  coldOutreachFollowUpSubject,
+  defaultFollowUpMessage,
+} from "@/lib/cold-outreach-email";
 
 import styles from "../outreach.module.css";
 
@@ -14,8 +17,8 @@ type Phase =
 
 /**
  * Slim follow-up composer — prefilled name/email from an existing
- * reachout row. Mike writes a short note; the email uses only the
- * branded header lockup + footer (no full pitch body).
+ * reachout row. Mike edits subject + a short note; the email uses
+ * only the branded header lockup + signature + site ad.
  */
 export function FollowUpComposer({
   row,
@@ -27,6 +30,9 @@ export function FollowUpComposer({
   onSent: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "form" });
+  const [subject, setSubject] = useState(() =>
+    coldOutreachFollowUpSubject(row.name),
+  );
   const [message, setMessage] = useState(defaultFollowUpMessage());
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
@@ -40,6 +46,10 @@ export function FollowUpComposer({
   }
 
   async function send() {
+    if (!subject.trim()) {
+      setError("Add a subject line before sending.");
+      return;
+    }
     if (!message.trim()) {
       setError("Write a short follow-up note before sending.");
       return;
@@ -53,6 +63,7 @@ export function FollowUpComposer({
         body: JSON.stringify({
           name: row.name,
           email: row.email,
+          subject,
           message,
           theme,
           parentId: row.id,
@@ -138,6 +149,10 @@ export function FollowUpComposer({
         </div>
       ) : previewHtml ? (
         <div className={styles.preview}>
+          <p className={styles.previewSubject}>
+            <span className={styles.previewSubjectLabel}>Subject</span>
+            {subject.trim() || coldOutreachFollowUpSubject(row.name)}
+          </p>
           <div className={styles.previewThemeRow}>
             <Button
               variant={theme === "light" ? "primary" : "ghost"}
@@ -195,6 +210,22 @@ export function FollowUpComposer({
               <strong>{row.name || "—"}</strong>
               <span className={styles.followUpEmail}>{row.email}</span>
             </p>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.fieldLabel} htmlFor="followup-subject">
+              Subject
+            </label>
+            <input
+              id="followup-subject"
+              className={styles.input}
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              required
+              disabled={phase.kind === "sending"}
+              autoComplete="off"
+            />
           </div>
 
           <div className={styles.field}>

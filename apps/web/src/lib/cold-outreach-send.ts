@@ -36,6 +36,8 @@ export type SendColdOutreachInput = {
   scheduledAt?: Date;
   /** Full invitation email (default) or slim follow-up shell. */
   variant?: "full" | "followup";
+  /** Override subject (follow-ups: Mike edits this in the composer). */
+  subject?: string;
 };
 
 export type SendColdOutreachResult =
@@ -57,13 +59,14 @@ export async function sendColdOutreach(
   }
 
   const isFollowUp = input.variant === "followup";
+  const defaultSubject = isFollowUp
+    ? coldOutreachFollowUpSubject(input.name)
+    : coldOutreachSubject(input.name);
   const payload: Record<string, unknown> = {
     from: process.env.OUTREACH_FROM || OUTREACH_FROM_DEFAULT,
     to: [input.email],
     reply_to: process.env.OUTREACH_REPLY_TO || OUTREACH_FROM_DEFAULT,
-    subject: isFollowUp
-      ? coldOutreachFollowUpSubject(input.name)
-      : coldOutreachSubject(input.name),
+    subject: input.subject?.trim() || defaultSubject,
     html: isFollowUp
       ? coldOutreachFollowUpEmailHtml({
           name: input.name,
