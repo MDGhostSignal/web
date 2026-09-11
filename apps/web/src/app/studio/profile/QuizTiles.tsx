@@ -1,8 +1,9 @@
 import Link from "next/link";
 
+import { formatXqRqSummaryTitle } from "@/lib/rq/direction-adjective";
+import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 import { CHARACTERS } from "@/lib/xq/characters";
 import type { ArchetypeCode } from "@/lib/xq/constants";
-import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
 
 import styles from "../studio.module.css";
 import welcomeStyles from "../welcome/welcome.module.css";
@@ -69,7 +70,15 @@ export function XqTile({ summary }: { summary: StudioXqSummary | null }) {
   );
 }
 
-export function RqTile({ summary }: { summary: StudioRqSummary | null }) {
+export function RqTile({
+  summary,
+  xqSummary = null,
+}: {
+  summary: StudioRqSummary | null;
+  /** When XQ is also present, summary title becomes "Architect Radiant"
+   *  instead of the three-word RQ name. Detail views keep three-word. */
+  xqSummary?: StudioXqSummary | null;
+}) {
   const done = summary?.code != null;
   if (!done) {
     return (
@@ -82,12 +91,18 @@ export function RqTile({ summary }: { summary: StudioRqSummary | null }) {
     );
   }
 
+  const pairedTitle = formatXqRqSummaryTitle(
+    xqSummary?.archetypeName,
+    summary.name,
+  );
+  const title = pairedTitle ?? summary.name ?? "Read";
+
   return (
     <section className={styles.quizTile} aria-label="Your RQ result">
       <span className={styles.quizTileEyebrow}>Your RQ</span>
       <div className={styles.quizTileHead}>
         <span className={styles.quizChip}>{summary.code}</span>
-        <span className={styles.quizTileTitle}>{summary.name ?? "Read"}</span>
+        <span className={styles.quizTileTitle}>{title}</span>
       </div>
       {summary.clarityLabel && (
         <span className={styles.quizClarity}>

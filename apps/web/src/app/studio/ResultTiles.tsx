@@ -8,10 +8,11 @@ import {
   XQSpectrumMap,
   type SpectrumPosition,
 } from "@/components/xq/XQSpectrumMap";
-import { CHARACTERS } from "@/lib/xq/characters";
-import { ARCHETYPES, type ArchetypeCode } from "@/lib/xq/constants";
+import { formatXqRqSummaryTitle } from "@/lib/rq/direction-adjective";
 import type { RQResult } from "@/lib/rq/scoring";
 import type { StudioRqSummary, StudioXqSummary } from "@/lib/studio-data";
+import { CHARACTERS } from "@/lib/xq/characters";
+import { ARCHETYPES, type ArchetypeCode } from "@/lib/xq/constants";
 
 import { RqProfileCard } from "./RqProfileCard";
 import { XqProfileCard } from "./XqProfileCard";
@@ -112,6 +113,14 @@ export function ResultTiles({
   const rqName = rqSummary?.name ?? null;
   const rqClarity = rqSummary?.clarityLabel ?? null;
   const rqDone = Boolean(rqCode);
+  // Paired summary only: when both quizzes exist, show "Architect Radiant"
+  // instead of the three-word name. Detail modal still uses three-word.
+  const xqNameForCombo =
+    xqName ?? (xqCode ? ARCHETYPES[xqCode]?.name ?? null : null);
+  const rqSummaryTitle =
+    (xqDone && rqName
+      ? formatXqRqSummaryTitle(xqNameForCombo, rqName)
+      : null) ?? rqName;
 
   const xqPosition = xqSummary ? positionFromLetters(xqSummary.axes) : undefined;
   const rqResult = toRqResult(rqSummary);
@@ -161,7 +170,9 @@ export function ResultTiles({
             <>
               <div className={styles.tileBody}>
                 <div className={styles.rqCode}>{rqCode}</div>
-                {rqName && <div className={styles.name}>{rqName}</div>}
+                {rqSummaryTitle && (
+                  <div className={styles.name}>{rqSummaryTitle}</div>
+                )}
                 {rqClarity && (
                   <span className={styles.claritySmall}>
                     {rqClarity} signal

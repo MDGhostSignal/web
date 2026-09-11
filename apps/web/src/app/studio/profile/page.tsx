@@ -104,7 +104,7 @@ export default async function StudioProfilePage() {
             {/* XQ / RQ tiles — persistent fill-me reminders until each
                 assessment exists, then compact result summaries. */}
             <XqTile summary={xqSummary} />
-            <RqTile summary={rqSummary} />
+            <RqTile summary={rqSummary} xqSummary={xqSummary} />
           </section>
 
           <section className={styles.editPanel} aria-label="Edit your profile">

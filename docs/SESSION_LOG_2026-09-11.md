@@ -60,7 +60,14 @@
   - second: `bd94fe49-6af9-47e7-85b4-2e5bf6e53e87` (`followup_sent` + `sent_at` confirmed)
 - Local dev server on `:3000` used for login + API sends
 
+## XQ + RQ match summary (careful v1)
+- Documented rule: `docs/XQ_RQ_MATCH_SUMMARY.md` — keep three-word data; paired Studio summary shows `{ArchetypeNoun} {DirectionAdjective}`.
+- Adjective lookup from Jeremy sheet (216 rows) via stored three-word name.
+- Wired: `/studio/profile` RqTile + `/studio/results` ResultTiles RQ title when XQ also present.
+- Unchanged: computeRQ, rq_name storage, detail modals, admin, matching.
+
 ## Open / next
 - Optional: `kind` / `parent_id` columns to link follow-ups to the parent reachout in the list.
 - Optional: backfill the first test row’s status from `sent` → `followup_sent`.
+- Later: reuse `formatXqRqSummaryTitle` on roster / admin summaries.
 - Untracked local verify scripts / `production/` dumps left uncommitted (pre-existing; not part of today’s product work).
