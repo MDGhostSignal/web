@@ -17,8 +17,11 @@ import {
 import { MEMBER_PHASE_LABELS, type Member, type MemberPhase } from "@/lib/members";
 import type { SocialPostRow } from "@/lib/social-posts-types";
 
+import type { SubstackMetricsRow } from "@/app/api/admin/substack-metrics/route";
+
 import { DashboardHero } from "./components/DashboardHero";
 import { HomeKpiCard } from "./components/HomeKpiCard";
+import { SubstackMetricsModal } from "./components/SubstackMetricsModal";
 import styles from "./admin-home.module.css";
 
 type LoadState<T> =
@@ -31,11 +34,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const THIRTY_DAYS_MS = 30 * DAY_MS;
 
 /**
- * /admin — Dashboard home. Three KPI cards that aggregate data from
- * the rest of the admin: Mercury cash position, due social posts,
- * lead pipeline counts. No new API endpoints — each card uses an
- * existing route and renders independently (one card erroring
- * doesn't block the others).
+ * /admin — Dashboard home. KPI cards that aggregate data from the rest
+ * of the admin (cash, social, ART19, contacts) plus a manual Substack
+ * metrics card. Each card loads independently so one failure doesn't
+ * blank the dashboard.
  */
 export default function AdminHome() {
   const [finance, setFinance] = useState<
@@ -60,6 +62,11 @@ export default function AdminHome() {
       listens30d: { total: number; hasData: boolean };
     }>
   >({ kind: "loading" });
+
+  const [substack, setSubstack] = useState<
+    LoadState<{ metrics: SubstackMetricsRow | null; tableMissing: boolean }>
+  >({ kind: "loading" });
+  const [substackModalOpen, setSubstackModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -177,6 +184,39 @@ export default function AdminHome() {
       } catch (err) {
         if (!cancelled) {
           setArt19({
+            kind: "error",
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    })();
+
+    // Substack: latest manual snapshot (subscribers + total views).
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/substack-metrics", {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as {
+          ok: boolean;
+          tableMissing?: boolean;
+          metrics: SubstackMetricsRow | null;
+          error?: string;
+        };
+        if (!json.ok) throw new Error(json.error || "Failed to load");
+        if (!cancelled) {
+          setSubstack({
+            kind: "ready",
+            data: {
+              metrics: json.metrics,
+              tableMissing: Boolean(json.tableMissing),
+            },
+          });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSubstack({
             kind: "error",
             message: err instanceof Error ? err.message : String(err),
           });
@@ -439,18 +479,117 @@ export default function AdminHome() {
             ) : null
           }
         />
+
+        {/* Substack — manual subscriber + views snapshot */}
+        <div className={`${styles.card} ${styles.cardStatic}`}>
+          <div className={styles.cardLabel}>Substack</div>
+
+          {substack.kind === "loading" && (
+            <div className={styles.cardSkeleton} aria-hidden="true" />
+          )}
+
+          {substack.kind === "error" && (
+            <>
+              <div className={styles.cardValueError}>—</div>
+              <div className={styles.cardError}>{substack.message}</div>
+            </>
+          )}
+
+          {substack.kind === "ready" && substack.data.tableMissing && (
+            <>
+              <div className={styles.cardValueError}>—</div>
+              <div className={styles.cardSetupHint}>
+                Run <code>docs/SUBSTACK_METRICS_SCHEMA.sql</code> in Supabase,
+                then refresh.
+              </div>
+            </>
+          )}
+
+          {substack.kind === "ready" && !substack.data.tableMissing && (
+            <>
+              <div className={styles.cardValue}>
+                {substack.data.metrics
+                  ? formatCompactCount(substack.data.metrics.subscriber_count)
+                  : "—"}
+              </div>
+              <div className={styles.cardSub}>
+                {substack.data.metrics ? (
+                  <>
+                    subscribers ·{" "}
+                    <span className={styles.cardSubDim}>
+                      updated{" "}
+                      {formatRelativeTimePast(substack.data.metrics.recorded_at)}
+                    </span>
+                  </>
+                ) : (
+                  "No snapshot yet — enter the current numbers."
+                )}
+              </div>
+              <div className={styles.cardBody}>
+                <div className={styles.financeNet}>
+                  <span className={styles.financeNetLabel}>Total views</span>
+                  <span className={styles.financeNetNeutral}>
+                    {substack.data.metrics
+                      ? formatCompactCount(substack.data.metrics.total_views)
+                      : "—"}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className={styles.cardActions}>
+            <button
+              type="button"
+              className={styles.cardActionBtn}
+              onClick={() => setSubstackModalOpen(true)}
+              disabled={
+                substack.kind === "loading" ||
+                (substack.kind === "ready" && substack.data.tableMissing)
+              }
+            >
+              Update →
+            </button>
+            <a
+              className={styles.cardActionLink}
+              href="https://snowdriftghostsignal.substack.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open Substack
+            </a>
+          </div>
+        </div>
       </div>
+
+      {substackModalOpen && (
+        <SubstackMetricsModal
+          open={substackModalOpen}
+          initial={
+            substack.kind === "ready" ? substack.data.metrics : null
+          }
+          onClose={() => setSubstackModalOpen(false)}
+          onSaved={(row) => {
+            setSubstack({
+              kind: "ready",
+              data: { metrics: row, tableMissing: false },
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
 
-/** Pretty-print large listen counts (1.2M / 845K / 230). Used by the
- *  ART19 KPI card so a value of 1,234,567 renders as "1.2M" instead
- *  of overflowing the card width. */
-function formatArt19Listens(n: number): string {
+/** Pretty-print large counts (1.2M / 845K / 230). Used by ART19 + Substack. */
+function formatCompactCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return n.toLocaleString();
+}
+
+function formatArt19Listens(n: number): string {
+  return formatCompactCount(n);
 }
 
 function formatDueTime(iso: string): string {

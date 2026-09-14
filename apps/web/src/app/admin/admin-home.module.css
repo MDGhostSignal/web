@@ -118,6 +118,65 @@
   color: var(--admin-error-text);
 }
 
+/* --- Substack card (actionable, not a nav link) ------------------- */
+
+.cardStatic {
+  cursor: default;
+}
+
+.cardStatic:hover {
+  transform: none;
+}
+
+.cardActions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+}
+
+.cardActionBtn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: var(--admin-text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-accent);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 150ms ease;
+}
+
+.cardActionBtn:hover,
+.cardActionBtn:focus-visible {
+  opacity: 1;
+  outline: none;
+}
+
+.cardActionLink {
+  font-size: var(--admin-text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  text-decoration: none;
+}
+
+.cardActionLink:hover,
+.cardActionLink:focus-visible {
+  color: var(--admin-accent);
+  outline: none;
+}
+
+.cardSetupHint {
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-secondary);
+  line-height: 1.45;
+}
+
 .cardSkeleton {
   height: 36px;
   width: 60%;

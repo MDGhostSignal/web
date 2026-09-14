@@ -1,0 +1,83 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-3) var(--admin-space-4);
+}
+
+@media (max-width: 560px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroupFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--admin-text-base);
+  font-weight: var(--admin-weight-medium);
+  color: var(--admin-text-secondary);
+}
+
+.input,
+.textarea {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  font-family: var(--admin-font);
+  font-size: var(--admin-text-md);
+  color: var(--admin-text-primary);
+  background: var(--admin-surface-1);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  transition:
+    border-color var(--admin-transition-base),
+    background var(--admin-transition-base);
+}
+
+.input {
+  font-family: var(--admin-font-mono);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-2);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-text-muted);
+  line-height: 1.45;
+}
+
+.error {
+  margin: 0;
+  font-size: var(--admin-text-sm);
+  color: var(--admin-error-text);
+}
