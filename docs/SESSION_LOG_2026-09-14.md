@@ -3,13 +3,16 @@
 ## Outcomes
 
 - Built shareable Instagram Reels partner guide at `/guides/instagram-reels` (full-viewport hero + god rays, creative-magic section, 7-tile checklist with modal + checkable How items, quick reference, centered Why section, branded GHOSTSignal treatment).
-- Added Substack metrics to admin Dashboard home: schema, GET/PUT API, Update modal, KPI card (subscribers + total views, manual snapshots).
+- Added Substack analytics tile on admin Dashboard: Subscribers/Views tabs, 30d/90d/All-time range, summary + delta/% , full-width line chart; daily series from CSV exports; all-time views use official Substack lifetime total (seeded ~951), not CSV sum.
 
 ## Files touched
 
 - `apps/web/src/app/guides/instagram-reels/` (layout, page, CSS)
 - `docs/SUBSTACK_METRICS_SCHEMA.sql`
+- `docs/SUBSTACK_DAILY_SEED.sql`
+- `apps/web/scripts/build-substack-daily-seed.mjs`
 - `apps/web/src/app/api/admin/substack-metrics/route.ts`
+- `apps/web/src/app/admin/components/SubstackAnalyticsCard.tsx` (+ CSS)
 - `apps/web/src/app/admin/components/SubstackMetricsModal.tsx` (+ CSS)
 - `apps/web/src/app/admin/page.tsx`
 - `apps/web/src/app/admin/admin-home.module.css`
@@ -26,5 +29,5 @@
 
 ## Open / next
 
-- Run `docs/SUBSTACK_METRICS_SCHEMA.sql` in Supabase, then Update the Substack card on `/admin`.
+- Run `docs/SUBSTACK_DAILY_SEED.sql` in Supabase (daily series + lifetime views 951), then refresh `/admin`.
 - Share `/guides/instagram-reels` with creators as needed (`noindex`).

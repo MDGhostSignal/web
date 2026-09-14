@@ -11,29 +11,31 @@ import styles from "./SubstackMetricsModal.module.css";
 type Props = {
   open: boolean;
   initial: SubstackMetricsRow | null;
+  /** Views already recorded for today (daily series), if any. */
+  viewsToday?: number | null;
   onClose: () => void;
   onSaved: (row: SubstackMetricsRow) => void;
 };
 
 /**
  * Manual Substack metrics updater for the Dashboard home card.
- * Saves by inserting a new snapshot (append-only history).
- *
- * Parent should remount this when opening (e.g. `{open && <Modal…/>}`)
- * so the form state snapshots `initial` via useState initializers —
- * avoids react-hooks/set-state-in-effect.
+ * Upserts today's daily point + optional official lifetime views total.
  */
 export function SubstackMetricsModal({
   open,
   initial,
+  viewsToday = null,
   onClose,
   onSaved,
 }: Props) {
   const [subscribers, setSubscribers] = useState(
     initial ? String(initial.subscriber_count) : "",
   );
-  const [views, setViews] = useState(
+  const [lifetimeViews, setLifetimeViews] = useState(
     initial ? String(initial.total_views) : "",
+  );
+  const [dayViews, setDayViews] = useState(
+    viewsToday != null ? String(viewsToday) : "0",
   );
   const [note, setNote] = useState(initial?.note ?? "");
   const [saving, setSaving] = useState(false);
@@ -49,7 +51,8 @@ export function SubstackMetricsModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subscriber_count: subscribers,
-          total_views: views,
+          views: dayViews,
+          lifetime_views: lifetimeViews,
           note: note.trim() || null,
         }),
       });
@@ -82,7 +85,7 @@ export function SubstackMetricsModal({
       dismissible={!saving}
       size="md"
       title="Update Substack metrics"
-      subtitle="Enter the current numbers from Substack. Each save creates a new snapshot."
+      subtitle="Subscribers and lifetime views should match Substack Stats. Daily views feed the chart."
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
@@ -91,9 +94,13 @@ export function SubstackMetricsModal({
           <Button
             variant="primary"
             onClick={() => void save()}
-            disabled={saving || subscribers.trim() === "" || views.trim() === ""}
+            disabled={
+              saving ||
+              subscribers.trim() === "" ||
+              lifetimeViews.trim() === ""
+            }
           >
-            {saving ? "Saving…" : "Save snapshot"}
+            {saving ? "Saving…" : "Save"}
           </Button>
         </>
       }
@@ -116,7 +123,7 @@ export function SubstackMetricsModal({
             />
           </label>
           <label className={styles.formGroup}>
-            <span className={styles.label}>Total views</span>
+            <span className={styles.label}>Lifetime views (Substack)</span>
             <input
               className={styles.input}
               type="number"
@@ -124,26 +131,40 @@ export function SubstackMetricsModal({
               min={0}
               step={1}
               required
-              value={views}
-              onChange={(e) => setViews(e.target.value)}
-              placeholder="0"
+              value={lifetimeViews}
+              onChange={(e) => setLifetimeViews(e.target.value)}
+              placeholder="951"
             />
           </label>
         </div>
+        <label className={styles.formGroupFull}>
+          <span className={styles.label}>Views today (optional)</span>
+          <input
+            className={styles.input}
+            type="number"
+            inputMode="numeric"
+            min={0}
+            step={1}
+            value={dayViews}
+            onChange={(e) => setDayViews(e.target.value)}
+            placeholder="0"
+          />
+        </label>
         <label className={styles.formGroupFull}>
           <span className={styles.label}>Note (optional)</span>
           <textarea
             className={styles.textarea}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. Pulled from Substack stats on March 12"
+            placeholder="e.g. From Substack Stats"
             rows={3}
             maxLength={500}
           />
         </label>
         <p className={styles.hint}>
-          Tip: copy these from Substack → Stats (subscribers and lifetime /
-          total views).
+          Lifetime views drive the Views → All time number. The traffic CSV
+          daily series is only for the chart shape — it can disagree with
+          Substack&apos;s lifetime total.
         </p>
         {error && <p className={styles.error}>{error}</p>}
       </form>
