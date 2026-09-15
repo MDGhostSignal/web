@@ -1,0 +1,6 @@
+node_modules/
+unpacked/
+slides/
+*.log
+*.pdf
+wifi-*.log

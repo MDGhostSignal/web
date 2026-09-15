@@ -1,0 +1,6 @@
+Windows Registry Editor Version 5.00
+
+; Intel Dual Band Wireless-AC 7265 — Prefer 5GHz band
+; 0 = No Preference, 1 = Prefer 2.4GHz, 2 = Prefer 5GHz
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\0000]
+"RoamingPreferredBandType"=dword:00000002
