@@ -164,119 +164,198 @@ function addFooterWide(slide, page, dark = false) {
 
 // ─────────────────────────────────────────────
 // 1 · COVER
+// Live web cover uses invitation cloud video + white-backed spin GIF.
+// PPTX uses the invitation poster still (video cannot embed here).
 // ─────────────────────────────────────────────
 {
   const slide = pres.addSlide();
-  slide.background = { color: C.ink };
+  const COVER_POSTER = path.join(
+    ROOT,
+    "apps/web/public/videos/invitation-hero-poster.jpg"
+  );
+  const SPIN_WHITE = path.join(ROOT, "apps/web/public/images/email/logo-spin.gif");
 
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 9.6,
-    y: 0,
-    w: 3.733,
-    h: H,
-    fill: { color: C.charcoal },
-    line: { color: C.charcoal, width: 0 },
-  });
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 9.6,
-    y: 0,
-    w: 0.16,
-    h: H,
-    fill: { color: C.green },
-    line: { color: C.green, width: 0 },
-  });
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 11.5,
-    y: 0,
-    w: 1.833,
-    h: 2.4,
-    fill: { color: C.wine },
-    line: { color: C.wine, width: 0 },
-  });
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 10.6,
-    y: 4.6,
-    w: 2.733,
-    h: 2.9,
-    fill: { color: C.terracotta },
-    line: { color: C.terracotta, width: 0 },
-  });
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 9.85,
-    y: 2.6,
-    w: 1.3,
-    h: 1.6,
-    fill: { color: C.saffron },
-    line: { color: C.saffron, width: 0 },
-  });
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 12.2,
-    y: 2.85,
-    w: 1.0,
-    h: 1.2,
-    fill: { color: C.pink },
-    line: { color: C.pink, width: 0 },
-  });
-
-  if (fs.existsSync(LOGO_WHITE)) {
+  if (fs.existsSync(COVER_POSTER)) {
     slide.addImage({
-      path: LOGO_WHITE,
-      x: M,
-      y: 0.55,
-      w: 2.6,
-      h: 0.52,
-      altText: "GHOSTSignal",
+      path: COVER_POSTER,
+      x: 0,
+      y: 0,
+      w: W,
+      h: H,
+      altText: "Cloud field",
+    });
+  } else {
+    slide.background = { color: "F5F0E8" };
+  }
+
+  // Soft dark lift behind the bottom-left white type stack
+  slide.addShape(pres.shapes.OVAL, {
+    x: 0.1,
+    y: 4.0,
+    w: 7.4,
+    h: 3.3,
+    fill: { color: "141414", transparency: 45 },
+    line: { color: "141414", transparency: 100, width: 0 },
+  });
+
+  // 100px ≈ 100/144 ≈ 0.694" at 144dpi (this deck’s inch grid)
+  const inset = 100 / 144;
+
+  if (fs.existsSync(SPIN_WHITE)) {
+    slide.addImage({
+      path: SPIN_WHITE,
+      x: inset,
+      y: inset,
+      w: 0.95,
+      h: 0.95,
+      altText: "GHOSTSignal spinning cloud",
     });
   }
 
-  slide.addText("BRAND PROPOSAL  ·  V1", {
-    x: M,
-    y: 2.15,
+  slide.addText("BRAND PROPOSAL", {
+    x: inset,
+    y: H - inset - 1.45,
     w: 8,
-    h: 0.4,
+    h: 0.35,
     fontFace: FONT,
     fontSize: 16,
-    color: C.green,
+    bold: true,
+    color: C.white,
+    align: "left",
     charSpacing: 4,
     margin: 0,
   });
 
   slide.addText("Holly Mackle", {
-    x: M,
-    y: 2.65,
+    x: inset,
+    y: H - inset - 1.05,
     w: 8,
-    h: 1.0,
-    fontFace: FONT_DISPLAY,
-    fontSize: 60,
+    h: 0.55,
+    fontFace: FONT,
+    fontSize: 36,
+    bold: true,
     color: C.white,
+    align: "left",
     margin: 0,
   });
 
-  slide.addText("A clear brand strategy, visual identity,\nand singular hub for everything she offers.", {
-    x: M,
-    y: 3.85,
+  slide.addText("Brand Strategy & Visual Identity", {
+    x: inset,
+    y: H - inset - 0.45,
     w: 8,
-    h: 1.0,
+    h: 0.4,
     fontFace: FONT,
-    fontSize: 22,
-    color: "D6D0C8",
-    margin: 0,
-  });
-
-  slide.addText("Prepared by GHOSTSignal  ·  jeremy@ghostsignal.cloud", {
-    x: M,
-    y: 6.55,
-    w: 8,
-    h: 0.35,
-    fontFace: FONT,
-    fontSize: 14,
-    color: "8A847C",
+    fontSize: 18,
+    color: "E8E2D9",
+    align: "left",
     margin: 0,
   });
 }
 
 // ─────────────────────────────────────────────
 // 2 · INTRO / OPPORTUNITY
+// Live web slide: half-size cloudmark, smaller body + support type,
+// purple bar stretched to the support text box height.
+// ─────────────────────────────────────────────
+{
+  const slide = pres.addSlide();
+  slide.background = { color: C.paper };
+  // Same horizontal black brandmark as before; slightly smaller than the prior 2.2" × 0.44"
+  if (fs.existsSync(LOGO_BLACK)) {
+    slide.addImage({
+      path: LOGO_BLACK,
+      x: M,
+      y: 0.45,
+      w: 1.7,
+      h: 0.34,
+      altText: "GHOSTSignal",
+    });
+  }
+
+  const HEADSHOT = path.join(
+    ROOT,
+    "apps/web/public/images/proposals/holly-mackle/holly-mackle-headshot.jpg"
+  );
+  const copyW = 7.2;
+
+  // Type template: H1 36 / lead 24 / support 16
+  slide.addText("The Opportunity", {
+    x: M,
+    y: 1.0,
+    w: copyW,
+    h: 0.55,
+    fontFace: FONT,
+    fontSize: 36,
+    bold: true,
+    color: C.ink,
+    margin: 0,
+  });
+
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: M,
+    y: 1.6,
+    w: 0.7,
+    h: 0.05,
+    fill: { color: C.terracotta },
+    line: { color: C.terracotta, width: 0 },
+  });
+
+  slide.addText(
+    "Holly Mackle is a writer, podcaster, former-librarian book-recommender, and all-around force for joy in the world. Holly is at an important inflection point: having built a strong following and collection of products, Holly deserves a clear brand strategy to organize all her efforts, giving her audience a singular hub and touchpoint.",
+    {
+      x: M,
+      y: 1.85,
+      w: copyW,
+      h: 2.35,
+      fontFace: FONT,
+      fontSize: 24,
+      color: C.ink,
+      margin: 0,
+    }
+  );
+
+  // Support block — bar height matched to this text box
+  const supportY = 4.4;
+  const supportH = 1.7;
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: M,
+    y: supportY,
+    w: 0.08,
+    h: supportH,
+    fill: { color: C.wine },
+    line: { color: C.wine, width: 0 },
+  });
+
+  slide.addText(
+    "GHOSTSignal loves to help people clarify themselves through strategy and visuals that generate real connection. Through deep listening and targeted design, we help clients map a path to their brand’s future. We are honored to offer this proposal, and appreciate the opportunity.",
+    {
+      x: M + 0.3,
+      y: supportY,
+      w: copyW - 0.3,
+      h: supportH,
+      fontFace: FONT,
+      fontSize: 16,
+      color: C.muted,
+      margin: 0,
+    }
+  );
+
+  if (fs.existsSync(HEADSHOT)) {
+    slide.addImage({
+      path: HEADSHOT,
+      x: 8.55,
+      y: 0.55,
+      w: 4.1,
+      h: 6.4,
+      sizing: { type: "cover", w: 4.1, h: 6.4 },
+      altText: "Holly Mackle",
+    });
+  }
+}
+
+// ─────────────────────────────────────────────
+// 3 · OVERVIEW (short four cards — 2×2, rounded)
+// Type template: H1 36 / subhead 20 / card title 14 caps / support 16
 // ─────────────────────────────────────────────
 {
   const slide = pres.addSlide();
@@ -286,98 +365,40 @@ function addFooterWide(slide, page, dark = false) {
     slide.addImage({
       path: LOGO_BLACK,
       x: M,
-      y: 0.45,
-      w: 2.2,
-      h: 0.44,
+      y: 0.35,
+      w: 1.7,
+      h: 0.34,
       altText: "GHOSTSignal",
     });
   }
 
-  slide.addText("THE OPPORTUNITY", {
+  slide.addText("The Work", {
     x: M,
-    y: 1.2,
-    w: 11.5,
-    h: 0.35,
-    fontFace: FONT,
-    fontSize: 14,
-    color: C.green,
-    charSpacing: 4,
-    margin: 0,
-  });
-
-  slide.addText(
-    "Holly Mackle is a writer, podcaster, former-librarian book-recommender, and all-around force for joy in the world. Holly is at an important inflection point: having built a strong following and collection of products, Holly deserves a clear brand strategy to organize all her efforts, giving her audience a singular hub and touchpoint.",
-    {
-      x: M,
-      y: 1.7,
-      w: 11.9,
-      h: 2.0,
-      fontFace: FONT_DISPLAY,
-      fontSize: 24,
-      color: C.ink,
-      margin: 0,
-    }
-  );
-
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: M,
-    y: 4.0,
-    w: 0.1,
-    h: 2.2,
-    fill: { color: C.wine },
-    line: { color: C.wine, width: 0 },
-  });
-
-  slide.addText(
-    "GHOSTSignal loves to help people clarify themselves through strategy and visuals that generate real connection. Through deep listening and targeted design, we help clients map a path to their brand’s future. We are honored to offer this proposal, and appreciate the opportunity.",
-    {
-      x: M + 0.35,
-      y: 4.0,
-      w: 11.5,
-      h: 2.2,
-      fontFace: FONT,
-      fontSize: 18,
-      color: C.muted,
-      margin: 0,
-    }
-  );
-
-  addFooterWide(slide, 2);
-  addColorBarsWide(slide);
-}
-
-// ─────────────────────────────────────────────
-// 3 · OVERVIEW (short four cards)
-// ─────────────────────────────────────────────
-{
-  const slide = pres.addSlide();
-  slide.background = { color: C.paper };
-
-  slide.addText("THE WORK", {
-    x: M,
-    y: 0.4,
+    y: 0.9,
     w: 11,
-    h: 0.3,
+    h: 0.5,
     fontFace: FONT,
-    fontSize: 14,
-    color: C.green,
-    charSpacing: 4,
+    fontSize: 36,
+    bold: true,
+    color: C.ink,
     margin: 0,
   });
   slide.addText("Four connected steps", {
     x: M,
-    y: 0.75,
+    y: 1.4,
     w: 11,
-    h: 0.55,
-    fontFace: FONT_DISPLAY,
-    fontSize: 36,
-    color: C.ink,
+    h: 0.35,
+    fontFace: FONT,
+    fontSize: 20,
+    color: C.muted,
     margin: 0,
   });
 
   const cardW = 2.85;
-  const gap = 0.22;
+  const cardH = 4.7;
+  const gapX = 0.22;
   const startX = M;
+  const startY = 1.95;
   const short = [
     "Guided conversation to surface hopes and aspirations for the brand’s future.",
     "A Brand Strategy report: platforms, voice, and recommended growth steps.",
@@ -386,60 +407,69 @@ function addFooterWide(slide, page, dark = false) {
   ];
 
   phases.forEach((p, i) => {
-    const x = startX + i * (cardW + gap);
+    const x = startX + i * (cardW + gapX);
+    const y = startY;
     const accent = phaseAccent(i);
 
-    slide.addShape(pres.shapes.RECTANGLE, {
+    slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
       x,
-      y: 1.55,
+      y,
       w: cardW,
-      h: 4.9,
+      h: cardH,
       fill: { color: C.white },
       line: { color: C.soft, width: 1 },
       shadow: makeShadow(),
+      rectRadius: 0.12,
     });
     slide.addShape(pres.shapes.RECTANGLE, {
       x,
-      y: 1.55,
-      w: cardW,
-      h: 0.14,
+      y,
+      w: 0.08,
+      h: cardH,
       fill: { color: accent },
       line: { color: accent, width: 0 },
     });
     slide.addText(p.num, {
-      x: x + 0.22,
-      y: 1.95,
-      w: cardW - 0.44,
-      h: 0.45,
+      x: x + 0.3,
+      y: y + 0.25,
+      w: cardW - 0.5,
+      h: 0.4,
       fontFace: FONT,
-      fontSize: 28,
+      fontSize: 24,
       color: accent,
       bold: true,
       margin: 0,
     });
-    slide.addText(p.title, {
+    const titleLines = [
+      ["DISCOVERY"],
+      ["BRAND", "STRATEGY"],
+      ["VISUAL", "IDENTITY"],
+      ["WEBSITE +", "PLATFORM ASSETS"],
+    ][i];
+    slide.addText(titleLines.join("\n"), {
       x: x + 0.22,
-      y: 2.55,
+      y: y + 0.75,
       w: cardW - 0.44,
-      h: 1.1,
-      fontFace: FONT_DISPLAY,
+      h: 1.2,
+      fontFace: FONT,
       fontSize: 22,
+      bold: true,
       color: C.ink,
+      charSpacing: 1,
       margin: 0,
+      valign: "top",
     });
     slide.addText(short[i], {
       x: x + 0.22,
-      y: 3.85,
+      y: y + 2.2,
       w: cardW - 0.44,
       h: 2.2,
       fontFace: FONT,
-      fontSize: 15,
+      fontSize: 18,
       color: C.muted,
       margin: 0,
     });
   });
-
-  addColorBarsWide(slide);
 }
 
 // ─────────────────────────────────────────────

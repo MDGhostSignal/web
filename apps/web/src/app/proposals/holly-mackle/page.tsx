@@ -3,26 +3,9 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
-
 import styles from "./page.module.css";
 
-const SLIDES = [
-  {
-    src: "/images/proposals/holly-mackle/slide-01.png",
-    label: "Cover",
-    title: "Brand Proposal",
-  },
-  {
-    src: "/images/proposals/holly-mackle/slide-02.png",
-    label: "Opportunity",
-    title: "The opportunity",
-  },
-  {
-    src: "/images/proposals/holly-mackle/slide-03.png",
-    label: "The Work",
-    title: "Four connected steps",
-  },
+const STATIC_SLIDES = [
   {
     src: "/images/proposals/holly-mackle/slide-04.png",
     label: "Timeline",
@@ -39,6 +22,171 @@ const SLIDES = [
     title: "Ready when you are",
   },
 ] as const;
+
+const SLIDE_LABELS = ["Cover", "Opportunity", "The Work", ...STATIC_SLIDES.map((s) => s.label)] as const;
+const SLIDE_COUNT = SLIDE_LABELS.length;
+
+const WORK_STEPS = [
+  {
+    num: "01",
+    titleLines: ["Discovery"],
+    accent: "green",
+    body: "Guided conversation to surface hopes and aspirations for the brand’s future.",
+  },
+  {
+    num: "02",
+    titleLines: ["Brand", "Strategy"],
+    accent: "wine",
+    body: "A Brand Strategy report: platforms, voice, and recommended growth steps.",
+  },
+  {
+    num: "03",
+    titleLines: ["Visual", "Identity"],
+    accent: "terracotta",
+    body: "Logo, color palette, and fonts — the full visual environment.",
+  },
+  {
+    num: "04",
+    titleLines: ["Website +", "Platform Assets"],
+    accent: "saffron",
+    body: "A website hub for your offerings, plus assets for cross-platform consistency.",
+  },
+] as const;
+
+const OPPORTUNITY_LEAD =
+  "Holly Mackle is a writer, podcaster, former-librarian book-recommender, and all-around force for joy in the world. Holly is at an important inflection point: having built a strong following and collection of products, Holly deserves a clear brand strategy to organize all her efforts, giving her audience a singular hub and touchpoint.";
+
+const OPPORTUNITY_SUPPORT =
+  "GHOSTSignal loves to help people clarify themselves through strategy and visuals that generate real connection. Through deep listening and targeted design, we help clients map a path to their brand’s future. We are honored to offer this proposal, and appreciate the opportunity.";
+
+function CoverSlide() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return (
+    <div className={styles.cover}>
+      {reduced ? (
+        // eslint-disable-next-line @next/next/no-img-element -- decorative poster; same pattern as /invitation
+        <img
+          src="/videos/invitation-hero-poster.jpg"
+          alt=""
+          aria-hidden="true"
+          className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
+        />
+      ) : (
+        <video
+          className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/videos/invitation-hero-poster.jpg"
+          aria-hidden="true"
+          tabIndex={-1}
+        >
+          <source src="/videos/invitation-hero.webm" type="video/webm" />
+          <source src="/videos/invitation-hero.mp4" type="video/mp4" />
+        </video>
+      )}
+      <div className={styles.coverScrim} aria-hidden="true" />
+      <div className={styles.coverChrome}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF; next/image freezes frames */}
+        <img
+          src="/images/email/logo-spin.gif"
+          alt="GHOSTSignal"
+          width={96}
+          height={96}
+          className={styles.coverLogo}
+        />
+      </div>
+      <div className={styles.coverContent}>
+        <p className={styles.coverEyebrow}>Brand Proposal</p>
+        <p className={styles.coverSeriously}>Holly Mackle</p>
+        <p className={styles.coverSub}>Brand Strategy &amp; Visual Identity</p>
+      </div>
+    </div>
+  );
+}
+
+function DeckLogo() {
+  return (
+    <Image
+      src="/images/brand/brandmark-hor-black.png"
+      alt="GHOSTSignal"
+      width={480}
+      height={96}
+      className={styles.deckLogo}
+      priority
+    />
+  );
+}
+
+function OpportunitySlide() {
+  return (
+    <div className={styles.opportunity}>
+      <div className={styles.oppCopy}>
+        <DeckLogo />
+        <div className={styles.oppTextStack}>
+          <h1 className={styles.oppTitle}>The Opportunity</h1>
+          <div className={styles.oppRule} aria-hidden="true" />
+          <p className={styles.oppLead}>{OPPORTUNITY_LEAD}</p>
+          <div className={styles.oppQuote}>
+            <span className={styles.oppBar} aria-hidden="true" />
+            <p className={styles.oppSupport}>{OPPORTUNITY_SUPPORT}</p>
+          </div>
+        </div>
+      </div>
+      <div className={styles.oppPortrait}>
+        <Image
+          src="/images/proposals/holly-mackle/holly-mackle-headshot.jpg"
+          alt="Holly Mackle"
+          width={1080}
+          height={1350}
+          className={styles.oppPortraitImage}
+          priority
+          sizes="(max-width: 1099px) 40vw, 28vw"
+        />
+      </div>
+    </div>
+  );
+}
+
+function WorkSlide() {
+  return (
+    <div className={styles.work}>
+      <DeckLogo />
+      <header className={styles.workHeader}>
+        <h1 className={styles.workTitle}>The Work</h1>
+        <p className={styles.workSub}>Four connected steps</p>
+      </header>
+      <div className={styles.workGrid}>
+        {WORK_STEPS.map((step) => (
+          <article
+            key={step.num}
+            className={`${styles.workCard} ${styles[`workAccent_${step.accent}`]}`}
+          >
+            <p className={styles.workCardNum}>{step.num}</p>
+            <h2 className={styles.workCardTitle}>
+              {step.titleLines.map((line) => (
+                <span key={line} className={styles.workCardTitleLine}>
+                  {line}
+                </span>
+              ))}
+            </h2>
+            <p className={styles.workCardBody}>{step.body}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function HollyMackleProposalPage() {
   const [active, setActive] = useState(0);
@@ -78,7 +226,7 @@ export default function HollyMackleProposalPage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === "j" || e.key === " ") {
         e.preventDefault();
-        scrollToSlide(Math.min(active + 1, SLIDES.length - 1));
+        scrollToSlide(Math.min(active + 1, SLIDE_COUNT - 1));
       }
       if (e.key === "ArrowUp" || e.key === "ArrowLeft" || e.key === "k") {
         e.preventDefault();
@@ -90,7 +238,7 @@ export default function HollyMackleProposalPage() {
       }
       if (e.key === "End") {
         e.preventDefault();
-        scrollToSlide(SLIDES.length - 1);
+        scrollToSlide(SLIDE_COUNT - 1);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -102,26 +250,25 @@ export default function HollyMackleProposalPage() {
       <header className={styles.topBar}>
         <div className={styles.brand}>
           <Image
-            src="/images/brand/cloudmark-white.png"
-            alt=""
-            width={36}
-            height={36}
-            className={styles.cloud}
+            src="/images/brand/gs-brandmark-hor-white.png"
+            alt="GHOSTSignal"
+            width={320}
+            height={64}
+            className={styles.topLogo}
             priority
           />
-          <BrandedGhostSignal variant="light" className={styles.wordmark} />
         </div>
         <p className={styles.topTitle}>Holly Mackle Proposal V1</p>
         <span className={styles.counter} aria-live="polite">
-          {String(active + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
+          {String(active + 1).padStart(2, "0")} / {String(SLIDE_COUNT).padStart(2, "0")}
         </span>
       </header>
 
       <aside className={styles.rail} aria-label="Slide navigation">
         <p className={styles.railLabel}>Slides</p>
         <ol className={styles.railList}>
-          {SLIDES.map((slide, i) => (
-            <li key={slide.src}>
+          {SLIDE_LABELS.map((label, i) => (
+            <li key={label}>
               <button
                 type="button"
                 className={i === active ? styles.railItemActive : styles.railItem}
@@ -129,7 +276,7 @@ export default function HollyMackleProposalPage() {
                 aria-current={i === active ? "true" : undefined}
               >
                 <span className={styles.railNum}>{String(i + 1).padStart(2, "0")}</span>
-                <span className={styles.railTitle}>{slide.label}</span>
+                <span className={styles.railTitle}>{label}</span>
               </button>
             </li>
           ))}
@@ -143,29 +290,71 @@ export default function HollyMackleProposalPage() {
         tabIndex={0}
         aria-label="Proposal slides"
       >
-        {SLIDES.map((slide, i) => (
-          <section
-            key={slide.src}
-            id={`slide-${i + 1}`}
-            className={styles.slideViewport}
-            ref={(el) => {
-              slideRefs.current[i] = el;
-            }}
-            aria-label={`Slide ${i + 1}: ${slide.title}`}
-          >
-            <div className={styles.slideCanvas}>
-              <Image
-                src={slide.src}
-                alt={`Slide ${i + 1}: ${slide.title}`}
-                width={1920}
-                height={1080}
-                className={styles.slideImage}
-                priority={i < 2}
-                sizes="100vw"
-              />
-            </div>
-          </section>
-        ))}
+        <section
+          id="slide-1"
+          className={styles.slideViewport}
+          ref={(el) => {
+            slideRefs.current[0] = el;
+          }}
+          aria-label="Slide 1: Brand Proposal"
+        >
+          <div className={styles.slideCanvas}>
+            <CoverSlide />
+          </div>
+        </section>
+
+        <section
+          id="slide-2"
+          className={styles.slideViewport}
+          ref={(el) => {
+            slideRefs.current[1] = el;
+          }}
+          aria-label="Slide 2: The opportunity"
+        >
+          <div className={styles.slideCanvas}>
+            <OpportunitySlide />
+          </div>
+        </section>
+
+        <section
+          id="slide-3"
+          className={styles.slideViewport}
+          ref={(el) => {
+            slideRefs.current[2] = el;
+          }}
+          aria-label="Slide 3: Four connected steps"
+        >
+          <div className={styles.slideCanvas}>
+            <WorkSlide />
+          </div>
+        </section>
+
+        {STATIC_SLIDES.map((slide, i) => {
+          const index = i + 3;
+          return (
+            <section
+              key={slide.src}
+              id={`slide-${index + 1}`}
+              className={styles.slideViewport}
+              ref={(el) => {
+                slideRefs.current[index] = el;
+              }}
+              aria-label={`Slide ${index + 1}: ${slide.title}`}
+            >
+              <div className={styles.slideCanvas}>
+                <Image
+                  src={slide.src}
+                  alt={`Slide ${index + 1}: ${slide.title}`}
+                  width={1920}
+                  height={1080}
+                  className={styles.slideImage}
+                  priority={i < 1}
+                  sizes="100vw"
+                />
+              </div>
+            </section>
+          );
+        })}
       </main>
 
       <nav className={styles.mobileNav} aria-label="Slide controls">
@@ -178,13 +367,13 @@ export default function HollyMackleProposalPage() {
           Prev
         </button>
         <span className={styles.mobileCounter}>
-          {active + 1} / {SLIDES.length}
+          {active + 1} / {SLIDE_COUNT}
         </span>
         <button
           type="button"
           className={styles.mobileBtn}
-          onClick={() => scrollToSlide(Math.min(active + 1, SLIDES.length - 1))}
-          disabled={active === SLIDES.length - 1}
+          onClick={() => scrollToSlide(Math.min(active + 1, SLIDE_COUNT - 1))}
+          disabled={active === SLIDE_COUNT - 1}
         >
           Next
         </button>

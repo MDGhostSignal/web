@@ -3,6 +3,24 @@
   --proposal-muted: #6b6560;
   --proposal-green: #00b29c;
   --proposal-cream: #f3eee6;
+  /* Proposal type template — reuse on later live slides */
+  --proposal-type-h1: calc(var(--gs-font-size-4xl, 36) * var(--gs-px));
+  --proposal-type-h1-leading: 1.15;
+  --proposal-type-subhead: calc(var(--gs-font-size-xl, 20) * var(--gs-px));
+  --proposal-type-subhead-leading: 1.3;
+  --proposal-type-label: calc(var(--gs-font-size-xs, 12) * var(--gs-px));
+  --proposal-type-label-tracking: 0.16em;
+  --proposal-type-lead: calc(var(--gs-font-size-2xl, 24) * var(--gs-px));
+  --proposal-type-lead-leading: 1.45;
+  --proposal-type-support: calc(var(--gs-font-size-base, 16) * var(--gs-px));
+  --proposal-type-support-leading: 1.55;
+  --proposal-type-card-title: calc(var(--gs-font-size-3xl, 30) * var(--gs-px));
+  --proposal-type-card-title-leading: 1.15;
+  /* One step under Opportunity lead (24) for tile body copy */
+  --proposal-type-card-body: calc(var(--gs-font-size-xl, 20) * var(--gs-px));
+  --proposal-type-card-body-leading: 1.45;
+  --proposal-deck-logo-w: calc(var(--gs-n-240) * var(--gs-px));
+  --proposal-work-card-h: calc(460 * var(--gs-px));
   --rail-w: calc(var(--gs-n-220, 220) * var(--gs-px));
   --top-h: calc(var(--gs-n-56) * var(--gs-px));
   height: 100dvh;
@@ -31,20 +49,15 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: calc(var(--gs-n-12) * var(--gs-px));
   min-width: 0;
   justify-self: start;
 }
 
-.cloud {
-  width: calc(var(--gs-n-36) * var(--gs-px));
-  height: calc(var(--gs-n-36) * var(--gs-px));
+.topLogo {
+  display: block;
+  width: calc(var(--gs-n-160) * var(--gs-px));
+  height: auto;
   object-fit: contain;
-  flex-shrink: 0;
-}
-
-.wordmark {
-  font-size: calc(var(--gs-font-size-sm, 14) * var(--gs-px));
 }
 
 .topTitle {
@@ -109,6 +122,453 @@
   height: 100%;
   object-fit: contain;
   object-position: center;
+}
+
+/* Live cover — invitation cloud video + top-left white-backed spin mark */
+.cover {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f5f0e8;
+}
+
+.coverVideo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.coverVideoMedia {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(1.04) saturate(1.08) contrast(1.02);
+}
+
+.coverScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 58% 52% at 50% 48%,
+    rgba(255, 252, 245, 0.7) 0%,
+    rgba(255, 248, 235, 0.34) 48%,
+    rgba(255, 245, 230, 0.06) 78%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.coverChrome {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--gs-n-100) * var(--gs-px));
+  left: calc(var(--gs-n-100) * var(--gs-px));
+}
+
+.coverLogo {
+  display: block;
+  width: calc(var(--gs-n-72) * var(--gs-px));
+  height: calc(var(--gs-n-72) * var(--gs-px));
+  object-fit: contain;
+  border-radius: calc(var(--gs-n-8) * var(--gs-px));
+  background: #fff;
+  border: 1px solid rgba(20, 20, 20, 0.08);
+  box-shadow: 0 12px 32px rgba(20, 20, 20, 0.22);
+}
+
+/* Bottom-left type stack: 100px from left and bottom; white over the cloud video */
+.coverContent {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--gs-n-100) * var(--gs-px));
+  bottom: calc(var(--gs-n-100) * var(--gs-px));
+  right: auto;
+  top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: calc(var(--gs-n-10) * var(--gs-px));
+  max-width: min(42rem, calc(100% - (var(--gs-n-100) * var(--gs-px) * 2)));
+  text-align: left;
+  color: #fff;
+  text-shadow: 0 1px 18px rgba(20, 20, 20, 0.35);
+}
+
+.coverEyebrow {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(
+    calc(var(--gs-font-size-xl, 20) * var(--gs-px)),
+    2.2vw,
+    calc(var(--gs-font-size-3xl, 30) * var(--gs-px))
+  );
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.coverSeriously {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(
+    calc(var(--gs-font-size-3xl, 30) * var(--gs-px)),
+    3.2vw,
+    calc(var(--gs-font-size-5xl, 48) * var(--gs-px))
+  );
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.coverSub {
+  margin: 0;
+  max-width: 36rem;
+  font-size: clamp(
+    calc(var(--gs-font-size-sm, 14) * var(--gs-px)),
+    1.35vw,
+    calc(var(--gs-font-size-xl, 20) * var(--gs-px))
+  );
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 500;
+}
+
+@media (max-width: 1099px) {
+  .coverChrome {
+    top: calc(var(--gs-n-32) * var(--gs-px));
+    left: calc(var(--gs-n-32) * var(--gs-px));
+  }
+
+  .coverContent {
+    left: calc(var(--gs-n-32) * var(--gs-px));
+    bottom: calc(var(--gs-n-32) * var(--gs-px));
+    max-width: calc(100% - (var(--gs-n-32) * var(--gs-px) * 2));
+  }
+
+  .coverLogo {
+    width: calc(var(--gs-n-56) * var(--gs-px));
+    height: calc(var(--gs-n-56) * var(--gs-px));
+  }
+}
+
+/* Opportunity — cream paper slide, live HTML */
+.opportunity {
+  --opp-ink: #141414;
+  --opp-muted: #6b6560;
+  --opp-green: #00b29c;
+  --opp-wine: #9f71af;
+  --opp-rule: #d66157;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: calc(var(--gs-n-48) * var(--gs-px)) calc(var(--gs-n-56) * var(--gs-px));
+  background: #f3eee6;
+  color: var(--opp-ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: calc(var(--gs-n-40) * var(--gs-px));
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.oppCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  /* Minimum air between brandmark and bottom text stack (Holly Mackle lead, etc.) */
+  gap: calc(var(--gs-n-64) * var(--gs-px));
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding-block: calc(var(--gs-n-8) * var(--gs-px));
+}
+
+.deckLogo {
+  display: block;
+  /* Shared horizontal black brandmark placement across live deck slides */
+  width: var(--proposal-deck-logo-w);
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.oppTextStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  width: 100%;
+  margin-top: auto;
+}
+
+.oppTitle {
+  margin: 0;
+  font-size: var(--proposal-type-h1);
+  line-height: var(--proposal-type-h1-leading);
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: -0.02em;
+  color: var(--opp-ink);
+}
+
+.oppRule {
+  width: calc(var(--gs-n-64) * var(--gs-px));
+  height: calc(var(--gs-n-4) * var(--gs-px));
+  background: var(--opp-rule);
+  border-radius: 999px;
+  margin-bottom: calc(var(--gs-n-8) * var(--gs-px));
+}
+
+.oppLead {
+  margin: 0;
+  max-width: 42rem;
+  font-size: var(--proposal-type-lead);
+  line-height: var(--proposal-type-lead-leading);
+  font-weight: 500;
+  color: var(--opp-ink);
+}
+
+.oppQuote {
+  display: flex;
+  align-items: stretch;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  margin-top: calc(var(--gs-n-12) * var(--gs-px));
+  max-width: 40rem;
+}
+
+.oppBar {
+  flex: 0 0 calc(var(--gs-n-6) * var(--gs-px));
+  width: calc(var(--gs-n-6) * var(--gs-px));
+  align-self: stretch;
+  background: var(--opp-wine);
+  border-radius: 999px;
+}
+
+.oppSupport {
+  margin: 0;
+  flex: 1 1 auto;
+  font-size: var(--proposal-type-support);
+  line-height: var(--proposal-type-support-leading);
+  color: var(--opp-muted);
+  font-weight: 400;
+}
+
+.oppPortrait {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: calc(var(--gs-n-16) * var(--gs-px));
+  overflow: hidden;
+  background: #e8e2d9;
+  box-shadow: 0 18px 40px rgba(20, 20, 20, 0.12);
+}
+
+.oppPortraitImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+}
+
+@media (max-width: 1099px) {
+  .opportunity {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+    padding: calc(var(--gs-n-24) * var(--gs-px));
+    gap: calc(var(--gs-n-16) * var(--gs-px));
+  }
+
+  .oppCopy {
+    gap: calc(var(--gs-n-12) * var(--gs-px));
+    padding-block: 0;
+  }
+
+  .deckLogo {
+    width: calc(var(--gs-n-160, 160) * var(--gs-px));
+    height: auto;
+  }
+
+  .oppTextStack {
+    gap: calc(var(--gs-n-10) * var(--gs-px));
+  }
+
+  .oppQuote {
+    margin-top: calc(var(--gs-n-8) * var(--gs-px));
+  }
+
+  .oppPortrait {
+    border-radius: calc(var(--gs-n-12) * var(--gs-px));
+  }
+}
+
+/* The Work — four rounded step tiles */
+.work {
+  --work-ink: #141414;
+  --work-muted: #6b6560;
+  --work-green: #00b29c;
+  --work-wine: #9f71af;
+  --work-terracotta: #d66157;
+  --work-saffron: #fbad25;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  /* Tighter vertical pad so 460px bottom-anchored cards fit the 16:9 canvas */
+  padding: calc(var(--gs-n-28) * var(--gs-px)) calc(var(--gs-n-56) * var(--gs-px))
+    calc(var(--gs-n-24) * var(--gs-px));
+  background: #f3eee6;
+  color: var(--work-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  overflow: hidden;
+}
+
+.workHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gs-n-8) * var(--gs-px));
+  /* Extra air under the top-left brandmark */
+  margin-top: calc(var(--gs-n-24) * var(--gs-px));
+}
+
+.workTitle {
+  margin: 0;
+  font-size: var(--proposal-type-h1);
+  line-height: var(--proposal-type-h1-leading);
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: -0.02em;
+  color: var(--work-ink);
+}
+
+.workSub {
+  margin: 0;
+  font-size: var(--proposal-type-subhead);
+  line-height: var(--proposal-type-subhead-leading);
+  font-weight: 500;
+  color: var(--work-muted);
+}
+
+.workGrid {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: auto;
+  /* Wider gutters → skinnier tiles */
+  gap: calc(var(--gs-n-32) * var(--gs-px));
+  align-items: stretch;
+}
+
+.workCard {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gs-n-10) * var(--gs-px));
+  height: var(--proposal-work-card-h);
+  min-height: 0;
+  padding: calc(var(--gs-n-20) * var(--gs-px));
+  background: #fff;
+  border: 1px solid #e8e2d9;
+  border-radius: calc(var(--gs-radius-2xl, 18) * var(--gs-px));
+  box-shadow: 0 10px 28px rgba(20, 20, 20, 0.06);
+  border-left-width: calc(var(--gs-n-6) * var(--gs-px));
+  border-left-style: solid;
+}
+
+.workAccent_green {
+  border-left-color: var(--work-green);
+}
+
+.workAccent_wine {
+  border-left-color: var(--work-wine);
+}
+
+.workAccent_terracotta {
+  border-left-color: var(--work-terracotta);
+}
+
+.workAccent_saffron {
+  border-left-color: var(--work-saffron);
+}
+
+.workAccent_green .workCardNum {
+  color: var(--work-green);
+}
+
+.workAccent_wine .workCardNum {
+  color: var(--work-wine);
+}
+
+.workAccent_terracotta .workCardNum {
+  color: var(--work-terracotta);
+}
+
+.workAccent_saffron .workCardNum {
+  color: var(--work-saffron);
+}
+
+.workCardNum {
+  margin: 0;
+  font-size: calc(var(--gs-font-size-2xl, 24) * var(--gs-px));
+  font-weight: var(--gs-font-weight-bold, 700);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.workCardTitle {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--gs-n-2) * var(--gs-px));
+  font-family: var(--font-body, var(--gs-font-family-sans, Inter), system-ui, sans-serif);
+  font-size: var(--proposal-type-card-title);
+  line-height: var(--proposal-type-card-title-leading);
+  font-weight: var(--gs-font-weight-bold, 700);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--work-ink);
+}
+
+.workCardTitleLine {
+  display: block;
+}
+
+.workCardBody {
+  margin: 0;
+  margin-top: auto;
+  font-size: var(--proposal-type-card-body);
+  line-height: var(--proposal-type-card-body-leading);
+  color: var(--work-muted);
+}
+
+@media (max-width: 1099px) {
+  .work {
+    padding: calc(var(--gs-n-24) * var(--gs-px));
+    gap: calc(var(--gs-n-16) * var(--gs-px));
+  }
+
+  .workGrid {
+    gap: calc(var(--gs-n-16) * var(--gs-px));
+  }
+
+  .workCard {
+    height: calc(var(--gs-n-240) * var(--gs-px));
+    padding: calc(var(--gs-n-14) * var(--gs-px));
+    gap: calc(var(--gs-n-8) * var(--gs-px));
+    border-radius: calc(var(--gs-radius-xl, 14) * var(--gs-px));
+  }
 }
 
 .mobileNav {

@@ -42,7 +42,7 @@ const STEPS: Step[] = [
   {
     n: 1,
     title: "Pre-Move Cataloging",
-    timing: ["Your Time: 30–60 Mins", "Import Time: 24–48 Hrs"],
+    timing: ["Your Time: 30–60 Mins"],
     lede: "Preserving the story so far, and importing your show to ART19",
     items: [
       {
@@ -92,7 +92,7 @@ const STEPS: Step[] = [
   {
     n: 2,
     title: "Making the Switch",
-    timing: ["Your Time: 30–60 Mins", "Signal Refresh: 24–48 Hrs"],
+    timing: ["Your Time: 30–60 Mins", "Import Time: 24–48 Hrs"],
     lede: "The Big Step! Changing your address to the new ART19 RSS Feed URL",
     items: [
       {
@@ -139,7 +139,7 @@ const STEPS: Step[] = [
           </>
         ),
         afterNote:
-          "Do this a few days before your next episode release — that gives you space to breathe and get familiar with the system before your episode deadline.",
+          "Place the re-direct 3 days before your next episode is published — that gives the various platforms time to refresh and catch the new signal.",
       },
       {
         id: "2-apps",

@@ -40,7 +40,7 @@ Do not push / promote to production until the team has inspected and refined.
 
 ## Deck structure (6 screens @ 1920×1080)
 
-1. Cover — Holly Mackle brand proposal  
+1. Cover — live HTML: invitation cloud video, white-backed spinning cloud (top-left), **Brand Proposal** only (no Holly name / no “Prepared by”)  
 2. Opportunity — Jeremy’s paragraphs (verbatim)  
 3. The Work — four connected steps (short overview cards)  
 4. Timeline — ~2 weeks  
