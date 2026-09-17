@@ -475,27 +475,29 @@ function addFooterWide(slide, page, dark = false) {
 }
 
 // ─────────────────────────────────────────────
-// 4 · TIMELINE — 4-week calendar grid (one phase / week)
+// 4 · TIMELINE — 8-week calendar (four phases · two weeks each)
 // ─────────────────────────────────────────────
 {
   const slide = pres.addSlide();
   slide.background = { color: C.paper };
+  const LOGO_CLOUD = path.join(ROOT, "apps/web/public/images/brand/logo-black.png");
+  const inset = 100 / 144;
 
-  if (fs.existsSync(LOGO_BLACK)) {
+  if (fs.existsSync(LOGO_CLOUD)) {
     slide.addImage({
-      path: LOGO_BLACK,
-      x: M,
-      y: 0.3,
-      w: 1.7,
-      h: 0.34,
-      altText: "GHOSTSignal",
+      path: LOGO_CLOUD,
+      x: W - inset - 0.55,
+      y: inset,
+      w: 0.55,
+      h: 0.55,
+      altText: "GHOSTSignal cloudmark",
     });
   }
 
   slide.addText("The Timeline", {
-    x: M,
-    y: 0.8,
-    w: 11,
+    x: inset,
+    y: inset,
+    w: 10,
     h: 0.45,
     fontFace: FONT,
     fontSize: 36,
@@ -503,20 +505,20 @@ function addFooterWide(slide, page, dark = false) {
     color: C.ink,
     margin: 0,
   });
-  slide.addText("About four weeks, end to end", {
-    x: M,
-    y: 1.3,
-    w: 11,
+  slide.addText("About eight weeks, end to end", {
+    x: inset,
+    y: inset + 0.5,
+    w: 10,
     h: 0.3,
     fontFace: FONT,
     fontSize: 20,
     color: C.muted,
     margin: 0,
   });
-  slide.addText("A suggested pace — exact dates lock once we kick off together.", {
-    x: M,
-    y: 1.65,
-    w: 11,
+  slide.addText("Four phases · two weeks each — exact dates lock once we kick off together.", {
+    x: inset,
+    y: inset + 0.85,
+    w: 10,
     h: 0.3,
     fontFace: FONT,
     fontSize: 16,
@@ -524,12 +526,11 @@ function addFooterWide(slide, page, dark = false) {
     margin: 0,
   });
 
-  // One month frame
   slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
     x: M,
-    y: 2.1,
+    y: 2.35,
     w: W - M * 2,
-    h: 4.85,
+    h: 4.7,
     fill: { color: C.white },
     line: { color: C.soft, width: 1 },
     shadow: makeShadow(),
@@ -538,50 +539,52 @@ function addFooterWide(slide, page, dark = false) {
 
   const weeks = [
     { label: "WEEK 1", title: "DISCOVERY", focus: "Listen & surface hopes for the brand’s future.", color: C.green },
-    { label: "WEEK 2", title: "BRAND STRATEGY", focus: "Platforms, voice, and the growth path.", color: C.wine },
-    { label: "WEEK 3", title: "VISUAL IDENTITY", focus: "Logo, color, and the full visual environment.", color: C.terracotta },
-    { label: "WEEK 4", title: "WEBSITE + PLATFORM ASSETS", focus: "The hub plus assets for every channel.", color: C.saffron },
+    { label: "WEEK 2", title: "DISCOVERY", focus: "Continues", color: C.green },
+    { label: "WEEK 3", title: "BRAND STRATEGY", focus: "Platforms, voice, and the growth path.", color: C.wine },
+    { label: "WEEK 4", title: "BRAND STRATEGY", focus: "Continues", color: C.wine },
+    { label: "WEEK 5", title: "VISUAL IDENTITY", focus: "Logo, color, and the full visual environment.", color: C.terracotta },
+    { label: "WEEK 6", title: "VISUAL IDENTITY", focus: "Continues", color: C.terracotta },
+    { label: "WEEK 7", title: "WEBSITE + PLATFORM ASSETS", focus: "The hub plus assets for every channel.", color: C.saffron },
+    { label: "WEEK 8", title: "WEBSITE + PLATFORM ASSETS", focus: "Continues", color: C.saffron },
   ];
-  const rowH = 1.05;
-  const startY = 2.45;
+  const rowH = 0.52;
+  const startY = 2.55;
 
   weeks.forEach((w, i) => {
     const y = startY + i * rowH;
     slide.addText(w.label, {
-      x: M + 0.25,
-      y: y + 0.28,
-      w: 1.3,
-      h: 0.4,
+      x: M + 0.2,
+      y: y + 0.1,
+      w: 1.2,
+      h: 0.3,
       fontFace: FONT,
-      fontSize: 12,
+      fontSize: 10,
       bold: true,
       color: w.color,
       charSpacing: 1,
       margin: 0,
     });
     slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x: M + 1.7,
-      y: y + 0.12,
-      w: W - M * 2 - 2.1,
-      h: 0.78,
+      x: M + 1.5,
+      y: y + 0.06,
+      w: W - M * 2 - 1.85,
+      h: 0.4,
       fill: { color: w.color },
       line: { color: w.color, width: 0 },
-      rectRadius: 0.08,
+      rectRadius: 0.06,
     });
     slide.addText(`${w.title}  ·  ${w.focus}`, {
-      x: M + 1.95,
-      y: y + 0.28,
-      w: W - M * 2 - 2.6,
-      h: 0.45,
+      x: M + 1.7,
+      y: y + 0.12,
+      w: W - M * 2 - 2.25,
+      h: 0.3,
       fontFace: FONT,
-      fontSize: 14,
+      fontSize: 12,
       bold: true,
       color: C.white,
       margin: 0,
     });
   });
-
-  // No footer meta / brand bars on Timeline
 }
 
 // ─────────────────────────────────────────────

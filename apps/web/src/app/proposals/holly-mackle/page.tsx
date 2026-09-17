@@ -1,9 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import styles from "./page.module.css";
+
+const SLIDE_DESIGN_W = 1920;
+const SLIDE_DESIGN_H = 1080;
 
 const SLIDE_LABELS = [
   "Cover",
@@ -41,30 +51,63 @@ const SCOPE_STEPS = [
   },
 ] as const;
 
+/** Eight weeks · four phases · two weeks each */
 const TIMELINE_WEEKS = [
   {
     label: "Week 1",
     accent: "green",
-    titleLines: ["Discovery"],
+    title: "Discovery",
     focus: "Listen & surface hopes for the brand’s future.",
+    phaseStart: true,
   },
   {
     label: "Week 2",
-    accent: "wine",
-    titleLines: ["Brand", "Strategy"],
-    focus: "Platforms, voice, and the growth path.",
+    accent: "green",
+    title: "Discovery",
+    focus: "Listen & surface hopes for the brand’s future.",
+    phaseStart: false,
   },
   {
     label: "Week 3",
-    accent: "terracotta",
-    titleLines: ["Visual", "Identity"],
-    focus: "Logo, color, and the full visual environment.",
+    accent: "wine",
+    title: "Brand Strategy",
+    focus: "Platforms, voice, and the growth path.",
+    phaseStart: true,
   },
   {
     label: "Week 4",
+    accent: "wine",
+    title: "Brand Strategy",
+    focus: "Platforms, voice, and the growth path.",
+    phaseStart: false,
+  },
+  {
+    label: "Week 5",
+    accent: "terracotta",
+    title: "Visual Identity",
+    focus: "Logo, color, and the full visual environment.",
+    phaseStart: true,
+  },
+  {
+    label: "Week 6",
+    accent: "terracotta",
+    title: "Visual Identity",
+    focus: "Logo, color, and the full visual environment.",
+    phaseStart: false,
+  },
+  {
+    label: "Week 7",
     accent: "saffron",
-    titleLines: ["Website +", "Platform Assets"],
+    title: "Website + Platform Assets",
     focus: "The hub plus assets for every channel.",
+    phaseStart: true,
+  },
+  {
+    label: "Week 8",
+    accent: "saffron",
+    title: "Website + Platform Assets",
+    focus: "The hub plus assets for every channel.",
+    phaseStart: false,
   },
 ] as const;
 
@@ -210,6 +253,39 @@ function BrandBars() {
           className={`${styles.brandBar} ${styles[`brandBar_${color}`]}`}
         />
       ))}
+    </div>
+  );
+}
+
+/** Fixed 1920×1080 artboard scaled to fit any desktop stage. */
+function SlideFrame({ children }: { children: ReactNode }) {
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const { width, height } = el.getBoundingClientRect();
+      if (width <= 0 || height <= 0) return;
+      setScale(Math.min(width / SLIDE_DESIGN_W, height / SLIDE_DESIGN_H));
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div className={styles.slideCanvas} ref={canvasRef}>
+      <div
+        className={styles.slideInner}
+        style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -362,9 +438,10 @@ function TimelineSlide() {
       <DeckCloudMark />
       <header className={styles.timelineHeader}>
         <h1 className={styles.timelineTitle}>The Timeline</h1>
-        <p className={styles.timelineSub}>About four weeks, end to end</p>
+        <p className={styles.timelineSub}>About eight weeks, end to end</p>
         <p className={styles.timelineNote}>
-          A suggested pace — exact dates lock once we kick off together.
+          Four phases · two weeks each — exact dates lock once we kick off
+          together.
         </p>
       </header>
 
@@ -382,23 +459,33 @@ function TimelineSlide() {
           {TIMELINE_WEEKS.map((week) => (
             <li
               key={week.label}
-              className={`${styles.timelineMonthWeek} ${styles[`timelineMonthWeek_${week.accent}`]}`}
+              className={`${styles.timelineMonthWeek} ${styles[`timelineMonthWeek_${week.accent}`]} ${
+                week.phaseStart ? styles.timelineMonthWeekStart : styles.timelineMonthWeekContinue
+              }`}
             >
               <p className={styles.timelineMonthWeekLabel}>{week.label}</p>
               <div className={styles.timelineMonthWeekGrid}>
-                {CALENDAR_DAYS.map((day, i) => (
-                  <span
-                    key={`${week.label}-cell-${day}-${i}`}
-                    className={styles.timelineMonthCell}
-                    aria-hidden="true"
-                  />
-                ))}
-                <div className={styles.timelineMonthEvent}>
-                  <h2 className={styles.timelineMonthEventTitle}>
-                    {week.titleLines.join(" ")}
-                  </h2>
-                  <p className={styles.timelineMonthEventFocus}>{week.focus}</p>
-                </div>
+                {CALENDAR_DAYS.map((day, i) =>
+                  i === 0 ? (
+                    <div
+                      key={`${week.label}-mon`}
+                      className={styles.timelineMonthEvent}
+                    >
+                      <h2 className={styles.timelineMonthEventTitle}>{week.title}</h2>
+                      <p className={styles.timelineMonthEventFocus}>
+                        {week.phaseStart ? week.focus : "Continues"}
+                      </p>
+                    </div>
+                  ) : (
+                    <span
+                      key={`${week.label}-cell-${day}-${i}`}
+                      className={styles.timelineMonthCell}
+                      aria-hidden="true"
+                    >
+                      <span className={styles.timelineMonthDot} />
+                    </span>
+                  )
+                )}
               </div>
             </li>
           ))}
@@ -518,9 +605,9 @@ export default function HollyMackleProposalPage() {
           }}
           aria-label="Slide 1: Brand Proposal"
         >
-          <div className={styles.slideCanvas}>
+          <SlideFrame>
             <CoverSlide />
-          </div>
+          </SlideFrame>
         </section>
 
         <section
@@ -531,9 +618,9 @@ export default function HollyMackleProposalPage() {
           }}
           aria-label="Slide 2: The opportunity"
         >
-          <div className={styles.slideCanvas}>
+          <SlideFrame>
             <OpportunitySlide />
-          </div>
+          </SlideFrame>
         </section>
 
         <section
@@ -544,9 +631,9 @@ export default function HollyMackleProposalPage() {
           }}
           aria-label="Slide 3: Four connected steps"
         >
-          <div className={styles.slideCanvas}>
+          <SlideFrame>
             <WorkSlide />
-          </div>
+          </SlideFrame>
         </section>
 
         <section
@@ -557,9 +644,9 @@ export default function HollyMackleProposalPage() {
           }}
           aria-label="Slide 4: About two weeks"
         >
-          <div className={styles.slideCanvas}>
+          <SlideFrame>
             <TimelineSlide />
-          </div>
+          </SlideFrame>
         </section>
 
         <section
@@ -570,9 +657,9 @@ export default function HollyMackleProposalPage() {
           }}
           aria-label="Slide 5: Scope of work + investment"
         >
-          <div className={styles.slideCanvas}>
+          <SlideFrame>
             <ScopeSlide />
-          </div>
+          </SlideFrame>
         </section>
 
         <section
@@ -583,9 +670,9 @@ export default function HollyMackleProposalPage() {
           }}
           aria-label="Slide 6: Ready when you are"
         >
-          <div className={styles.slideCanvas}>
+          <SlideFrame>
             <NextStepsSlide />
-          </div>
+          </SlideFrame>
         </section>
       </main>
 
