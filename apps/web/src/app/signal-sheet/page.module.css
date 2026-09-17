@@ -596,6 +596,8 @@
 .graph {
   position: relative;
   margin: 0;
+  /* Always painted — do not rely on entrance tweens for this block. */
+  opacity: 1;
   padding: calc(var(--gs-n-56) * var(--gs-px))
     calc(var(--gs-n-40) * var(--gs-px))
     calc(var(--gs-n-72) * var(--gs-px))

@@ -364,10 +364,10 @@ export default function WhatIsThisPage() {
                 </span>
               </SplitLinesReveal>
               <SplitLinesReveal duration={1.8} delay={0.6} className={styles.headlineLine}>
-                <span>is the values-based</span>
+                <span>is the values-aligned</span>
               </SplitLinesReveal>
               <SplitLinesReveal duration={1.8} delay={1.2} className={styles.headlineLine}>
-                <span>podcast advertising network</span>
+                <span>digital advertising network</span>
               </SplitLinesReveal>
             </h1>
 
@@ -512,7 +512,7 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
               <ScrollFadeUp index={2} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  We call it Values-Based Advertising, or simply, The Signal&mdash;a new model where partnerships are rooted in shared conviction. Where a brand&rsquo;s message amplifies a creator&rsquo;s voice, and a creator builds trust for the brand. When creators and brands share soul, the world is made in the right direction.
+                  We call it Values-Aligned Advertising, or simply, The Signal&mdash;a new model where partnerships are rooted in shared conviction. Where a brand&rsquo;s message amplifies a creator&rsquo;s voice, and a creator builds trust for the brand. When creators and brands share soul, the world is made in the right direction.
                 </p>
               </ScrollFadeUp>
               <ScrollFadeUp index={3} duration={1.6}>
@@ -570,7 +570,7 @@ export default function WhatIsThisPage() {
               </h2>
               <ScrollFadeUp index={0} duration={1.6}>
                 <p className={styles.sectionBody}>
-                  Values-Based Advertising means:
+                  Values-Aligned Advertising means:
                   <br />
                   Creators earn without selling out
                   <br />
@@ -611,7 +611,7 @@ export default function WhatIsThisPage() {
               </ScrollFadeUp>
               <ScrollFadeUp index={1} duration={1.6}>
                 <p className={styles.finalSubheadline}>
-                  This is values-based advertising. This is world making.
+                  This is values-aligned advertising. This is world making.
                 </p>
               </ScrollFadeUp>
               <h2 className={styles.finalHeadline}>

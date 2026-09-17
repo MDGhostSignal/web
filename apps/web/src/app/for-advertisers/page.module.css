@@ -478,16 +478,22 @@
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  /* Keep filter/transform paint inside this layer so drifting clouds
+     can't expand scrollable overflow or reflow the text column. */
+  isolation: isolate;
+  contain: paint;
 }
 
 .businessCloud {
   position: absolute;
-  width: auto;
+  /* Fixed paint size — intrinsic 600px asset; scale lives in keyframes. */
+  width: calc(var(--gs-n-600, 600) * var(--gs-px));
   height: auto;
   max-width: none;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  pointer-events: none;
 }
 
 .businessCloud1 {
@@ -656,7 +662,9 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  /* minmax(0, …) so the 200%-wide Mariah asset can't inflate the
+     right track and squeeze/resize the left text column. */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   gap: calc(var(--gs-n-80) * var(--gs-px));
   align-items: start;
 }
@@ -665,6 +673,7 @@
   display: flex;
   flex-direction: column;
   gap: calc(var(--gs-n-48) * var(--gs-px));
+  min-width: 0;
 }
 
 .businessTitle {
@@ -811,7 +820,11 @@
 .businessVisual {
   position: sticky;
   top: calc(var(--gs-n-120) * var(--gs-px));
-  overflow: visible;
+  min-width: 0;
+  width: 100%;
+  /* Clip the oversized statue inside this column so mouse parallax /
+     ParallaxY never change sibling text-container metrics. */
+  overflow: hidden;
 }
 
 .visualImage {
@@ -831,6 +844,7 @@
     0
   );
   will-change: transform;
+  pointer-events: none;
 }
 
 
@@ -848,7 +862,7 @@
   }
 
   .business {
-    grid-template-columns: 1fr 0.6fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.6fr);
   }
 }
 

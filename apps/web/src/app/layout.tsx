@@ -18,11 +18,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "GhostSignal — Values-based partnerships for podcasters and advertisers",
+    default: "GhostSignal — Values-aligned partnerships for podcasters and advertisers",
     template: "%s | GhostSignal",
   },
   description:
-    "GhostSignal is a values-based podcast advertising network. We create partnerships between creators and brands who share soul — so every ad feels like an extension of the mission, not an interruption.",
+    "GhostSignal is a values-aligned digital advertising network. We create partnerships between creators and brands who share soul — so every ad feels like an extension of the mission, not an interruption.",
   metadataBase: process.env.NEXT_PUBLIC_SITE_URL
     ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
     : undefined,

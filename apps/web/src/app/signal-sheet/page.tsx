@@ -236,7 +236,7 @@ const categories: Category[] = [
         title: "Signal Pool / Spot Ad",
         body: (
           <>
-            Our dedicated, hand-curated collective of values-based creators
+            Our dedicated, hand-curated collective of values-aligned creators
             and brands. This is at the heart of our value-driven revenue,
             where partnerships are matched for mutual flourishing rather than
             mere reach. These are pre-produced ads.
@@ -424,56 +424,57 @@ export default function SignalSheetPage() {
               </header>
 
               {isGraph ? (
-                <ScrollFadeUp duration={1.6} delay={0.35}>
-                  <figure
-                    className={styles.graph}
-                    role="group"
-                    aria-label="Advertising terms plotted on a coordinate plane"
-                  >
-                    {/* Axis labels — technical schematic feel. */}
-                    <span className={`${styles.axisLabel} ${styles.axisLabelY}`}>
-                      Y · Resonance ↑
-                    </span>
-                    <span className={`${styles.axisLabel} ${styles.axisLabelX}`}>
-                      X · Format → Reach
-                    </span>
+                /* No ScrollFadeUp wrapper: a single opacity-0 tween around this
+                   whole graph stayed invisible on some Safari/MacBook loads when
+                   jumping via #adverts before ScrollTrigger refreshed. */
+                <figure
+                  className={styles.graph}
+                  role="group"
+                  aria-label="Advertising terms plotted on a coordinate plane"
+                >
+                  {/* Axis labels — technical schematic feel. */}
+                  <span className={`${styles.axisLabel} ${styles.axisLabelY}`}>
+                    Y · Resonance ↑
+                  </span>
+                  <span className={`${styles.axisLabel} ${styles.axisLabelX}`}>
+                    X · Format → Reach
+                  </span>
 
-                    {/* Tick labels sit along each axis — tabular 01-03. */}
-                    <ul className={styles.yTicks} aria-hidden="true">
-                      <li>03</li>
-                      <li>02</li>
-                      <li>01</li>
-                    </ul>
-                    <ul className={styles.xTicks} aria-hidden="true">
-                      <li>01</li>
-                      <li>02</li>
-                      <li>03</li>
-                    </ul>
+                  {/* Tick labels sit along each axis — tabular 01-03. */}
+                  <ul className={styles.yTicks} aria-hidden="true">
+                    <li>03</li>
+                    <li>02</li>
+                    <li>01</li>
+                  </ul>
+                  <ul className={styles.xTicks} aria-hidden="true">
+                    <li>01</li>
+                    <li>02</li>
+                    <li>03</li>
+                  </ul>
 
-                    {/* 3×3 plot grid. Each term is a data-point cell. */}
-                    <ol className={styles.graphGrid}>
-                      {cat.terms.map((term, i) => {
-                        const col = (i % 3) + 1;
-                        const row = 3 - Math.floor(i / 3);
-                        return (
-                          <li key={term.title} className={styles.graphCell}>
-                            <span className={styles.cellPlot} aria-hidden="true">
-                              +
-                            </span>
-                            <span className={styles.cellCoord} aria-hidden="true">
-                              ({col}, {row})
-                            </span>
-                            <span className={styles.cellNumber}>
-                              {String(i + 1).padStart(2, "0")}
-                            </span>
-                            <h3 className={styles.cellTitle}>{term.title}</h3>
-                            <div className={styles.cellBody}>{term.body}</div>
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </figure>
-                </ScrollFadeUp>
+                  {/* 3×3 plot grid. Each term is a data-point cell. */}
+                  <ol className={styles.graphGrid}>
+                    {cat.terms.map((term, i) => {
+                      const col = (i % 3) + 1;
+                      const row = 3 - Math.floor(i / 3);
+                      return (
+                        <li key={term.title} className={styles.graphCell}>
+                          <span className={styles.cellPlot} aria-hidden="true">
+                            +
+                          </span>
+                          <span className={styles.cellCoord} aria-hidden="true">
+                            ({col}, {row})
+                          </span>
+                          <span className={styles.cellNumber}>
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <h3 className={styles.cellTitle}>{term.title}</h3>
+                          <div className={styles.cellBody}>{term.body}</div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </figure>
               ) : (
                 <ol className={styles.termList}>
                   {cat.terms.map((term, i) => (

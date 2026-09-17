@@ -2,7 +2,7 @@
 
 import { type ReactNode, useId } from "react";
 
-import { ensureGsapPlugins, gsap } from "@/motion/gsap";
+import { ScrollTrigger, ensureGsapPlugins, gsap } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
 type Props = {
@@ -55,6 +55,12 @@ export function ScrollFadeUp({
     const el = document.querySelector<HTMLElement>(`[data-gs-sfu="${id}"]`);
     if (!el) return;
 
+    // Reduced motion: paint final state, skip the tween.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(el, { y: 0, opacity: 1 });
+      return;
+    }
+
     // Position drift from font swap is corrected by
     // ScrollTriggerOrchestrator which calls ScrollTrigger.refresh()
     // once `document.fonts.ready` resolves — no per-component gating
@@ -68,11 +74,31 @@ export function ScrollFadeUp({
         duration,
         ease: "power2.out",
         delay: delay + 0.14 * index,
-        scrollTrigger: { trigger: el, start },
+        scrollTrigger: {
+          trigger: el,
+          start,
+          once: true,
+        },
       },
     );
 
+    const snapIfPastStart = () => {
+      const st = tween.scrollTrigger;
+      // Hash jumps / fast scroll can leave the trigger already past
+      // `start` without firing onEnter on some WebKit builds — snap
+      // to the finished state when we're past the line.
+      if (st && st.scroll() >= st.start) {
+        tween.progress(1);
+      }
+    };
+
+    // Initial layout pass, then again after ScrollTriggerOrchestrator's
+    // fonts-ready refresh (and any other ST refresh).
+    snapIfPastStart();
+    ScrollTrigger.addEventListener("refresh", snapIfPastStart);
+
     return () => {
+      ScrollTrigger.removeEventListener("refresh", snapIfPastStart);
       tween.scrollTrigger?.kill();
       tween.kill();
     };

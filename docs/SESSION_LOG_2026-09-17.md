@@ -8,6 +8,10 @@
 - Proposal chrome: white horizontal brandmark in top bar
 - Studio migration checklist: moved Import Time pill to step 2; updated 301 redirect note copy; removed Signal Refresh pill
 - Removed the “Still on this page / Next: inserting ad markers” jump box from the migration guide
+- Copy: values-based → values-aligned; podcast advertising network → digital advertising network on public main pages
+- Studio top nav: Signal Sheet link → `/signal-sheet`
+- `/for-advertisers`: stop Mariah/clouds from reflowing the business text column
+- `/signal-sheet` Adverts: remove ScrollFadeUp trap that left the graph invisible on Safari/MacBook hash jumps; harden ScrollFadeUp past-start snap
 
 ## Files touched
 - `apps/web/src/app/proposals/holly-mackle/page.tsx`
@@ -16,14 +20,25 @@
 - `apps/web/public/images/proposals/holly-mackle/holly-mackle-headshot.jpg`
 - `apps/web/src/app/studio/migration/MigrationGuide.tsx`
 - `apps/web/src/app/studio/migration/migration.module.css`
+- `apps/web/src/app/studio/StudioHeader.tsx`
+- `apps/web/src/app/what-is-this/page.tsx`
+- `apps/web/src/app/what-is-this/layout.tsx`
+- `apps/web/src/app/layout.tsx`
+- `apps/web/src/app/invitation/InvitationShell.tsx`
+- `apps/web/src/app/signal-sheet/page.tsx`
+- `apps/web/src/app/signal-sheet/page.module.css`
+- `apps/web/src/app/for-advertisers/page.module.css`
+- `apps/web/src/motion/ScrollFadeUp.tsx`
 - `docs/client-work/holly-mackle-brand/build-proposal-deck.js`
 - `docs/client-work/holly-mackle-brand/README.md`
 
 ## Validation
 - `npm run typecheck` (earlier in session) — passed
-- `npx stylelint` on proposal CSS — passed
+- `npx stylelint` on proposal / for-advertisers CSS — passed
 - `npm run assets:audit` — passed after adding headshot + brandmark
 - Playwright screenshots for cover / opportunity / work — reviewed
+- Playwright: for-advertisers column width stable under mouse move
+- Playwright: signal-sheet#adverts graph opacity 1, 9 cells, no fade wrapper
 - Studio migration route auth-gated; checklist copy verified in source
 
 ## Open / next

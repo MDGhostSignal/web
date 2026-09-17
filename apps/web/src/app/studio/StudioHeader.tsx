@@ -79,6 +79,9 @@ export function StudioHeader({
         >
           ART19 Tutorial
         </Link>
+        <Link href="/signal-sheet" className={styles.headerNavTab}>
+          Signal Sheet
+        </Link>
         {/* No Profile tab — the avatar circle in the trail is the way
             to /studio/profile. */}
         {!STUDIO_LITE_ONLY && (

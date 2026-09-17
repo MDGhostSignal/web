@@ -78,7 +78,7 @@ export function InvitationShell({ features, quote, founders }: Props) {
           </h1>
           <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroLede}>
-              GHOSTSignal is the values-based podcast advertising network.
+              GHOSTSignal is the values-aligned digital advertising network.
               We create partnerships that feel good, because they are
               good. When brands and creators are values-aligned,
               advertising contributes to the world we all want to make.
