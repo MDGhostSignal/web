@@ -19,25 +19,25 @@ const SCOPE_STEPS = [
     num: "01",
     titleLines: ["Discovery"],
     accent: "green",
-    body: "This project begins with understanding: through a guided conversation we discover your hopes and aspirations for the future of your brand. This step forms the foundation for the steps that follow, ensuring we stay authentic to who you are.",
+    body: "This project begins with understanding: a guided conversation to surface your hopes and aspirations for the brand’s future. That foundation keeps every later step authentic to who you are.",
   },
   {
     num: "02",
     titleLines: ["Brand", "Strategy"],
     accent: "wine",
-    body: "Building on the Discovery step, we develop a Brand Strategy report, detailing the direction and aims of the brand. Here, we codify the role of each of the brand’s current platforms, describe the voice of the brand, and recommend steps for future growth.",
+    body: "Building on Discovery, we develop a Brand Strategy report that details the direction and aims of the brand. We codify each platform’s role, describe the brand voice, and recommend clear growth steps.",
   },
   {
     num: "03",
     titleLines: ["Visual", "Identity"],
     accent: "terracotta",
-    body: "Based on the Discovery and Strategy steps, we develop a cohesive Visual Identity for the overall brand. Including logo, color palette, and fonts, this step develops the entire visual environment for the brand.",
+    body: "From Discovery and Strategy, we craft a cohesive Visual Identity for the overall brand. Logo, color palette, and fonts come together to shape the full visual environment you will carry forward.",
   },
   {
     num: "04",
     titleLines: ["Website +", "Platform Assets"],
     accent: "saffron",
-    body: "Finally, we apply all the previous work to a new website for the brand. Serving as a hub for all of your offerings, the website gives your audience the ease of a singular gathering place from which you communicate. This step also includes visual assets necessary for creating brand consistency across all of your current platforms.",
+    body: "Finally, we apply that work to a new website that serves as the hub for all of your offerings — plus the platform assets needed so your brand stays consistent everywhere audiences meet you.",
   },
 ] as const;
 
@@ -86,27 +86,27 @@ const WORK_STEPS = [
     num: "02",
     titleLines: ["Brand", "Strategy"],
     accent: "wine",
-    // Signal-strength bars from the homepage brand system
-    image: "/images/home/figma/bars.png",
-    imageAlt: "GhostSignal signal bars",
+    // Brand system palette — strategy made visible as a coded system
+    image: "/images/what-is-this/color-bars.png",
+    imageAlt: "GhostSignal brand color system",
     imageFit: "contain" as const,
   },
   {
     num: "03",
     titleLines: ["Visual", "Identity"],
     accent: "terracotta",
-    // Classical form used across /for-advertisers visual identity moments
-    image: "/images/home/figma/mariah.png",
-    imageAlt: "Classical sculpture",
+    // Form and craft — same classical identity language as /for-creators
+    image: "/images/for-creators/journey-statue.png",
+    imageAlt: "Classical sculpture study",
     imageFit: "cover" as const,
   },
   {
     num: "04",
     titleLines: ["Website +", "Platform Assets"],
     accent: "saffron",
-    // Topology globe — platform / hub metaphor already in the product
-    image: "/images/globe/earth-topology.png",
-    imageAlt: "Topographic globe",
+    // Expansive branded field — hub / digital presence
+    image: "/images/for-creators/hero-bg.jpg",
+    imageAlt: "Cloud field digital landscape",
     imageFit: "cover" as const,
   },
 ] as const;
@@ -133,7 +133,7 @@ function CoverSlide() {
       {reduced ? (
         // eslint-disable-next-line @next/next/no-img-element -- decorative poster
         <img
-          src="/videos/cloud-loop-bw-poster.jpg"
+          src="/videos/invitation-hero-prev-poster.jpg"
           alt=""
           aria-hidden="true"
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
@@ -145,20 +145,20 @@ function CoverSlide() {
           muted
           loop
           playsInline
-          poster="/videos/cloud-loop-bw-poster.jpg"
+          poster="/videos/invitation-hero-prev-poster.jpg"
           aria-hidden="true"
           tabIndex={-1}
         >
-          {/* B&W clouds only — pre-sunny invitation plate (no light rays) */}
-          <source src="/videos/cloud-loop-bw.webm" type="video/webm" />
-          <source src="/videos/cloud-loop-bw.mp4" type="video/mp4" />
+          {/* Pre-sunny invitation cloud plate (no light rays) */}
+          <source src="/videos/invitation-hero-prev.webm" type="video/webm" />
+          <source src="/videos/invitation-hero-prev.mp4" type="video/mp4" />
         </video>
       )}
       <div className={styles.coverScrim} aria-hidden="true" />
       <div className={styles.coverChrome}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF; next/image freezes frames */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- animated APNG; next/image freezes frames */}
         <img
-          src="/images/email/logo-spin.gif"
+          src="/images/brand/logo-spin-transparent.png"
           alt="GHOSTSignal"
           width={96}
           height={96}

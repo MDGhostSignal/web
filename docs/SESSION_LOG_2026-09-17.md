@@ -48,6 +48,13 @@
 - Homepage hero subtitle → `#fff` and slightly larger type
 - PDF export still pending after final deck QA
 
+## Later same day (cover video + Reels guide + scrollbar)
+- Cover video → `invitation-hero-prev` (transparent spin logo, no white box); edge bleed fix
+- Next Steps dark theme; Scope tile size/copy polish; Work tile image swaps + 100px lift
+- Proposal route: kill double scrollbar (html/body overflow lock + rail overflow hidden)
+- `/guides/instagram-reels`: remove Why this exists, Quick reference, Before you publish
+
 ## Open / next
 - Generate PDF from polished Holly proposal deck
 - Optional: prune unused intermediate cloud-loop video files if not needed
+- White paper Drive link still awaiting new URL from Martin

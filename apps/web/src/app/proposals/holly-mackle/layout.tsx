@@ -15,5 +15,18 @@ export default function HollyMackleProposalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {/* Keep a single scrollbar on the deck stage — kill the document gutter. */}
+      <style>{`
+        html,
+        body {
+          height: 100% !important;
+          overflow: hidden !important;
+          scrollbar-gutter: auto !important;
+        }
+      `}</style>
+      {children}
+    </>
+  );
 }

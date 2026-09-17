@@ -11,7 +11,6 @@ import {
   type KeyboardEvent,
 } from "react";
 
-import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Container, Section } from "@/components/layout";
@@ -201,16 +200,6 @@ function writeChecks(next: CheckMap) {
   for (const cb of checkListeners) cb();
 }
 
-const quickRules = [
-  { step: "01", focus: "Hook", rule: "Win the first 1–3 seconds or lose the Reel" },
-  { step: "02", focus: "Structure", rule: "Hook → 2–3 beats → payoff → one CTA" },
-  { step: "03", focus: "Length", rule: "Shortest that fully delivers the point" },
-  { step: "04", focus: "Audio + text", rule: "Sound-off first; audio supports" },
-  { step: "05", focus: "Caption", rule: "Keyword up front; 3–5 niche tags; one ask" },
-  { step: "06", focus: "Timing", rule: "Insights > generic clocks; 3–4 / week" },
-  { step: "07", focus: "CTA + learn", rule: "One clear ask; iterate from watch time & shares" },
-];
-
 export default function InstagramReelsGuidePage() {
   const [openStepId, setOpenStepId] = useState<string | null>(null);
   const checks = useSyncExternalStore(
@@ -330,29 +319,6 @@ export default function InstagramReelsGuidePage() {
         </Container>
       </Section>
 
-      <Section className={styles.contextSection} id="why">
-        <Container className={styles.context}>
-          <ScrollFadeUp duration={1.2}>
-            <div className={styles.contextCopy}>
-              <p className={styles.contextEyebrow}>Why this exists</p>
-              <h2 className={styles.contextTitle}>
-                <span className={styles.contextTitleLine}>Ads perform better</span>
-                <span className={styles.contextTitleLine}>
-                  When posting basics are solid
-                </span>
-              </h2>
-              <p className={styles.contextBody}>
-                <BrandedGhostSignal /> works with partners on both campaign
-                performance and how content actually gets published. Some
-                creators are new to Reels; others just want a clear checklist.
-                This page is the shared baseline — efficient, correct, and free
-                of huge unforced errors.
-              </p>
-            </div>
-          </ScrollFadeUp>
-        </Container>
-      </Section>
-
       <Section className={styles.boardSection} id="steps">
         <Container className={styles.board}>
           <ScrollFadeUp duration={1.2}>
@@ -393,60 +359,6 @@ export default function InstagramReelsGuidePage() {
                 );
               })}
             </ol>
-          </ScrollFadeUp>
-        </Container>
-      </Section>
-
-      <Section className={styles.quickSection} id="quick-reference">
-        <Container className={styles.quick}>
-          <ScrollFadeUp duration={1.2}>
-            <header className={styles.quickHeader}>
-              <p className={styles.contextEyebrow}>Keep this handy</p>
-              <h2 className={styles.quickTitle}>Quick reference</h2>
-              <p className={styles.quickLead}>
-                One line per step. Screenshot it, pin it, or skim it before
-                you hit Publish.
-              </p>
-            </header>
-          </ScrollFadeUp>
-
-          <ScrollFadeUp duration={1.2} delay={0.1}>
-            <div className={styles.quickTableWrap}>
-              <table className={styles.quickTable}>
-                <thead>
-                  <tr>
-                    <th scope="col">Step</th>
-                    <th scope="col">Focus</th>
-                    <th scope="col">Rule</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {quickRules.map((row) => (
-                    <tr key={row.step}>
-                      <td className={styles.quickStep}>{row.step}</td>
-                      <td className={styles.quickFocus}>{row.focus}</td>
-                      <td>{row.rule}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </ScrollFadeUp>
-        </Container>
-      </Section>
-
-      <Section className={styles.closeSection} id="before-you-publish">
-        <div className={styles.closeGlow} aria-hidden="true" />
-        <Container className={styles.close}>
-          <ScrollFadeUp duration={1.3}>
-            <p className={styles.closeEyebrow}>Before you publish</p>
-            <h2 className={styles.closeTitle}>Checklist, not a creative cage</h2>
-            <p className={styles.closeBody}>
-              The magic is in being creative while you stay inside a few basic
-              guidelines. Bring your voice and your spark — then let these
-              simple rules carry the Reel so the craft and the basics work
-              together.
-            </p>
           </ScrollFadeUp>
         </Container>
       </Section>

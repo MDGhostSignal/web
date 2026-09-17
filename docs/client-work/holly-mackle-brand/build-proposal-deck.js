@@ -173,7 +173,7 @@ function addFooterWide(slide, page, dark = false) {
   const slide = pres.addSlide();
   const COVER_POSTER = path.join(
     ROOT,
-    "apps/web/public/videos/cloud-loop-bw-poster.jpg"
+    "apps/web/public/videos/invitation-hero-prev-poster.jpg"
   );
   const SPIN_WHITE = path.join(ROOT, "apps/web/public/images/email/logo-spin.gif");
 
@@ -720,12 +720,12 @@ function addFooterWide(slide, page, dark = false) {
 }
 
 // ─────────────────────────────────────────────
-// 6 · NEXT STEPS — cream system, no price / no brand bars
+// 6 · NEXT STEPS — dark inverted close; no price / no brand bars
 // ─────────────────────────────────────────────
 {
   const slide = pres.addSlide();
-  slide.background = { color: C.paper };
-  const LOGO_CLOUD = path.join(ROOT, "apps/web/public/images/brand/logo-black.png");
+  slide.background = { color: C.ink };
+  const LOGO_CLOUD = path.join(ROOT, "apps/web/public/images/brand/cloudmark-white.png");
   const inset = 100 / 144;
 
   if (fs.existsSync(LOGO_CLOUD)) {
@@ -747,7 +747,7 @@ function addFooterWide(slide, page, dark = false) {
     fontFace: FONT,
     fontSize: 36,
     bold: true,
-    color: C.ink,
+    color: C.white,
     margin: 0,
   });
   slide.addText("Ready when you are.", {
@@ -757,7 +757,7 @@ function addFooterWide(slide, page, dark = false) {
     h: 0.35,
     fontFace: FONT,
     fontSize: 20,
-    color: C.muted,
+    color: "A8A29A",
     margin: 0,
   });
   slide.addText(
@@ -769,7 +769,7 @@ function addFooterWide(slide, page, dark = false) {
       h: 1.2,
       fontFace: FONT,
       fontSize: 24,
-      color: C.ink,
+      color: "E8E2D9",
       margin: 0,
     }
   );
@@ -779,8 +779,8 @@ function addFooterWide(slide, page, dark = false) {
     y: 4.4,
     w: 7.2,
     h: 1.35,
-    fill: { color: C.white },
-    line: { color: C.soft, width: 1 },
+    fill: { color: C.charcoal },
+    line: { color: "2A2A2A", width: 1 },
     shadow: makeShadow(),
     rectRadius: 0.12,
   });
@@ -800,7 +800,7 @@ function addFooterWide(slide, page, dark = false) {
     fontFace: FONT,
     fontSize: 12,
     bold: true,
-    color: C.muted,
+    color: "8A847C",
     charSpacing: 2,
     margin: 0,
   });
@@ -812,7 +812,7 @@ function addFooterWide(slide, page, dark = false) {
     fontFace: FONT,
     fontSize: 24,
     bold: true,
-    color: C.ink,
+    color: C.white,
     margin: 0,
   });
   slide.addText("Welcome to the Signal.", {
@@ -823,7 +823,7 @@ function addFooterWide(slide, page, dark = false) {
     fontFace: FONT,
     fontSize: 16,
     italic: true,
-    color: C.muted,
+    color: "8A847C",
     margin: 0,
   });
 }

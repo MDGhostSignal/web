@@ -136,12 +136,15 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #f5f0e8;
+  /* Dark fallback so any subpixel gap matches the B&W plate, not cream */
+  background: #0a0a0a;
 }
 
 .coverVideo {
   position: absolute;
-  inset: 0;
+  /* Bleed past edges to kill hairline gaps with rounded clip */
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- 2px bleed must stay paired with scale(1.03) cover fill */
+  inset: -2px;
   z-index: 0;
 }
 
@@ -150,6 +153,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  /* Extra cover so scaled rounding / DPR never shows the fallback */
+  transform: scale(1.03);
+  transform-origin: center center;
   filter: brightness(1.02) contrast(1.04);
 }
 
@@ -180,10 +187,7 @@
   width: calc(var(--gs-n-72) * var(--gs-px));
   height: calc(var(--gs-n-72) * var(--gs-px));
   object-fit: contain;
-  border-radius: calc(var(--gs-n-8) * var(--gs-px));
-  background: #fff;
-  border: 1px solid rgba(20, 20, 20, 0.08);
-  box-shadow: 0 12px 32px rgba(20, 20, 20, 0.22);
+  background: transparent;
 }
 
 /* Bottom-left type stack: 100px from left and bottom; white over the cloud video */
@@ -485,8 +489,11 @@
   flex: 0 0 auto;
   width: 100%;
   margin-top: auto;
-  /* Clear the absolute full-bleed brand bars */
-  margin-bottom: calc(var(--proposal-brand-bar-h) + (var(--gs-n-16) * var(--gs-px)));
+  /* Clear brand bars + lift the row 100px from the previous resting spot */
+  margin-bottom: calc(
+    var(--proposal-brand-bar-h) + (var(--gs-n-16) * var(--gs-px)) +
+      (var(--gs-n-100) * var(--gs-px))
+  );
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: auto;
@@ -888,11 +895,15 @@
 }
 
 .scopeGrid {
-  flex: 1 1 auto;
-  min-height: 0;
+  /* Same tile geometry as The Work */
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: auto;
+  margin-bottom: calc(var(--gs-n-16) * var(--gs-px));
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: calc(var(--gs-n-16) * var(--gs-px));
+  grid-template-rows: auto;
+  gap: calc(var(--gs-n-32) * var(--gs-px));
   align-items: stretch;
 }
 
@@ -901,10 +912,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: calc(var(--gs-n-10) * var(--gs-px));
+  gap: calc(var(--gs-n-14) * var(--gs-px));
+  height: var(--proposal-work-card-h);
   min-height: 0;
-  height: 100%;
-  padding: calc(var(--gs-n-20) * var(--gs-px));
+  padding: calc(var(--gs-n-18) * var(--gs-px));
   background: #fff;
   border: 1px solid #e8e2d9;
   border-radius: calc(var(--gs-radius-2xl, 18) * var(--gs-px));
@@ -1015,24 +1026,31 @@
   color: #fff;
 }
 
-/* Next Steps — closing slide, cream system, no brand bars */
+/* Next Steps — dark inverted close; no brand bars */
 .next {
-  --next-ink: #141414;
-  --next-muted: #6b6560;
+  --next-ink: #ffffff;
+  --next-muted: rgba(255, 255, 255, 0.62);
   --next-saffron: #fbad25;
   --next-green: #00b29c;
+  --next-surface: #1c1c1c;
+  --next-border: rgba(255, 255, 255, 0.12);
   box-sizing: border-box;
   position: relative;
   width: 100%;
   height: 100%;
   padding: var(--proposal-deck-inset);
-  background: #f3eee6;
+  background: #141414;
   color: var(--next-ink);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: calc(var(--gs-n-24) * var(--gs-px));
   overflow: hidden;
+}
+
+.next .deckCloud {
+  /* logo-black cloud → white on the dark field */
+  filter: invert(1);
 }
 
 .nextHeader {
@@ -1089,11 +1107,11 @@
   width: min(100%, 36rem);
   margin-top: auto;
   padding: calc(var(--gs-n-24) * var(--gs-px)) calc(var(--gs-n-28) * var(--gs-px));
-  background: #fff;
-  border: 1px solid #e8e2d9;
+  background: var(--next-surface);
+  border: 1px solid var(--next-border);
   border-radius: calc(var(--gs-radius-2xl, 18) * var(--gs-px));
   border-left: calc(var(--gs-n-6) * var(--gs-px)) solid var(--next-saffron);
-  box-shadow: 0 10px 28px rgba(20, 20, 20, 0.06);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
 }
 
 .nextCtaLabel {
@@ -1114,12 +1132,12 @@
   );
   font-weight: var(--gs-font-weight-bold, 700);
   letter-spacing: -0.01em;
-  color: var(--next-ink);
+  color: #fff;
   text-decoration: none;
 }
 
 .nextCtaLink:hover {
-  color: var(--next-green);
+  color: var(--next-saffron);
 }
 
 .nextSignoff {
@@ -1195,10 +1213,11 @@
   }
 
   .scopeGrid {
-    gap: calc(var(--gs-n-10) * var(--gs-px));
+    gap: calc(var(--gs-n-16) * var(--gs-px));
   }
 
   .scopeCard {
+    height: calc(var(--gs-n-240) * var(--gs-px));
     padding: calc(var(--gs-n-14) * var(--gs-px));
     gap: calc(var(--gs-n-8) * var(--gs-px));
     border-radius: calc(var(--gs-radius-xl, 14) * var(--gs-px));
@@ -1278,7 +1297,8 @@
     padding: calc(var(--gs-n-24) * var(--gs-px)) calc(var(--gs-n-16) * var(--gs-px));
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     background: #121212;
-    overflow-y: auto;
+    /* Nav is short — don't create a second scrollbar beside the stage */
+    overflow: hidden;
   }
 
   .railLabel {
