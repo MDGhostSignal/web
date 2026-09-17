@@ -121,15 +121,17 @@ const W = 13.333;
 const H = 7.5;
 const M = 0.7; // outer margin
 
-function addColorBarsWide(slide, y = 7.2) {
+function addColorBarsWide(slide, y = 7.35) {
+  // Half the prior 0.3" strip height
   const colors = [C.terracotta, C.wine, C.green, C.pink, C.saffron];
   const w = W / colors.length;
+  const h = 0.15;
   colors.forEach((color, i) => {
     slide.addShape(pres.shapes.RECTANGLE, {
       x: i * w,
       y,
       w,
-      h: 0.3,
+      h,
       fill: { color },
       line: { color, width: 0 },
     });
@@ -171,7 +173,7 @@ function addFooterWide(slide, page, dark = false) {
   const slide = pres.addSlide();
   const COVER_POSTER = path.join(
     ROOT,
-    "apps/web/public/videos/invitation-hero-poster.jpg"
+    "apps/web/public/videos/cloud-loop-bw-poster.jpg"
   );
   const SPIN_WHITE = path.join(ROOT, "apps/web/public/images/email/logo-spin.gif");
 
@@ -473,95 +475,113 @@ function addFooterWide(slide, page, dark = false) {
 }
 
 // ─────────────────────────────────────────────
-// 4 · TIMELINE
+// 4 · TIMELINE — 4-week calendar grid (one phase / week)
 // ─────────────────────────────────────────────
 {
   const slide = pres.addSlide();
-  slide.background = { color: C.charcoal };
+  slide.background = { color: C.paper };
 
-  slide.addText("TIMELINE", {
+  if (fs.existsSync(LOGO_BLACK)) {
+    slide.addImage({
+      path: LOGO_BLACK,
+      x: M,
+      y: 0.3,
+      w: 1.7,
+      h: 0.34,
+      altText: "GHOSTSignal",
+    });
+  }
+
+  slide.addText("The Timeline", {
     x: M,
-    y: 0.5,
+    y: 0.8,
+    w: 11,
+    h: 0.45,
+    fontFace: FONT,
+    fontSize: 36,
+    bold: true,
+    color: C.ink,
+    margin: 0,
+  });
+  slide.addText("About four weeks, end to end", {
+    x: M,
+    y: 1.3,
     w: 11,
     h: 0.3,
     fontFace: FONT,
-    fontSize: 14,
-    color: C.green,
-    charSpacing: 4,
-    margin: 0,
-  });
-  slide.addText("About two weeks, end to end", {
-    x: M,
-    y: 0.95,
-    w: 11,
-    h: 0.6,
-    fontFace: FONT_DISPLAY,
-    fontSize: 36,
-    color: C.white,
+    fontSize: 20,
+    color: C.muted,
     margin: 0,
   });
   slide.addText("A suggested pace — exact dates lock once we kick off together.", {
     x: M,
     y: 1.65,
     w: 11,
-    h: 0.4,
+    h: 0.3,
     fontFace: FONT,
-    fontSize: 18,
-    color: "A8A29A",
+    fontSize: 16,
+    color: C.muted,
     margin: 0,
   });
 
-  slide.addShape(pres.shapes.RECTANGLE, {
-    x: 1.2,
-    y: 3.35,
-    w: 10.9,
-    h: 0.08,
-    fill: { color: "3A3A3A" },
-    line: { color: "3A3A3A", width: 0 },
+  // One month frame
+  slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: M,
+    y: 2.1,
+    w: W - M * 2,
+    h: 4.85,
+    fill: { color: C.white },
+    line: { color: C.soft, width: 1 },
+    shadow: makeShadow(),
+    rectRadius: 0.12,
   });
 
   const weeks = [
-    { label: "Week 1", items: ["Discovery", "Brand Strategy"], color: C.green },
-    { label: "Week 2", items: ["Visual Identity", "Website + Assets"], color: C.saffron },
+    { label: "WEEK 1", title: "DISCOVERY", focus: "Listen & surface hopes for the brand’s future.", color: C.green },
+    { label: "WEEK 2", title: "BRAND STRATEGY", focus: "Platforms, voice, and the growth path.", color: C.wine },
+    { label: "WEEK 3", title: "VISUAL IDENTITY", focus: "Logo, color, and the full visual environment.", color: C.terracotta },
+    { label: "WEEK 4", title: "WEBSITE + PLATFORM ASSETS", focus: "The hub plus assets for every channel.", color: C.saffron },
   ];
+  const rowH = 1.05;
+  const startY = 2.45;
 
   weeks.forEach((w, i) => {
-    const x = 1.6 + i * 5.6;
-    slide.addShape(pres.shapes.OVAL, {
-      x: x + 1.7,
-      y: 3.18,
-      w: 0.42,
-      h: 0.42,
-      fill: { color: w.color },
-      line: { color: w.color, width: 0 },
-    });
-    slide.addText(w.label.toUpperCase(), {
-      x,
-      y: 3.9,
-      w: 4,
-      h: 0.35,
+    const y = startY + i * rowH;
+    slide.addText(w.label, {
+      x: M + 0.25,
+      y: y + 0.28,
+      w: 1.3,
+      h: 0.4,
       fontFace: FONT,
-      fontSize: 14,
+      fontSize: 12,
+      bold: true,
       color: w.color,
-      charSpacing: 3,
-      align: "center",
+      charSpacing: 1,
       margin: 0,
     });
-    slide.addText(w.items.join("\n+\n"), {
-      x,
-      y: 4.4,
-      w: 4,
-      h: 1.6,
-      fontFace: FONT_DISPLAY,
-      fontSize: 26,
+    slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+      x: M + 1.7,
+      y: y + 0.12,
+      w: W - M * 2 - 2.1,
+      h: 0.78,
+      fill: { color: w.color },
+      line: { color: w.color, width: 0 },
+      rectRadius: 0.08,
+    });
+    slide.addText(`${w.title}  ·  ${w.focus}`, {
+      x: M + 1.95,
+      y: y + 0.28,
+      w: W - M * 2 - 2.6,
+      h: 0.45,
+      fontFace: FONT,
+      fontSize: 14,
+      bold: true,
       color: C.white,
-      align: "center",
       margin: 0,
     });
   });
 
-  addFooterWide(slide, 4, true);
-  addColorBarsWide(slide);
+  // No footer meta / brand bars on Timeline
 }
 
 // ─────────────────────────────────────────────
@@ -696,87 +716,116 @@ function addFooterWide(slide, page, dark = false) {
     margin: 0,
   });
 
-  addColorBarsWide(slide, 7.2);
+  // No brand-color footer bars on Scope (matches live slide)
 }
 
 // ─────────────────────────────────────────────
-// 6 · NEXT STEPS (no price)
+// 6 · NEXT STEPS — cream system, no price / no brand bars
 // ─────────────────────────────────────────────
 {
   const slide = pres.addSlide();
-  slide.background = { color: C.ink };
+  slide.background = { color: C.paper };
+  const LOGO_CLOUD = path.join(ROOT, "apps/web/public/images/brand/logo-black.png");
+  const inset = 100 / 144;
 
-  if (fs.existsSync(CLOUD_WHITE)) {
+  if (fs.existsSync(LOGO_CLOUD)) {
     slide.addImage({
-      path: CLOUD_WHITE,
-      x: W - M - 1.1,
-      y: 0.5,
-      w: 1.1,
-      h: 1.1,
+      path: LOGO_CLOUD,
+      x: W - inset - 0.55,
+      y: inset,
+      w: 0.55,
+      h: 0.55,
       altText: "GHOSTSignal cloudmark",
     });
   }
 
-  slide.addText("NEXT STEPS", {
-    x: M,
-    y: 1.5,
+  slide.addText("Next Steps", {
+    x: inset,
+    y: inset,
+    w: 10,
+    h: 0.5,
+    fontFace: FONT,
+    fontSize: 36,
+    bold: true,
+    color: C.ink,
+    margin: 0,
+  });
+  slide.addText("Ready when you are.", {
+    x: inset,
+    y: inset + 0.55,
     w: 10,
     h: 0.35,
     fontFace: FONT,
-    fontSize: 14,
-    color: C.green,
-    charSpacing: 4,
+    fontSize: 20,
+    color: C.muted,
     margin: 0,
   });
-
-  slide.addText("Ready when you are.", {
-    x: M,
-    y: 2.05,
-    w: 11,
-    h: 0.8,
-    fontFace: FONT_DISPLAY,
-    fontSize: 48,
-    color: C.white,
-    margin: 0,
-  });
-
   slide.addText(
-    "Thanks again for the opportunity to make this proposal. With questions or to get started, simply email Jeremy at jeremy@ghostsignal.cloud",
+    "Thank you for the opportunity to make this proposal. With questions or to get started, simply email Jeremy.",
     {
-      x: M,
-      y: 3.15,
-      w: 10.5,
+      x: inset,
+      y: 2.4,
+      w: 10,
       h: 1.2,
       fontFace: FONT,
-      fontSize: 20,
-      color: "C9C3BB",
+      fontSize: 24,
+      color: C.ink,
       margin: 0,
     }
   );
 
+  slide.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: inset,
+    y: 4.4,
+    w: 7.2,
+    h: 1.35,
+    fill: { color: C.white },
+    line: { color: C.soft, width: 1 },
+    shadow: makeShadow(),
+    rectRadius: 0.12,
+  });
+  slide.addShape(pres.shapes.RECTANGLE, {
+    x: inset,
+    y: 4.4,
+    w: 0.08,
+    h: 1.35,
+    fill: { color: C.saffron },
+    line: { color: C.saffron, width: 0 },
+  });
+  slide.addText("GET STARTED", {
+    x: inset + 0.35,
+    y: 4.55,
+    w: 6.5,
+    h: 0.3,
+    fontFace: FONT,
+    fontSize: 12,
+    bold: true,
+    color: C.muted,
+    charSpacing: 2,
+    margin: 0,
+  });
   slide.addText("jeremy@ghostsignal.cloud", {
-    x: M,
-    y: 4.7,
-    w: 10,
-    h: 0.5,
+    x: inset + 0.35,
+    y: 4.95,
+    w: 6.5,
+    h: 0.45,
     fontFace: FONT,
     fontSize: 24,
-    color: C.saffron,
+    bold: true,
+    color: C.ink,
     margin: 0,
   });
   slide.addText("Welcome to the Signal.", {
-    x: M,
-    y: 5.35,
+    x: inset,
+    y: 6.05,
     w: 10,
-    h: 0.4,
-    fontFace: FONT_DISPLAY,
-    fontSize: 18,
-    color: "8A847C",
+    h: 0.35,
+    fontFace: FONT,
+    fontSize: 16,
     italic: true,
+    color: C.muted,
     margin: 0,
   });
-
-  addColorBarsWide(slide);
 }
 
 const out = path.join(__dirname, "holly-mackle-brand-proposal.pptx");

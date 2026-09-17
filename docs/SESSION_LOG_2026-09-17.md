@@ -41,6 +41,13 @@
 - Playwright: signal-sheet#adverts graph opacity 1, 9 cells, no fade wrapper
 - Studio migration route auth-gated; checklist copy verified in source
 
+## Later same day (proposal polish + homepage)
+- Timeline → 4-week month calendar; Work tiles get images; Scope + Next Steps go live
+- Cover uses B&W `cloud-loop-bw` (no light rays); all slides get 18px rounded corners
+- Top-right cloudmark on Work/Timeline/Scope/Next = `logo-black.png`
+- Homepage hero subtitle → `#fff` and slightly larger type
+- PDF export still pending after final deck QA
+
 ## Open / next
-- Remaining proposal slides still static PNGs (Timeline, Scope, Next Steps)
-- PDF export after remaining slides are refined
+- Generate PDF from polished Holly proposal deck
+- Optional: prune unused intermediate cloud-loop video files if not needed

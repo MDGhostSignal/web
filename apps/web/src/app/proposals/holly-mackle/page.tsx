@@ -5,25 +5,71 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import styles from "./page.module.css";
 
-const STATIC_SLIDES = [
+const SLIDE_LABELS = [
+  "Cover",
+  "Opportunity",
+  "The Work",
+  "Timeline",
+  "Scope",
+  "Next Steps",
+] as const;
+
+const SCOPE_STEPS = [
   {
-    src: "/images/proposals/holly-mackle/slide-04.png",
-    label: "Timeline",
-    title: "About two weeks",
+    num: "01",
+    titleLines: ["Discovery"],
+    accent: "green",
+    body: "This project begins with understanding: through a guided conversation we discover your hopes and aspirations for the future of your brand. This step forms the foundation for the steps that follow, ensuring we stay authentic to who you are.",
   },
   {
-    src: "/images/proposals/holly-mackle/slide-05.png",
-    label: "Scope",
-    title: "Scope of work + investment",
+    num: "02",
+    titleLines: ["Brand", "Strategy"],
+    accent: "wine",
+    body: "Building on the Discovery step, we develop a Brand Strategy report, detailing the direction and aims of the brand. Here, we codify the role of each of the brand’s current platforms, describe the voice of the brand, and recommend steps for future growth.",
   },
   {
-    src: "/images/proposals/holly-mackle/slide-06.png",
-    label: "Next Steps",
-    title: "Ready when you are",
+    num: "03",
+    titleLines: ["Visual", "Identity"],
+    accent: "terracotta",
+    body: "Based on the Discovery and Strategy steps, we develop a cohesive Visual Identity for the overall brand. Including logo, color palette, and fonts, this step develops the entire visual environment for the brand.",
+  },
+  {
+    num: "04",
+    titleLines: ["Website +", "Platform Assets"],
+    accent: "saffron",
+    body: "Finally, we apply all the previous work to a new website for the brand. Serving as a hub for all of your offerings, the website gives your audience the ease of a singular gathering place from which you communicate. This step also includes visual assets necessary for creating brand consistency across all of your current platforms.",
   },
 ] as const;
 
-const SLIDE_LABELS = ["Cover", "Opportunity", "The Work", ...STATIC_SLIDES.map((s) => s.label)] as const;
+const TIMELINE_WEEKS = [
+  {
+    label: "Week 1",
+    accent: "green",
+    titleLines: ["Discovery"],
+    focus: "Listen & surface hopes for the brand’s future.",
+  },
+  {
+    label: "Week 2",
+    accent: "wine",
+    titleLines: ["Brand", "Strategy"],
+    focus: "Platforms, voice, and the growth path.",
+  },
+  {
+    label: "Week 3",
+    accent: "terracotta",
+    titleLines: ["Visual", "Identity"],
+    focus: "Logo, color, and the full visual environment.",
+  },
+  {
+    label: "Week 4",
+    accent: "saffron",
+    titleLines: ["Website +", "Platform Assets"],
+    focus: "The hub plus assets for every channel.",
+  },
+] as const;
+
+const BRAND_BAR_COLORS = ["terracotta", "wine", "green", "pink", "saffron"] as const;
+const CALENDAR_DAYS = ["M", "T", "W", "T", "F"] as const;
 const SLIDE_COUNT = SLIDE_LABELS.length;
 
 const WORK_STEPS = [
@@ -31,25 +77,37 @@ const WORK_STEPS = [
     num: "01",
     titleLines: ["Discovery"],
     accent: "green",
-    body: "Guided conversation to surface hopes and aspirations for the brand’s future.",
+    // Community listening — same photography language as /who-are-we promises
+    image: "/images/who-are-we/promise2.jpg",
+    imageAlt: "People gathered in conversation",
+    imageFit: "cover" as const,
   },
   {
     num: "02",
     titleLines: ["Brand", "Strategy"],
     accent: "wine",
-    body: "A Brand Strategy report: platforms, voice, and recommended growth steps.",
+    // Signal-strength bars from the homepage brand system
+    image: "/images/home/figma/bars.png",
+    imageAlt: "GhostSignal signal bars",
+    imageFit: "contain" as const,
   },
   {
     num: "03",
     titleLines: ["Visual", "Identity"],
     accent: "terracotta",
-    body: "Logo, color palette, and fonts — the full visual environment.",
+    // Classical form used across /for-advertisers visual identity moments
+    image: "/images/home/figma/mariah.png",
+    imageAlt: "Classical sculpture",
+    imageFit: "cover" as const,
   },
   {
     num: "04",
     titleLines: ["Website +", "Platform Assets"],
     accent: "saffron",
-    body: "A website hub for your offerings, plus assets for cross-platform consistency.",
+    // Topology globe — platform / hub metaphor already in the product
+    image: "/images/globe/earth-topology.png",
+    imageAlt: "Topographic globe",
+    imageFit: "cover" as const,
   },
 ] as const;
 
@@ -73,9 +131,9 @@ function CoverSlide() {
   return (
     <div className={styles.cover}>
       {reduced ? (
-        // eslint-disable-next-line @next/next/no-img-element -- decorative poster; same pattern as /invitation
+        // eslint-disable-next-line @next/next/no-img-element -- decorative poster
         <img
-          src="/videos/invitation-hero-poster.jpg"
+          src="/videos/cloud-loop-bw-poster.jpg"
           alt=""
           aria-hidden="true"
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
@@ -87,12 +145,13 @@ function CoverSlide() {
           muted
           loop
           playsInline
-          poster="/videos/invitation-hero-poster.jpg"
+          poster="/videos/cloud-loop-bw-poster.jpg"
           aria-hidden="true"
           tabIndex={-1}
         >
-          <source src="/videos/invitation-hero.webm" type="video/webm" />
-          <source src="/videos/invitation-hero.mp4" type="video/mp4" />
+          {/* B&W clouds only — pre-sunny invitation plate (no light rays) */}
+          <source src="/videos/cloud-loop-bw.webm" type="video/webm" />
+          <source src="/videos/cloud-loop-bw.mp4" type="video/mp4" />
         </video>
       )}
       <div className={styles.coverScrim} aria-hidden="true" />
@@ -125,6 +184,33 @@ function DeckLogo() {
       className={styles.deckLogo}
       priority
     />
+  );
+}
+
+function DeckCloudMark() {
+  return (
+    <Image
+      src="/images/brand/logo-black.png"
+      alt=""
+      width={96}
+      height={96}
+      className={styles.deckCloud}
+      priority
+      aria-hidden="true"
+    />
+  );
+}
+
+function BrandBars() {
+  return (
+    <div className={styles.brandBars} aria-hidden="true">
+      {BRAND_BAR_COLORS.map((color) => (
+        <span
+          key={color}
+          className={`${styles.brandBar} ${styles[`brandBar_${color}`]}`}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -161,7 +247,7 @@ function OpportunitySlide() {
 function WorkSlide() {
   return (
     <div className={styles.work}>
-      <DeckLogo />
+      <DeckCloudMark />
       <header className={styles.workHeader}>
         <h1 className={styles.workTitle}>The Work</h1>
         <p className={styles.workSub}>Four connected steps</p>
@@ -172,17 +258,151 @@ function WorkSlide() {
             key={step.num}
             className={`${styles.workCard} ${styles[`workAccent_${step.accent}`]}`}
           >
-            <p className={styles.workCardNum}>{step.num}</p>
-            <h2 className={styles.workCardTitle}>
+            <div className={styles.workCardTop}>
+              <p className={styles.workCardNum}>{step.num}</p>
+              <h2 className={styles.workCardTitle}>
+                {step.titleLines.map((line) => (
+                  <span key={line} className={styles.workCardTitleLine}>
+                    {line}
+                  </span>
+                ))}
+              </h2>
+            </div>
+            <div
+              className={
+                step.imageFit === "contain"
+                  ? `${styles.workCardMedia} ${styles.workCardMediaContain}`
+                  : styles.workCardMedia
+              }
+            >
+              <Image
+                src={step.image}
+                alt={step.imageAlt}
+                width={800}
+                height={1000}
+                className={styles.workCardImage}
+                sizes="20vw"
+              />
+            </div>
+          </article>
+        ))}
+      </div>
+      <BrandBars />
+    </div>
+  );
+}
+
+function NextStepsSlide() {
+  return (
+    <div className={styles.next}>
+      <DeckCloudMark />
+      <header className={styles.nextHeader}>
+        <h1 className={styles.nextTitle}>Next Steps</h1>
+        <p className={styles.nextSub}>Ready when you are.</p>
+      </header>
+
+      <p className={styles.nextLead}>
+        Thank you for the opportunity to make this proposal. With questions
+        or to get started, simply email Jeremy.
+      </p>
+
+      <div className={styles.nextCta}>
+        <p className={styles.nextCtaLabel}>Get started</p>
+        <a className={styles.nextCtaLink} href="mailto:jeremy@ghostsignal.cloud">
+          jeremy@ghostsignal.cloud
+        </a>
+      </div>
+
+      <p className={styles.nextSignoff}>Welcome to the Signal.</p>
+    </div>
+  );
+}
+
+function ScopeSlide() {
+  return (
+    <div className={styles.scope}>
+      <DeckCloudMark />
+      <header className={styles.scopeHeader}>
+        <h1 className={styles.scopeTitle}>The Scope</h1>
+        <p className={styles.scopeSub}>What we will do together</p>
+      </header>
+
+      <div className={styles.scopeGrid}>
+        {SCOPE_STEPS.map((step) => (
+          <article
+            key={step.num}
+            className={`${styles.scopeCard} ${styles[`scopeAccent_${step.accent}`]}`}
+          >
+            <p className={styles.scopeCardNum}>{step.num}</p>
+            <h2 className={styles.scopeCardTitle}>
               {step.titleLines.map((line) => (
-                <span key={line} className={styles.workCardTitleLine}>
+                <span key={line} className={styles.scopeCardTitleLine}>
                   {line}
                 </span>
               ))}
             </h2>
-            <p className={styles.workCardBody}>{step.body}</p>
+            <p className={styles.scopeCardBody}>{step.body}</p>
           </article>
         ))}
+      </div>
+
+      <div className={styles.scopeInvestment}>
+        <p className={styles.scopeInvestmentLabel}>
+          Project investment · Total for all four steps
+        </p>
+        <p className={styles.scopeInvestmentValue}>$4,850</p>
+      </div>
+    </div>
+  );
+}
+
+function TimelineSlide() {
+  return (
+    <div className={styles.timeline}>
+      <DeckCloudMark />
+      <header className={styles.timelineHeader}>
+        <h1 className={styles.timelineTitle}>The Timeline</h1>
+        <p className={styles.timelineSub}>About four weeks, end to end</p>
+        <p className={styles.timelineNote}>
+          A suggested pace — exact dates lock once we kick off together.
+        </p>
+      </header>
+
+      <div className={styles.timelineMonth}>
+        <div className={styles.timelineMonthHead} aria-hidden="true">
+          <span className={styles.timelineMonthCorner} />
+          {CALENDAR_DAYS.map((day, i) => (
+            <span key={`month-day-${day}-${i}`} className={styles.timelineMonthDay}>
+              {day}
+            </span>
+          ))}
+        </div>
+
+        <ol className={styles.timelineMonthBody}>
+          {TIMELINE_WEEKS.map((week) => (
+            <li
+              key={week.label}
+              className={`${styles.timelineMonthWeek} ${styles[`timelineMonthWeek_${week.accent}`]}`}
+            >
+              <p className={styles.timelineMonthWeekLabel}>{week.label}</p>
+              <div className={styles.timelineMonthWeekGrid}>
+                {CALENDAR_DAYS.map((day, i) => (
+                  <span
+                    key={`${week.label}-cell-${day}-${i}`}
+                    className={styles.timelineMonthCell}
+                    aria-hidden="true"
+                  />
+                ))}
+                <div className={styles.timelineMonthEvent}>
+                  <h2 className={styles.timelineMonthEventTitle}>
+                    {week.titleLines.join(" ")}
+                  </h2>
+                  <p className={styles.timelineMonthEventFocus}>{week.focus}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </div>
   );
@@ -329,32 +549,44 @@ export default function HollyMackleProposalPage() {
           </div>
         </section>
 
-        {STATIC_SLIDES.map((slide, i) => {
-          const index = i + 3;
-          return (
-            <section
-              key={slide.src}
-              id={`slide-${index + 1}`}
-              className={styles.slideViewport}
-              ref={(el) => {
-                slideRefs.current[index] = el;
-              }}
-              aria-label={`Slide ${index + 1}: ${slide.title}`}
-            >
-              <div className={styles.slideCanvas}>
-                <Image
-                  src={slide.src}
-                  alt={`Slide ${index + 1}: ${slide.title}`}
-                  width={1920}
-                  height={1080}
-                  className={styles.slideImage}
-                  priority={i < 1}
-                  sizes="100vw"
-                />
-              </div>
-            </section>
-          );
-        })}
+        <section
+          id="slide-4"
+          className={styles.slideViewport}
+          ref={(el) => {
+            slideRefs.current[3] = el;
+          }}
+          aria-label="Slide 4: About two weeks"
+        >
+          <div className={styles.slideCanvas}>
+            <TimelineSlide />
+          </div>
+        </section>
+
+        <section
+          id="slide-5"
+          className={styles.slideViewport}
+          ref={(el) => {
+            slideRefs.current[4] = el;
+          }}
+          aria-label="Slide 5: Scope of work + investment"
+        >
+          <div className={styles.slideCanvas}>
+            <ScopeSlide />
+          </div>
+        </section>
+
+        <section
+          id="slide-6"
+          className={styles.slideViewport}
+          ref={(el) => {
+            slideRefs.current[5] = el;
+          }}
+          aria-label="Slide 6: Ready when you are"
+        >
+          <div className={styles.slideCanvas}>
+            <NextStepsSlide />
+          </div>
+        </section>
       </main>
 
       <nav className={styles.mobileNav} aria-label="Slide controls">
