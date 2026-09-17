@@ -492,15 +492,6 @@ export function MigrationGuide({
           })}
         </ol>
 
-        <a className={styles.nextChapter} href="#markers">
-          <span className={styles.nextChapterKicker}>Still on this page</span>
-          <span className={styles.nextChapterTitle}>
-            Next: inserting ad markers on ART19
-          </span>
-          <span className={styles.nextChapterHint}>
-            Two screens — pick the episode, then place the mid-rolls.
-          </span>
-        </a>
       </section>
 
       <section
