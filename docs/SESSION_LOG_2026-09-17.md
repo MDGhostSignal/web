@@ -58,7 +58,11 @@
 - Proposal slides use fixed 1920×1080 artboard + ResizeObserver scale-to-fit (MacBook-safe)
 - Timeline → 8 weeks (2 weeks per phase); Monday colored bar with description; Tue–Fri phase dots
 
+## Later same day (scope deliverables + next steps + PDF)
+- Scope: Jeremy deliverables per phase; aligned description/deliverable bands; body+deliverable type at 16px
+- Next Steps: warm closer copy; four founder portraits (no email CTA / no names)
+- Exported `holly-mackle-brand-proposal.pdf` (6×1920×1080 pages)
+
 ## Open / next
-- Generate PDF from polished Holly proposal deck
 - Optional: prune unused intermediate cloud-loop video files if not needed
 - White paper Drive link still awaiting new URL from Martin

@@ -24,32 +24,66 @@ const SLIDE_LABELS = [
   "Next Steps",
 ] as const;
 
-const SCOPE_STEPS = [
+type ScopeDeliverable = {
+  text: string;
+  children?: readonly string[];
+};
+
+const SCOPE_STEPS: {
+  num: string;
+  titleLines: readonly string[];
+  accent: "green" | "wine" | "terracotta" | "saffron";
+  body: string;
+  deliverables: readonly ScopeDeliverable[];
+}[] = [
   {
     num: "01",
     titleLines: ["Discovery"],
     accent: "green",
-    body: "This project begins with understanding: a guided conversation to surface your hopes and aspirations for the brand’s future. That foundation keeps every later step authentic to who you are.",
+    body: "This project begins with understanding: through a guided conversation we discover your hopes and aspirations for the future of your brand. This step forms the foundation for the steps that follow, ensuring we stay authentic to who you are.",
+    deliverables: [
+      {
+        text: "Discovery Report: Who is the Holly Mackle Brand and Where is it Going",
+      },
+    ],
   },
   {
     num: "02",
     titleLines: ["Brand", "Strategy"],
     accent: "wine",
-    body: "Building on Discovery, we develop a Brand Strategy report that details the direction and aims of the brand. We codify each platform’s role, describe the brand voice, and recommend clear growth steps.",
+    body: "Building on the Discovery step, we develop a Brand Strategy report, detailing the direction and aims of the brand. Here, we codify the role of each of the brand’s current platforms, describe the voice of the brand, and recommend steps for future growth.",
+    deliverables: [
+      {
+        text: "Brand Strategy Report: A Map of the future of the brand, a description of the Holly Mackle brand voice to guide writing and messaging across all platforms, recommendations for the role of each platform within the brand.",
+      },
+    ],
   },
   {
     num: "03",
     titleLines: ["Visual", "Identity"],
     accent: "terracotta",
-    body: "From Discovery and Strategy, we craft a cohesive Visual Identity for the overall brand. Logo, color palette, and fonts come together to shape the full visual environment you will carry forward.",
+    body: "Based on the Discovery and Strategy steps, we develop a cohesive Visual Identity for the overall brand. Including logo, color palette, and fonts, this step develops the entire visual environment for the brand.",
+    deliverables: [
+      { text: "Personal Brand Logo and any submarks" },
+      { text: "Color Palette" },
+      { text: "Fonts" },
+      { text: "Patterns/visual ecosystem" },
+    ],
   },
   {
     num: "04",
     titleLines: ["Website +", "Platform Assets"],
     accent: "saffron",
-    body: "Finally, we apply that work to a new website that serves as the hub for all of your offerings — plus the platform assets needed so your brand stays consistent everywhere audiences meet you.",
+    body: "Finally, we apply all the previous work to a new website for the brand. Serving as a hub for all of your offerings, the website gives your audience the ease of a singular gathering place from which you communicate. This step also includes visual assets necessary for creating brand consistency across all of your current platforms.",
+    deliverables: [
+      {
+        text: "Five page website, on Squarespace with the following pages",
+        children: ["Home", "About", "Podcast", "Writing", "Speaking"],
+      },
+      { text: "Digital Brand Asset for each existing platform" },
+    ],
   },
-] as const;
+];
 
 /** Eight weeks · four phases · two weeks each */
 const TIMELINE_WEEKS = [
@@ -368,6 +402,25 @@ function WorkSlide() {
   );
 }
 
+const NEXT_FOUNDERS = [
+  {
+    fullName: "Mike Sense",
+    image: "/images/who-are-we/mike6.jpg",
+  },
+  {
+    fullName: "Jack W Harding",
+    image: "/images/who-are-we/jack11.jpg",
+  },
+  {
+    fullName: "Martin Drexler",
+    image: "/images/who-are-we/martin3.jpg",
+  },
+  {
+    fullName: "Jeremy Reeves",
+    image: "/images/who-are-we/jeremy4.jpg",
+  },
+] as const;
+
 function NextStepsSlide() {
   return (
     <div className={styles.next}>
@@ -378,15 +431,26 @@ function NextStepsSlide() {
       </header>
 
       <p className={styles.nextLead}>
-        Thank you for the opportunity to make this proposal. With questions
-        or to get started, simply email Jeremy.
+        Thank you for the opportunity. We’re usually somewhere between a coffee
+        shop and a cloud — if you’d like to talk, you know where to find us.
       </p>
 
-      <div className={styles.nextCta}>
-        <p className={styles.nextCtaLabel}>Get started</p>
-        <a className={styles.nextCtaLink} href="mailto:jeremy@ghostsignal.cloud">
-          jeremy@ghostsignal.cloud
-        </a>
+      <div className={styles.nextFounders}>
+        <ul className={styles.nextFoundersList}>
+          {NEXT_FOUNDERS.map((founder) => (
+            <li key={founder.fullName} className={styles.nextFounder}>
+              <div className={styles.nextFounderFrame}>
+                <Image
+                  src={founder.image}
+                  alt={founder.fullName}
+                  width={240}
+                  height={240}
+                  className={styles.nextFounderImage}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <p className={styles.nextSignoff}>Welcome to the Signal.</p>
@@ -409,15 +473,34 @@ function ScopeSlide() {
             key={step.num}
             className={`${styles.scopeCard} ${styles[`scopeAccent_${step.accent}`]}`}
           >
-            <p className={styles.scopeCardNum}>{step.num}</p>
-            <h2 className={styles.scopeCardTitle}>
-              {step.titleLines.map((line) => (
-                <span key={line} className={styles.scopeCardTitleLine}>
-                  {line}
-                </span>
-              ))}
-            </h2>
+            <div className={styles.scopeCardTop}>
+              <p className={styles.scopeCardNum}>{step.num}</p>
+              <h2 className={styles.scopeCardTitle}>
+                {step.titleLines.map((line) => (
+                  <span key={line} className={styles.scopeCardTitleLine}>
+                    {line}
+                  </span>
+                ))}
+              </h2>
+            </div>
             <p className={styles.scopeCardBody}>{step.body}</p>
+            <div className={styles.scopeDeliverables}>
+              <p className={styles.scopeDeliverablesLabel}>Deliverables</p>
+              <ul className={styles.scopeDeliverablesList}>
+                {step.deliverables.map((item) => (
+                  <li key={item.text} className={styles.scopeDeliverableItem}>
+                    <span>{item.text}</span>
+                    {item.children ? (
+                      <ul className={styles.scopeDeliverablesSublist}>
+                        {item.children.map((child) => (
+                          <li key={child}>{child}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </article>
         ))}
       </div>
