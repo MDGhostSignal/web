@@ -54,6 +54,11 @@ const nextConfig: NextConfig = {
         destination: "/admin/contacts/:path*",
         permanent: true,
       },
+      {
+        source: "/proposals/life-giving-pages",
+        destination: "/life-giving-pages",
+        permanent: true,
+      },
     ];
   },
 };

@@ -15,8 +15,8 @@
 
 ## Review link
 
-- Route: `/proposals/life-giving-pages`
-- App: `apps/web/src/app/proposals/life-giving-pages/`
+- Route: `/life-giving-pages`
+- App: `apps/web/src/app/life-giving-pages/`
 - noindex
 
 Cloned from the live Holly Mackle proposal viewer. Opportunity slide uses a name plate because there is no headshot yet.
