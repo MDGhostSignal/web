@@ -22,7 +22,7 @@ export default function AdvertisersHeroPreviewPage() {
         <div className={preview.videoWrap}>
           <img
             className={preview.video}
-            src="/images/preview/temple.jpg"
+            src="/images/preview/landscape-japan.jpg"
             alt=""
           />
         </div>
