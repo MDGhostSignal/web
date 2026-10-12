@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
-import { navLinks } from "@/lib/nav";
+import { previewNavLinks } from "../nav";
 import { HomeTypingHero } from "../../HomeTypingLoop";
 import home from "../../page.module.css";
 import WhatIsThisPage from "../../what-is-this/page";
@@ -36,7 +36,7 @@ export default function HomepageTestNotLivePage() {
 
   return (
     <main className={preview.page}>
-      <SiteHeader links={navLinks} animateIn />
+      <SiteHeader links={previewNavLinks} animateIn />
       <div className={preview.homeHero}>
         <video
           className={preview.video}

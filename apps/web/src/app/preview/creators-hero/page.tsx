@@ -9,7 +9,7 @@ import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
-import { navLinks } from "@/lib/nav";
+import { previewNavLinks } from "../nav";
 
 import styles from "../../for-creators/page.module.css";
 import ForCreatorsPage from "../../for-creators/page";
@@ -51,7 +51,7 @@ export default function CreatorsHeroPreviewPage() {
 
   return (
     <main className={styles.page}>
-      <SiteHeader links={navLinks} />
+      <SiteHeader links={previewNavLinks} />
       <div className={styles.staticOverlay} aria-hidden="true" />
       <Section className={styles.hero}>
         <div

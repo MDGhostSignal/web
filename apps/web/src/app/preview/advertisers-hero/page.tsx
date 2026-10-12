@@ -1,50 +1,30 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
 import { SiteHeader } from "@/components/SiteHeader";
 import { Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
-import { navLinks } from "@/lib/nav";
 
 import styles from "../../for-advertisers/page.module.css";
 import ForAdvertisersPage from "../../for-advertisers/page";
+import { previewNavLinks } from "../nav";
 import preview from "./preview.module.css";
 
-const HeroPollen = dynamic(() => import("../../for-advertisers/HeroPollen"), {
-  ssr: false,
-});
-
 /**
- * Local preview of the For Advertisers hero with the Cloud of Glory loop.
- * Not linked from navigation. The live /for-advertisers page is unchanged.
+ * Preview of the For Advertisers hero. The live page is unchanged.
  */
 export default function AdvertisersHeroPreviewPage() {
   return (
     <main className={preview.page}>
-      <SiteHeader links={navLinks} />
+      <SiteHeader links={previewNavLinks} />
       <div className={styles.staticOverlay} aria-hidden="true" />
       <Section className={preview.hero}>
         <div className={preview.videoWrap}>
-          <video
+          <img
             className={preview.video}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            aria-hidden="true"
-          >
-            <source
-              src="/images/preview/advertisers-glory-drift-1080-45s.mp4"
-              type="video/mp4"
-            />
-          </video>
-        </div>
-        <div className={styles.heroPollenLayer} style={{ transform: "none" }}>
-          <HeroPollen />
+            src="/images/preview/temple.jpg"
+            alt=""
+          />
         </div>
         <div className={styles.heroContent}>
           <h1 className={styles.heroHeadline}>
