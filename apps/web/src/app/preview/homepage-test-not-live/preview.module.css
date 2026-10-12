@@ -1,0 +1,44 @@
+.page {
+  background: #000000;
+}
+
+.homeHero {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000000;
+}
+
+.homeHero .heroCopy {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: calc(var(--gs-n-112) * var(--gs-px));
+}
+
+.homeHero .heroCopy h1,
+.homeHero .heroCopy p {
+  max-width: none;
+  min-width: 50vw;
+  white-space: nowrap;
+}
+
+.transition {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 40vh;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000000 100%);
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+}

@@ -55,7 +55,13 @@ const subscribeSceneMq = (callback: () => void) => {
 const getSceneMqSnapshot = () => window.matchMedia(SCENE_MQ).matches;
 const getSceneMqServerSnapshot = () => false;
 
-export default function WhatIsThisPage() {
+export default function WhatIsThisPage({
+  showHeader = true,
+  showHero = true,
+}: {
+  showHeader?: boolean;
+  showHero?: boolean;
+}) {
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const heroBackgroundRef = useRef<HTMLDivElement>(null);
@@ -148,6 +154,11 @@ export default function WhatIsThisPage() {
     const video = heroVideoRef.current;
     const background = heroBackgroundRef.current;
     const text = heroTextRef.current;
+    if (!showHero) {
+      const bars = barsRef.current;
+      if (bars) gsap.set(bars, { opacity: 0.6 });
+      return;
+    }
     if (!wrapper || !video) return;
 
     // On touch viewports (≤991 px) skip the 3 scrub-fade tweens entirely.
@@ -267,7 +278,7 @@ export default function WhatIsThisPage() {
         entry.tween?.kill();
       }
     };
-  }, []);
+  }, [showHero]);
 
   // Harmony orbit drive — JS-driven rAF loop replaces the prior CSS
   // animations on .harmonyOrbit + .harmonyOrbitSphere so the same code
@@ -316,7 +327,7 @@ export default function WhatIsThisPage() {
 
   return (
     <main className={styles.page}>
-      <SiteHeader links={navLinks} />
+      {showHeader ? <SiteHeader links={navLinks} /> : null}
 
       {/* Starry night background — the feathered cloud overlay has been
           removed so only the star layer shows through. */}
@@ -325,7 +336,7 @@ export default function WhatIsThisPage() {
       {/* Hero Section — mirrors /for-creators's hero: white-bg parent,
           video positioned inside with a 100 px inset on three sides,
           text/logos in a normal-flow .heroContent stack over it. */}
-      <Section className={styles.hero}>
+      {showHero ? <Section className={styles.hero}>
         {/* White hero background — owns the white that forms the
             four-sided frame around the video. Lives as a child (not
             on .hero) so it can be opacity-tweened independently of
@@ -428,7 +439,7 @@ export default function WhatIsThisPage() {
               />
             </div>
         </div>
-      </Section>
+      </Section> : null}
 
       {/* Globe Background Container */}
       <div className={styles.globeWrapper}>

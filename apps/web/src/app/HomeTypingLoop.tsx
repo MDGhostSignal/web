@@ -13,7 +13,8 @@ const LINE_1_SEGMENTS = [
   { text: "Signal", className: "signal" as const },
   { text: " is for people", className: "plain" as const },
 ];
-const LINE_1_FULL_LEN = LINE_1_SEGMENTS.reduce((n, s) => n + s.text.length, 0);
+const SPLIT_LINE_1_SEGMENTS = LINE_1_SEGMENTS.slice(0, 2);
+const SPLIT_MID_LINE = "for people";
 
 const LINE_2_PREFIX = "who are ";
 const SUFFIXES = [
@@ -29,9 +30,12 @@ const DELETE_MS = 55;
 const HOLD_MS = 2200;
 const LINE_GAP_MS = 450;
 
-export function HomeTypingHero() {
+export function HomeTypingHero({ layout = "home" }: { layout?: "home" | "split" } = {}) {
   const [line1Len, setLine1Len] = useState(0);
+  const [midLen, setMidLen] = useState(0);
   const [line2Text, setLine2Text] = useState("");
+  const line1Segments = layout === "split" ? SPLIT_LINE_1_SEGMENTS : LINE_1_SEGMENTS;
+  const line1FullLen = line1Segments.reduce((n, s) => n + s.text.length, 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,11 +51,25 @@ export function HomeTypingHero() {
     const typeLine1 = (idx: number) => {
       if (cancelled) return;
       setLine1Len(idx);
-      if (idx >= LINE_1_FULL_LEN) {
-        schedule(() => typeLine2Initial(1), LINE_GAP_MS);
+      if (idx >= line1FullLen) {
+        if (layout === "split") {
+          schedule(() => typeMid(1), LINE_GAP_MS);
+        } else {
+          schedule(() => typeLine2Initial(1), LINE_GAP_MS);
+        }
         return;
       }
       schedule(() => typeLine1(idx + 1), TYPE_MS);
+    };
+
+    const typeMid = (idx: number) => {
+      if (cancelled) return;
+      setMidLen(idx);
+      if (idx >= SPLIT_MID_LINE.length) {
+        schedule(() => typeLine2Initial(1), LINE_GAP_MS);
+        return;
+      }
+      schedule(() => typeMid(idx + 1), TYPE_MS);
     };
 
     const typeLine2Initial = (idx: number) => {
@@ -99,19 +117,31 @@ export function HomeTypingHero() {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [layout, line1FullLen]);
 
-  const line1Done = line1Len >= LINE_1_FULL_LEN;
+  const line1Done = line1Len >= line1FullLen;
+  const midDone = layout !== "split" || midLen >= SPLIT_MID_LINE.length;
   const cursorOnLine1 = !line1Done;
+  const cursorOnMid = layout === "split" && line1Done && !midDone;
 
   return (
     <>
       <span className={styles.line}>
-        {renderLine1Chars(line1Len)}
+        {renderLine1Chars(line1Len, line1Segments)}
         {cursorOnLine1 && <Caret />}
       </span>
+      {layout === "split" && (
+        <span className={styles.line}>
+          {line1Done && (
+            <>
+              {renderLine2Chars(SPLIT_MID_LINE.slice(0, midLen), "mid")}
+              {cursorOnMid && <Caret />}
+            </>
+          )}
+        </span>
+      )}
       <span className={styles.line}>
-        {line1Done && (
+        {line1Done && midDone && (
           <>
             {renderLine2Chars(line2Text)}
             <Caret />
@@ -176,10 +206,13 @@ function renderWords(specs: CharSpec[], keyPrefix: string): ReactElement[] {
   return out;
 }
 
-function renderLine1Chars(visibleLen: number): ReactElement[] {
+function renderLine1Chars(
+  visibleLen: number,
+  segments: typeof LINE_1_SEGMENTS,
+): ReactElement[] {
   const specs: CharSpec[] = [];
   let offset = 0;
-  for (const seg of LINE_1_SEGMENTS) {
+  for (const seg of segments) {
     const sliceLen = Math.max(0, Math.min(seg.text.length, visibleLen - offset));
     for (let i = 0; i < sliceLen; i++) {
       specs.push({ ch: seg.text[i], className: seg.className, idx: offset + i });
@@ -189,10 +222,10 @@ function renderLine1Chars(visibleLen: number): ReactElement[] {
   return renderWords(specs, "l1");
 }
 
-function renderLine2Chars(text: string): ReactElement[] {
+function renderLine2Chars(text: string, keyPrefix = "l2"): ReactElement[] {
   const specs: CharSpec[] = [];
   for (let i = 0; i < text.length; i++) {
     specs.push({ ch: text[i], className: "", idx: i });
   }
-  return renderWords(specs, "l2");
+  return renderWords(specs, keyPrefix);
 }

@@ -1,0 +1,20 @@
+.section {
+  min-height: 100dvh;
+  padding: calc(var(--gs-n-80) * var(--gs-px));
+  background: var(--gs-background);
+  color: var(--gs-foreground);
+}
+
+.title {
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+  margin-top: calc(var(--gs-n-32) * var(--gs-px));
+  padding: 0;
+  list-style: none;
+}
