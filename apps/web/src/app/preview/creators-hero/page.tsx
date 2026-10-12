@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef } from "react";
 
@@ -13,32 +12,23 @@ import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 import { navLinks } from "@/lib/nav";
 
 import styles from "../../for-creators/page.module.css";
-
-const HeroFirefliesDrift = dynamic(
-  () => import("../../for-creators/HeroFirefliesDrift"),
-  { ssr: false },
-);
-const HeroFireflies = dynamic(
-  () => import("../../for-creators/HeroFireflies"),
-  { ssr: false },
-);
+import preview from "./preview.module.css";
 
 /**
  * Local preview of the For Creators hero.
  * Not linked from navigation. The live /for-creators page is unchanged.
  */
 export default function CreatorsHeroPreviewPage() {
-  const heroSectionRef = useRef<HTMLElement>(null);
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const heroStillRef = useRef<HTMLImageElement>(null);
 
   useIsomorphicLayoutEffect(() => {
     const wrapper = heroVideoWrapperRef.current;
-    const video = heroVideoRef.current;
-    if (!wrapper || !video) return;
+    const still = heroStillRef.current;
+    if (!wrapper || !still) return;
 
-    const videoTween = gsap.fromTo(
-      video,
+    const stillTween = gsap.fromTo(
+      still,
       { opacity: 1 },
       {
         opacity: 0,
@@ -52,27 +42,9 @@ export default function CreatorsHeroPreviewPage() {
       },
     );
 
-    const ensurePlaying = () => {
-      if (video.readyState < 2) return;
-      void video.play().catch(() => {
-        /* autoplay rejection — ignore */
-      });
-    };
-    const onPause = () => ensurePlaying();
-    const onEnded = () => ensurePlaying();
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") ensurePlaying();
-    };
-    video.addEventListener("pause", onPause);
-    video.addEventListener("ended", onEnded);
-    document.addEventListener("visibilitychange", onVisibility);
-
     return () => {
-      video.removeEventListener("pause", onPause);
-      video.removeEventListener("ended", onEnded);
-      document.removeEventListener("visibilitychange", onVisibility);
-      videoTween.scrollTrigger?.kill();
-      videoTween.kill();
+      stillTween.scrollTrigger?.kill();
+      stillTween.kill();
     };
   }, []);
 
@@ -80,23 +52,17 @@ export default function CreatorsHeroPreviewPage() {
     <main className={styles.page}>
       <SiteHeader links={navLinks} />
       <div className={styles.staticOverlay} aria-hidden="true" />
-      <Section ref={heroSectionRef} className={styles.hero}>
-        <HeroFirefliesDrift />
-        <HeroFireflies sectionRef={heroSectionRef} />
-        <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
-          <video
-            ref={heroVideoRef}
-            className={styles.heroVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            aria-hidden="true"
-          >
-            <source src="/images/for-creators/evening-yard.mp4" type="video/mp4" />
-          </video>
+      <Section className={styles.hero}>
+        <div
+          ref={heroVideoWrapperRef}
+          className={`${styles.heroVideoWrapper} ${preview.frame}`}
+        >
+          <img
+            ref={heroStillRef}
+            className={preview.still}
+            src="/images/preview/football-player.jpg"
+            alt=""
+          />
         </div>
         <div className={styles.heroContent}>
           <div className={styles.heroLogosSpacer} aria-hidden="true" />

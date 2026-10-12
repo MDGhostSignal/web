@@ -1,0 +1,14 @@
+.frame.frame {
+  top: 0;
+  right: 0;
+}
+
+.still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  will-change: opacity;
+}
