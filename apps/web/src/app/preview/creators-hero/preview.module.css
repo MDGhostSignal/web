@@ -1,6 +1,7 @@
 .frame.frame {
   top: 0;
   right: 0;
+  left: 0;
 }
 
 .still {
@@ -9,6 +10,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: top center;
   will-change: opacity;
 }
