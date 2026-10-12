@@ -2,7 +2,7 @@
 
 ## Changes
 - Published a noindex preview tree at `/preview` for the team meeting.
-- Homepage test: `/preview/homepage-test-not-live` (lady blink video, split typing headline, What Is This underneath).
+- Homepage test: `/preview/what-is-this` (lady blink video, split typing headline, What Is This underneath).
 - Also included existing local hero previews: `/preview/advertisers-hero`, `/preview/creators-hero`.
 - Live `/`, `/what-is-this`, `/for-advertisers`, and `/for-creators` stay on their current public versions.
 

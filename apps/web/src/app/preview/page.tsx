@@ -6,8 +6,8 @@ import styles from "./page.module.css";
 
 const PAGES = [
   {
-    href: "/preview/homepage-test-not-live",
-    label: "Homepage test",
+    href: "/preview/what-is-this",
+    label: "What Is This",
   },
   {
     href: "/preview/advertisers-hero",

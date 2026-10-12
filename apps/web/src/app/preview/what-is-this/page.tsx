@@ -14,8 +14,7 @@ import WhatIsThisPage from "../../what-is-this/page";
 import preview from "./preview.module.css";
 
 /**
- * Temporary draft. Not linked from navigation. Live / and /what-is-this
- * stay unchanged.
+ * Preview of the new What Is This page. Live / and /what-is-this stay unchanged.
  */
 export default function HomepageTestNotLivePage() {
   useEffect(() => {
