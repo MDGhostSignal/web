@@ -149,7 +149,7 @@ export default function CreatorsHeroPreviewPage() {
           </div>
         </div>
       </Section>
-      <ForCreatorsPage showHeader={false} showHero={false} />
+      <ForCreatorsPage showHeader={false} showHero={false} showGraphs={false} />
     </main>
   );
 }

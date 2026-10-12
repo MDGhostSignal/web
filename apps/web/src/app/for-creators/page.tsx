@@ -66,9 +66,11 @@ const journeySteps = [
 export default function ForCreatorsPage({
   showHeader = true,
   showHero = true,
+  showGraphs = true,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
+  showGraphs?: boolean;
 }) {
   const heroSectionRef = useRef<HTMLElement>(null);
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
@@ -352,9 +354,11 @@ export default function ForCreatorsPage({
                 <Button href="/get-in-touch">Get In Touch</Button>
               </ScrollFadeUp>
             </div>
-            <div className={styles.featuresAnimation}>
-              <LazyLottie src="/images/for-creators/creators.json" />
-            </div>
+            {showGraphs ? (
+              <div className={styles.featuresAnimation}>
+                <LazyLottie src="/images/for-creators/creators.json" />
+              </div>
+            ) : null}
           </div>
         </Container>
       </Section>

@@ -66,9 +66,11 @@ const journeySteps = [
 export default function ForAdvertisersPage({
   showHeader = true,
   showHero = true,
+  showGraphs = true,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
+  showGraphs?: boolean;
 }) {
   const heroRef = useRef<HTMLElement>(null);
   const businessRef = useRef<HTMLElement>(null);
@@ -277,9 +279,11 @@ export default function ForAdvertisersPage({
                 <Button href="/get-in-touch">Find Your Frequency</Button>
               </ScrollFadeUp>
             </div>
-            <div className={styles.featuresAnimation}>
-              <LazyLottie src="/images/for-advertisers/advertisers.json" />
-            </div>
+            {showGraphs ? (
+              <div className={styles.featuresAnimation}>
+                <LazyLottie src="/images/for-advertisers/advertisers.json" />
+              </div>
+            ) : null}
           </div>
         </Container>
       </Section>

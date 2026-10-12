@@ -46,7 +46,7 @@ export default function AdvertisersHeroPreviewPage() {
           </ScrollFadeUp>
         </div>
       </Section>
-      <ForAdvertisersPage showHeader={false} showHero={false} />
+      <ForAdvertisersPage showHeader={false} showHero={false} showGraphs={false} />
     </main>
   );
 }
