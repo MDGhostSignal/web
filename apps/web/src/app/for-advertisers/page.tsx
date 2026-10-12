@@ -63,7 +63,13 @@ const journeySteps = [
   },
 ] as const;
 
-export default function ForAdvertisersPage() {
+export default function ForAdvertisersPage({
+  showHeader = true,
+  showHero = true,
+}: {
+  showHeader?: boolean;
+  showHero?: boolean;
+}) {
   const heroRef = useRef<HTMLElement>(null);
   const businessRef = useRef<HTMLElement>(null);
 
@@ -181,8 +187,10 @@ export default function ForAdvertisersPage() {
 
   return (
     <main className={styles.page}>
-      <SiteHeader links={navLinks} />
+      {showHeader ? <SiteHeader links={navLinks} /> : null}
 
+      {showHero ? (
+      <>
       {/* Static overlay effect */}
       <div className={styles.staticOverlay} aria-hidden="true" />
 
@@ -225,6 +233,8 @@ export default function ForAdvertisersPage() {
           </ScrollFadeUp>
         </div>
       </Section>
+      </>
+      ) : null}
 
       {/* Why This Works Section */}
       <Section className={styles.featuresSection}>

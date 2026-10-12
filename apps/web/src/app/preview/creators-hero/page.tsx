@@ -12,6 +12,7 @@ import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 import { navLinks } from "@/lib/nav";
 
 import styles from "../../for-creators/page.module.css";
+import ForCreatorsPage from "../../for-creators/page";
 import preview from "./preview.module.css";
 
 /**
@@ -148,6 +149,7 @@ export default function CreatorsHeroPreviewPage() {
           </div>
         </div>
       </Section>
+      <ForCreatorsPage showHeader={false} showHero={false} />
     </main>
   );
 }

@@ -63,7 +63,13 @@ const journeySteps = [
   },
 ] as const;
 
-export default function ForCreatorsPage() {
+export default function ForCreatorsPage({
+  showHeader = true,
+  showHero = true,
+}: {
+  showHeader?: boolean;
+  showHero?: boolean;
+}) {
   const heroSectionRef = useRef<HTMLElement>(null);
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -182,8 +188,10 @@ export default function ForCreatorsPage() {
 
   return (
     <main className={styles.page}>
-      <SiteHeader links={navLinks} />
+      {showHeader ? <SiteHeader links={navLinks} /> : null}
 
+      {showHero ? (
+      <>
       {/* Static overlay effect */}
       <div className={styles.staticOverlay} aria-hidden="true" />
 
@@ -299,6 +307,8 @@ export default function ForCreatorsPage() {
           </div>
         </div>
       </Section>
+      </>
+      ) : null}
 
       {/* Features Section */}
       <Section className={styles.featuresSection}>

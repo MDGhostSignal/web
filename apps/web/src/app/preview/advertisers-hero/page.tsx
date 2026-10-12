@@ -9,6 +9,7 @@ import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { navLinks } from "@/lib/nav";
 
 import styles from "../../for-advertisers/page.module.css";
+import ForAdvertisersPage from "../../for-advertisers/page";
 import preview from "./preview.module.css";
 
 const HeroPollen = dynamic(() => import("../../for-advertisers/HeroPollen"), {
@@ -65,6 +66,7 @@ export default function AdvertisersHeroPreviewPage() {
           </ScrollFadeUp>
         </div>
       </Section>
+      <ForAdvertisersPage showHeader={false} showHero={false} />
     </main>
   );
 }
