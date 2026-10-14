@@ -47,7 +47,8 @@ export default function HomepageTestNotLivePage() {
           preload="auto"
           aria-hidden="true"
         >
-          <source src="/images/preview/lady-earbuds-blink-steady.mp4" type="video/mp4" />
+          <source src="/images/home/desktop.webm" type="video/webm" />
+          <source src="/images/home/desktop-optimized.mp4" type="video/mp4" />
         </video>
         <Section className={`${home.heroSection} ${preview.heroCopy}`}>
           <h1 className={home.heroHeadline}>

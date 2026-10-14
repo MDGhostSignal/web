@@ -211,7 +211,7 @@ function CoverSlide() {
       {reduced ? (
         // eslint-disable-next-line @next/next/no-img-element -- decorative poster
         <img
-          src="/videos/invitation-hero-prev-poster.jpg"
+          src="/images/preview/lady-earbuds.jpg"
           alt=""
           aria-hidden="true"
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
@@ -223,13 +223,12 @@ function CoverSlide() {
           muted
           loop
           playsInline
-          poster="/videos/invitation-hero-prev-poster.jpg"
+          poster="/images/preview/lady-earbuds.jpg"
           aria-hidden="true"
           tabIndex={-1}
         >
-          {/* Pre-sunny invitation cloud plate (no light rays) */}
-          <source src="/videos/invitation-hero-prev.webm" type="video/webm" />
-          <source src="/videos/invitation-hero-prev.mp4" type="video/mp4" />
+          {/* Earbuds blink loop from the homepage preview pass */}
+          <source src="/images/preview/lady-earbuds-blink-steady.mp4" type="video/mp4" />
         </video>
       )}
       <div className={styles.coverScrim} aria-hidden="true" />
@@ -395,24 +394,32 @@ const FOUNDERS = [
     role: "Vision & Partnerships",
     location: "Prague, Czechia",
     image: "/images/who-are-we/mike6.jpg",
+    summary:
+      "Starts companies around problems people actually have. For him GhostSignal is a mission of curiosity and conviction.",
   },
   {
     name: "Jack W Harding",
     role: "Cultural & Business Strategist",
     location: "Cambridge, UK",
     image: "/images/who-are-we/jack11.jpg",
+    summary:
+      "Strategy, research, and podcasting. He helps good creators and good brands find each other.",
   },
   {
     name: "Martin Drexler",
     role: "Design",
     location: "Munich, Germany",
     image: "/images/who-are-we/martin3.jpg",
+    summary:
+      "Award-winning designer. More than 25 honors, including German Brand Award Gold and D&AD Gold.",
   },
   {
     name: "Jeremy Reeves",
     role: "Creative Strategist",
     location: "Colorado Springs, CO",
     image: "/images/who-are-we/jeremy4.jpg",
+    summary:
+      "Coaching, brand culture, and institutions in change. He helps people see something new and reach it.",
   },
 ] as const;
 
@@ -440,6 +447,7 @@ function WhoAreWeSlide() {
             <p className={styles.aboutName}>{founder.name}</p>
             <p className={styles.aboutRole}>{founder.role}</p>
             <p className={styles.aboutPlace}>{founder.location}</p>
+            <p className={styles.aboutSummary}>{founder.summary}</p>
           </li>
         ))}
       </ul>

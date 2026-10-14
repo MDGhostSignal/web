@@ -161,7 +161,7 @@
   object-position: center;
 }
 
-/* Live cover — B&W blackcloud loop (no light rays) + top-left spin mark */
+/* Cover — earbuds hero loop from /preview/what-is-this + top-left spin mark */
 .cover {
   position: relative;
   isolation: isolate;
@@ -1244,7 +1244,7 @@
   color: #141414;
   display: flex;
   flex-direction: column;
-  gap: calc(var(--gs-n-28) * var(--gs-px));
+  gap: calc(var(--gs-n-20) * var(--gs-px));
   overflow: hidden;
 }
 
@@ -1281,7 +1281,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: calc(var(--gs-n-28) * var(--gs-px));
-  align-items: end;
+  align-items: stretch;
 }
 
 .aboutCard {
@@ -1297,6 +1297,7 @@
 .aboutFrame {
   flex: 1 1 auto;
   min-height: 0;
+  max-height: 62%;
   width: 100%;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.35);
@@ -1328,6 +1329,15 @@
 
 .aboutRole {
   font-weight: 600;
+}
+
+.aboutSummary {
+  margin: calc(var(--gs-n-8) * var(--gs-px)) 0 0;
+  max-width: 75%;
+  font-size: calc(var(--gs-font-size-sm, 14) * var(--gs-px));
+  line-height: 1.4;
+  font-weight: 500;
+  color: #141414;
 }
 
 /* Next Steps — static mint-to-pink sky from /who-are-we */
