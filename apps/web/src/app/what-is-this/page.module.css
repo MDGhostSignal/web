@@ -475,6 +475,27 @@
   display: none;
 }
 
+.harmonySunBrand .harmonySunCorona {
+  background: radial-gradient(
+    circle,
+    transparent 38%,
+    rgba(251, 173, 37, 0.7) 44%,
+    rgba(214, 97, 87, 0.35) 58%,
+    rgba(0, 178, 156, 0.12) 75%,
+    transparent 90%
+  );
+}
+
+.harmonySunBrand .harmonySunCorona2 {
+  background: radial-gradient(
+    circle,
+    transparent 28%,
+    rgba(159, 113, 175, 0.35) 38%,
+    rgba(251, 173, 37, 0.16) 55%,
+    transparent 78%
+  );
+}
+
 /* Inner corona — tight white halo wrapping the disk. */
 .harmonySunCorona {
   position: absolute;
@@ -711,6 +732,11 @@
      and the top of this section. The bars-graph height grows by the
      same amount so it still reaches the seam below this gap. */
   margin-top: calc(var(--gs-n-100) * var(--gs-px));
+}
+
+.finalSectionPreview {
+  min-height: calc(100vh + calc(var(--gs-n-200) * var(--gs-px)));
+  padding-bottom: calc((var(--gs-n-240) + var(--gs-n-200)) * var(--gs-px));
 }
 
 .finalGlobeWrapper {
@@ -1437,13 +1463,6 @@
   width: 100%;
   height: auto;
   border-radius: calc(var(--gs-radius-full) * var(--gs-px));
-}
-
-.previewLady {
-  width: calc(var(--gs-n-220) * var(--gs-px));
-  height: auto;
-  object-fit: cover;
-  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
 }
 
 .previewPlateHarmony figcaption,

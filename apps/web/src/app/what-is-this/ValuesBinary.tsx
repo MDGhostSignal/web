@@ -46,9 +46,14 @@ export type ValuesControl = {
 
 export type ValuesBinaryProps = {
   controlRef?: React.MutableRefObject<ValuesControl>;
+  /** Preview only: brand-color gradient instead of the black liquid. */
+  brandGradient?: boolean;
 };
 
-export default function ValuesBinary({ controlRef }: ValuesBinaryProps = {}) {
+export default function ValuesBinary({
+  controlRef,
+  brandGradient = false,
+}: ValuesBinaryProps = {}) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   // Visibility (separate from mount state) drives frameloop pause so
@@ -105,7 +110,7 @@ export default function ValuesBinary({ controlRef }: ValuesBinaryProps = {}) {
             );
           }}
         >
-          <BinaryScene controlRef={controlRef} />
+          <BinaryScene controlRef={controlRef} brandGradient={brandGradient} />
           <EffectComposer multisampling={0}>
             <Bloom
               intensity={0.18}
@@ -209,8 +214,10 @@ const BLOB_SPECS: BlobSpec[] = [
 
 function BinaryScene({
   controlRef,
+  brandGradient = false,
 }: {
   controlRef?: React.MutableRefObject<ValuesControl>;
+  brandGradient?: boolean;
 }) {
   const orbitRef = useRef<THREE.Group>(null);
   // One ref per metaball; each <MarchingCube> contributes to the
@@ -413,11 +420,36 @@ function BinaryScene({
           scale={MC_SCALE}
         >
           <meshStandardMaterial
-            color="#1a1a1e"
-            roughness={0.85}
-            metalness={0.04}
-            emissive="#08080a"
-            emissiveIntensity={0.3}
+            color={brandGradient ? "#FBAD25" : "#1a1a1e"}
+            roughness={brandGradient ? 0.42 : 0.85}
+            metalness={0.06}
+            emissive={brandGradient ? "#00B29C" : "#08080a"}
+            emissiveIntensity={brandGradient ? 0.55 : 0.3}
+            onBeforeCompile={
+              brandGradient
+                ? (shader) => {
+                    shader.vertexShader = shader.vertexShader
+                      .replace("#include <common>", "#include <common>\nvarying vec3 vBrandPos;")
+                      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvBrandPos = position;");
+                    shader.fragmentShader = shader.fragmentShader
+                      .replace("#include <common>", "#include <common>\nvarying vec3 vBrandPos;")
+                      .replace(
+                        "#include <color_fragment>",
+                        `#include <color_fragment>
+                        {
+                          vec3 p = normalize(vBrandPos);
+                          float y = p.y * 0.5 + 0.5;
+                          float x = p.x * 0.5 + 0.5;
+                          vec3 green = vec3(0.0, 0.698, 0.612);
+                          vec3 saffron = vec3(0.984, 0.678, 0.145);
+                          vec3 wine = vec3(0.624, 0.443, 0.686);
+                          vec3 clay = vec3(0.839, 0.380, 0.341);
+                          diffuseColor.rgb = mix(mix(green, saffron, y), mix(wine, clay, y), x);
+                        }`,
+                      );
+                  }
+                : undefined
+            }
           />
           {BLOB_SPECS.map((spec, i) => (
             <MarchingCube

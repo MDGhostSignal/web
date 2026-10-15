@@ -439,26 +439,30 @@ void main() {
     float isLand = smoothstep(0.03, 0.08, height);
 
     float diff = max(dot(normal, lightDir), 0.0);
-    float ambient = 0.15;
-    float lighting = ambient + diff * 0.85;
+    float ambient = 0.62;
+    float lighting = ambient + diff * 0.55;
 
-    float terminator = smoothstep(-0.15, 0.25, dot(normal, lightDir));
-    lighting *= 0.3 + 0.7 * terminator;
+    float terminator = smoothstep(-0.35, 0.45, dot(normal, lightDir));
+    lighting *= 0.72 + 0.28 * terminator;
 
-    vec3 oceanDeep = vec3(0.04, 0.05, 0.07);
-    vec3 oceanShallow = vec3(0.08, 0.10, 0.13);
-    vec3 landLow = vec3(0.22, 0.24, 0.27);
-    vec3 landMid = vec3(0.32, 0.35, 0.38);
-    vec3 landHigh = vec3(0.50, 0.53, 0.56);
+    vec3 oceanDeep = vec3(0.04, 0.18, 0.34);
+    vec3 oceanShallow = vec3(0.10, 0.32, 0.46);
+    vec3 landLow = vec3(0.28, 0.38, 0.20);
+    vec3 landMid = vec3(0.55, 0.46, 0.28);
+    vec3 landHigh = vec3(0.42, 0.34, 0.26);
+    vec3 landSnow = vec3(0.82, 0.84, 0.86);
 
     float oceanDepth = 1.0 - height / 0.08;
     vec3 oceanColor = mix(oceanShallow, oceanDeep, clamp(oceanDepth, 0.0, 1.0));
 
-    float landElev = smoothstep(0.08, 0.6, height);
+    float landElev = smoothstep(0.08, 0.55, height);
     vec3 landColor = mix(landLow, landMid, landElev);
-    landColor = mix(landColor, landHigh, smoothstep(0.4, 0.9, height));
+    landColor = mix(landColor, landHigh, smoothstep(0.35, 0.75, height));
+    landColor = mix(landColor, landSnow, smoothstep(0.72, 0.95, height));
 
     vec3 surfaceColor = mix(oceanColor, landColor, isLand);
+    float luma = dot(surfaceColor, vec3(0.299, 0.587, 0.114));
+    surfaceColor = mix(vec3(luma), surfaceColor, 0.72);
     surfaceColor *= lighting;
 
     vec3 halfVec = normalize(lightDir - rd);
@@ -467,9 +471,9 @@ void main() {
 
     float limb = 1.0 - abs(dot(rd, normal));
     limb = pow(limb, 2.0);
-    vec3 limbColor = vec3(0.15, 0.18, 0.24);
-    surfaceColor = mix(surfaceColor, limbColor, limb * 0.6);
-    surfaceColor += vec3(0.06, 0.08, 0.12) * limb * terminator;
+    vec3 limbColor = vec3(0.55, 0.68, 0.78);
+    surfaceColor = mix(surfaceColor, limbColor, limb * 0.22);
+    surfaceColor += vec3(0.40, 0.52, 0.62) * limb * terminator * 0.12;
 
     // Blend clouds over earth surface
     col = mix(surfaceColor, cloudColor, cloudAlpha);

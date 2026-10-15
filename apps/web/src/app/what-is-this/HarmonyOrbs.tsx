@@ -67,11 +67,15 @@ const ORBS: OrbSpec[] = [
   },
 ];
 
+const BRAND_ORB_COLORS = ["#00B29C", "#FBAD25", "#9F71AF"] as const;
+
 export type HarmonyOrbsProps = {
   controlRef?: React.MutableRefObject<HarmonyControl>;
+  /** Preview only: saffron sun and brand-colored moons. */
+  brandColors?: boolean;
 };
 
-export default function HarmonyOrbs({ controlRef }: HarmonyOrbsProps = {}) {
+export default function HarmonyOrbs({ controlRef, brandColors = false }: HarmonyOrbsProps = {}) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   // Track viewport visibility separately from mount state — once the
@@ -135,7 +139,7 @@ export default function HarmonyOrbs({ controlRef }: HarmonyOrbsProps = {}) {
             );
           }}
         >
-          <Scene controlRef={controlRef} />
+          <Scene controlRef={controlRef} brandColors={brandColors} />
         </Canvas>
       ) : null}
     </div>
@@ -144,8 +148,10 @@ export default function HarmonyOrbs({ controlRef }: HarmonyOrbsProps = {}) {
 
 function Scene({
   controlRef,
+  brandColors = false,
 }: {
   controlRef?: React.MutableRefObject<HarmonyControl>;
+  brandColors?: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const orbRefs = useRef<(THREE.Mesh | null)[]>(ORBS.map(() => null));
@@ -230,14 +236,14 @@ function Scene({
           the orbs read as bodies orbiting a real luminous core. A
           very dim ambient prevents the back hemisphere from going
           fully black on the dark side of the scene. */}
-      <ambientLight intensity={0.08} color="#1f2030" />
+      <ambientLight intensity={brandColors ? 0.35 : 0.08} color={brandColors ? "#3a2a22" : "#1f2030"} />
       <pointLight
         ref={sunLightRef}
         position={[0, 0, 0]}
         intensity={2.4}
         decay={2}
         distance={0}
-        color="#ffffff"
+        color={brandColors ? "#FBAD25" : "#ffffff"}
       />
 
       {/* The sun. Self-illuminating (meshBasicMaterial ignores lights),
@@ -251,7 +257,7 @@ function Scene({
           brightness even if the renderer applies tonemapping. */}
       <mesh ref={sunRef}>
         <sphereGeometry args={[0.22, 64, 64]} />
-        <meshBasicMaterial color="#ffffff" toneMapped={false} />
+        <meshBasicMaterial color={brandColors ? "#FBAD25" : "#ffffff"} toneMapped={false} />
       </mesh>
       {/* Two stacked additive halo shells — together they fake the
           photospheric rim glow. The inner shell hugs the disk for a
@@ -261,7 +267,7 @@ function Scene({
       <mesh ref={sunHaloRef}>
         <sphereGeometry args={[0.28, 48, 48]} />
         <meshBasicMaterial
-          color="#ffffff"
+          color={brandColors ? "#D66157" : "#ffffff"}
           transparent
           opacity={0.45}
           blending={THREE.AdditiveBlending}
@@ -272,7 +278,7 @@ function Scene({
       <mesh ref={sunHaloOuterRef}>
         <sphereGeometry args={[0.42, 48, 48]} />
         <meshBasicMaterial
-          color="#ffffff"
+          color={brandColors ? "#9F71AF" : "#ffffff"}
           transparent
           opacity={0.16}
           blending={THREE.AdditiveBlending}
@@ -291,11 +297,11 @@ function Scene({
           >
             <sphereGeometry args={[spec.size, 36, 36]} />
             <meshStandardMaterial
-              color="#1a1a1e"
-              roughness={0.85}
+              color={brandColors ? BRAND_ORB_COLORS[i % BRAND_ORB_COLORS.length] : "#1a1a1e"}
+              roughness={brandColors ? 0.45 : 0.85}
               metalness={0.04}
-              emissive="#08080a"
-              emissiveIntensity={0.3}
+              emissive={brandColors ? BRAND_ORB_COLORS[i % BRAND_ORB_COLORS.length] : "#08080a"}
+              emissiveIntensity={brandColors ? 0.45 : 0.3}
             />
           </mesh>
         ))}

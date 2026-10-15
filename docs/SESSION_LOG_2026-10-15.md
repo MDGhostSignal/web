@@ -41,6 +41,12 @@
 - Creators preview hero is the user-supplied suburban dawn still, fitted to the hero, with the subhead broken into three lines and the white gap under the hero closed.
 - Live `/for-advertisers` and `/for-creators` copy and heroes are unchanged. Preview copy is gated by `previewCopy`.
 
+## What Is This preview, after the hero push
+- Midsection background is the creators membership cloud. The hero video fades into that sky.
+- Round generated plates, their captions, the earbuds still, and the harmony sun are off this preview.
+- Values blob uses a brand-color gradient on the standard material. The custom shader that threw the `alpha` error is gone.
+- The globe under "This is the signal" has about 200px more room, and the elevation map is colored like a satellite photo: deep blue water, olive and tan land, pale peaks.
+- That globe component is shared, so the live What Is This page picks up the same Earth colors.
+
 ## Open
-- Life Giving Pages proposal is the next page to work on.
-- Not yet pushed at the time this note was written.
+- Life Giving Pages proposal is still the next page to work on.

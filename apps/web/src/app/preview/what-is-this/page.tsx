@@ -24,9 +24,9 @@ export default function HomepageTestNotLivePage() {
       bodyBg: document.body.style.backgroundColor,
       gutter: htmlEl.style.scrollbarGutter,
     };
-    htmlEl.style.backgroundColor = "#000";
+    htmlEl.style.backgroundColor = "#6ec4e0";
     htmlEl.style.scrollbarGutter = "auto";
-    document.body.style.backgroundColor = "#000";
+    document.body.style.backgroundColor = "#6ec4e0";
     return () => {
       htmlEl.style.backgroundColor = prev.htmlBg;
       htmlEl.style.scrollbarGutter = prev.gutter;
@@ -67,7 +67,7 @@ export default function HomepageTestNotLivePage() {
         </Section>
         <Section className={preview.transition} aria-hidden="true" />
       </div>
-      <div id="what-is-this">
+      <div id="what-is-this" className={preview.mid}>
         <WhatIsThisPage showHeader={false} showHero={false} previewPlates />
       </div>
     </main>

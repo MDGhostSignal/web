@@ -333,7 +333,7 @@ export default function WhatIsThisPage({
 
       {/* Starry night background — the feathered cloud overlay has been
           removed so only the star layer shows through. */}
-      <ParallaxBackground />
+      {previewPlates ? null : <ParallaxBackground />}
 
       {/* Hero Section — mirrors /for-creators's hero: white-bg parent,
           video positioned inside with a 100 px inset on three sides,
@@ -466,47 +466,34 @@ export default function WhatIsThisPage({
                 events anywhere over the Harmony animation. Press and
                 hold pauses the auto-spin; horizontal drag yaws,
                 vertical drag pitches the orbit; release resumes. */}
-            <div
-              ref={harmonyInteractionRef}
-              className={styles.harmonyInteraction}
-              onPointerDown={onHarmonyPointerDown}
-              onPointerMove={onHarmonyPointerMove}
-              onPointerUp={onHarmonyPointerUp}
-              onPointerCancel={onHarmonyPointerUp}
-              aria-hidden="true"
-            />
+            {previewPlates ? null : (
+              <div
+                ref={harmonyInteractionRef}
+                className={styles.harmonyInteraction}
+                onPointerDown={onHarmonyPointerDown}
+                onPointerMove={onHarmonyPointerMove}
+                onPointerUp={onHarmonyPointerUp}
+                onPointerCancel={onHarmonyPointerUp}
+                aria-hidden="true"
+              />
+            )}
             {/* Distant nocturnal black-sun — endless 10-second cycle.
                 Pure-black disk with a faint amber corona that breathes
                 in / out, evoking a total eclipse seen from far away.
                 CSS-only (no canvas / WebGL) so the cost is just two
                 divs and one keyframe pair. */}
-            <div className={styles.harmonySun} aria-hidden="true">
-              <div className={styles.harmonySunCorona2} />
-              <div className={styles.harmonySunCorona} />
-              <div className={styles.harmonySunDisk} />
-              {/* Three orbiting dark spheres — R3F scene with real
-                  PBR-shaded geometry, so dragging the orbit reveals
-                  genuine 3D forms. Different sizes, different speeds,
-                  three independent orbital planes. */}
-              {sceneEnabled && (
-                <div className={styles.harmonyOrbsWrapper}>
-                  <HarmonyOrbs controlRef={harmonyControlRef} />
-                </div>
-              )}
-            </div>
-            {previewPlates ? (
-              <figure className={styles.previewPlateHarmony}>
-                <Image
-                  src="/images/preview/wit-world.jpg"
-                  alt=""
-                  width={640}
-                  height={640}
-                />
-                <figcaption>
-                  Good brands, creators, and audiences circle the world together. That is world-making.
-                </figcaption>
-              </figure>
-            ) : null}
+            {previewPlates ? null : (
+              <div className={styles.harmonySun} aria-hidden="true">
+                <div className={styles.harmonySunCorona2} />
+                <div className={styles.harmonySunCorona} />
+                <div className={styles.harmonySunDisk} />
+                {sceneEnabled && (
+                  <div className={styles.harmonyOrbsWrapper}>
+                    <HarmonyOrbs controlRef={harmonyControlRef} />
+                  </div>
+                )}
+              </div>
+            )}
             {/* Headline centered */}
             <div className={styles.headlineBlock}>
               <h2 className={styles.sectionHeadline}>
@@ -564,7 +551,7 @@ export default function WhatIsThisPage({
                 the page. Replaces an earlier CSS-3D placeholder. */}
             {sceneEnabled && (
               <div className={styles.valuesBinaryWrapper}>
-                <ValuesBinary controlRef={valuesControlRef} />
+                <ValuesBinary controlRef={valuesControlRef} brandGradient={previewPlates} />
               </div>
             )}
             {/* Section-spanning interaction layer — captures pointer
@@ -583,17 +570,6 @@ export default function WhatIsThisPage({
               aria-hidden="true"
             />
             <div className={styles.textContainer}>
-              {previewPlates ? (
-                <figure className={styles.previewPlateValues}>
-                  <Image
-                    src="/images/preview/wit-values.jpg"
-                    alt=""
-                    width={640}
-                    height={640}
-                  />
-                  <figcaption>Values create value.</figcaption>
-                </figure>
-              ) : null}
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
                   <span>Values</span>
@@ -635,17 +611,8 @@ export default function WhatIsThisPage({
           </Section>
 
           {/* Final Section: This is the Signal - with globe below */}
-          <Section className={styles.finalSection}>
+          <Section className={previewPlates ? `${styles.finalSection} ${styles.finalSectionPreview}` : styles.finalSection}>
             <div className={styles.finalContent}>
-              {previewPlates ? (
-                <Image
-                  src="/images/preview/lady-earbuds.jpg"
-                  alt=""
-                  width={480}
-                  height={640}
-                  className={styles.previewLady}
-                />
-              ) : null}
               <ScrollFadeUp index={0} duration={1.6}>
                 <Image
                   src="/images/brand/brandmark-vert-white.svg"
