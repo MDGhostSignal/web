@@ -537,7 +537,8 @@
   height: 100%;
   position: relative;
   padding: var(--proposal-deck-inset);
-  background: #fff;
+  background: #6ec4e0 url("/images/for-creators/member-bg.jpg") center center / cover no-repeat;
+  background-attachment: fixed;
   color: var(--work-ink);
   display: flex;
   flex-direction: column;
