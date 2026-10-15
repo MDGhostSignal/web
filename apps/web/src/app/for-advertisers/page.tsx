@@ -9,6 +9,7 @@ import { LazyLottie } from "@/components/LazyLottie";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
+import { PreviewFeatureBuild } from "./PreviewFeatureBuild";
 import { ResultTyping } from "./ResultTyping";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { Container, Section } from "@/components/layout";
@@ -45,6 +46,24 @@ const features = [
   },
 ] as const;
 
+const previewFeatures = [
+  {
+    title: "An intimate voice",
+    description:
+      "Host-read ads. People remember you because someone they trust said your name.",
+  },
+  {
+    title: "World-making membership",
+    description:
+      "Values-aware creators and brands. We handle matching, contracts, campaigns, and reporting.",
+  },
+  {
+    title: "Values-aligned conversion",
+    description:
+      "You show up where you already belong. Alignment builds trust, and trust is what converts.",
+  },
+] as const;
+
 const journeySteps = [
   {
     number: "01",
@@ -63,15 +82,37 @@ const journeySteps = [
   },
 ] as const;
 
+const previewJourney = [
+  {
+    number: "01",
+    title: "WORLD-MAKING MEMBERSHIP",
+    description: "You join the people making the world on purpose.",
+  },
+  {
+    number: "02",
+    title: "CHARACTER AND RESONANCE",
+    description: "We learn who you are. The match follows the person.",
+  },
+  {
+    number: "03",
+    title: "WORLD-MAKING CAMPAIGNS",
+    description: "The work goes out as campaigns that build the world you both want.",
+  },
+] as const;
+
 export default function ForAdvertisersPage({
   showHeader = true,
   showHero = true,
   showGraphs = true,
+  previewCopy = false,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
   showGraphs?: boolean;
+  previewCopy?: boolean;
 }) {
+  const activeFeatures = previewCopy ? previewFeatures : features;
+  const activeJourney = previewCopy ? previewJourney : journeySteps;
   const heroRef = useRef<HTMLElement>(null);
   const businessRef = useRef<HTMLElement>(null);
 
@@ -239,7 +280,7 @@ export default function ForAdvertisersPage({
       ) : null}
 
       {/* Why This Works Section */}
-      <Section className={styles.featuresSection}>
+      <Section className={previewCopy ? `${styles.featuresSection} ${styles.featuresSectionPreview}` : styles.featuresSection}>
         <Container className={styles.features}>
           <div className={styles.featuresHeader}>
             <ScrollFadeUp index={0} duration={1.6}>
@@ -255,7 +296,11 @@ export default function ForAdvertisersPage({
                 We connect you with audiences who already believe what you believe.
               </p>
             </ScrollFadeUp>
-            <ScrollFadeUp index={2} duration={1.6}>
+            <ScrollFadeUp
+              index={2}
+              duration={1.6}
+              className={previewCopy ? styles.featuresBarsWrap : undefined}
+            >
               <Image
                 src="/images/for-advertisers/color-bars-hor.png"
                 alt=""
@@ -267,15 +312,26 @@ export default function ForAdvertisersPage({
           </div>
           <div className={styles.featuresLayout}>
             <div className={styles.featuresList}>
-              {features.map((feature, index) => (
-                <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
-                  <article className={styles.featureCard}>
-                    <h3 className={styles.featureTitle}>{feature.title}</h3>
-                    <p className={styles.featureDescription}>{feature.description}</p>
-                  </article>
-                </ScrollFadeUp>
-              ))}
-              <ScrollFadeUp index={4} duration={1.6}>
+              {previewCopy ? (
+                <PreviewFeatureBuild
+                  steps={previewFeatures}
+                  conclusion="We help brands zoom in on the right people."
+                />
+              ) : (
+                activeFeatures.map((feature, index) => (
+                  <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
+                    <article className={styles.featureCard}>
+                      <h3 className={styles.featureTitle}>{feature.title}</h3>
+                      <p className={styles.featureDescription}>{feature.description}</p>
+                    </article>
+                  </ScrollFadeUp>
+                ))
+              )}
+              <ScrollFadeUp
+                index={4}
+                duration={1.6}
+                className={previewCopy ? styles.featuresCta : undefined}
+              >
                 <Button href="/get-in-touch">Find Your Frequency</Button>
               </ScrollFadeUp>
             </div>
@@ -332,7 +388,14 @@ export default function ForAdvertisersPage({
       </Section>
 
       {/* The Business Case Section */}
-      <Section ref={businessRef} className={styles.businessSection}>
+      <Section
+        ref={businessRef}
+        className={
+          previewCopy
+            ? `${styles.businessSection} ${styles.businessSectionPreview}`
+            : styles.businessSection
+        }
+      >
         {/* Floating clouds — same animated pattern as /who-are-we hero,
             ported here per request. Wrapper is absolute + overflow:hidden
             so the section can keep position:relative without breaking
@@ -366,7 +429,7 @@ export default function ForAdvertisersPage({
             </ScrollFadeUp>
 
             <ol className={styles.businessSteps}>
-              {journeySteps.map((step, index) => (
+              {activeJourney.map((step, index) => (
                 <ScrollFadeUp key={step.number} index={index + 1} duration={1.8}>
                   <li className={styles.businessStep}>
                     <span className={styles.stepNumber} aria-hidden="true">{step.number}</span>

@@ -1,0 +1,161 @@
+.stack {
+  position: relative;
+  width: 100%;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-20) * var(--gs-px));
+  margin: 0;
+  padding: 0 0 0 calc(var(--gs-n-28) * var(--gs-px));
+  list-style: none;
+}
+
+.rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(var(--gs-n-16) * var(--gs-px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dot,
+.dash {
+  flex-shrink: 0;
+  background: #c5c9ce;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.dash {
+  width: 4px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.dot.on,
+.dash.on {
+  background: #fbad25;
+  box-shadow: 0 0 10px rgba(251, 173, 37, 0.5);
+}
+
+.letterGap {
+  height: 3px;
+  flex-shrink: 0;
+}
+
+.wordGap {
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.step {
+  --step-color: #1c1c1c;
+  margin: 0;
+  padding: calc(var(--gs-n-32) * var(--gs-px)) calc(var(--gs-n-40) * var(--gs-px));
+  background: var(--gs-background);
+  border: 1px solid var(--gs-border);
+  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  opacity: 0.35;
+  transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98);
+}
+
+.step:nth-child(1) {
+  animation: step-one 11s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.step:nth-child(2) {
+  animation: step-two 11s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.step:nth-child(3) {
+  animation: step-three 11s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.index {
+  display: block;
+  color: var(--step-color);
+  font-size: var(--gs-text-sm-size);
+  line-height: var(--gs-text-sm-leading);
+  letter-spacing: 0.12em;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: var(--gs-text-3xl-size);
+  line-height: var(--gs-text-3xl-leading);
+  color: var(--gs-tw-gray-950);
+}
+
+.body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-normal);
+  font-size: var(--gs-text-base-size);
+  line-height: var(--gs-text-base-leading);
+  color: var(--gs-tw-gray-600);
+}
+
+.conclusion {
+  margin: calc(var(--gs-n-56) * var(--gs-px)) 0 0;
+  text-align: center;
+  overflow: hidden;
+}
+
+.conclusionText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-bold, 700);
+  font-size: var(--gs-text-4xl-size);
+  line-height: var(--gs-text-4xl-leading);
+  color: var(--gs-tw-gray-950);
+}
+
+@keyframes step-one {
+  0%,
+  4% { opacity: 0.35; transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98); border-color: var(--gs-border); }
+  14% { opacity: 1; transform: scale(1.035); border-color: var(--step-color); }
+  24%,
+  88% { opacity: 1; transform: none; border-color: var(--step-color); }
+  100% { opacity: 0.35; transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98); border-color: var(--gs-border); }
+}
+
+@keyframes step-two {
+  0%,
+  28% { opacity: 0.35; transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98); border-color: var(--gs-border); }
+  40% { opacity: 1; transform: scale(1.035); border-color: var(--step-color); }
+  50%,
+  88% { opacity: 1; transform: none; border-color: var(--step-color); }
+  100% { opacity: 0.35; transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98); border-color: var(--gs-border); }
+}
+
+@keyframes step-three {
+  0%,
+  54% { opacity: 0.35; transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98); border-color: var(--gs-border); }
+  66% { opacity: 1; transform: scale(1.035); border-color: var(--step-color); }
+  76%,
+  88% { opacity: 1; transform: none; border-color: var(--step-color); }
+  100% { opacity: 0.35; transform: translateY(calc(var(--gs-n-16) * var(--gs-px))) scale(0.98); border-color: var(--gs-border); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -1,0 +1,46 @@
+# Session log 2026-10-15
+
+## Changes
+- Jack's brand/creator/What Is This notes applied on the noindex previews only. Live `/`, `/for-advertisers`, `/for-creators`, and `/what-is-this` stay on their current copy and heroes.
+- Advertisers preview hero is the football-player still. Subhead is the positive frame (void, friend's house, "I saw this, and I thought of you").
+- Creators preview hero is a new analog night-city still. Subhead is the positive frame (trust, net-good brands, make money).
+- Preview benefit lists use sharpened invitation-page cards. The feature graphs stay hidden. Journey steps are membership, character/resonance, campaigns.
+- What Is This preview keeps the girl-in-the-clouds loop and adds two plates beside the orbit sections.
+
+## Files
+- `apps/web/src/app/preview/advertisers-hero/page.tsx`
+- `apps/web/src/app/preview/creators-hero/page.tsx`
+- `apps/web/src/app/preview/creators-hero/preview.module.css`
+- `apps/web/src/app/preview/what-is-this/page.tsx`
+- `apps/web/src/app/for-advertisers/page.tsx`
+- `apps/web/src/app/for-advertisers/page.module.css`
+- `apps/web/src/app/for-creators/page.tsx`
+- `apps/web/src/app/for-creators/page.module.css`
+- `apps/web/src/app/what-is-this/page.tsx`
+- `apps/web/src/app/what-is-this/page.module.css`
+- `apps/web/public/images/preview/creators-analog-city.jpg`
+- `apps/web/public/images/preview/wit-world.jpg`
+- `apps/web/public/images/preview/wit-values.jpg`
+
+## Validation
+- `npm run typecheck` passed.
+- `npm run lint:css` passed.
+- `npm run assets:audit` passed.
+- ESLint on the six changed pages: 0 errors. Existing `<img>` warnings on the two hero previews.
+- Dev server already on http://localhost:3000. No full browser pass of scroll and drag.
+
+## Later the same day
+- Preview benefit blocks are now a three-column invitation-style grid, with the invitation pull-quote in place of the graph.
+- Harmony plate sits to the lower right of the sun. Values plate sits in the text column beside the binary orbit.
+- Victorian lady still (no blink) is in the closing band of the What Is This preview only.
+- Creators city still was edited to drop the left slab and the sidewalk scribble.
+
+## Later the same day, continued
+- Advertisers preview: Maria statue keeps the live scale and parallax, and the frame no longer crops her. Cloud loops are twice as slow.
+- The advertisers business-case graph is a native three-step build (signal-code rail, cards, hero-style summary reveal). Creators preview uses the same build with creator copy.
+- Creators preview hero is the user-supplied suburban dawn still, fitted to the hero, with the subhead broken into three lines and the white gap under the hero closed.
+- Live `/for-advertisers` and `/for-creators` copy and heroes are unchanged. Preview copy is gated by `previewCopy`.
+
+## Open
+- Life Giving Pages proposal is the next page to work on.
+- Not yet pushed at the time this note was written.

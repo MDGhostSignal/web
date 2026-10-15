@@ -68,7 +68,7 @@ export default function HomepageTestNotLivePage() {
         <Section className={preview.transition} aria-hidden="true" />
       </div>
       <div id="what-is-this">
-        <WhatIsThisPage showHeader={false} showHero={false} />
+        <WhatIsThisPage showHeader={false} showHero={false} previewPlates />
       </div>
     </main>
   );

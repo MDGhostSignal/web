@@ -23,6 +23,7 @@ const HeroFirefliesDrift = dynamic(() => import("./HeroFirefliesDrift"), {
 // Swarm of bees chasing the cursor — client-only.
 const HeroFireflies = dynamic(() => import("./HeroFireflies"), { ssr: false });
 
+import { PreviewFeatureBuild } from "../for-advertisers/PreviewFeatureBuild";
 import styles from "./page.module.css";
 import { navLinks } from "@/lib/nav";
 
@@ -45,6 +46,24 @@ const features = [
   },
 ] as const;
 
+const previewFeatures = [
+  {
+    title: "Creative freedom",
+    description:
+      "You make the work. We handle matching, contracts, hosting, campaigns, and reporting.",
+  },
+  {
+    title: "Values-aligned partnerships",
+    description:
+      "Brands you can be proud of. The trust stays, and you make money.",
+  },
+  {
+    title: "World-making membership",
+    description:
+      "A community of people making the world through the work.",
+  },
+] as const;
+
 const journeySteps = [
   {
     number: "01",
@@ -63,15 +82,37 @@ const journeySteps = [
   },
 ] as const;
 
+const previewJourney = [
+  {
+    number: "01",
+    title: "WORLD-MAKING MEMBERSHIP",
+    description: "You join the people making the world on purpose.",
+  },
+  {
+    number: "02",
+    title: "CHARACTER AND RESONANCE",
+    description: "We learn who you are. The match follows the person.",
+  },
+  {
+    number: "03",
+    title: "WORLD-MAKING CAMPAIGNS",
+    description: "The work goes out as campaigns your audience can thank you for.",
+  },
+] as const;
+
 export default function ForCreatorsPage({
   showHeader = true,
   showHero = true,
   showGraphs = true,
+  previewCopy = false,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
   showGraphs?: boolean;
+  previewCopy?: boolean;
 }) {
+  const activeFeatures = previewCopy ? previewFeatures : features;
+  const activeJourney = previewCopy ? previewJourney : journeySteps;
   const heroSectionRef = useRef<HTMLElement>(null);
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -313,7 +354,7 @@ export default function ForCreatorsPage({
       ) : null}
 
       {/* Features Section */}
-      <Section className={styles.featuresSection}>
+      <Section className={previewCopy ? `${styles.featuresSection} ${styles.featuresSectionPreview}` : styles.featuresSection}>
         <Container className={styles.features}>
           <div className={styles.featuresHeader}>
             <ScrollFadeUp index={0} duration={1.6}>
@@ -330,7 +371,11 @@ export default function ForCreatorsPage({
                 We remove the static, so you can focus on the signal.
               </p>
             </ScrollFadeUp>
-            <ScrollFadeUp index={2} duration={1.6}>
+            <ScrollFadeUp
+              index={2}
+              duration={1.6}
+              className={previewCopy ? styles.featuresBarsWrap : undefined}
+            >
               <Image
                 src="/images/for-creators/color-bars-hor.png"
                 alt=""
@@ -342,15 +387,26 @@ export default function ForCreatorsPage({
           </div>
           <div className={styles.featuresLayout}>
             <div className={styles.featuresList}>
-              {features.map((feature, index) => (
-                <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
-                  <article className={styles.featureCard}>
-                    <h3 className={styles.featureTitle}>{feature.title}</h3>
-                    <p className={styles.featureDescription}>{feature.description}</p>
-                  </article>
-                </ScrollFadeUp>
-              ))}
-              <ScrollFadeUp index={4} duration={1.6}>
+              {previewCopy ? (
+                <PreviewFeatureBuild
+                  steps={previewFeatures}
+                  conclusion="Advertising that builds trust with your audience."
+                />
+              ) : (
+                activeFeatures.map((feature, index) => (
+                  <ScrollFadeUp key={feature.title} index={index} duration={1.6}>
+                    <article className={styles.featureCard}>
+                      <h3 className={styles.featureTitle}>{feature.title}</h3>
+                      <p className={styles.featureDescription}>{feature.description}</p>
+                    </article>
+                  </ScrollFadeUp>
+                ))
+              )}
+              <ScrollFadeUp
+                index={4}
+                duration={1.6}
+                className={previewCopy ? styles.featuresCta : undefined}
+              >
                 <Button href="/get-in-touch">Get In Touch</Button>
               </ScrollFadeUp>
             </div>
@@ -375,7 +431,9 @@ export default function ForCreatorsPage({
           </SplitLinesReveal>
           <ScrollFadeUp index={2} duration={1.6}>
             <p className={styles.journeyIntro}>
-              Our process is simple, unhurried, and sensitive to your voice and mission. Here&apos;s how it goes:
+              {previewCopy
+                ? "Membership, then resonance, then the campaign."
+                : "Our process is simple, unhurried, and sensitive to your voice and mission. Here's how it goes:"}
             </p>
           </ScrollFadeUp>
         </Container>
@@ -394,7 +452,7 @@ export default function ForCreatorsPage({
           </ScrollFadeUp>
           <div className={styles.journeyRight}>
             <ol className={styles.journeySteps}>
-              {journeySteps.map((step, index) => (
+              {activeJourney.map((step, index) => (
                 <ScrollFadeUp key={step.number} index={index} duration={1.8}>
                   <li className={styles.journeyStep}>
                     <span className={styles.stepNumber} aria-hidden="true">{step.number}</span>

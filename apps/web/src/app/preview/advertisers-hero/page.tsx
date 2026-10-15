@@ -22,7 +22,7 @@ export default function AdvertisersHeroPreviewPage() {
         <div className={preview.videoWrap}>
           <img
             className={preview.video}
-            src="/images/preview/landscape-japan.jpg"
+            src="/images/preview/football-player.jpg"
             alt=""
           />
         </div>
@@ -38,15 +38,20 @@ export default function AdvertisersHeroPreviewPage() {
           </h1>
           <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroSubhead}>
-              We help you reach the right audience by pairing your brand with
-              creators who share your convictions. When alignment is authentic,
-              trust flows naturally — and{" "}
-              <strong>trust is the soil where conversion grows.</strong>
+              The fear is spending into the void. We zoom you in on your
+              people — from a city of strangers to a seat at a friend&apos;s
+              house, from anonymity to personal knowledge. The spend should
+              feel like: I saw this, and I thought of you.
             </p>
           </ScrollFadeUp>
         </div>
       </Section>
-      <ForAdvertisersPage showHeader={false} showHero={false} showGraphs={false} />
+      <ForAdvertisersPage
+        showHeader={false}
+        showHero={false}
+        showGraphs={false}
+        previewCopy
+      />
     </main>
   );
 }

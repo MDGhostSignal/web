@@ -58,9 +58,11 @@ const getSceneMqServerSnapshot = () => false;
 export default function WhatIsThisPage({
   showHeader = true,
   showHero = true,
+  previewPlates = false,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
+  previewPlates?: boolean;
 }) {
   const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -492,6 +494,19 @@ export default function WhatIsThisPage({
                 </div>
               )}
             </div>
+            {previewPlates ? (
+              <figure className={styles.previewPlateHarmony}>
+                <Image
+                  src="/images/preview/wit-world.jpg"
+                  alt=""
+                  width={640}
+                  height={640}
+                />
+                <figcaption>
+                  Good brands, creators, and audiences circle the world together. That is world-making.
+                </figcaption>
+              </figure>
+            ) : null}
             {/* Headline centered */}
             <div className={styles.headlineBlock}>
               <h2 className={styles.sectionHeadline}>
@@ -568,6 +583,17 @@ export default function WhatIsThisPage({
               aria-hidden="true"
             />
             <div className={styles.textContainer}>
+              {previewPlates ? (
+                <figure className={styles.previewPlateValues}>
+                  <Image
+                    src="/images/preview/wit-values.jpg"
+                    alt=""
+                    width={640}
+                    height={640}
+                  />
+                  <figcaption>Values create value.</figcaption>
+                </figure>
+              ) : null}
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
                   <span>Values</span>
@@ -611,6 +637,15 @@ export default function WhatIsThisPage({
           {/* Final Section: This is the Signal - with globe below */}
           <Section className={styles.finalSection}>
             <div className={styles.finalContent}>
+              {previewPlates ? (
+                <Image
+                  src="/images/preview/lady-earbuds.jpg"
+                  alt=""
+                  width={480}
+                  height={640}
+                  className={styles.previewLady}
+                />
+              ) : null}
               <ScrollFadeUp index={0} duration={1.6}>
                 <Image
                   src="/images/brand/brandmark-vert-white.svg"

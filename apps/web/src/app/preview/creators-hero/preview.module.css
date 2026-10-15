@@ -1,14 +1,39 @@
+/* The shared hero is a tall white field. This preview sizes the
+   section to the 1792×1008 still, then carries the picture a little
+   further so it fades into the next section instead of leaving a gap. */
+.hero.hero {
+  min-height: calc(56.25vw + calc(var(--gs-n-220) * var(--gs-px)));
+  padding-bottom: 0;
+  background: #f6f9fc;
+}
+
 .frame.frame {
   top: 0;
   right: 0;
   left: 0;
+  bottom: 0;
+}
+
+.frame::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: calc(var(--gs-n-240) * var(--gs-px));
+  background: linear-gradient(to bottom, rgba(246, 249, 252, 0), #f6f9fc);
+  pointer-events: none;
 }
 
 .still {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: auto;
   width: 100%;
-  height: 100%;
+  height: calc(56.25vw + calc(var(--gs-n-120) * var(--gs-px)));
   object-fit: cover;
   object-position: top center;
   will-change: opacity;

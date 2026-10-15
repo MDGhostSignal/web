@@ -53,7 +53,7 @@ export default function CreatorsHeroPreviewPage() {
     <main className={styles.page}>
       <SiteHeader links={previewNavLinks} />
       <div className={styles.staticOverlay} aria-hidden="true" />
-      <Section className={styles.hero}>
+      <Section className={`${styles.hero} ${preview.hero}`}>
         <div
           ref={heroVideoWrapperRef}
           className={`${styles.heroVideoWrapper} ${preview.frame}`}
@@ -61,7 +61,7 @@ export default function CreatorsHeroPreviewPage() {
           <img
             ref={heroStillRef}
             className={preview.still}
-            src="/images/preview/football-player.jpg"
+            src="/images/preview/creators-suburban-tree.jpg"
             alt=""
           />
         </div>
@@ -102,12 +102,14 @@ export default function CreatorsHeroPreviewPage() {
             </div>
           </ScrollFadeUp>
           <div className={styles.heroSubhead}>
-            <SplitLinesReveal duration={1.8}>Your voice is not for sale.</SplitLinesReveal>
+            <SplitLinesReveal duration={1.8}>
+              Good people, good brands,
+            </SplitLinesReveal>
             <SplitLinesReveal duration={1.8} delay={0.3}>
-              Your audience is not a data point.
+              a net good.
             </SplitLinesReveal>
             <SplitLinesReveal duration={1.8} delay={0.6}>
-              Your work is not merely content.
+              Your audience thanks you for
             </SplitLinesReveal>
           </div>
           <ScrollFadeUp index={0} duration={1.4} distance={24}>
@@ -138,18 +140,23 @@ export default function CreatorsHeroPreviewPage() {
           <div className={styles.heroBodyGrid}>
             <ScrollFadeUp duration={1.8}>
               <p className={styles.heroBodyText}>
-                What if you could monetize your podcast while maintaining your voice and values? The traditional ad model forces impossible choices: compromise your voice, risk your audience&apos;s trust, or drown in administrative tasks.
+                Keep the trust you already have. We connect you with brands that are a net good, the kind your audience thanks you for.
               </p>
             </ScrollFadeUp>
             <ScrollFadeUp duration={1.8} delay={0.4}>
               <p className={styles.heroBodyText}>
-                We are here to protect your voice, honor your audience, and help you find the partners who will make the world alongside you.
+                You stay yourself. You make money. The relationship gets stronger.
               </p>
             </ScrollFadeUp>
           </div>
         </div>
       </Section>
-      <ForCreatorsPage showHeader={false} showHero={false} showGraphs={false} />
+      <ForCreatorsPage
+        showHeader={false}
+        showHero={false}
+        showGraphs={false}
+        previewCopy
+      />
     </main>
   );
 }

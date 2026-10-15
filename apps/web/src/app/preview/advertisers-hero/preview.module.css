@@ -3,7 +3,7 @@
 .page {
   position: relative;
   min-height: 100dvh;
-  overflow-x: clip;
+  overflow-x: visible;
   background: #0c1111;
 }
 

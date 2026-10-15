@@ -1411,3 +1411,57 @@
     height: calc(var(--gs-n-28, 28) * var(--gs-px));
   }
 }
+
+.previewPlateHarmony,
+.previewPlateValues {
+  z-index: 4;
+  margin: 0;
+  width: calc(var(--gs-n-200) * var(--gs-px));
+  pointer-events: none;
+}
+
+.previewPlateHarmony {
+  position: absolute;
+  top: 58%;
+  right: var(--edge-pad);
+}
+
+.previewPlateValues {
+  position: relative;
+  margin-bottom: calc(var(--gs-n-24) * var(--gs-px));
+}
+
+.previewPlateHarmony img,
+.previewPlateValues img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: calc(var(--gs-radius-full) * var(--gs-px));
+}
+
+.previewLady {
+  width: calc(var(--gs-n-220) * var(--gs-px));
+  height: auto;
+  object-fit: cover;
+  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
+}
+
+.previewPlateHarmony figcaption,
+.previewPlateValues figcaption {
+  margin-top: calc(var(--gs-n-12) * var(--gs-px));
+  color: var(--gs-tw-white);
+  font-size: var(--gs-text-sm-size);
+  line-height: var(--gs-text-sm-leading);
+}
+
+@media (max-width: 900px) {
+  .previewPlateHarmony,
+  .previewPlateValues {
+    position: relative;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    transform: none;
+    width: calc(var(--gs-n-180) * var(--gs-px));
+  }
+}
