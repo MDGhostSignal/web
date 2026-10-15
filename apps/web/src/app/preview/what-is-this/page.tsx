@@ -1,20 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
-import { previewNavLinks } from "../nav";
+import { navLinks } from "@/lib/nav";
 import { HomeTypingHero } from "../../HomeTypingLoop";
 import home from "../../page.module.css";
-import WhatIsThisPage from "../../what-is-this/page";
+import WhatIsThisPage from "../../what-is-this/WhatIsThisPage";
 
 import preview from "./preview.module.css";
 
 /**
- * Preview of the new What Is This page. Live / and /what-is-this stay unchanged.
+ * New homepage. The hero is the girl-in-the-clouds film, then the
+ * What Is This story. `/what-is-this` redirects here.
  */
 export default function HomepageTestNotLivePage() {
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function HomepageTestNotLivePage() {
 
   return (
     <main className={preview.page}>
-      <SiteHeader links={previewNavLinks} animateIn />
+      <SiteHeader links={navLinks} animateIn />
       <div className={preview.homeHero}>
         <video
           className={preview.video}
@@ -60,9 +60,10 @@ export default function HomepageTestNotLivePage() {
             </p>
           </ScrollFadeUp>
           <ScrollFadeUp index={1} duration={1.4} delay={3.0} start="top 90%">
-            <Link href="#what-is-this" className={home.ctaButton}>
-              Learn more
-            </Link>
+            <p className={preview.scrollCue}>
+              <span>Scroll</span>
+              <img src="/images/home/icon-arrow-down.svg" alt="" />
+            </p>
           </ScrollFadeUp>
         </Section>
         <Section className={preview.transition} aria-hidden="true" />

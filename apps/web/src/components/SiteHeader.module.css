@@ -206,6 +206,33 @@
   opacity: 1;
 }
 
+/* Lower desktop (Jack’s ~1280). Eight nowrap items plus the logo
+   run past the right edge between the mobile breakpoint and ~1440. */
+@media (max-width: 1440px) {
+  .header {
+    padding-left: calc(var(--gs-n-24) * var(--gs-px));
+    padding-right: calc(var(--gs-n-24) * var(--gs-px));
+  }
+
+  .logoWrap {
+    width: auto;
+    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
+  }
+
+  .nav {
+    column-gap: calc(var(--gs-n-12) * var(--gs-px));
+  }
+
+  .navLink {
+    padding-inline: calc(var(--gs-n-8) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-base) * var(--gs-px));
+  }
+
+  .navCta {
+    padding-inline: calc(var(--gs-n-16) * var(--gs-px));
+  }
+}
+
 /* ============================================================
    Phone + tablet portrait (≤991 px) — dedicated mobile nav.
 

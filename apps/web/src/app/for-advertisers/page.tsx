@@ -23,8 +23,8 @@ const StarFogBackground = dynamic(() => import("./StarFogBackground"), {
 });
 
 // Canvas pollen overlay — ssr:false since it needs the DOM.
-const HeroPollen = dynamic(() => import("./HeroPollen"), { ssr: false });
 import styles from "./page.module.css";
+import previewHero from "../preview/advertisers-hero/preview.module.css";
 import { navLinks } from "@/lib/nav";
 
 const features = [
@@ -48,19 +48,19 @@ const features = [
 
 const previewFeatures = [
   {
-    title: "An intimate voice",
+    title: "Podcast Ad Resonance",
     description:
-      "Host-read ads. People remember you because someone they trust said your name.",
+      "Podcasting gives your brand an intimate voice, turning passive listeners into active participants. With host-read podcast ads driving 70% brand recall (double social banners), it is an effective, relational way to speak to an engaged audience.",
   },
   {
-    title: "World-making membership",
+    title: "World-Making Membership",
     description:
-      "Values-aware creators and brands. We handle matching, contracts, campaigns, and reporting.",
+      "Join a community of values-aware creators and brands who understand they are making the world through their work. GHOSTSignal handles matching tech, contracts, campaigns, and reporting—giving you network-wide resonance and reach without the hassle of individual deals.",
   },
   {
-    title: "Values-aligned conversion",
+    title: "Values-Aligned Conversion",
     description:
-      "You show up where you already belong. Alignment builds trust, and trust is what converts.",
+      "We find a place for your brand among values-aligned communities you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust, and high-trust environments see superior economic value.",
   },
 ] as const;
 
@@ -85,26 +85,27 @@ const journeySteps = [
 const previewJourney = [
   {
     number: "01",
-    title: "WORLD-MAKING MEMBERSHIP",
-    description: "You join the people making the world on purpose.",
+    title: "EXPLORING CONNECTION",
+    description:
+      "We'd love to hear your story. We discern the connection to ensure there is resonance.",
   },
   {
     number: "02",
-    title: "CHARACTER AND RESONANCE",
-    description: "We learn who you are. The match follows the person.",
+    title: "MEMBERSHIP",
+    description: "We extend a GHOSTSignal membership offer.",
   },
   {
     number: "03",
     title: "WORLD-MAKING CAMPAIGNS",
-    description: "The work goes out as campaigns that build the world you both want.",
+    description: "Campaigns you can be proud of.",
   },
 ] as const;
 
 export default function ForAdvertisersPage({
   showHeader = true,
   showHero = true,
-  showGraphs = true,
-  previewCopy = false,
+  showGraphs = false,
+  previewCopy = true,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
@@ -238,26 +239,13 @@ export default function ForAdvertisersPage({
       <div className={styles.staticOverlay} aria-hidden="true" />
 
       {/* Hero Section */}
-      <Section ref={heroRef} className={styles.hero}>
-        <div className={styles.heroVideoWrapper}>
-          <div className={styles.heroVideoTilt}>
-            <video
-              className={styles.heroVideo}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              disablePictureInPicture
-              aria-hidden="true"
-            >
-              <source src="/images/for-advertisers/loop5.webm" type="video/webm" />
-              <source src="/images/for-advertisers/loop5.mp4" type="video/mp4" />
-            </video>
-          </div>
-        </div>
-        <div className={styles.heroPollenLayer}>
-          <HeroPollen />
+      <Section ref={heroRef} className={previewHero.hero}>
+        <div className={previewHero.videoWrap}>
+          <img
+            className={previewHero.video}
+            src="/images/preview/football-player.jpg"
+            alt=""
+          />
         </div>
         <div className={styles.heroContent}>
           <h1 className={styles.heroHeadline}>
@@ -271,7 +259,7 @@ export default function ForAdvertisersPage({
           </h1>
           <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroSubhead}>
-              We help you reach the right audience by pairing your brand with creators who share your convictions. When alignment is authentic, trust flows naturally — and <strong>trust is the soil where conversion grows.</strong>
+              The fear is spending into the void. We zoom you in on your people — from a city of strangers to a seat at a friend&apos;s house, from anonymity to personal knowledge. The spend should feel like: I saw this, and I thought of you.
             </p>
           </ScrollFadeUp>
         </div>
@@ -424,7 +412,9 @@ export default function ForAdvertisersPage({
             </h2>
             <ScrollFadeUp index={0} duration={1.6}>
               <p className={styles.businessSubhead}>
-                We only match you with creators who make sense for your mission. Every partnership is considered.
+                {previewCopy
+                  ? "Our process is simple, unhurried, and sensitive to your voice and mission."
+                  : "We only match you with creators who make sense for your mission. Every partnership is considered."}
               </p>
             </ScrollFadeUp>
 

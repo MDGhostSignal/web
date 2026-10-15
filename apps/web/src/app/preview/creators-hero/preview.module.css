@@ -1,12 +1,16 @@
 /* The shared hero is a tall white field. This preview sizes the
    section to the 1792×1008 still, then carries the picture a little
    further so it fades into the next section instead of leaving a gap. */
+.hero.hero h1 {
+  font-size: clamp(28px, 3.4vw, 64px);
+}
+
 .hero.hero {
   /* The shared hero clips with overflow:hidden and contain:paint.
      This preview has to grow past the photo's 16:9 so the subhead
      and body stay inside the section. */
   min-height: calc(56.25vw + calc(var(--gs-n-220) * var(--gs-px)));
-  padding-bottom: calc(var(--gs-n-80) * var(--gs-px));
+  padding-bottom: calc(var(--gs-n-160) * var(--gs-px));
   background: #f6f9fc;
   overflow: visible;
   contain: none;
@@ -26,9 +30,137 @@
   right: 0;
   bottom: 0;
   z-index: 1;
-  height: calc(var(--gs-n-240) * var(--gs-px));
+  height: calc(var(--gs-n-72) * var(--gs-px));
   background: linear-gradient(to bottom, rgba(246, 249, 252, 0), #f6f9fc);
   pointer-events: none;
+}
+
+.buildLine {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.buildLead {
+  width: max-content;
+}
+
+.future {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.28em;
+  white-space: nowrap;
+}
+
+.futureSizer {
+  visibility: hidden;
+}
+
+.futureLive {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.futureCh {
+  display: inline-block;
+  animation: futureChar 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.futureHit {
+  display: inline-block;
+  animation: futureJolt 420ms steps(2, end) both;
+}
+
+.futureCaret {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.85em;
+  margin-left: 0.04em;
+  vertical-align: -0.12em;
+  background: #fff;
+  animation: futureBlink 1s steps(1, end) infinite;
+}
+
+.futureBolt {
+  position: absolute;
+  top: -0.08em;
+  bottom: -0.08em;
+  left: 0;
+  width: 2px;
+  background: #fff;
+  animation: futureBolt 520ms linear forwards;
+  pointer-events: none;
+}
+
+@keyframes futureChar {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes futureJolt {
+  0% {
+    color: #fff;
+    background: transparent;
+  }
+  45% {
+    color: #000;
+    background: #fff;
+  }
+  100% {
+    color: #fff;
+    background: transparent;
+  }
+}
+
+@keyframes futureBolt {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(12.5em);
+    opacity: 0;
+  }
+}
+
+@keyframes futureBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .futureCh,
+  .futureHit,
+  .futureCaret,
+  .futureBolt {
+    animation: none;
+  }
+}
+
+.subhead {
+  overflow: visible;
+  line-height: 1.45;
+}
+
+.subheadLine {
+  display: block;
+  overflow: visible;
 }
 
 .still {

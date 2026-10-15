@@ -22,9 +22,35 @@
 
 .homeHero .heroCopy h1,
 .homeHero .heroCopy p {
-  max-width: none;
-  min-width: 50vw;
+  max-width: 100%;
+  min-width: 0;
   white-space: nowrap;
+}
+
+/* The split headline stays one line per row. 88px overflows a
+   lower desktop once the left inset is counted, and the hero clips it. */
+.homeHero .heroCopy h1 {
+  font-size: clamp(36px, 4.2vw, 88px);
+}
+
+.scrollCue {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--gs-n-12) * var(--gs-px));
+  margin: 0;
+  margin-top: calc(var(--gs-n-40) * var(--gs-px));
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: var(--gs-font-weight-medium, 500);
+  font-size: calc(var(--gs-font-size-lg, 18) * var(--gs-px));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scrollCue img {
+  width: calc(var(--gs-n-16) * var(--gs-px));
+  height: auto;
+  filter: brightness(0) invert(1);
 }
 
 .transition {

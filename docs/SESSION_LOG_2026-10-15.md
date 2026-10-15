@@ -53,5 +53,11 @@
 - Cast that style to `React.CSSProperties`, same as the other custom properties in the app.
 - Creators preview hero no longer clips the three-line subhead. The section grows with the copy and the still covers that height.
 
+## Go live
+- `/` now serves the preview homepage: girl-in-the-clouds hero, scroll cue, and the What Is This story with the new copy, cookie-and-milk, and cloud field.
+- `/what-is-this` redirects to `/#what-is-this`.
+- `/for-creators` and `/for-advertisers` use the preview heroes, benefit copy, and the three-step process. The old Lottie graphs stay off.
+- Life Giving Pages Work slide uses the membership cloud. Next Steps uses `whoarewebg.png`.
+
 ## Open
-- Life Giving Pages proposal is still the next page to work on.
+- Preview URLs still exist and now share the live navigation.

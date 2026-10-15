@@ -1,14 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Section } from "@/components/layout";
 import { ScrollFadeUp } from "@/motion/ScrollFadeUp";
 import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
-import { gsap } from "@/motion/gsap";
-import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 import { previewNavLinks } from "../nav";
 
 import styles from "../../for-creators/page.module.css";
@@ -20,46 +17,13 @@ import preview from "./preview.module.css";
  * Not linked from navigation. The live /for-creators page is unchanged.
  */
 export default function CreatorsHeroPreviewPage() {
-  const heroVideoWrapperRef = useRef<HTMLDivElement>(null);
-  const heroStillRef = useRef<HTMLImageElement>(null);
-
-  useIsomorphicLayoutEffect(() => {
-    const wrapper = heroVideoWrapperRef.current;
-    const still = heroStillRef.current;
-    if (!wrapper || !still) return;
-
-    const stillTween = gsap.fromTo(
-      still,
-      { opacity: 1 },
-      {
-        opacity: 0,
-        ease: "power1.inOut",
-        scrollTrigger: {
-          trigger: wrapper,
-          start: "top top",
-          end: "+=140%",
-          scrub: 1,
-        },
-      },
-    );
-
-    return () => {
-      stillTween.scrollTrigger?.kill();
-      stillTween.kill();
-    };
-  }, []);
-
   return (
     <main className={styles.page}>
       <SiteHeader links={previewNavLinks} />
       <div className={styles.staticOverlay} aria-hidden="true" />
       <Section className={`${styles.hero} ${preview.hero}`}>
-        <div
-          ref={heroVideoWrapperRef}
-          className={`${styles.heroVideoWrapper} ${preview.frame}`}
-        >
+        <div className={`${styles.heroVideoWrapper} ${preview.frame}`}>
           <img
-            ref={heroStillRef}
             className={preview.still}
             src="/images/preview/creators-suburban-tree.jpg"
             alt=""
@@ -68,12 +32,12 @@ export default function CreatorsHeroPreviewPage() {
         <div className={styles.heroContent}>
           <div className={styles.heroLogosSpacer} aria-hidden="true" />
           <h1 className={styles.heroHeadline}>
-            <SplitLinesReveal duration={2.2}>Your podcast is</SplitLinesReveal>
+            <SplitLinesReveal duration={2.2}>Trust is everything.</SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.35}>
-              Cultural architecture.
+              Partnerships that honor your voice
             </SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.7}>
-              You are building the future.
+              and your audience thank you for.
             </SplitLinesReveal>
           </h1>
           <ScrollFadeUp index={1} duration={1.4} distance={24}>
@@ -101,16 +65,9 @@ export default function CreatorsHeroPreviewPage() {
               />
             </div>
           </ScrollFadeUp>
-          <div className={styles.heroSubhead}>
-            <SplitLinesReveal duration={1.8}>
-              Good people, good brands,
-            </SplitLinesReveal>
-            <SplitLinesReveal duration={1.8} delay={0.3}>
-              a net good.
-            </SplitLinesReveal>
-            <SplitLinesReveal duration={1.8} delay={0.6}>
-              Your audience thanks you for
-            </SplitLinesReveal>
+          <div className={`${styles.heroSubhead} ${preview.subhead}`}>
+            <span className={preview.subheadLine}>When good creators partner with good brands,</span>
+            <span className={preview.subheadLine}>the world is made in the right direction.</span>
           </div>
           <ScrollFadeUp index={0} duration={1.4} distance={24}>
             <div className={styles.heroLogos}>

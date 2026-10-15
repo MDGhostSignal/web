@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui";
@@ -16,15 +15,9 @@ import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
-// Ambient firefly drift — client-only (uses window + rAF).
-const HeroFirefliesDrift = dynamic(() => import("./HeroFirefliesDrift"), {
-  ssr: false,
-});
-// Swarm of bees chasing the cursor — client-only.
-const HeroFireflies = dynamic(() => import("./HeroFireflies"), { ssr: false });
-
 import { PreviewFeatureBuild } from "../for-advertisers/PreviewFeatureBuild";
 import styles from "./page.module.css";
+import previewHero from "../preview/creators-hero/preview.module.css";
 import { navLinks } from "@/lib/nav";
 
 const features = [
@@ -48,19 +41,19 @@ const features = [
 
 const previewFeatures = [
   {
-    title: "Creative freedom",
+    title: "Creative Freedom",
     description:
-      "You make the work. We handle matching, contracts, hosting, campaigns, and reporting.",
+      "Be freed up to create. GHOSTSignal handles matching tech, contracts, podcast hosting, campaigns, and reporting — giving you network-wide resonance and reach without the hassle of individual deals.",
   },
   {
-    title: "Values-aligned partnerships",
+    title: "Values-Aligned Partnerships",
     description:
-      "Brands you can be proud of. The trust stays, and you make money.",
+      "We understand that your voice, and the trust relationship with your listening community is everything. We connect you with brands you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust — allowing you to generate meaningful revenue while protecting and deepening the connection you have built with your audience.",
   },
   {
-    title: "World-making membership",
+    title: "World-Making Membership",
     description:
-      "A community of people making the world through the work.",
+      "Join a community of values-aware creators and brands who understand they are making the world through their work.",
   },
 ] as const;
 
@@ -85,26 +78,27 @@ const journeySteps = [
 const previewJourney = [
   {
     number: "01",
-    title: "WORLD-MAKING MEMBERSHIP",
-    description: "You join the people making the world on purpose.",
+    title: "EXPLORING CONNECTION",
+    description:
+      "We'd love to hear your story. We discern the connection to ensure there is resonance.",
   },
   {
     number: "02",
-    title: "CHARACTER AND RESONANCE",
-    description: "We learn who you are. The match follows the person.",
+    title: "MEMBERSHIP",
+    description: "We extend a GHOSTSignal membership offer.",
   },
   {
     number: "03",
     title: "WORLD-MAKING CAMPAIGNS",
-    description: "The work goes out as campaigns your audience can thank you for.",
+    description: "Campaigns you can be proud of.",
   },
 ] as const;
 
 export default function ForCreatorsPage({
   showHeader = true,
   showHero = true,
-  showGraphs = true,
-  previewCopy = false,
+  showGraphs = false,
+  previewCopy = true,
 }: {
   showHeader?: boolean;
   showHero?: boolean;
@@ -239,28 +233,13 @@ export default function ForCreatorsPage({
       <div className={styles.staticOverlay} aria-hidden="true" />
 
       {/* Hero Section */}
-      <Section ref={heroSectionRef} className={styles.hero}>
-        {/* Ambient firefly drift — same cursor-repulsion pattern as
-            the pollen on /for-advertisers and the blossoms on
-            /what-is-this. Canvas fills the hero, fireflies float upward
-            and respawn from below. */}
-        <HeroFirefliesDrift />
-        {/* Swarm of bees that chase the cursor inside the hero. */}
-        <HeroFireflies sectionRef={heroSectionRef} />
-        <div ref={heroVideoWrapperRef} className={styles.heroVideoWrapper}>
-          <video
-            ref={heroVideoRef}
-            className={styles.heroVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            aria-hidden="true"
-          >
-            <source src="/images/for-creators/seattle.mp4" type="video/mp4" />
-          </video>
+      <Section ref={heroSectionRef} className={`${styles.hero} ${previewHero.hero}`}>
+        <div ref={heroVideoWrapperRef} className={`${styles.heroVideoWrapper} ${previewHero.frame}`}>
+          <img
+            className={previewHero.still}
+            src="/images/preview/creators-suburban-tree.jpg"
+            alt=""
+          />
         </div>
         <div className={styles.heroContent}>
           {/* Spacer reserves the vertical room the removed top
@@ -269,12 +248,12 @@ export default function ForCreatorsPage({
               height. */}
           <div className={styles.heroLogosSpacer} aria-hidden="true" />
           <h1 className={styles.heroHeadline}>
-            <SplitLinesReveal duration={2.2}>Your podcast is</SplitLinesReveal>
+            <SplitLinesReveal duration={2.2}>Trust is everything.</SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.35}>
-              Cultural architecture.
+              Partnerships that honor your voice
             </SplitLinesReveal>
             <SplitLinesReveal duration={2.2} delay={0.7}>
-              You are building the future.
+              and your audience thank you for.
             </SplitLinesReveal>
           </h1>
           <ScrollFadeUp index={1} duration={1.4} distance={24}>
@@ -302,14 +281,9 @@ export default function ForCreatorsPage({
               />
             </div>
           </ScrollFadeUp>
-          <div className={styles.heroSubhead}>
-            <SplitLinesReveal duration={1.8}>Your voice is not for sale.</SplitLinesReveal>
-            <SplitLinesReveal duration={1.8} delay={0.3}>
-              Your audience is not a data point.
-            </SplitLinesReveal>
-            <SplitLinesReveal duration={1.8} delay={0.6}>
-              Your work is not merely content.
-            </SplitLinesReveal>
+          <div className={`${styles.heroSubhead} ${previewHero.subhead}`}>
+            <span className={previewHero.subheadLine}>When good creators partner with good brands,</span>
+            <span className={previewHero.subheadLine}>the world is made in the right direction.</span>
           </div>
           <ScrollFadeUp index={0} duration={1.4} distance={24}>
             <div className={styles.heroLogos}>
@@ -339,12 +313,12 @@ export default function ForCreatorsPage({
           <div className={styles.heroBodyGrid}>
             <ScrollFadeUp duration={1.8}>
               <p className={styles.heroBodyText}>
-                What if you could monetize your podcast while maintaining your voice and values? The traditional ad model forces impossible choices: compromise your voice, risk your audience&apos;s trust, or drown in administrative tasks.
+                Keep the trust you already have. We connect you with brands that are a net good, the kind your audience thanks you for.
               </p>
             </ScrollFadeUp>
             <ScrollFadeUp duration={1.8} delay={0.4}>
               <p className={styles.heroBodyText}>
-                We are here to protect your voice, honor your audience, and help you find the partners who will make the world alongside you.
+                You stay yourself. You make money. The relationship gets stronger.
               </p>
             </ScrollFadeUp>
           </div>
@@ -432,7 +406,7 @@ export default function ForCreatorsPage({
           <ScrollFadeUp index={2} duration={1.6}>
             <p className={styles.journeyIntro}>
               {previewCopy
-                ? "Membership, then resonance, then the campaign."
+                ? "Our process is simple, unhurried, and sensitive to your voice and mission."
                 : "Our process is simple, unhurried, and sensitive to your voice and mission. Here's how it goes:"}
             </p>
           </ScrollFadeUp>

@@ -1354,7 +1354,7 @@
   width: 100%;
   height: 100%;
   padding: var(--proposal-deck-inset);
-  background: #f4c6d8 url("/images/who-are-we/whoarewe-bg.jpg") center / cover no-repeat;
+  background: #f4c6d8 url("/images/proposals/life-giving-pages/whoarewebg.png") center / cover no-repeat;
   color: var(--next-ink);
   display: flex;
   flex-direction: column;
