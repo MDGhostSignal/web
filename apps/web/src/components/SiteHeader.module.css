@@ -161,6 +161,10 @@
    behaviour from its data-sh-role attribute so it stays visible while
    other links fade out. The shared .nav:hover sibling-dim rule below
    this block re-targets it too, so the CTA brightens back on hover. */
+.navCta + .navCta {
+  margin-left: calc(var(--gs-n-12) * var(--gs-px));
+}
+
 .navCta {
   position: relative;
   display: inline-flex;

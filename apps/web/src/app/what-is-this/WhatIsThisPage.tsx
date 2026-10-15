@@ -519,20 +519,11 @@ export default function WhatIsThisPage({
             {/* Body text centered on page, left-aligned inside */}
             <div className={styles.bodyBlock}>
               {previewPlates ? (
-                <>
-                  <ScrollFadeUp index={0} duration={1.6}>
-                    <p className={styles.sectionBody}>Values-Aligned Advertising means:</p>
-                  </ScrollFadeUp>
-                  <ScrollFadeUp index={1} duration={1.6}>
-                    <p className={styles.sectionBody}>Creators earn without breaking trust</p>
-                  </ScrollFadeUp>
-                  <ScrollFadeUp index={2} duration={1.6}>
-                    <p className={styles.sectionBody}>Brands zoom in on the right people</p>
-                  </ScrollFadeUp>
-                  <ScrollFadeUp index={3} duration={1.6}>
-                    <p className={styles.sectionBody}>Audiences sense harmony instead of interruption</p>
-                  </ScrollFadeUp>
-                </>
+                <ScrollFadeUp index={0} duration={1.6}>
+                  <p className={styles.sectionBody}>
+                    We call it Values-Aligned Advertising, or simply, The Signal&mdash;a new model where partnerships are rooted in shared conviction. Where a brand&rsquo;s message amplifies a creator&rsquo;s voice, and a creator builds trust for the brand. When creators and brands share soul, the world is made in the right direction.
+                  </p>
+                </ScrollFadeUp>
               ) : (
                 <>
               <ScrollFadeUp index={0} duration={1.6}>
@@ -609,9 +600,9 @@ export default function WhatIsThisPage({
                 <p className={styles.sectionBody}>
                   Values-Aligned Advertising means:
                   <br />
-                  Creators earn without selling out
+                  Creators earn without breaking trust
                   <br />
-                  Brands are promoted without compromise
+                  Brands zoom in on the right people
                   <br />
                   Audiences sense harmony instead of interruption
                 </p>
