@@ -65,5 +65,11 @@
 - For Creators hero body copy is one step larger.
 - For Advertisers benefits are Personal Resonance, Values Aligned Conversion, and World-Making Membership.
 
+## Hero follow-up
+- Left gold rays are dimmer. Right rays are more transparent. The two sides use different widths, angles, and blur.
+- The brightness filter on the film wrapper was freezing the video. It is removed, and the clip is started on load.
+- The hero fades into the sky through a mask on the film wrapper, not a solid color band.
+- For Advertisers subhead is the “zoom in with the right audience” line.
+
 ## Open
 - Preview URLs still exist and now share the live navigation.

@@ -259,7 +259,7 @@ export default function ForAdvertisersPage({
           </h1>
           <ScrollFadeUp index={1} duration={1.8}>
             <p className={styles.heroSubhead}>
-              The fear is spending into the void. We zoom you in on your people — from a city of strangers to a seat at a friend&apos;s house, from anonymity to personal knowledge. The spend should feel like: I saw this, and I thought of you.
+              We help you zoom in with the right audience by pairing your brand with creators who share your convictions. From a city of strangers, to being at a friend&apos;s house. Campaigns like this feel like, &ldquo;I saw this, and I thought of you.&rdquo;
             </p>
           </ScrollFadeUp>
         </div>

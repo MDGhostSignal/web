@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { Section } from "@/components/layout";
@@ -17,6 +17,15 @@ import preview from "./preview.module.css";
  * What Is This story. `/what-is-this` redirects here.
  */
 export default function HomepageTestNotLivePage() {
+  const filmRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const film = filmRef.current;
+    if (!film) return;
+    film.muted = true;
+    void film.play().catch(() => {});
+  }, []);
+
   useEffect(() => {
     const htmlEl = document.documentElement;
     const prev = {
@@ -38,37 +47,39 @@ export default function HomepageTestNotLivePage() {
     <main className={preview.page}>
       <SiteHeader links={navLinks} animateIn />
       <div className={preview.homeHero}>
-        <video
-          className={preview.video}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-        >
-          <source src="/images/home/desktop.webm" type="video/webm" />
-          <source src="/images/home/desktop-optimized.mp4" type="video/mp4" />
-        </video>
+        <div className={preview.film}>
+          <video
+            ref={filmRef}
+            className={preview.video}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+          >
+            <source src="/images/home/desktop.webm" type="video/webm" />
+            <source src="/images/home/desktop-optimized.mp4" type="video/mp4" />
+          </video>
+        </div>
         <div className={preview.rays} aria-hidden="true">
           {[
-            { side: preview.rayLeft, width: 14, angle: 16, delay: "0s", peak: 0.82 },
-            { side: preview.rayLeft, width: 36, angle: 28, delay: "1.5s", peak: 1 },
-            { side: preview.rayLeft, width: 8, angle: 40, delay: "3.2s", peak: 0.7 },
-            { side: preview.rayLeft, width: 52, angle: 52, delay: "0.6s", peak: 1 },
-            { side: preview.rayLeft, width: 20, angle: 66, delay: "4.4s", peak: 0.88 },
-            { side: preview.rayRight, width: 12, angle: -14, delay: "2.1s", peak: 0.78 },
-            { side: preview.rayRight, width: 44, angle: -30, delay: "0.3s", peak: 1 },
-            { side: preview.rayRight, width: 18, angle: -44, delay: "3.6s", peak: 0.9 },
-            { side: preview.rayRight, width: 7, angle: -22, delay: "5.1s", peak: 0.66 },
-            { side: preview.rayRight, width: 30, angle: -58, delay: "1.1s", peak: 1 },
+            { side: preview.rayLeft, angle: "8deg", thick: "34vw", strength: 0.32, delay: "0s", peak: 0.7 },
+            { side: preview.rayLeft, angle: "24deg", thick: "46vw", strength: 0.5, delay: "2.4s", peak: 0.85 },
+            { side: preview.rayLeft, angle: "40deg", thick: "22vw", strength: 0.22, delay: "4.2s", peak: 0.6 },
+            { side: preview.rayRight, angle: "-6deg", thick: "16vw", strength: 0.28, delay: "0.5s", peak: 0.55 },
+            { side: preview.rayRight, angle: "-18deg", thick: "11vw", strength: 0.18, delay: "1.7s", peak: 0.45 },
+            { side: preview.rayRight, angle: "-33deg", thick: "20vw", strength: 0.34, delay: "3.3s", peak: 0.6 },
+            { side: preview.rayRight, angle: "-48deg", thick: "8vw", strength: 0.14, delay: "4.8s", peak: 0.4 },
+            { side: preview.rayRight, angle: "-26deg", thick: "14vw", strength: 0.22, delay: "2.8s", peak: 0.5 },
           ].map((ray) => (
             <span
               key={`${ray.side}-${ray.angle}`}
               className={`${preview.ray} ${ray.side}`}
               style={{
-                width: ray.width,
-                transform: `rotate(${ray.angle}deg)`,
+                ["--angle" as string]: ray.angle,
+                ["--thick" as string]: ray.thick,
+                ["--strength" as string]: String(ray.strength),
                 animationDelay: ray.delay,
                 ["--peak" as string]: String(ray.peak),
               }}
