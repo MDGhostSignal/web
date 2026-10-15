@@ -14,7 +14,31 @@
   background: transparent;
 }
 
+/* Same warm lift as the invitation hero, kept lighter and set
+   high in the clouds so the face does not blow out. */
+.homeHero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 48% 42% at 8% 0%,
+      rgba(255, 220, 150, 0.55) 0%,
+      rgba(255, 236, 196, 0.22) 42%,
+      rgba(255, 248, 235, 0) 72%
+    ),
+    radial-gradient(
+      ellipse 48% 42% at 92% 0%,
+      rgba(255, 220, 150, 0.55) 0%,
+      rgba(255, 236, 196, 0.22) 42%,
+      rgba(255, 248, 235, 0) 72%
+    );
+}
+
 .homeHero .heroCopy {
+  z-index: 2;
   align-items: flex-start;
   text-align: left;
   padding-left: calc(var(--gs-n-112) * var(--gs-px));
@@ -70,5 +94,6 @@
   height: 100%;
   object-fit: cover;
   object-position: right center;
+  filter: brightness(1.06) saturate(1.08) contrast(1.02);
   mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
 }
