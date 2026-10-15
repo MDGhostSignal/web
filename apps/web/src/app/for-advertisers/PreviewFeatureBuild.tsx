@@ -150,7 +150,11 @@ export function PreviewFeatureBuild({
       </div>
       <ol className={styles.list}>
         {steps.map((step, index) => (
-          <li key={step.title} className={styles.step} style={{ "--step-color": COLORS[index % COLORS.length] }}>
+          <li
+            key={step.title}
+            className={styles.step}
+            style={{ "--step-color": COLORS[index % COLORS.length] } as React.CSSProperties}
+          >
             <span className={styles.index} aria-hidden="true">
               {String(index + 1).padStart(2, "0")}
             </span>

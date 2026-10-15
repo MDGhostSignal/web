@@ -48,5 +48,10 @@
 - The globe under "This is the signal" has about 200px more room, and the elevation map is colored like a satellite photo: deep blue water, olive and tan land, pale peaks.
 - That globe component is shared, so the live What Is This page picks up the same Earth colors.
 
+## Deploy
+- `c27a25b` and `a3c265b` are on `origin/main`. Both Vercel production builds failed in `tsc` on `PreviewFeatureBuild.tsx` (`"--step-color"` is not a known CSS property). Last green production deploy was `14f6804`.
+- Cast that style to `React.CSSProperties`, same as the other custom properties in the app.
+- Creators preview hero no longer clips the three-line subhead. The section grows with the copy and the still covers that height.
+
 ## Open
 - Life Giving Pages proposal is still the next page to work on.

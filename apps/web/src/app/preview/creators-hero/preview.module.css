@@ -2,9 +2,14 @@
    section to the 1792×1008 still, then carries the picture a little
    further so it fades into the next section instead of leaving a gap. */
 .hero.hero {
+  /* The shared hero clips with overflow:hidden and contain:paint.
+     This preview has to grow past the photo's 16:9 so the subhead
+     and body stay inside the section. */
   min-height: calc(56.25vw + calc(var(--gs-n-220) * var(--gs-px)));
-  padding-bottom: 0;
+  padding-bottom: calc(var(--gs-n-80) * var(--gs-px));
   background: #f6f9fc;
+  overflow: visible;
+  contain: none;
 }
 
 .frame.frame {
@@ -31,9 +36,9 @@
   top: 0;
   right: 0;
   left: 0;
-  bottom: auto;
+  bottom: 0;
   width: 100%;
-  height: calc(56.25vw + calc(var(--gs-n-120) * var(--gs-px)));
+  height: 100%;
   object-fit: cover;
   object-position: top center;
   will-change: opacity;
