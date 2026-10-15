@@ -14,31 +14,61 @@
   background: transparent;
 }
 
-/* Same warm lift as the invitation hero, kept lighter and set
-   high in the clouds so the face does not blow out. */
-.homeHero::after {
-  content: "";
+/* Gold rays from both top corners. Each beam has its own width,
+   angle, and strength, and breathes on a 6s pulse. */
+.rays {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
+  overflow: hidden;
   pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 48% 42% at 8% 0%,
-      rgba(255, 220, 150, 0.55) 0%,
-      rgba(255, 236, 196, 0.22) 42%,
-      rgba(255, 248, 235, 0) 72%
-    ),
-    radial-gradient(
-      ellipse 48% 42% at 92% 0%,
-      rgba(255, 220, 150, 0.55) 0%,
-      rgba(255, 236, 196, 0.22) 42%,
-      rgba(255, 248, 235, 0) 72%
-    );
+}
+
+.ray {
+  position: absolute;
+  top: -8%;
+  height: 125%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 214, 90, 0.95) 0%,
+    rgba(255, 176, 40, 0.72) 38%,
+    rgba(255, 160, 30, 0.28) 68%,
+    transparent 88%
+  );
+  filter: blur(2px);
+  animation: rayPulse 6s ease-in-out infinite;
+}
+
+.rayLeft {
+  left: 0;
+  transform-origin: top left;
+}
+
+.rayRight {
+  right: 0;
+  transform-origin: top right;
+}
+
+@keyframes rayPulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+
+  50% {
+    opacity: var(--peak, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ray {
+    animation: none;
+    opacity: 0.55;
+  }
 }
 
 .homeHero .heroCopy {
-  z-index: 2;
+  z-index: 3;
   align-items: flex-start;
   text-align: left;
   padding-left: calc(var(--gs-n-112) * var(--gs-px));
@@ -90,10 +120,20 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  /* Keep the film under the ray layer. A masked video otherwise
+     paints in its own layer and hides whatever is blended over it. */
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: right center;
   filter: brightness(1.06) saturate(1.08) contrast(1.02);
-  mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+}
+
+.homeHero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 68%, #6ec4e0 100%);
 }

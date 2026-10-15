@@ -158,8 +158,8 @@
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-lg-size);
-  line-height: var(--gs-text-lg-leading);
+  font-size: var(--gs-text-xl-size);
+  line-height: var(--gs-text-xl-leading);
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -909,8 +909,8 @@
   }
 
   .heroBodyText {
-    font-size: var(--gs-text-base-size);
-    line-height: var(--gs-text-base-leading);
+    font-size: var(--gs-text-lg-size);
+    line-height: var(--gs-text-lg-leading);
   }
 
   .featureCard,

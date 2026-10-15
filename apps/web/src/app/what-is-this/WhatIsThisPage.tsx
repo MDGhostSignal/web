@@ -41,8 +41,6 @@ import { gsap } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
 import styles from "./page.module.css";
-import { HarmonyPair } from "./HarmonyPair";
-import harmonyPair from "./HarmonyPair.module.css";
 import { navLinks } from "@/lib/nav";
 
 // Module-scope helpers for the desktop-only R3F scene gate.
@@ -496,8 +494,6 @@ export default function WhatIsThisPage({
                 )}
               </div>
             )}
-            {/* Headline. On the preview the milk-and-cookie sits to its right. */}
-            <div className={previewPlates ? harmonyPair.row : undefined}>
             <div className={styles.headlineBlock}>
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>
@@ -513,8 +509,6 @@ export default function WhatIsThisPage({
                   <span>harmony?</span>
                 </SplitLinesReveal>
               </h2>
-            </div>
-            {previewPlates ? <HarmonyPair /> : null}
             </div>
             {/* Body text centered on page, left-aligned inside */}
             <div className={styles.bodyBlock}>

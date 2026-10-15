@@ -50,6 +50,31 @@ export default function HomepageTestNotLivePage() {
           <source src="/images/home/desktop.webm" type="video/webm" />
           <source src="/images/home/desktop-optimized.mp4" type="video/mp4" />
         </video>
+        <div className={preview.rays} aria-hidden="true">
+          {[
+            { side: preview.rayLeft, width: 14, angle: 16, delay: "0s", peak: 0.82 },
+            { side: preview.rayLeft, width: 36, angle: 28, delay: "1.5s", peak: 1 },
+            { side: preview.rayLeft, width: 8, angle: 40, delay: "3.2s", peak: 0.7 },
+            { side: preview.rayLeft, width: 52, angle: 52, delay: "0.6s", peak: 1 },
+            { side: preview.rayLeft, width: 20, angle: 66, delay: "4.4s", peak: 0.88 },
+            { side: preview.rayRight, width: 12, angle: -14, delay: "2.1s", peak: 0.78 },
+            { side: preview.rayRight, width: 44, angle: -30, delay: "0.3s", peak: 1 },
+            { side: preview.rayRight, width: 18, angle: -44, delay: "3.6s", peak: 0.9 },
+            { side: preview.rayRight, width: 7, angle: -22, delay: "5.1s", peak: 0.66 },
+            { side: preview.rayRight, width: 30, angle: -58, delay: "1.1s", peak: 1 },
+          ].map((ray) => (
+            <span
+              key={`${ray.side}-${ray.angle}`}
+              className={`${preview.ray} ${ray.side}`}
+              style={{
+                width: ray.width,
+                transform: `rotate(${ray.angle}deg)`,
+                animationDelay: ray.delay,
+                ["--peak" as string]: String(ray.peak),
+              }}
+            />
+          ))}
+        </div>
         <Section className={`${home.heroSection} ${preview.heroCopy}`}>
           <h1 className={home.heroHeadline}>
             <HomeTypingHero layout="split" />

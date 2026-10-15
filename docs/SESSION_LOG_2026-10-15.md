@@ -59,5 +59,11 @@
 - `/for-creators` and `/for-advertisers` use the preview heroes, benefit copy, and the three-step process. The old Lottie graphs stay off.
 - Life Giving Pages Work slide uses the membership cloud. Next Steps uses `whoarewebg.png`.
 
+## After go-live
+- Homepage hero has gold light rays from both top corners. They sit above the video, vary in width and strength, and pulse over 6 seconds. The video mask was removed because it covered the rays.
+- Milk-and-cookie animation removed from What Is This.
+- For Creators hero body copy is one step larger.
+- For Advertisers benefits are Personal Resonance, Values Aligned Conversion, and World-Making Membership.
+
 ## Open
 - Preview URLs still exist and now share the live navigation.

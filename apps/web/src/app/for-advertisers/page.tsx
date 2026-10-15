@@ -48,19 +48,19 @@ const features = [
 
 const previewFeatures = [
   {
-    title: "Podcast Ad Resonance",
+    title: "Personal Resonance",
     description:
-      "Podcasting gives your brand an intimate voice, turning passive listeners into active participants. With host-read podcast ads driving 70% brand recall (double social banners), it is an effective, relational way to speak to an engaged audience.",
+      "Host-read, personal ads. People remember your brand because someone they trust spoke your name.",
+  },
+  {
+    title: "Values Aligned Conversion",
+    description:
+      "We help you show up where you already belong, using our Conviction Quotient (XQ) to help us discern. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust, and high-trust environments see superior economic value.",
   },
   {
     title: "World-Making Membership",
     description:
-      "Join a community of values-aware creators and brands who understand they are making the world through their work. GHOSTSignal handles matching tech, contracts, campaigns, and reporting—giving you network-wide resonance and reach without the hassle of individual deals.",
-  },
-  {
-    title: "Values-Aligned Conversion",
-    description:
-      "We find a place for your brand among values-aligned communities you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust, and high-trust environments see superior economic value.",
+      "Join a community of values-aware creators and brands who understand they are making the world. GHOSTSignal handles matching tech, contracts, campaigns, and reporting — giving you network-wide resonance and reach without the hassle of individual deals.",
   },
 ] as const;
 
