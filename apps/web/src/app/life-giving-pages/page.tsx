@@ -694,7 +694,7 @@ export default function LifeGivingPagesProposalPage() {
             priority
           />
         </div>
-        <p className={styles.topTitle}>Life Giving Pages Proposal V1</p>
+        <p className={styles.topTitle}>Life Giving Pages Proposal</p>
         <span className={styles.counter} aria-live="polite">
           {String(active + 1).padStart(2, "0")} / {String(SLIDE_COUNT).padStart(2, "0")}
         </span>

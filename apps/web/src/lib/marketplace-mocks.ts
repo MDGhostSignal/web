@@ -372,7 +372,7 @@ export const MOCK_BRANDS: readonly MarketplaceEntity[] = [
     rq_code: "RQ-B2",
     rq_name: "Voice-First Studio Gear",
     tags: ["audio", "podcast", "hardware"],
-    blurb: "Microphones + interfaces tuned for voice. Loved by podcasters.",
+    blurb: "Microphones + interfaces tuned for voice. Loved by creators.",
     traits: { values: 76, authenticity: 88, horizon: 72 },
     is_mock: true,
   },

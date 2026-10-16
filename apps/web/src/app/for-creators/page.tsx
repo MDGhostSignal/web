@@ -35,7 +35,7 @@ const features = [
   },
   {
     title: "World-Making Community",
-    description: "You'll be a part of a community of world-makers: like-minded podcasters and brands who care about the sort of future we are creating.",
+    description: "You'll be a part of a community of world-makers: like-minded creators and brands who care about the sort of future we are creating.",
   },
 ] as const;
 

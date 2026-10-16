@@ -18,7 +18,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "GhostSignal — Values-aligned partnerships for podcasters and advertisers",
+    default: "GhostSignal — Values-aligned partnerships for creators and advertisers",
     template: "%s | GhostSignal",
   },
   description:

@@ -79,7 +79,7 @@ This entire process is not merely a philosophical exercise. It is a strategic fr
 
 While the average podcast ad drives +44% more purchases than other media (Acast Pulse 2025), a values-aligned match turns that into lasting equity: 75% of listeners will pay more for brands that feel right (Edelman 2025), and high-trust circles compound faster than any programmatic buy (Acemoglu, high-trust equilibria). One campaign isn’t a spend — it’s an investment in a culture that keeps paying dividends.
 
-### For Creators and Podcasters: Sustainable and Dignified Monetisation
+### For Creators: Sustainable and Dignified Monetisation
 *   **Premium Revenue and Higher CPMs:** An engaged, value-aligned audience is exponentially more valuable to the right brand. Because we can prove deep resonance through our process, we negotiate premium rates that reflect the true quality of your community. Our framework – Resonance Quotient - ensures genuine fits that protect creative energy and deliver premium $35–50 CPMs."
 *   **Sustainable Livelihood without Selling Out:** Our model provides a path to financial stability that honours your creative voice. This resolves a central pain point for creators who care about the fidelity of their art.
 *   **Administrative Freedom:** We handle the complexities of contracts, negotiations, and reporting, freeing you from administrative burden to more creativity.

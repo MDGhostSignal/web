@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   }
 
   const fullName = `${payload.firstName} ${payload.lastName}`.trim();
-  const typeLabel = payload.type === "podcast" ? "Podcaster" : payload.type === "advertiser" ? "Advertiser" : "Not specified";
+  const typeLabel = payload.type === "podcast" ? "Creator" : payload.type === "advertiser" ? "Advertiser" : "Not specified";
 
   const text = [
     "New Contact Form Submission",

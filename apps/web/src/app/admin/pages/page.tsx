@@ -48,7 +48,7 @@ const CATEGORIES: Category[] = [
       {
         path: "/for-creators",
         name: "For Creators",
-        description: "Pitch surface for podcasters considering joining the network.",
+        description: "Pitch surface for creators considering joining the network.",
         tags: ["public"],
       },
       {

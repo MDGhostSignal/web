@@ -16,7 +16,7 @@ import { navLinks } from "@/lib/nav";
 
 const promises = [
   {
-    audience: "For Podcasters",
+    audience: "For Creators",
     text: "We protect your voice. Every partnership will feel like an extension of your mission—not an interruption.",
   },
   {

@@ -38,7 +38,7 @@ const features = [
   },
   {
     title: "Administrative Simplicity",
-    description: "We handle invoicing, payments, ensuring efficiency and transparency — without individual podcaster contracts, simplifying your process.",
+    description: "We handle invoicing, payments, ensuring efficiency and transparency — without individual creator contracts, simplifying your process.",
   },
   {
     title: "Real Conversion",

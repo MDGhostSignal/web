@@ -105,7 +105,7 @@ export default function SnowdriftPage() {
             </ScrollFadeUp>
             <ScrollFadeUp index={2} duration={1.6}>
               <p className={styles.descriptionText}>
-                For podcasters and creators, it&apos;s a radar for what&apos;s coming — not what&apos;s already viral. For companies, it&apos;s the clearest path toward resonance, not just reach.
+                For creators, it&apos;s a radar for what&apos;s coming — not what&apos;s already viral. For companies, it&apos;s the clearest path toward resonance, not just reach.
               </p>
             </ScrollFadeUp>
             <ScrollFadeUp index={3} duration={1.6}>

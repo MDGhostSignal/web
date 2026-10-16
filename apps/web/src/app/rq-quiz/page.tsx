@@ -87,7 +87,7 @@ const STEPS: Step[] = [
         id: "TYPE",
         label: "I am a…",
         required: true,
-        options: ["Creator / Podcaster", "Brand / Advertiser"],
+        options: ["Creator", "Brand / Advertiser"],
       },
     ],
   },

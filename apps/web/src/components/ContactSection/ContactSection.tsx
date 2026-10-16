@@ -35,7 +35,7 @@ export function ContactSection({
           </h2>
           <ScrollFadeUp index={1} duration={1.6}>
             <p className={styles.contactBody}>
-              Podcaster or Advertiser, ready to find your frequency? Schedule a call.
+              Creator or Advertiser, ready to find your frequency? Schedule a call.
             </p>
           </ScrollFadeUp>
           <ScrollFadeUp index={2} duration={1.6}>

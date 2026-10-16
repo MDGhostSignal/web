@@ -173,7 +173,6 @@ export default function XqRqPage() {
             <ul className={styles.makerChips} aria-label="World-makers">
               <li className={styles.makerChip}>Businesses</li>
               <li className={styles.makerChip}>Non-profits</li>
-              <li className={styles.makerChip}>Podcasters</li>
               <li className={styles.makerChip}>Artists</li>
               <li className={styles.makerChip}>Musicians</li>
               <li className={styles.makerChip}>Creators</li>

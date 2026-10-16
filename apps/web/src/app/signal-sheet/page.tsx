@@ -123,8 +123,8 @@ const categories: Category[] = [
           <>
             Like a personality assessment for your podcast or brand, the RQ
             summarizes your partnership values so you match with partners you’d
-            be proud to work with. Podcasters: advertisements on your show
-            deepen audience trust. Brands: you’ll be paired with podcasters
+            be proud to work with. Creators: advertisements on your show
+            deepen audience trust. Brands: you’ll be paired with creators
             whose audience is already tuned to what you are doing. Resonance is
             the new reach.{" "}
             <Link href="/xqrq" className={styles.inlineLink}>

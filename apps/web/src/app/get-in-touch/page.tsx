@@ -81,7 +81,7 @@ export default function GetInTouchPage() {
             </h1>
             <ScrollFadeUp index={1} duration={1.6}>
               <p className={styles.contactBody}>
-                Podcaster or Advertiser, ready to find your frequency? Schedule a call.
+                Creator or Advertiser, ready to find your frequency? Schedule a call.
               </p>
             </ScrollFadeUp>
           </div>
