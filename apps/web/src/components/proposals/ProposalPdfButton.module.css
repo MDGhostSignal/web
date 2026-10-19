@@ -1,0 +1,23 @@
+.button,
+.buttonLight {
+  appearance: none;
+  border-radius: calc(var(--gs-radius-full, 999) * var(--gs-px));
+  padding: calc(var(--gs-n-6) * var(--gs-px)) calc(var(--gs-n-14) * var(--gs-px));
+  font: inherit;
+  font-size: calc(var(--gs-font-size-sm, 14) * var(--gs-px));
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button {
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.buttonLight {
+  color: #141414;
+  background: #fff;
+  border: 1px solid #141414;
+}
+

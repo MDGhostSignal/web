@@ -85,8 +85,14 @@
   white-space: nowrap;
 }
 
-.counter {
+.topActions {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+.counter {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: calc(var(--gs-font-size-sm, 14) * var(--gs-px));
@@ -524,6 +530,27 @@
   }
 }
 
+.slidePlate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+.slidePlateTop {
+  object-position: center top;
+}
+
+.work > :not(.slidePlate),
+.about > :not(.slidePlate),
+.next > :not(.slidePlate) {
+  position: relative;
+  z-index: 1;
+}
+
 /* The Work — four rounded step tiles */
 .work {
   --work-ink: #141414;
@@ -537,8 +564,7 @@
   height: 100%;
   position: relative;
   padding: var(--proposal-deck-inset);
-  background: #6ec4e0 url("/images/for-creators/member-bg.jpg") center center / cover no-repeat;
-  background-attachment: fixed;
+  background: #6ec4e0;
   color: var(--work-ink);
   display: flex;
   flex-direction: column;
@@ -620,10 +646,6 @@
   min-height: calc(var(--gs-n-96) * var(--gs-px));
 }
 
-.workCardMedia {
-  display: none;
-}
-
 .workAccent_green {
   border-top-color: var(--work-green);
 }
@@ -683,6 +705,7 @@
 }
 
 .workCardMedia {
+  display: block;
   position: relative;
   /* Identical frame on every tile — width fills the card, height is fixed */
   flex: 0 0 auto;
@@ -1129,6 +1152,9 @@
 }
 
 .scopeDeliverables {
+  position: relative;
+  z-index: 1;
+  background: #fff;
   /* Fixed band so the separator lines up across all four tiles */
   flex: 0 0 calc(var(--gs-n-200) * var(--gs-px));
   height: calc(var(--gs-n-200) * var(--gs-px));
@@ -1241,7 +1267,7 @@
   width: 100%;
   height: 100%;
   padding: var(--proposal-deck-inset);
-  background: #c9d7e4 url("/images/who-are-we/whoarewe-bg.jpg") center top / cover no-repeat;
+  background: #c9d7e4;
   color: #141414;
   display: flex;
   flex-direction: column;
@@ -1354,7 +1380,7 @@
   width: 100%;
   height: 100%;
   padding: var(--proposal-deck-inset);
-  background: #f4c6d8 url("/images/proposals/life-giving-pages/whoarewebg.png") center / cover no-repeat;
+  background: #f4c6d8;
   color: var(--next-ink);
   display: flex;
   flex-direction: column;
@@ -1476,25 +1502,21 @@
   object-position: center top;
 }
 
-.nextSignoff {
+.next > .nextSignoff {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 0;
+  top: var(--proposal-deck-inset);
+  left: var(--proposal-deck-inset);
+  z-index: 2;
   margin: 0;
-  transform: translate(-50%, -50%);
-  width: max-content;
-  max-width: 90%;
-  text-align: center;
-  font-size: calc(var(--gs-font-size-6xl, 60) * var(--gs-px));
-  line-height: 1.1;
+  text-align: left;
+  text-transform: uppercase;
+  font-size: var(--proposal-type-h1);
+  line-height: var(--proposal-type-h1-leading);
   font-weight: var(--gs-font-weight-bold, 700);
-  font-style: italic;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  font-style: normal;
   color: #141414;
   pointer-events: none;
-  text-shadow:
-    var(--shadow-x) var(--shadow-y) calc(var(--gs-n-18) * var(--gs-px)) rgba(20, 20, 20, 0.28);
 }
 
 .brandBars {
@@ -1757,5 +1779,19 @@
 
   .railTitle {
     font-size: calc(var(--gs-font-size-xs, 12) * var(--gs-px));
+  }
+}
+
+@media print {
+  .workCard {
+    height: var(--proposal-work-card-h) !important;
+  }
+
+  .scopeCard {
+    height: var(--proposal-scope-card-h) !important;
+  }
+
+  .mobileNav {
+    display: none !important;
   }
 }

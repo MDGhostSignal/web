@@ -10,6 +10,9 @@ import {
   type ReactNode,
 } from "react";
 
+import { ProposalPdfButton } from "@/components/proposals/ProposalPdfButton";
+import "@/components/proposals/proposal-print.css";
+
 import styles from "./page.module.css";
 
 const SLIDE_DESIGN_W = 1920;
@@ -216,7 +219,14 @@ function CoverSlide() {
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
         />
       ) : (
+        <>
+        <img
+          src="/videos/invitation-hero-prev-poster.jpg"
+          alt=""
+          data-cover-print=""
+        />
         <video
+          data-cover-video=""
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
           autoPlay
           muted
@@ -230,6 +240,7 @@ function CoverSlide() {
           <source src="/videos/invitation-hero-prev.webm" type="video/webm" />
           <source src="/videos/invitation-hero-prev.mp4" type="video/mp4" />
         </video>
+        </>
       )}
       <div className={styles.coverScrim} aria-hidden="true" />
       <div className={styles.coverChrome}>
@@ -264,10 +275,10 @@ function DeckLogo() {
   );
 }
 
-function DeckCloudMark() {
+function DeckCloudMark({ src = "/images/brand/logo-black.png" }: { src?: string }) {
   return (
     <Image
-      src="/images/brand/logo-black.png"
+      src={src}
       alt=""
       width={96}
       height={96}
@@ -313,9 +324,10 @@ function SlideFrame({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className={styles.slideCanvas} ref={canvasRef}>
+    <div className={styles.slideCanvas} data-proposal-canvas="" ref={canvasRef}>
       <div
         className={styles.slideInner}
+        data-proposal-slide=""
         style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
       >
         {children}
@@ -392,6 +404,7 @@ function WorkSlide() {
                 height={1000}
                 className={styles.workCardImage}
                 sizes="20vw"
+                loading="eager"
               />
             </div>
           </article>
@@ -424,7 +437,7 @@ const NEXT_FOUNDERS = [
 function NextStepsSlide() {
   return (
     <div className={styles.next}>
-      <DeckCloudMark />
+      <DeckCloudMark src="/images/brand/cloudmark-white.png" />
       <header className={styles.nextHeader}>
         <h1 className={styles.nextTitle}>Next Steps</h1>
         <p className={styles.nextSub}>Ready when you are.</p>
@@ -446,6 +459,7 @@ function NextStepsSlide() {
                   width={240}
                   height={240}
                   className={styles.nextFounderImage}
+                  loading="eager"
                 />
               </div>
             </li>
@@ -636,8 +650,8 @@ export default function HollyMackleProposalPage() {
   }, [active, scrollToSlide]);
 
   return (
-    <div className={styles.page}>
-      <header className={styles.topBar}>
+    <div className={styles.page} data-proposal-page="">
+      <header className={styles.topBar} data-proposal-chrome="">
         <div className={styles.brand}>
           <Image
             src="/images/brand/gs-brandmark-hor-white.png"
@@ -649,12 +663,15 @@ export default function HollyMackleProposalPage() {
           />
         </div>
         <p className={styles.topTitle}>Holly Mackle Proposal V1</p>
-        <span className={styles.counter} aria-live="polite">
-          {String(active + 1).padStart(2, "0")} / {String(SLIDE_COUNT).padStart(2, "0")}
-        </span>
+        <div className={styles.topActions}>
+          <ProposalPdfButton filename="Holly Mackle Proposal" />
+          <span className={styles.counter} aria-live="polite">
+            {String(active + 1).padStart(2, "0")} / {String(SLIDE_COUNT).padStart(2, "0")}
+          </span>
+        </div>
       </header>
 
-      <aside className={styles.rail} aria-label="Slide navigation">
+      <aside className={styles.rail} data-proposal-chrome="" aria-label="Slide navigation">
         <p className={styles.railLabel}>Slides</p>
         <ol className={styles.railList}>
           {SLIDE_LABELS.map((label, i) => (
@@ -676,6 +693,7 @@ export default function HollyMackleProposalPage() {
 
       <main
         className={styles.stage}
+        data-proposal-stage=""
         ref={stageRef}
         tabIndex={0}
         aria-label="Proposal slides"
@@ -683,6 +701,7 @@ export default function HollyMackleProposalPage() {
         <section
           id="slide-1"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[0] = el;
           }}
@@ -696,6 +715,7 @@ export default function HollyMackleProposalPage() {
         <section
           id="slide-2"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[1] = el;
           }}
@@ -709,6 +729,7 @@ export default function HollyMackleProposalPage() {
         <section
           id="slide-3"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[2] = el;
           }}
@@ -722,6 +743,7 @@ export default function HollyMackleProposalPage() {
         <section
           id="slide-4"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[3] = el;
           }}
@@ -735,6 +757,7 @@ export default function HollyMackleProposalPage() {
         <section
           id="slide-5"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[4] = el;
           }}
@@ -748,6 +771,7 @@ export default function HollyMackleProposalPage() {
         <section
           id="slide-6"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[5] = el;
           }}
@@ -759,7 +783,7 @@ export default function HollyMackleProposalPage() {
         </section>
       </main>
 
-      <nav className={styles.mobileNav} aria-label="Slide controls">
+      <nav className={styles.mobileNav} data-proposal-chrome="" aria-label="Slide controls">
         <button
           type="button"
           className={styles.mobileBtn}

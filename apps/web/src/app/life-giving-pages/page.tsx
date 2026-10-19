@@ -11,6 +11,9 @@ import {
   type ReactNode,
 } from "react";
 
+import { ProposalPdfButton } from "@/components/proposals/ProposalPdfButton";
+import "@/components/proposals/proposal-print.css";
+
 import styles from "./page.module.css";
 
 const SLIDE_DESIGN_W = 1920;
@@ -217,7 +220,14 @@ function CoverSlide() {
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
         />
       ) : (
+        <>
+        <img
+          src="/images/preview/lady-earbuds.jpg"
+          alt=""
+          data-cover-print=""
+        />
         <video
+          data-cover-video=""
           className={`${styles.coverVideo} ${styles.coverVideoMedia}`}
           autoPlay
           muted
@@ -230,6 +240,7 @@ function CoverSlide() {
           {/* Earbuds blink loop from the homepage preview pass */}
           <source src="/images/preview/lady-earbuds-blink-steady.mp4" type="video/mp4" />
         </video>
+        </>
       )}
       <div className={styles.coverScrim} aria-hidden="true" />
       <div className={styles.coverChrome}>
@@ -301,9 +312,10 @@ function SlideFrame({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className={styles.slideCanvas} ref={canvasRef}>
+    <div className={styles.slideCanvas} data-proposal-canvas="" ref={canvasRef}>
       <div
         className={styles.slideInner}
+        data-proposal-slide=""
         style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
       >
         {children}
@@ -335,15 +347,34 @@ function OpportunitySlide() {
           height={3200}
           className={styles.oppPortraitImage}
           sizes="(max-width: 1099px) 40vw, 28vw"
+          loading="eager"
         />
       </div>
     </div>
   );
 }
 
+function SlidePlate({
+  src,
+  position = "center",
+}: {
+  src: string;
+  position?: "center" | "top";
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- Chrome omits CSS backgrounds unless print background graphics are on
+    <img
+      src={src}
+      alt=""
+      className={position === "top" ? `${styles.slidePlate} ${styles.slidePlateTop}` : styles.slidePlate}
+    />
+  );
+}
+
 function WorkSlide() {
   return (
     <div className={styles.work}>
+      <SlidePlate src="/images/for-creators/member-bg.jpg" />
       <DeckCloudMark />
       <header className={styles.workHeader}>
         <h1 className={styles.workTitle}>The Work</h1>
@@ -379,6 +410,7 @@ function WorkSlide() {
                 height={1000}
                 className={styles.workCardImage}
                 sizes="20vw"
+                loading="eager"
               />
             </div>
           </article>
@@ -426,6 +458,7 @@ const FOUNDERS = [
 function WhoAreWeSlide() {
   return (
     <div className={styles.about}>
+      <SlidePlate src="/images/who-are-we/whoarewe-bg.jpg" position="top" />
       <DeckCloudMark />
       <header className={styles.aboutHeader}>
         <h1 className={styles.aboutTitle}>Who Are We</h1>
@@ -442,6 +475,7 @@ function WhoAreWeSlide() {
                 height={800}
                 className={styles.aboutImage}
                 sizes="18vw"
+                loading="eager"
               />
             </div>
             <p className={styles.aboutName}>{founder.name}</p>
@@ -483,12 +517,13 @@ function NextStepsSlide() {
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
     >
-      <p className={styles.nextSignoff}>Welcome to the Signal.</p>
+      <SlidePlate src="/images/proposals/life-giving-pages/whoarewebg.png" />
+      <h1 className={styles.nextSignoff}>Welcome to the Signal</h1>
 
       <div className={styles.nextCopy}>
         <header className={styles.nextHeader}>
           <DeckCloudMark />
-          <h1 className={styles.nextTitle}>Next Steps</h1>
+          <h2 className={styles.nextTitle}>Next Steps</h2>
           <p className={styles.nextSub}>Ready when you are.</p>
         </header>
 
@@ -682,8 +717,8 @@ export default function LifeGivingPagesProposalPage() {
   }, [active, scrollToSlide]);
 
   return (
-    <div className={styles.page}>
-      <header className={styles.topBar}>
+    <div className={styles.page} data-proposal-page="">
+      <header className={styles.topBar} data-proposal-chrome="">
         <div className={styles.brand}>
           <Image
             src="/images/brand/brandmark-hor-black.png"
@@ -695,12 +730,18 @@ export default function LifeGivingPagesProposalPage() {
           />
         </div>
         <p className={styles.topTitle}>Life Giving Pages Proposal</p>
-        <span className={styles.counter} aria-live="polite">
-          {String(active + 1).padStart(2, "0")} / {String(SLIDE_COUNT).padStart(2, "0")}
-        </span>
+        <div className={styles.topActions}>
+          <ProposalPdfButton
+            filename="Life Giving Pages Proposal"
+            tone="light"
+          />
+          <span className={styles.counter} aria-live="polite">
+            {String(active + 1).padStart(2, "0")} / {String(SLIDE_COUNT).padStart(2, "0")}
+          </span>
+        </div>
       </header>
 
-      <aside className={styles.rail} aria-label="Slide navigation">
+      <aside className={styles.rail} data-proposal-chrome="" aria-label="Slide navigation">
         <p className={styles.railLabel}>Slides</p>
         <ol className={styles.railList}>
           {SLIDE_LABELS.map((label, i) => (
@@ -722,6 +763,7 @@ export default function LifeGivingPagesProposalPage() {
 
       <main
         className={styles.stage}
+        data-proposal-stage=""
         ref={stageRef}
         tabIndex={0}
         aria-label="Proposal slides"
@@ -729,6 +771,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-1"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[0] = el;
           }}
@@ -742,6 +785,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-2"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[1] = el;
           }}
@@ -755,6 +799,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-3"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[2] = el;
           }}
@@ -768,6 +813,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-4"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[3] = el;
           }}
@@ -781,6 +827,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-5"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[4] = el;
           }}
@@ -794,6 +841,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-6"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[5] = el;
           }}
@@ -807,6 +855,7 @@ export default function LifeGivingPagesProposalPage() {
         <section
           id="slide-7"
           className={styles.slideViewport}
+          data-proposal-viewport=""
           ref={(el) => {
             slideRefs.current[6] = el;
           }}
@@ -818,7 +867,7 @@ export default function LifeGivingPagesProposalPage() {
         </section>
       </main>
 
-      <nav className={styles.mobileNav} aria-label="Slide controls">
+      <nav className={styles.mobileNav} data-proposal-chrome="" aria-label="Slide controls">
         <button
           type="button"
           className={styles.mobileBtn}

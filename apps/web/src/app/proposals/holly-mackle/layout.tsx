@@ -25,6 +25,13 @@ export default function HollyMackleProposalLayout({
           overflow: hidden !important;
           scrollbar-gutter: auto !important;
         }
+        @media print {
+          html,
+          body {
+            height: auto !important;
+            overflow: visible !important;
+          }
+        }
       `}</style>
       {children}
     </>

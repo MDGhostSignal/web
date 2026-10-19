@@ -85,8 +85,14 @@
   white-space: nowrap;
 }
 
-.counter {
+.topActions {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gs-n-16) * var(--gs-px));
+}
+
+.counter {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: calc(var(--gs-font-size-sm, 14) * var(--gs-px));
@@ -1070,6 +1076,9 @@
   /* Fixed band so the separator lines up across all four tiles */
   flex: 0 0 calc(var(--gs-n-200) * var(--gs-px));
   height: calc(var(--gs-n-200) * var(--gs-px));
+  position: relative;
+  z-index: 1;
+  background: #fff;
   margin-top: auto;
   display: flex;
   flex-direction: column;
@@ -1192,11 +1201,6 @@
   align-items: flex-start;
   gap: calc(var(--gs-n-24) * var(--gs-px));
   overflow: hidden;
-}
-
-.next .deckCloud {
-  /* logo-black cloud → white on the dark field */
-  filter: invert(1);
 }
 
 .nextHeader {
@@ -1555,5 +1559,15 @@
 
   .railTitle {
     font-size: calc(var(--gs-font-size-xs, 12) * var(--gs-px));
+  }
+}
+
+@media print {
+  .scopeCard {
+    height: var(--proposal-scope-card-h) !important;
+  }
+
+  .mobileNav {
+    display: none !important;
   }
 }

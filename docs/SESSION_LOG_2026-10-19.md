@@ -37,3 +37,4 @@
 - Horizon drag and curves were reviewed in the running dev server by Martin.
 - Journey circles were reviewed on For Creators in the browser. For Advertisers uses the same component and was not given a separate click-through in this session.
 - Horizon goal editor dropdowns now use an opaque option list so the choices stay readable in both admin themes.
+- Proposal Download PDF uses the browser print dialog (Save as PDF), one 1920×1080 page per slide. Verified with Playwright `page.pdf` against localhost: Holly Mackle is 6 pages, Life Giving Pages is 7. Cover is a still. Slide chrome is hidden. Scope cards keep their full height. Founder portraits and Life Giving Pages skies are real images, so they print even when Chrome background graphics are off. “WELCOME TO THE SIGNAL” is the all-caps heading in the top-left of the Life Giving Pages Next Steps slide. The Windows print dialog itself was not clicked.
