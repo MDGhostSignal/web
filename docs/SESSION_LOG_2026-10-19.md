@@ -27,6 +27,12 @@
 - ESLint on the Horizon files, layout, proxy, and icons passed. Full `npm run lint` still reports existing errors in untracked verify scripts and `FutureType.tsx`.
 - No local dev server was running, and this session has no browser tool, so the drag, save, and theme behavior was not exercised in a browser.
 
+## Later the same day
+- For Creators hero: removed the trust paragraph, rewrote the three benefits, and moved the three lettermarks above the headline so the subheadline sits closer to it.
+- Membership journey on For Creators and For Advertisers is now three circles on a ring. The words stay horizontal, the circles barely overlap, and each page keeps its own type sizes.
+- Shared component: `apps/web/src/components/JourneyOrbit/`.
+
 ## Open
 - Schema has been run. 26 goals from the 2026–2029 strategy document are in `company_goals`.
-- Browser pass of drag and the curves still not done in this session.
+- Horizon drag and curves were reviewed in the running dev server by Martin.
+- Journey circles were reviewed on For Creators in the browser. For Advertisers uses the same component and was not given a separate click-through in this session.

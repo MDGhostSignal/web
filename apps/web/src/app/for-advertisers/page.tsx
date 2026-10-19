@@ -11,6 +11,7 @@ import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
 import { PreviewFeatureBuild } from "./PreviewFeatureBuild";
 import { ResultTyping } from "./ResultTyping";
+import { JourneyOrbit } from "@/components/JourneyOrbit/JourneyOrbit";
 import { BrandedGhostSignal } from "@/components/BrandedGhostSignal";
 import { Container, Section } from "@/components/layout";
 import { ParallaxY } from "@/motion/ParallaxY";
@@ -418,19 +419,13 @@ export default function ForAdvertisersPage({
               </p>
             </ScrollFadeUp>
 
-            <ol className={styles.businessSteps}>
-              {activeJourney.map((step, index) => (
-                <ScrollFadeUp key={step.number} index={index + 1} duration={1.8}>
-                  <li className={styles.businessStep}>
-                    <span className={styles.stepNumber} aria-hidden="true">{step.number}</span>
-                    <div className={styles.stepContent}>
-                      <h3 className={styles.stepTitle}>{step.title}</h3>
-                      <p className={styles.stepDescription}>{step.description}</p>
-                    </div>
-                  </li>
-                </ScrollFadeUp>
-              ))}
-            </ol>
+            <JourneyOrbit
+              steps={activeJourney}
+              tone="light"
+              numberClassName={styles.stepNumber}
+              titleClassName={styles.stepTitle}
+              descriptionClassName={styles.stepDescription}
+            />
 
             <ScrollFadeUp index={4} duration={1.6}>
               <div className={styles.businessResult}>

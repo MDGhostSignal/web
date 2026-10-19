@@ -472,18 +472,6 @@
   align-self: start;
 }
 
-.journeySteps {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gs-n-48) * var(--gs-px));
-  list-style: none;
-  margin: 0;
-  /* Bottom padding trimmed -- the CTA below carries its own margin
-     now, so 64 -> 32 keeps the button close to the last tile. */
-  padding: 0 var(--edge-pad) calc(var(--gs-n-32) * var(--gs-px)) calc(var(--gs-n-48) * var(--gs-px));
-  counter-reset: step;
-}
-
 /* Matches the closingCta in shape (dark pill with white text + arrow
    icon). Aligns to the left edge of the steps via the same
    --gs-n-48 indent, and carries the bottom spacing the <ol> used to
@@ -561,25 +549,6 @@
   margin-top: calc(var(--gs-n-8) * var(--gs-px));
 }
 
-.journeyStep {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: calc(var(--gs-n-40) * var(--gs-px));
-  padding: calc(var(--gs-n-48) * var(--gs-px));
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: calc(var(--gs-radius-lg, 12) * var(--gs-px));
-  transition: transform 300ms ease, box-shadow 300ms ease, background 300ms ease;
-}
-
-.journeyStep:hover {
-  transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
-}
-
 .stepNumber {
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-bold);
@@ -591,7 +560,8 @@
 .stepContent {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--gs-n-16) * var(--gs-px));
+  align-items: center;
+  gap: calc(var(--gs-n-8) * var(--gs-px));
 }
 
 .stepTitle {
@@ -864,10 +834,6 @@
     max-width: 70%;
   }
 
-  .journeySteps {
-    padding: 0 var(--edge-pad);
-  }
-
   /* At mobile, the CTA no longer shares a row with the statue, so
      align it with the rest of the column's edge-padding instead of
      the desktop --gs-n-48 indent. Same for the ART19 card. */
@@ -877,14 +843,8 @@
     margin-right: var(--edge-pad);
   }
 
-  .featureCard,
-  .journeyStep {
+  .featureCard {
     padding: calc(var(--gs-n-32) * var(--gs-px));
-  }
-
-  .journeyStep {
-    grid-template-columns: 1fr;
-    gap: calc(var(--gs-n-16) * var(--gs-px));
   }
 
   .stepNumber {
@@ -913,8 +873,7 @@
     line-height: var(--gs-text-lg-leading);
   }
 
-  .featureCard,
-  .journeyStep {
+  .featureCard {
     padding: calc(var(--gs-n-24) * var(--gs-px));
   }
 

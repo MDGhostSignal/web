@@ -15,6 +15,7 @@ import { SplitLinesReveal } from "@/motion/SplitLinesReveal";
 import { gsap } from "@/motion/gsap";
 import { useIsomorphicLayoutEffect } from "@/motion/useIsomorphicLayoutEffect";
 
+import { JourneyOrbit } from "@/components/JourneyOrbit/JourneyOrbit";
 import { PreviewFeatureBuild } from "../for-advertisers/PreviewFeatureBuild";
 import styles from "./page.module.css";
 import previewHero from "../preview/creators-hero/preview.module.css";
@@ -41,19 +42,19 @@ const features = [
 
 const previewFeatures = [
   {
-    title: "Creative Freedom",
+    title: "Creative freedom",
     description:
-      "Be freed up to create. GHOSTSignal handles matching tech, contracts, podcast hosting, campaigns, and reporting — giving you network-wide resonance and reach without the hassle of individual deals.",
+      "You create. We handle matching, contracts, hosting, campaigns, and reporting.",
   },
   {
-    title: "Values-Aligned Partnerships",
+    title: "Values Aligned Partnerships",
     description:
-      "We understand that your voice, and the trust relationship with your listening community is everything. We connect you with brands you can be proud of. Nobel laureate economist Daron Acemoglu demonstrates that value alignment builds trust — allowing you to generate meaningful revenue while protecting and deepening the connection you have built with your audience.",
+      "The trust you have with your audience is everything. We partner you with brands you can be proud of, using our Conviction Quotient (XQ) to help us discern.",
   },
   {
     title: "World-Making Membership",
     description:
-      "Join a community of values-aware creators and brands who understand they are making the world through their work.",
+      "Join a community of values-aware creators and brands who understand they are making the world.",
   },
 ] as const;
 
@@ -242,21 +243,7 @@ export default function ForCreatorsPage({
           />
         </div>
         <div className={styles.heroContent}>
-          {/* Spacer reserves the vertical room the removed top
-              hero-logos row used to occupy so the headline stays
-              in the same position. Matches .heroLogo's clamped
-              height. */}
-          <div className={styles.heroLogosSpacer} aria-hidden="true" />
-          <h1 className={styles.heroHeadline}>
-            <SplitLinesReveal duration={2.2}>Trust is everything.</SplitLinesReveal>
-            <SplitLinesReveal duration={2.2} delay={0.35}>
-              Partnerships that honor your voice
-            </SplitLinesReveal>
-            <SplitLinesReveal duration={2.2} delay={0.7}>
-              and your audience thank you for.
-            </SplitLinesReveal>
-          </h1>
-          <ScrollFadeUp index={1} duration={1.4} distance={24}>
+          <ScrollFadeUp index={0} duration={1.4} distance={24}>
             <div className={styles.heroLogos}>
               <Image
                 src="/images/for-creators/lettermark-white.png"
@@ -281,46 +268,18 @@ export default function ForCreatorsPage({
               />
             </div>
           </ScrollFadeUp>
+          <h1 className={styles.heroHeadline}>
+            <SplitLinesReveal duration={2.2}>Trust is everything.</SplitLinesReveal>
+            <SplitLinesReveal duration={2.2} delay={0.35}>
+              Partnerships that honor your voice
+            </SplitLinesReveal>
+            <SplitLinesReveal duration={2.2} delay={0.7}>
+              and your audience thank you for.
+            </SplitLinesReveal>
+          </h1>
           <div className={`${styles.heroSubhead} ${previewHero.subhead}`}>
             <span className={previewHero.subheadLine}>When good creators partner with good brands,</span>
             <span className={previewHero.subheadLine}>the world is made in the right direction.</span>
-          </div>
-          <ScrollFadeUp index={0} duration={1.4} distance={24}>
-            <div className={styles.heroLogos}>
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-              <Image
-                src="/images/for-creators/lettermark-white.png"
-                alt=""
-                width={30}
-                height={30}
-                className={styles.heroLogo}
-              />
-            </div>
-          </ScrollFadeUp>
-          <div className={styles.heroBodyGrid}>
-            <ScrollFadeUp duration={1.8}>
-              <p className={styles.heroBodyText}>
-                Keep the trust you already have. We connect you with brands that are a net good, the kind your audience thanks you for.
-              </p>
-            </ScrollFadeUp>
-            <ScrollFadeUp duration={1.8} delay={0.4}>
-              <p className={styles.heroBodyText}>
-                You stay yourself. You make money. The relationship gets stronger.
-              </p>
-            </ScrollFadeUp>
           </div>
         </div>
       </Section>
@@ -425,19 +384,12 @@ export default function ForCreatorsPage({
             </div>
           </ScrollFadeUp>
           <div className={styles.journeyRight}>
-            <ol className={styles.journeySteps}>
-              {activeJourney.map((step, index) => (
-                <ScrollFadeUp key={step.number} index={index} duration={1.8}>
-                  <li className={styles.journeyStep}>
-                    <span className={styles.stepNumber} aria-hidden="true">{step.number}</span>
-                    <div className={styles.stepContent}>
-                      <h3 className={styles.stepTitle}>{step.title}</h3>
-                      <p className={styles.stepDescription}>{step.description}</p>
-                    </div>
-                  </li>
-                </ScrollFadeUp>
-              ))}
-            </ol>
+            <JourneyOrbit
+              steps={activeJourney}
+              numberClassName={styles.stepNumber}
+              titleClassName={styles.stepTitle}
+              descriptionClassName={styles.stepDescription}
+            />
             <ScrollFadeUp index={journeySteps.length} duration={1.8}>
               <Link href="/get-in-touch" className={styles.journeyCta}>
                 Get in Touch
