@@ -36,3 +36,4 @@
 - Schema has been run. 26 goals from the 2026–2029 strategy document are in `company_goals`.
 - Horizon drag and curves were reviewed in the running dev server by Martin.
 - Journey circles were reviewed on For Creators in the browser. For Advertisers uses the same component and was not given a separate click-through in this session.
+- Horizon goal editor dropdowns now use an opaque option list so the choices stay readable in both admin themes.

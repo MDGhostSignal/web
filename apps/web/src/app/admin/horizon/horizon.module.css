@@ -243,6 +243,27 @@
   font: inherit;
 }
 
+/* Native option lists ignore translucent surfaces. Windows also paints
+   the popup white unless color-scheme is set on the select itself, which
+   leaves light option text unreadable. Opaque colors on both themes. */
+.field select {
+  color-scheme: dark;
+}
+
+.field select option {
+  background-color: #141418;
+  color: #f4f4f5;
+}
+
+:global(:root[data-theme="light"]) .field select {
+  color-scheme: light;
+}
+
+:global(:root[data-theme="light"]) .field select option {
+  background-color: #ffffff;
+  color: #141418;
+}
+
 .editorFooter,
 .editorActions {
   display: flex;
