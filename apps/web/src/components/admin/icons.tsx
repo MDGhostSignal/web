@@ -158,6 +158,17 @@ export function IconTasks(props: Props) {
   );
 }
 
+/** Horizon — three marks widening toward the long view. */
+export function IconHorizon(props: Props) {
+  return (
+    <svg {...base(props)}>
+      <line x1="4" y1="7" x2="8" y2="7" />
+      <line x1="4" y1="12" x2="13" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </svg>
+  );
+}
+
 /** Marketing — broadcast (megaphone). */
 export function IconMarketing(props: Props) {
   return (

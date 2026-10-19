@@ -191,6 +191,9 @@ export const config = {
     "/api/admin/contracts/:path*",
     // Notebook — plain-text scratch docs (Business plan / Notes).
     "/api/admin/notebook",
+    // Company Horizon — goal cards on /admin/horizon.
+    "/api/admin/horizon",
+    "/api/admin/horizon/:path*",
     // Substack metrics — manual subscriber / views snapshots for the
     // admin Dashboard home KPI card.
     "/api/admin/substack-metrics",

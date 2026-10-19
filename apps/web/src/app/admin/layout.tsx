@@ -77,6 +77,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           children: [
             { href: "/admin/tasks/notebook", label: "Notebook" },
             { href: "/admin/tasks", label: "Tasks", exact: true },
+            { href: "/admin/horizon", label: "Horizon" },
           ],
         },
         {
