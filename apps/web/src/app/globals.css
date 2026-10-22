@@ -53,6 +53,10 @@ body.is-head-active .js-sh-logo-wrap {
 
 body.is-head-active .js-sh-main-links {
   width: auto !important;
+  /* Hidden links are display:none. Zero the row gap and the variable
+     the second pill subtracts, so the 12px margin in .navCta + .navCta
+     is the whole distance — same as the full bar. */
+  --sh-link-gap: 0px;
   column-gap: 0 !important;
 }
 

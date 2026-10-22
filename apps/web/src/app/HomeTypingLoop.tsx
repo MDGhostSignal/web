@@ -14,7 +14,7 @@ const LINE_1_SEGMENTS = [
   { text: " is for people", className: "plain" as const },
 ];
 const SPLIT_LINE_1_SEGMENTS = LINE_1_SEGMENTS.slice(0, 2);
-const SPLIT_MID_LINE = "for people";
+const SPLIT_MID_LINE = "is for people";
 
 const LINE_2_PREFIX = "who are ";
 const SUFFIXES = [

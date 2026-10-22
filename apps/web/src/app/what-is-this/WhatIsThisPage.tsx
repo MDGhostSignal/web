@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 
-import type { ValuesControl } from "./ValuesBinary";
 import type { HarmonyControl } from "./HarmonyOrbs";
 
 const HarmonyOrbs = dynamic(() => import("./HarmonyOrbs"), { ssr: false });
@@ -19,14 +18,6 @@ const ScrollScenes = dynamic(
   () => import("@/components/ScrollScenes").then((m) => m.ScrollScenes),
   { ssr: false },
 );
-
-// Binary-star R3F scene for the Values section. Pulls in three.js +
-// R3F + drei + postprocessing — same chunk size that's already paid
-// on /admin/marketplace, but here we dynamic-import + ssr:false so
-// the marketing page's initial chunk stays light.
-const ValuesBinary = dynamic(() => import("./ValuesBinary"), {
-  ssr: false,
-});
 
 // Canvas cherry-blossom overlay — ssr:false since it needs the DOM.
 const HeroBlossoms = dynamic(() => import("./HeroBlossoms"), { ssr: false });
@@ -82,28 +73,7 @@ export default function WhatIsThisPage({
     p0: number;
   } | null>(null);
 
-  // ValuesBinary control: a single ref shared with the R3F scene's
-  // useFrame loop. The section-level pointer handlers below mutate
-  // this ref directly so updates don't trigger React re-renders that
-  // would tear the Canvas down. `frozen` slowly lerps the scene rate
-  // to zero; `yaw` / `pitch` are the user-driven rotation deltas
-  // applied on top of the auto-tilt/spin so the frozen scene can be
-  // turned and twisted in 3D.
-  const valuesControlRef = useRef<ValuesControl>({
-    frozen: false,
-    yaw: 0,
-    pitch: 0,
-  });
-  const valuesDragRef = useRef<{
-    x: number;
-    y: number;
-    y0: number;
-    p0: number;
-    dragged: boolean;
-  } | null>(null);
-  const [valuesGrabbing, setValuesGrabbing] = useState(false);
-
-  // Gate the heavy R3F scenes (HarmonyOrbs, ValuesBinary) to desktop
+  // Gate the heavy R3F scene (HarmonyOrbs) to desktop
   // only. On touch viewports they cost GPU/CPU for no payoff — the
   // drag interactions are CSS-disabled anyway, and the scenery is
   // positioned with viewport-anchored coordinates that pushed off the
@@ -116,40 +86,6 @@ export default function WhatIsThisPage({
     getSceneMqSnapshot,
     getSceneMqServerSnapshot,
   );
-
-  const onValuesPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    valuesDragRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      y0: valuesControlRef.current.yaw,
-      p0: valuesControlRef.current.pitch,
-      dragged: false,
-    };
-    // Hold-to-freeze: freezing happens for the duration of the press.
-    valuesControlRef.current.frozen = true;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setValuesGrabbing(true);
-  };
-  const onValuesPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const drag = valuesDragRef.current;
-    if (!drag) return;
-    const dx = e.clientX - drag.x;
-    const dy = e.clientY - drag.y;
-    valuesControlRef.current.yaw = drag.y0 + dx * 0.008;
-    valuesControlRef.current.pitch = drag.p0 + dy * 0.008;
-  };
-  const onValuesPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Release always resumes the animation — the in-scene speed lerp
-    // makes it ramp back up smoothly.
-    valuesControlRef.current.frozen = false;
-    valuesDragRef.current = null;
-    setValuesGrabbing(false);
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {
-      // Pointer capture may already be released — ignore.
-    }
-  };
 
   useIsomorphicLayoutEffect(() => {
     const wrapper = heroVideoWrapperRef.current;
@@ -291,7 +227,7 @@ export default function WhatIsThisPage({
   // entirely; drag still works.
   // Section-level pointer handlers for the Harmony scene. Same
   // press-hold-to-freeze / drag-to-rotate / release-to-resume pattern
-  // used by ValuesBinary; HarmonyOrbs reads `harmonyControlRef` in
+  // HarmonyOrbs reads `harmonyControlRef` in
   // its R3F useFrame.
   const onHarmonyPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     harmonyDragRef.current = {
@@ -552,32 +488,8 @@ export default function WhatIsThisPage({
 
           {/* Section 3: Values Create Value - RIGHT */}
           <Section className={`${styles.textSection} ${styles.alignRight}`}>
-            {/* Binary-star R3F scene — two PBR spheres lit by their
-                own coloured point lights, drag-spin with inertia,
-                selective Bloom on emissive cores. Mounts only when
-                visible (IntersectionObserver inside the component)
-                so it costs nothing while the user is at the top of
-                the page. Replaces an earlier CSS-3D placeholder. */}
-            {sceneEnabled && (
-              <div className={styles.valuesBinaryWrapper}>
-                <ValuesBinary controlRef={valuesControlRef} brandGradient={previewPlates} />
-              </div>
-            )}
-            {/* Section-spanning interaction layer — captures pointer
-                events anywhere over the Values section so the cursor
-                reads as a hand and the user can click to freeze the
-                scene, then drag to twist it in 3D. Sits above both
-                the canvas and the text container. */}
-            <div
-              className={`${styles.valuesInteraction}${
-                valuesGrabbing ? " " + styles.valuesInteractionGrabbing : ""
-              }`}
-              onPointerDown={onValuesPointerDown}
-              onPointerMove={onValuesPointerMove}
-              onPointerUp={onValuesPointerUp}
-              onPointerCancel={onValuesPointerUp}
-              aria-hidden="true"
-            />
+            {/* ValuesBinary (left-side metaball) is parked. The
+                component file stays; remount it here when wanted. */}
             <div className={styles.textContainer}>
               <h2 className={styles.sectionHeadline}>
                 <SplitLinesReveal duration={1.8} stagger={0.25} className={styles.headlineLine}>

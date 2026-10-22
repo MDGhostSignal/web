@@ -70,8 +70,10 @@
   justify-content: flex-start;
   /* 64 → 32. Paired with the `auto` width above this lets seven
      links + CTA live inside the header without overflowing, while
-     still reading airy. */
-  column-gap: calc(var(--gs-n-32) * var(--gs-px));
+     still reading airy. --sh-link-gap is also read by the second
+     CTA so the two pills can cancel this gap and stay 12px apart. */
+  --sh-link-gap: calc(var(--gs-n-32) * var(--gs-px));
+  column-gap: var(--sh-link-gap);
 }
 
 .navLink {
@@ -162,7 +164,11 @@
    other links fade out. The shared .nav:hover sibling-dim rule below
    this block re-targets it too, so the CTA brightens back on hover. */
 .navCta + .navCta {
-  margin-left: calc(var(--gs-n-12) * var(--gs-px));
+  /* Net space between the two pills is always 12px. The nav
+     column-gap would otherwise add 32px (12px under 1440px) on
+     top of this. Collapsed bar sets --sh-link-gap to 0, so this
+     margin is the whole gap there too. */
+  margin-left: calc(var(--gs-n-12) * var(--gs-px) - var(--sh-link-gap, 0px));
 }
 
 .navCta {
@@ -224,7 +230,8 @@
   }
 
   .nav {
-    column-gap: calc(var(--gs-n-12) * var(--gs-px));
+    --sh-link-gap: calc(var(--gs-n-12) * var(--gs-px));
+    column-gap: var(--sh-link-gap);
   }
 
   .navLink {
