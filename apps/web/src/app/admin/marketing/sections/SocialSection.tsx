@@ -14,6 +14,11 @@ import {
   startOfDay,
   stepAnchor,
 } from "@/lib/social-calendar";
+import {
+  cadenceDaysInMonth,
+  topicForCadenceDay,
+  EMPTY_IMAGE_SUGGESTION,
+} from "@/lib/social-topics";
 import type {
   SocialPostRow,
   SocialPostWithImages,
@@ -73,6 +78,8 @@ export function SocialSection() {
     SocialPostWithImages | null
   >(null);
   const [composing, setComposing] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestNote, setSuggestNote] = useState<string | null>(null);
 
   function handleViewChange(next: CalendarView): void {
     setView(next);
@@ -209,27 +216,52 @@ export function SocialSection() {
     handleViewChange("month");
   }
 
-  function startDuplicate(source: SocialPostWithImages): void {
-    // Pre-fill the composer with this post's contents, scheduled one
-    // week later. The composer creates a fresh row — original is
-    // untouched. Images are NOT carried over.
-    const sourcedDate = new Date(source.scheduled_at);
-    if (!Number.isNaN(sourcedDate.getTime())) {
-      sourcedDate.setDate(sourcedDate.getDate() + 7);
-    }
-    setComposeDate(Number.isNaN(sourcedDate.getTime()) ? null : sourcedDate);
-    setComposeInitial({
-      ...source,
-      id: "",
-      scheduled_at: sourcedDate.toISOString(),
-      posted_at: null,
-      status: "draft",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      images: [],
+  async function suggestMonth(): Promise<void> {
+    const occupied = new Set(
+      posts.map((p) => {
+        const d = new Date(p.scheduled_at);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      }),
+    );
+    const open = cadenceDaysInMonth(anchor).filter((day) => {
+      const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+      return !occupied.has(key);
     });
-    setSelectedId(null);
-    setComposing(true);
+    if (open.length === 0) {
+      setSuggestNote("This month already has a post on every Tuesday and Thursday.");
+      return;
+    }
+    setSuggesting(true);
+    setSuggestNote(null);
+    try {
+      for (const day of open) {
+        const topic = topicForCadenceDay(day);
+        const res = await fetch("/api/admin/marketing-social", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: null,
+            body: EMPTY_IMAGE_SUGGESTION,
+            platforms: ["instagram"],
+            scheduled_at: day.toISOString(),
+            status: "draft",
+            notes: topic.id,
+          }),
+        });
+        if (!res.ok) {
+          const detail = await res.text();
+          throw new Error(`Suggest failed (${res.status}): ${detail.slice(0, 160)}`);
+        }
+      }
+      setSuggestNote(
+        `Added ${open.length} empty ${open.length === 1 ? "tile" : "tiles"} on Tuesday and Thursday.`,
+      );
+      await loadList();
+    } catch (err) {
+      setSuggestNote(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSuggesting(false);
+    }
   }
 
   return (
@@ -243,10 +275,21 @@ export function SocialSection() {
             {posts.length} total
           </span>
         </div>
-        <Button variant="primary" onClick={() => startCompose(null)}>
-          Add post
-        </Button>
+        <div className={styles.sectionActions}>
+          <Button variant="secondary" onClick={suggestMonth} disabled={suggesting}>
+            {suggesting ? "Adding…" : "Fill Tue & Thu"}
+          </Button>
+          <Button variant="primary" onClick={() => startCompose(null)}>
+            Add post
+          </Button>
+        </div>
       </div>
+      <p className={styles.sectionMetaDim}>
+        Two posts a week, Tuesday and Thursday, cycling Inspirational,
+        Educational, Snow Drift, Community, and Roster. Each tile is a
+        headline, a topic, and an image suggestion.
+        {suggestNote ? ` ${suggestNote}` : ""}
+      </p>
 
       {state.kind === "loading" && <Loading message="Loading social posts…" />}
 
@@ -360,7 +403,6 @@ export function SocialSection() {
               post={selectedPost}
               onSaved={refreshSelected}
               onDeleted={handleDeleted}
-              onDuplicate={() => startDuplicate(selectedPost)}
             />
           )}
         </Modal>

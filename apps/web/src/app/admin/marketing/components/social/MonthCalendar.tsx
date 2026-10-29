@@ -152,6 +152,18 @@ export function MonthCalendar({
               </div>
 
               <div className={styles.monthDayPosts}>
+                {dayPosts.length === 0 && !isOutsideMonth && (
+                  <button
+                    type="button"
+                    className={styles.monthDayEmpty}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddOnDay(day);
+                    }}
+                  >
+                    Add post
+                  </button>
+                )}
                 {visible.map((p) => (
                   <PostChip
                     key={p.id}

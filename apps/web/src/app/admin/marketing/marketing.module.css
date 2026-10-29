@@ -57,6 +57,12 @@
   gap: var(--admin-space-4);
 }
 
+.sectionActions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
 .sectionMetaDim {
   color: var(--admin-text-muted);
 }
@@ -1465,6 +1471,33 @@
   font-weight: var(--admin-weight-semibold);
   color: var(--admin-text-primary);
   letter-spacing: -0.01em;
+}
+
+.monthDayEmpty {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 4px 6px;
+  border: 1px dashed var(--admin-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--admin-text-muted);
+  font-size: var(--admin-text-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.monthDayEmpty:hover,
+.monthDayEmpty:focus-visible {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+
+.topicLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .monthDayAdd {

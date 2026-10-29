@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  PLATFORM_COLORS,
-  PLATFORM_LABELS,
-  STATUS_LABELS,
-} from "@/lib/social-posts-types";
+import { topicFromNotes } from "@/lib/social-topics";
 import type { SocialPostRow } from "@/lib/social-posts-types";
 
 import styles from "../../marketing.module.css";
@@ -25,24 +21,10 @@ type Props = {
  * chip needs to swallow its own click.
  */
 export function PostChip({ post, onClick }: Props) {
-  const time = new Date(post.scheduled_at);
-  const timeLabel = Number.isNaN(time.getTime())
-    ? "—"
-    : time.toLocaleTimeString(undefined, {
-        hour: "numeric",
-        minute: "2-digit",
-      });
-
+  const topic = topicFromNotes(post.notes);
   const displayTitle =
-    post.title?.trim() ||
-    post.body.split("\n")[0].slice(0, 60).trim() ||
-    "(untitled)";
-
-  const firstPlatform = post.platforms[0];
-  const dotColor = firstPlatform ? PLATFORM_COLORS[firstPlatform] : undefined;
-  const platformsLabel = post.platforms
-    .map((p) => PLATFORM_LABELS[p])
-    .join(", ");
+    post.title?.trim() || topic?.label || "(untitled)";
+  const dotColor = topic?.color;
 
   return (
     <button
@@ -57,15 +39,14 @@ export function PostChip({ post, onClick }: Props) {
         e.stopPropagation();
         onClick(e);
       }}
-      aria-label={`${displayTitle} — ${platformsLabel} at ${timeLabel} (${STATUS_LABELS[post.status]})`}
-      title={`${timeLabel} · ${displayTitle}`}
+      aria-label={`${topic ? `${topic.label}: ` : ""}${displayTitle}`}
+      title={`${topic ? `${topic.label} · ` : ""}${displayTitle}`}
     >
       <span
         className={styles.postChipDot}
         aria-hidden="true"
         style={dotColor ? { background: dotColor } : undefined}
       />
-      <span className={styles.postChipTime}>{timeLabel}</span>
       <span className={styles.postChipTitle}>{displayTitle}</span>
     </button>
   );
