@@ -15,7 +15,7 @@ export const INVITATION_FOUNDERS = [
     role: "Cultural & Business Strategist",
     location: "Cambridge, UK",
     linkedin: "https://www.linkedin.com/in/jackwharding",
-    bio: "Jack works so good creators and good brands find each other, amplifying the signals that cut through the static that dulls culture.",
+    bio: "Jack is guided by the belief that the world is made in the right direction when good creators, good brands, and good audiences find each other. With a background in business strategy, research, and podcasting, Jack looks forward to hearing your story if anything here resonates!",
     image: "/images/who-are-we/jack11.jpg",
   },
   {

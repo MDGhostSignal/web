@@ -780,14 +780,19 @@
 }
 
 .finalContent {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   z-index: 1;
+  /* The stack's midpoint is the logo, not the headline. Shift up
+     so "This is the signal" sits on the globe's center. */
+  transform: translate(-50%, calc(-50% - (var(--gs-n-80) * var(--gs-px))));
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: calc(var(--gs-n-20) * var(--gs-px));
-  max-width: calc(var(--gs-n-800, 800) * var(--gs-px));
+  width: min(100%, calc(var(--gs-n-800, 800) * var(--gs-px)));
   /* Pass pointer events through to the globe wrapper underneath so
      the user can click + drag the 3D globe even when the cursor is
      over the headline / subheadline / tagline. None of the elements
@@ -804,12 +809,7 @@
 }
 
 .finalSubheadline {
-  /* Pushed down so this + the headline + the tagline below it
-     all land vertically over the 3D globe rather than at the top
-     of the section under the logo. The .finalSection uses flex-
-     start, so a single margin-top here moves all three lower
-     elements as a block (logo stays in place above). */
-  margin: calc((var(--gs-n-200) - var(--gs-n-75)) * var(--gs-px)) 0 0 0;
+  margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
   font-size: var(--gs-text-xl-size);

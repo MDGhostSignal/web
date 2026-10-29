@@ -146,8 +146,8 @@
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--gs-font-weight-normal);
-  font-size: var(--gs-text-xl-size);
-  line-height: 1.6;
+  font-size: var(--gs-text-2xl-size);
+  line-height: var(--gs-text-2xl-leading);
   color: rgba(255, 255, 255, 0.85);
   max-width: calc(var(--gs-n-720, 720) * var(--gs-px));
 }
@@ -1030,8 +1030,8 @@
   }
 
   .heroSubhead {
-    font-size: var(--gs-text-lg-size);
-    line-height: 1.6;
+    font-size: var(--gs-text-xl-size);
+    line-height: var(--gs-text-xl-leading);
   }
 
   .featuresSection {
@@ -1081,7 +1081,8 @@
   }
 
   .heroSubhead {
-    font-size: var(--gs-text-base-size);
+    font-size: var(--gs-text-lg-size);
+    line-height: var(--gs-text-lg-leading);
   }
 
   .pitchContent {

@@ -21,7 +21,7 @@ const founders = [
     role: "Cultural & Business Strategist",
     location: "Cambridge, UK",
     linkedin: "https://www.linkedin.com/in/jackwharding",
-    bio: "Jack is animated by the belief that the world changes when good creators and good brands find each other. With a background in business strategy, research, and podcasting, he loves to help meaningful ideas reach their audience. In co-founding GHOSTSignal, Jack's aim is to amplify good signals that cut through static that dulls culture. He also serves with a Christian cultural apologetics ministry based in the United States.",
+    bio: "Jack is guided by the belief that the world is made in the right direction when good creators, good brands, and good audiences find each other. With a background in business strategy, research, and podcasting, Jack looks forward to hearing your story if anything here resonates!",
     image: "/images/who-are-we/jack11.jpg",
     signature: "/images/brand/GS-EmailSignatures-jackw.gif",
   },

@@ -435,7 +435,7 @@ const FOUNDERS = [
     location: "Cambridge, UK",
     image: "/images/who-are-we/jack11.jpg",
     summary:
-      "Strategy, research, and podcasting. He helps good creators and good brands find each other.",
+      "Jack is guided by the belief that the world is made in the right direction when good creators, good brands, and good audiences find each other. With a background in business strategy, research, and podcasting, Jack looks forward to hearing your story if anything here resonates!",
   },
   {
     name: "Martin Drexler",

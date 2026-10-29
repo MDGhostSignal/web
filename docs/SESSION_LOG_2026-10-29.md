@@ -72,6 +72,15 @@ Checked with Playwright at 992, 1000, 1120, 1280, and 1440: the image measured 5
 
 `npx stylelint` on `SiteHeader.module.css` still fails on the pre-existing `0px` fallback at line 179. That line was not part of this change.
 
+## Jack's bio, Signal headline, advertisers subhead
+
+Pushed with this log.
+
+- Jack's bio is the new two-sentence version in three places. Who Are We replaced the longer paragraph (the ministry line is gone). The invitation pages and the Life-Giving Pages proposal replaced shorter one-line blurbs with the same text, so those two are longer than before.
+- Holly Mackle and the cold-outreach email only have Jack's name, role, and photo. No bio there.
+- "This is the signal" is centered on the globe section.
+- The For Advertisers hero subhead under "The right audience changes everything" steps from 20px to 24px on desktop (xl to 2xl). The headline stays up to 80px.
+
 ## Open
 
 - Creators romantic-street hero is local only.
