@@ -1,6 +1,9 @@
 .orbit {
   position: relative;
-  width: min(100%, calc(var(--gs-n-720, 720) * var(--gs-px)));
+  /* Discs sit 11% outside this box and swing through a full turn.
+     78% of the column keeps that swing inside the column, so a
+     MacBook window and the statue column do not clip it. */
+  width: min(78%, calc(var(--gs-n-560, 560) * var(--gs-px)));
   aspect-ratio: 1;
   margin: 0 auto calc(var(--gs-n-32) * var(--gs-px));
   list-style: none;
@@ -86,6 +89,6 @@
 
 @media (max-width: 768px) {
   .orbit {
-    width: min(100%, calc(100vw - var(--edge-pad) * 2));
+    width: min(78%, calc(100vw - var(--edge-pad) * 2));
   }
 }

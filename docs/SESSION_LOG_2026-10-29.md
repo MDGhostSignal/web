@@ -81,6 +81,12 @@ Pushed with this log.
 - "This is the signal" is centered on the globe section.
 - The For Advertisers hero subhead under "The right audience changes everything" steps from 20px to 24px on desktop (xl to 2xl). The headline stays up to 80px.
 
+## Advertisers journey orbit
+
+Pushed with this log.
+
+The three circles (Exploring Connection, Membership, World-Making Campaigns) swing 11% past their box. On a MacBook that reach crossed the statue column and the window edge. `JourneyOrbit` is now 78% of its column, capped at 560px. Measured swing stays about 15px inside the column at 1280, 1440, and 1512, and inside the window at 768 and 1024.
+
 ## Open
 
 - Creators romantic-street hero is local only.
