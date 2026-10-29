@@ -42,7 +42,7 @@ From `apps/web`:
 Pushed with this log.
 
 - Removed the gold corner rays from the landing hero.
-- The film mask stays solid through 40% and is fully clear by 78%, so the girl picture fades into the sky before the white bottom nav.
+- The film mask stays solid through 58% (through the eyes) and is fully clear by 88%, so the girl picture fades into the sky before the white bottom nav. The video has `contrast(1.16)`.
 - The Who Are We Spline mark is copied onto the landing page, about 10% smaller than the first placement, sitting above the five color stripes with a clear gap. Its mesh surfaces are `#6ec4e0`, the page sky. Who Are We keeps the original black mark.
 - Playwright checks at 1440×900 on `http://localhost:3000/`.
 
@@ -58,7 +58,7 @@ Pushed with this log.
 
 - `npm run typecheck` passed.
 - `npx eslint` on the touched TSX files: one existing `<img>` warning in the hero, no errors.
-- `npx stylelint` on `preview.module.css` and `what-is-this/page.module.css` passed.
+- `npx stylelint` on `preview.module.css` and `what-is-this/page.module.css` passed. Re-ran `stylelint` on `preview.module.css` after the eye-line mask change. It passed.
 - `npm run assets:audit` passed (99 referenced public assets).
 - Full `npm run lint` and `npm run lint:css` were not re-run. The known failures are untracked verify scripts, untracked `FutureType.tsx`, and `SiteHeader.module.css` line 171, none of which are in this commit.
 

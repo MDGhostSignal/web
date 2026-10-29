@@ -68,21 +68,21 @@
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  /* Fade the film into the sky. Finish fully clear above the
-     wrapper's bottom edge so the picture's border never reads as a line. */
+  /* The face stays fully solid. The fade starts below the eyes
+     and is clear before the wrapper's bottom edge. */
   -webkit-mask-image: linear-gradient(
     to bottom,
     #000 0%,
-    #000 40%,
-    rgba(0, 0, 0, 0.45) 62%,
-    transparent 78%
+    #000 58%,
+    rgba(0, 0, 0, 0.4) 74%,
+    transparent 88%
   );
   mask-image: linear-gradient(
     to bottom,
     #000 0%,
-    #000 40%,
-    rgba(0, 0, 0, 0.45) 62%,
-    transparent 78%
+    #000 58%,
+    rgba(0, 0, 0, 0.4) 74%,
+    transparent 88%
   );
 }
 
@@ -93,6 +93,7 @@
   height: 100%;
   object-fit: cover;
   object-position: right center;
+  filter: contrast(1.16);
 }
 
 
