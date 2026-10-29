@@ -38,6 +38,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* Don't let the nav row steal this slot. overflow: hidden (needed
+     for the slide-in) makes the flex minimum size 0, so on a MacBook
+     width the mark was squeezed to a few pixels. */
+  flex-shrink: 0;
   width: calc(var(--gs-n-185, 185) * var(--gs-px));
   height: calc(var(--gs-n-80) * var(--gs-px));
   padding-block: calc(var(--gs-n-16) * var(--gs-px));
@@ -47,8 +51,12 @@
 
 .logo {
   display: block;
+  flex-shrink: 0;
   width: calc(var(--gs-n-57, 57) * var(--gs-px));
+  min-width: calc(var(--gs-n-57, 57) * var(--gs-px));
   height: calc(var(--gs-n-48) * var(--gs-px));
+  max-width: none;
+  object-fit: contain;
 }
 
 .navContainer {
@@ -225,7 +233,9 @@
   }
 
   .logoWrap {
+    flex: none;
     width: auto;
+    min-width: calc(var(--gs-n-57, 57) * var(--gs-px));
     padding-inline: calc(var(--gs-n-16) * var(--gs-px));
   }
 
@@ -241,6 +251,30 @@
 
   .navCta {
     padding-inline: calc(var(--gs-n-16) * var(--gs-px));
+  }
+}
+
+/* The logo no longer gives up width. Below ~1120 the link row would
+   otherwise run past the right edge (MacBook "larger text" and
+   windowed Safari land here). Tighten the row so both pills stay in. */
+@media (max-width: 1120px) {
+  .nav {
+    --sh-link-gap: calc(var(--gs-n-8) * var(--gs-px));
+    column-gap: var(--sh-link-gap);
+  }
+
+  .navLink {
+    padding-inline: calc(var(--gs-n-4) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
+  }
+
+  .navLink::after {
+    inset-inline: calc(var(--gs-n-4) * var(--gs-px));
+  }
+
+  .navCta {
+    padding-inline: calc(var(--gs-n-12) * var(--gs-px));
+    font-size: calc(var(--gs-font-size-sm) * var(--gs-px));
   }
 }
 

@@ -62,6 +62,16 @@ Pushed with this log.
 - `npm run assets:audit` passed (99 referenced public assets).
 - Full `npm run lint` and `npm run lint:css` were not re-run. The known failures are untracked verify scripts, untracked `FutureType.tsx`, and `SiteHeader.module.css` line 171, none of which are in this commit.
 
+## Bottom nav logo (MacBook)
+
+Pushed with this log.
+
+The bottom-left header mark was a flex item with `overflow: hidden`, so its minimum size was 0. On a MacBook-width bar the nowrap link row took the space and the mark shrank to a few pixels. `.logoWrap` is now `flex-shrink: 0`, and the image keeps a 57×48 minimum. Below 1120px the link row tightens so the two pills stay inside the bar.
+
+Checked with Playwright at 992, 1000, 1120, 1280, and 1440: the image measured 57×48 and the nav's right edge stayed inside the header.
+
+`npx stylelint` on `SiteHeader.module.css` still fails on the pre-existing `0px` fallback at line 179. That line was not part of this change.
+
 ## Open
 
 - Creators romantic-street hero is local only.
