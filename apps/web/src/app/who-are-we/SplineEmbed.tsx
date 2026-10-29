@@ -6,9 +6,12 @@ import styles from "./page.module.css";
 
 interface SplineEmbedProps {
   scene: string;
+  className?: string;
+  /** Hex surface color for mesh materials. Omit to keep the scene's own color. */
+  color?: string;
 }
 
-export default function SplineEmbed({ scene }: SplineEmbedProps) {
+export default function SplineEmbed({ scene, className, color }: SplineEmbedProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -87,17 +90,36 @@ export default function SplineEmbed({ scene }: SplineEmbedProps) {
     applyTouchLock();
     const touchTimer = setTimeout(applyTouchLock, 500);
 
+    const paintSurface = () => {
+      if (!color) return;
+      const viewer = wrapperRef.current?.querySelector("spline-viewer") as
+        | (HTMLElement & {
+            _spline?: {
+              getAllObjects?: () => Array<{ material?: unknown; color?: string }>;
+            };
+          })
+        | null;
+      const objects = viewer?._spline?.getAllObjects?.() ?? [];
+      for (const obj of objects) {
+        if (obj.material) obj.color = color;
+      }
+    };
+    const viewerEl = wrapperRef.current?.querySelector("spline-viewer");
+    viewerEl?.addEventListener("load-complete", paintSurface);
+    paintSurface();
+
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
       clearTimeout(touchTimer);
+      viewerEl?.removeEventListener("load-complete", paintSurface);
     };
-  }, []);
+  }, [color]);
 
   return (
-    <div ref={wrapperRef} className={styles.splineWrapper}>
+    <div ref={wrapperRef} className={className ?? styles.splineWrapper}>
       <Script
         type="module"
         src="/vendor/spline/spline-viewer-1.12.79.js"

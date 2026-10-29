@@ -10,6 +10,7 @@ import type { HarmonyControl } from "./HarmonyOrbs";
 const HarmonyOrbs = dynamic(() => import("./HarmonyOrbs"), { ssr: false });
 
 import BarsRipple from "./BarsRipple";
+import SplineEmbed from "../who-are-we/SplineEmbed";
 import { SiteHeader } from "@/components/SiteHeader";
 // ScrollScenes pulls in a custom WebGL globe + ring system (~700 LOC of
 // shader and JS). Defer it off the initial route chunk — the globe only
@@ -393,6 +394,11 @@ export default function WhatIsThisPage({
             className={styles.decorativeBarsCanvas}
           />
         </div>
+        <SplineEmbed
+          className={styles.stripeLogo}
+          scene="https://prod.spline.design/gzlQ1P24v0imBh-L/scene.splinecode"
+          color="#6ec4e0"
+        />
 
         {/* Scrolling Content Over Globe */}
         <div className={styles.scrollContent}>

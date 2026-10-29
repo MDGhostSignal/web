@@ -62,30 +62,6 @@ export default function HomepageTestNotLivePage() {
             <source src="/images/home/desktop-optimized.mp4" type="video/mp4" />
           </video>
         </div>
-        <div className={preview.rays} aria-hidden="true">
-          {[
-            { side: preview.rayLeft, angle: "8deg", thick: "34vw", strength: 0.32, delay: "0s", peak: 0.7 },
-            { side: preview.rayLeft, angle: "24deg", thick: "46vw", strength: 0.5, delay: "2.4s", peak: 0.85 },
-            { side: preview.rayLeft, angle: "40deg", thick: "22vw", strength: 0.22, delay: "4.2s", peak: 0.6 },
-            { side: preview.rayRight, angle: "-6deg", thick: "16vw", strength: 0.28, delay: "0.5s", peak: 0.55 },
-            { side: preview.rayRight, angle: "-18deg", thick: "11vw", strength: 0.18, delay: "1.7s", peak: 0.45 },
-            { side: preview.rayRight, angle: "-33deg", thick: "20vw", strength: 0.34, delay: "3.3s", peak: 0.6 },
-            { side: preview.rayRight, angle: "-48deg", thick: "8vw", strength: 0.14, delay: "4.8s", peak: 0.4 },
-            { side: preview.rayRight, angle: "-26deg", thick: "14vw", strength: 0.22, delay: "2.8s", peak: 0.5 },
-          ].map((ray) => (
-            <span
-              key={`${ray.side}-${ray.angle}`}
-              className={`${preview.ray} ${ray.side}`}
-              style={{
-                ["--angle" as string]: ray.angle,
-                ["--thick" as string]: ray.thick,
-                ["--strength" as string]: String(ray.strength),
-                animationDelay: ray.delay,
-                ["--peak" as string]: String(ray.peak),
-              }}
-            />
-          ))}
-        </div>
         <Section className={`${home.heroSection} ${preview.heroCopy}`}>
           <h1 className={home.heroHeadline}>
             <HomeTypingHero layout="split" />

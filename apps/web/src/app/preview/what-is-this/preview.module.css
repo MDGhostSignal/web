@@ -14,71 +14,6 @@
   background: transparent;
 }
 
-/* Soft beams from the top corners. They blend into the film and
-   only warm the outer quarters. */
-.rays {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.ray {
-  position: absolute;
-  top: -12%;
-  z-index: 2;
-  height: 190%;
-  mix-blend-mode: soft-light;
-  filter: blur(28px);
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 220, 150, var(--strength, 0.7)) 0%,
-    rgba(255, 196, 90, 0.55) 55%,
-    transparent 100%
-  );
-  transform: rotate(var(--angle));
-  animation: rayPulse 6s ease-in-out infinite;
-}
-
-.rayLeft {
-  left: -8%;
-  width: var(--thick);
-  transform-origin: top left;
-  filter: blur(36px);
-  mask-image: linear-gradient(to right, #000 0%, #000 78%, transparent 100%);
-}
-
-.rayRight {
-  right: -2%;
-  width: var(--thick);
-  transform-origin: top right;
-  filter: blur(16px);
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 186, 60, var(--strength, 0.35)) 0%,
-    rgba(255, 150, 40, 0.14) 42%,
-    transparent 78%
-  );
-  mask-image: linear-gradient(to left, #000 0%, #000 64%, transparent 100%);
-}
-
-@keyframes rayPulse {
-  0%,
-  100% {
-    opacity: 0.72;
-  }
-
-  50% {
-    opacity: var(--peak, 1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ray {
-    animation: none;
-    opacity: 0.55;
-  }
-}
-
 .homeHero .heroCopy {
   z-index: 3;
   align-items: flex-start;
@@ -133,9 +68,22 @@
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  /* Fade the film into the sky behind it. The mask is on the wrapper,
-     not the video, so the clip can keep playing under the rays. */
-  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+  /* Fade the film into the sky. Finish fully clear above the
+     wrapper's bottom edge so the picture's border never reads as a line. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 40%,
+    rgba(0, 0, 0, 0.45) 62%,
+    transparent 78%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 40%,
+    rgba(0, 0, 0, 0.45) 62%,
+    transparent 78%
+  );
 }
 
 .video {

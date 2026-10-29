@@ -37,6 +37,31 @@ From `apps/web`:
 - `npm run lint` still fails on untracked `scripts/verify-*.cjs` (`no-require-imports`) and untracked `FutureType.tsx` (`set-state-in-effect`). Existing `<img>` warnings remain. None of those files are in this commit.
 - `npm run lint:css` still fails on `SiteHeader.module.css` line 171 (`0px` fallback in a `calc`). That line is already on `origin/main` (`301cf20`) and was not part of this change.
 
+## Homepage hero and stripe logo
+
+Pushed with this log.
+
+- Removed the gold corner rays from the landing hero.
+- The film mask stays solid through 40% and is fully clear by 78%, so the girl picture fades into the sky before the white bottom nav.
+- The Who Are We Spline mark is copied onto the landing page, about 10% smaller than the first placement, sitting above the five color stripes with a clear gap. Its mesh surfaces are `#6ec4e0`, the page sky. Who Are We keeps the original black mark.
+- Playwright checks at 1440×900 on `http://localhost:3000/`.
+
+### Files
+
+- `apps/web/src/app/preview/what-is-this/page.tsx`
+- `apps/web/src/app/preview/what-is-this/preview.module.css`
+- `apps/web/src/app/what-is-this/WhatIsThisPage.tsx`
+- `apps/web/src/app/what-is-this/page.module.css`
+- `apps/web/src/app/who-are-we/SplineEmbed.tsx`
+
+### Validation
+
+- `npm run typecheck` passed.
+- `npx eslint` on the touched TSX files: one existing `<img>` warning in the hero, no errors.
+- `npx stylelint` on `preview.module.css` and `what-is-this/page.module.css` passed.
+- `npm run assets:audit` passed (99 referenced public assets).
+- Full `npm run lint` and `npm run lint:css` were not re-run. The known failures are untracked verify scripts, untracked `FutureType.tsx`, and `SiteHeader.module.css` line 171, none of which are in this commit.
+
 ## Open
 
 - Creators romantic-street hero is local only.

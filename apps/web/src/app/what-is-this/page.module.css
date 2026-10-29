@@ -264,6 +264,32 @@
   height: 100%;
 }
 
+/* Same spinning mark as Who Are We, about 10% smaller than the first
+   placement. Lifted clear of the five stripe caps. */
+.stripeLogo {
+  position: absolute;
+  top: -10vh;
+  left: 50%;
+  z-index: 3;
+  width: min(41.4vw, calc(var(--gs-n-378, 378) * var(--gs-px)));
+  height: calc(var(--gs-n-288, 288) * var(--gs-px));
+  transform: translate(-50%, -108%);
+}
+
+.stripeLogo spline-viewer {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .stripeLogo,
+  .stripeLogo * {
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+}
+
 /* =============================================================================
    SCROLLING CONTENT - Text sections over dark background
    ============================================================================= */
