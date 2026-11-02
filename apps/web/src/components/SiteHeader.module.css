@@ -331,15 +331,21 @@
   .logoWrap {
     flex: none;
     width: auto;
-    height: calc(var(--gs-n-48) * var(--gs-px));
+    min-width: 0;
+    height: auto;
     padding-block: 0;
     padding-inline: 0;
+    overflow: visible;
     transition: opacity 200ms ease;
   }
 
+  /* The SVG uses preserveAspectRatio="none", so a box that is not
+     57:48 flattens the mark. Keep that ratio inside the 64px bar. */
   .logo {
-    width: calc(var(--gs-n-44, 44) * var(--gs-px));
-    height: calc(var(--gs-n-36, 36) * var(--gs-px));
+    width: calc(var(--gs-n-48) * var(--gs-px));
+    min-width: calc(var(--gs-n-48) * var(--gs-px));
+    height: auto;
+    aspect-ratio: 57 / 48;
   }
 
   /* Hide the logo while the menu page is open so the takeover reads
