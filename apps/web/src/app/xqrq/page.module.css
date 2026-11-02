@@ -407,25 +407,10 @@
 }
 
 /* -----------------------------------------------------------------------------
-   RESPONSIVE — narrow the shared edge padding, then stack the two-up.
+   RESPONSIVE — stack the two-up. Inset comes from --edge-pad.
    ----------------------------------------------------------------------------- */
 
-@media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
-}
-
-@media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
-}
-
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
-  }
 
   .assessmentPair {
     grid-template-columns: 1fr;

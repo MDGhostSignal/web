@@ -1,0 +1,37 @@
+# Session log 2026-11-02
+
+## Mobile pass (public pages, 390px)
+
+Measured overflow and reviewed screenshots for `/`, `/for-creators`, `/for-advertisers`, `/who-are-we`, `/get-in-touch`, `/snowdrift`, `/signal-sheet`. Desktop rules left as they were. Fixes are inside existing `max-width` blocks.
+
+- Homepage hero: subtitle and typing headline no longer forced to one line under 991px, and the 112px left inset drops to 24px.
+- Contact band: “STARTS WITH A CHAT” font size reduced under 560px so the reveal line no longer clips.
+- For Creators hero: content starts under the header and the hero can grow, so the last lines are not covered by the next section’s chevron.
+- Who we are: promise bars graphic no longer locked to a 500px width. The PARTNER-MAKING line wraps below 1024px so the mission paragraph no longer spills past a 320px screen.
+- Journey orbit: larger ring and smaller type under 768px.
+- Signal Sheet category bar: chips wrap instead of running off the right edge.
+- Snowdrift tagline: looser tracking reduced under 768px.
+
+## Files
+
+- `apps/web/src/app/preview/what-is-this/preview.module.css`
+- `apps/web/src/components/ContactSection/ContactSection.module.css`
+- `apps/web/src/app/for-creators/page.module.css`
+- `apps/web/src/app/who-are-we/page.module.css`
+- `apps/web/src/components/JourneyOrbit/JourneyOrbit.module.css`
+- `apps/web/src/app/signal-sheet/page.module.css`
+- `apps/web/src/app/snowdrift/page.module.css`
+
+## Fluid inset
+
+`--edge-pad` is now one clamp below 1200px (16px to 64px, plus safe-area insets). Desktop stays 112px from 1200px up. Per-page stepped overrides removed so every public page shares it. `viewportFit: cover` set in `layout.tsx`.
+
+## Spline logo
+
+Pointer, trackpad, and touch no longer drive the spinning mark on Who Are We or What Is This. `events-target="none"` plus `pointer-events: none` on both wrappers. The auto-spin is unchanged.
+
+## Validation
+
+- Stylelint on those seven files: pass.
+- Playwright at 390px: homepage headline and contact line sit inside the viewport.
+- `typecheck`, `lint`, and `assets:audit` not run (CSS-only).

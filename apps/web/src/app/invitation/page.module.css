@@ -9,31 +9,7 @@
   color: var(--gs-foreground);
 }
 
-/* page-shell's 112px edge pad is desktop-first; shrink on smaller viewports
- * (same pattern as get-in-touch / snowdrift) so hero + carousel breathe. */
-@media (max-width: 1100px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
-}
-
-@media (max-width: 880px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-40) * var(--gs-px));
-  }
-}
-
-@media (max-width: 680px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-24) * var(--gs-px));
-  }
-}
-
-@media (max-width: 480px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
-  }
-}
+/* Horizontal inset comes from --edge-pad on :root (page-shell.css). */
 
 /* --- Shared bits ------------------------------------------------- */
 

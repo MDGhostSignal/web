@@ -363,7 +363,6 @@
   color: var(--gs-tw-gray-600);
 }
 
-
 /* =============================================================================
    MEMBERSHIP JOURNEY SECTION
    ============================================================================= */
@@ -736,9 +735,6 @@
    ============================================================================= */
 
 @media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
 
   .closingHeadline {
     font-size: clamp(28px, 4.5vw, 60px);
@@ -746,9 +742,6 @@
 }
 
 @media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
 
   .featuresLayout {
     grid-template-columns: 1fr;
@@ -799,8 +792,15 @@
 }
 
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
+
+  /* Centered content on a 100dvh hero is taller than the screen, so the
+     last lines sit under the chevron of the next section. Start under
+     the header and let the hero grow. */
+  .hero {
+    align-items: flex-start !important;
+    height: auto;
+    padding-top: calc(var(--gs-n-96) * var(--gs-px)) !important;
+    padding-bottom: calc(var(--gs-n-96) * var(--gs-px)) !important;
   }
 
   /* .hero padding + min-height handled by the ≤991 px block above
@@ -852,15 +852,13 @@
   }
 
   .sectionTitle,
-  .journeyTitle {
-    font-size: clamp(28px, 7vw, 42px);
+  .journeyTitle,
+  .closingHeadline {
+    font-size: clamp(26px, 7vw, 40px);
   }
 }
 
 @media (max-width: 560px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
-  }
 
   /* .hero handled by the ≤991 px block above. */
 
@@ -897,9 +895,6 @@
 }
 
 @media (max-width: 420px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
-  }
 
   .hero {
     min-height: 100vh;

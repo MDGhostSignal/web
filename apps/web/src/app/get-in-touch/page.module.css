@@ -429,9 +429,6 @@
    ============================================================================= */
 
 @media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
 
   .contactHeadline {
     font-size: clamp(32px, 5vw, 60px);
@@ -439,9 +436,6 @@
 }
 
 @media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
 
   /* Renamed from .contactContainer to .contact when the layout
      primitives roll-out dropped the "Container" suffix — the old
@@ -463,9 +457,6 @@
 }
 
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
-  }
 
   .contactSection {
     padding: calc(var(--gs-n-140) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-80) * var(--gs-px));
@@ -496,9 +487,6 @@
 }
 
 @media (max-width: 560px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
-  }
 
   .contactSection {
     padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-64) * var(--gs-px));
@@ -510,9 +498,6 @@
 }
 
 @media (max-width: 420px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
-  }
 
   .contactSection {
     padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad) calc(var(--gs-n-56) * var(--gs-px));

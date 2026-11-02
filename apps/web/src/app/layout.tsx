@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "../styles/generated-tokens.css";
 import "../styles/typography.css";
@@ -15,6 +15,12 @@ const inter = Inter({
   display: "swap",
   variable: "--font-body",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {

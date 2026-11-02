@@ -89,6 +89,27 @@
 
 @media (max-width: 768px) {
   .orbit {
-    width: min(78%, calc(100vw - var(--edge-pad) * 2));
+    width: min(92vw, calc(var(--gs-n-420, 420) * var(--gs-px)));
+  }
+
+  .disc {
+    width: 68%;
+    top: -4%;
+  }
+
+  .step {
+    padding: calc(var(--gs-n-12) * var(--gs-px));
+    gap: calc(var(--gs-n-4) * var(--gs-px));
+  }
+
+  .step h3 {
+    font-size: calc(var(--gs-font-size-xs) * var(--gs-px));
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+  }
+
+  .step p {
+    font-size: calc(var(--gs-font-size-xs) * var(--gs-px));
+    line-height: 1.25;
   }
 }

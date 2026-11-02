@@ -478,21 +478,12 @@
    ============================================================================= */
 
 @media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
-}
-
-@media (max-width: 1200px) {
   .termList {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
 
   .hero {
     padding-top: calc(var(--gs-n-140) * var(--gs-px));
@@ -515,9 +506,6 @@
 }
 
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
-  }
 
   .hero {
     padding-top: calc(var(--gs-n-120) * var(--gs-px));
@@ -534,19 +522,13 @@
   }
 
   .categoryList {
-    padding: calc(var(--gs-n-16) * var(--gs-px)) var(--edge-pad);
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .categoryList::-webkit-scrollbar {
-    display: none;
+    padding: calc(var(--gs-n-12) * var(--gs-px)) var(--edge-pad);
+    flex-wrap: wrap;
   }
 
   .categoryLink {
-    flex-shrink: 0;
+    padding: calc(var(--gs-n-8) * var(--gs-px)) calc(var(--gs-n-12) * var(--gs-px));
+    letter-spacing: 0.04em;
   }
 
   .section {
@@ -564,9 +546,6 @@
 }
 
 @media (max-width: 420px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
-  }
 
   .termCardInner {
     padding: calc(var(--gs-n-24) * var(--gs-px));

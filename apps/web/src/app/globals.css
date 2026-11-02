@@ -14,6 +14,8 @@ body {
   background: var(--gs-background);
   color: var(--gs-foreground);
   font-family: var(--font-sans);
+  /* A long word can wrap instead of forcing a sideways scroll. */
+  overflow-wrap: break-word;
   /* Document-level catch-all for accidental horizontal overflow.
      Several pages legitimately have elements that extend past the
      viewport edge (e.g. for-advertisers / who-are-we cloud keyframes
@@ -76,6 +78,9 @@ body.is-head-active .js-sh-main-link[data-sh-role="hide"] {
     text-rendering: geometricPrecision;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Stop iOS from enlarging text on its own when the phone rotates. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     /* Reserve space for scrollbar to prevent layout shift between pages */
     scrollbar-gutter: stable;
     /* Second line of defense against horizontal overflow — body has

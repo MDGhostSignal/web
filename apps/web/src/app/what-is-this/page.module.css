@@ -282,12 +282,12 @@
   height: 100%;
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .stripeLogo,
-  .stripeLogo * {
-    pointer-events: none !important;
-    touch-action: pan-y !important;
-  }
+/* Same lock as Who Are We: the mark spins on its own. Trackpad
+   scroll was zooming the Spline scene. */
+.stripeLogo,
+.stripeLogo * {
+  pointer-events: none !important;
+  touch-action: pan-y !important;
 }
 
 /* =============================================================================
@@ -707,7 +707,6 @@
   text-transform: uppercase;
   letter-spacing: -0.02em;
 }
-
 
 .sectionBody {
   margin: 0;
@@ -1243,16 +1242,7 @@
    RESPONSIVE STYLES
    ============================================================================= */
 
-@media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
-}
-
 @media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
 
   .textContainer {
     max-width: 100%;
@@ -1260,9 +1250,6 @@
 }
 
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
-  }
 
   .textSection {
     min-height: auto;
@@ -1351,9 +1338,6 @@
 }
 
 @media (max-width: 560px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
-  }
 
   .textSection {
     padding: calc(var(--gs-n-60) * var(--gs-px)) var(--edge-pad);
@@ -1377,9 +1361,6 @@
 }
 
 @media (max-width: 420px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
-  }
 
   .textSection {
     padding: calc(var(--gs-n-48) * var(--gs-px)) var(--edge-pad);

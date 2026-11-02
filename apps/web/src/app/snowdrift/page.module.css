@@ -262,29 +262,23 @@
    ============================================================================= */
 
 @media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
 
   .heroHeadline {
     font-size: clamp(32px, 5.5vw, 60px);
   }
 }
 
-@media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
-}
-
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
-  }
 
   .hero {
     min-height: auto;
     padding: calc(var(--gs-n-140) * var(--gs-px)) var(--edge-pad);
+  }
+
+  .heroTagline {
+    letter-spacing: 0.06em;
+    font-size: var(--gs-text-base-size);
+    line-height: var(--gs-text-base-leading);
   }
 
   .heroLogo {
@@ -329,9 +323,6 @@
 }
 
 @media (max-width: 560px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
-  }
 
   .hero {
     padding: calc(var(--gs-n-120) * var(--gs-px)) var(--edge-pad);
@@ -361,9 +352,6 @@
 }
 
 @media (max-width: 420px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
-  }
 
   .hero {
     padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad);

@@ -73,22 +73,15 @@ export default function SplineEmbed({ scene, className, color }: SplineEmbedProp
     const timer3 = setTimeout(hideSplineUI, 3000);
     const timer4 = setTimeout(hideSplineUI, 5000);
 
-    // Touch-only lock: set `events-target="none"` on the
-    // <spline-viewer> so the runtime ignores pointer input entirely.
-    // This is the scene-level counterpart of the CSS
-    // `pointer-events: none` applied on touch in page.module.css --
-    // belt + suspenders so the 3D object stays locked on iPads and
-    // phones while desktop retains full interactivity.
-    const isTouch =
-      typeof window !== "undefined" &&
-      window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-    const applyTouchLock = () => {
-      if (!isTouch) return;
+    // Ignore pointer, mouse, and trackpad inside the viewer. CSS
+    // pointer-events: none is the page-level lock; this is the
+    // scene-level one, so a wheel event cannot zoom the mark.
+    const applyInputLock = () => {
       const viewer = wrapperRef.current?.querySelector("spline-viewer");
       if (viewer) viewer.setAttribute("events-target", "none");
     };
-    applyTouchLock();
-    const touchTimer = setTimeout(applyTouchLock, 500);
+    applyInputLock();
+    const touchTimer = setTimeout(applyInputLock, 500);
 
     const paintSurface = () => {
       if (!color) return;
@@ -131,6 +124,7 @@ export default function SplineEmbed({ scene, className, color }: SplineEmbedProp
         style={{ width: "100%", height: "100%" }}
         hint="false"
         loading-anim-type="none"
+        events-target="none"
       />
     </div>
   );

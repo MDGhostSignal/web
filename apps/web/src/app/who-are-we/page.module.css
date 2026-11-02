@@ -231,19 +231,12 @@
   margin-top: calc(var(--gs-n-32) * var(--gs-px));
 }
 
-/* Touch devices (iPads, phones, anything without a hover-capable
-   fine pointer): disable interactions on the Spline viewer so the
-   3D object can't be dragged/rotated by fingers. Touches pass
-   straight through to the page underneath, which means the hero
-   can be scrolled as expected instead of the user accidentally
-   grabbing the logo. Mouse-capable devices still get full
-   interactivity. */
-@media (hover: none) and (pointer: coarse) {
-  .splineWrapper,
-  .splineWrapper * {
-    pointer-events: none !important;
-    touch-action: pan-y !important;
-  }
+/* The mark auto-spins. Pointer, trackpad, and touch input pass
+   through so a scroll or drag cannot zoom or tumble it. */
+.splineWrapper,
+.splineWrapper * {
+  pointer-events: none !important;
+  touch-action: pan-y !important;
 }
 
 .heroHeadline {
@@ -338,6 +331,11 @@
   color: var(--gs-tw-gray-950);
   text-transform: uppercase;
   letter-spacing: -0.02em;
+}
+
+.missionLeft,
+.missionRight {
+  min-width: 0;
 }
 
 .missionRight {
@@ -1169,15 +1167,11 @@
   text-align: center;
 }
 
-
 /* =============================================================================
    RESPONSIVE STYLES
    ============================================================================= */
 
 @media (max-width: 1200px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-64) * var(--gs-px));
-  }
 
   .heroHeadline {
     font-size: clamp(32px, 5.5vw, 60px);
@@ -1190,9 +1184,6 @@
 }
 
 @media (max-width: 1024px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-48) * var(--gs-px));
-  }
 
   .mission {
     grid-template-columns: 1fr;
@@ -1203,8 +1194,13 @@
     position: static;
   }
 
-  .missionHeadline {
-    font-size: clamp(28px, 5vw, 48px);
+  .missionHeadline,
+  .handshakeText {
+    font-size: clamp(28px, 8vw, 48px);
+  }
+
+  .handshakeText {
+    flex-wrap: wrap;
   }
 
   .foundersGrid {
@@ -1223,6 +1219,11 @@
     min-width: 0;
   }
 
+  .promiseVisual {
+    width: 100%;
+    max-width: calc(var(--gs-n-560, 560) * var(--gs-px));
+  }
+
   .promisesCards {
     order: 1;
   }
@@ -1237,9 +1238,6 @@
 }
 
 @media (max-width: 768px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-28) * var(--gs-px));
-  }
 
   .hero {
     min-height: auto;
@@ -1302,9 +1300,6 @@
 }
 
 @media (max-width: 560px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-20) * var(--gs-px));
-  }
 
   .hero {
     padding: calc(var(--gs-n-100) * var(--gs-px)) var(--edge-pad);
@@ -1340,9 +1335,6 @@
 }
 
 @media (max-width: 420px) {
-  .page {
-    --edge-pad: calc(var(--gs-n-16) * var(--gs-px));
-  }
 
   .hero {
     padding: calc(var(--gs-n-80) * var(--gs-px)) var(--edge-pad);

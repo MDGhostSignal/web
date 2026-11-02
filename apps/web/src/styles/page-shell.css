@@ -1,18 +1,43 @@
 /*
  * Page-shell variables.
  *
- * Every public page consumed --edge-pad / --content-max / --footer-max
- * via its own .page rule, redeclaring them in 8 separate page.module.css
- * files (one per page + ContactSection). Promoted to :root so the values
- * live in one place and any component (e.g. ContactSection used outside
- * its host page's tree) can rely on them.
+ * --edge-pad / --content-max / --footer-max live on :root so every
+ * public page and shared component reads the same inset.
  *
- * Page-specific .page rules still own their background, overflow, and
- * min-height — those legitimately vary per page.
+ * Desktop (1200px and up) stays at the designed 112px inset.
+ * Below that, the inset is fluid. It covers the common phone range
+ * without a query per manufacturer:
+ *   320  small Android / iPhone SE
+ *   360  Galaxy S / A-series
+ *   390  iPhone 14 / 15
+ *   393  Pixel
+ *   412–430  Galaxy Ultra, iPhone Pro Max
+ *   768–1024  iPad and tablet portrait
+ * A width between those values gets a value between them, via clamp(),
+ * so a new Samsung or Apple size does not need its own breakpoint.
+ *
+ * Safe-area insets (notch, home indicator, rounded corners) win when
+ * they are larger than the fluid pad. viewport-fit=cover in layout.tsx
+ * is what makes those insets non-zero on iOS.
  */
 
 :root {
-  --edge-pad: calc(var(--gs-n-112) * var(--gs-px));
+  --edge-pad-base: calc(var(--gs-n-112) * var(--gs-px));
+  --edge-pad: max(
+    var(--edge-pad-base),
+    env(safe-area-inset-left, 0px),
+    env(safe-area-inset-right, 0px)
+  );
   --content-max: calc(var(--gs-n-1696, 1696) * var(--gs-px));
   --footer-max: calc(var(--gs-n-1664, 1664) * var(--gs-px));
+}
+
+@media (max-width: 1199px) {
+  :root {
+    --edge-pad-base: clamp(
+      calc(var(--gs-n-16) * var(--gs-px)),
+      calc(4vw + (var(--gs-n-8) * var(--gs-px))),
+      calc(var(--gs-n-64) * var(--gs-px))
+    );
+  }
 }
