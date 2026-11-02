@@ -73,6 +73,9 @@ function ageLabel(a: AlertWithSubject): string {
   }
   if (a.kind === "campaign_ending" && r.campaign) {
     const c = r.campaign;
+    const capHit =
+      c.goal != null && c.goal > 0 && c.impressions != null && c.impressions >= c.goal;
+    if (capHit && c.run_pct < 100) return "impression cap reached";
     const left = c.days_remaining > 0 ? ` · ${c.days_remaining}d left` : "";
     return `${c.run_pct}% of run time${left}`;
   }

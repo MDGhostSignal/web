@@ -80,7 +80,11 @@ function ageLabel(a: AlertWithSubject): string {
     return `renews in ${r.days_until_renewal}d`;
   }
   if (a.kind === "campaign_ending" && r.campaign) {
-    return `${r.campaign.run_pct}% run time`;
+    const c = r.campaign;
+    const capHit =
+      c.goal != null && c.goal > 0 && c.impressions != null && c.impressions >= c.goal;
+    if (capHit && c.run_pct < 100) return "impression cap reached";
+    return `${c.run_pct}% run time`;
   }
   return "—";
 }

@@ -44,6 +44,10 @@ Campaigns page (Active) has a row “Demo · Campaign completion” with “Prev
 
 Verified locally: POST returns the subject, the iframe shows 100,000 of 100,000, and the bell lists the demo.
 
+## Impression-cap trigger
+
+Completion now also fires when `listen_count` reaches that campaign's own `maximum_impressions`. End date and Art19 "concluded" still fire. One email per campaign. Campaigns whose end date is older than the 7-day grace stay quiet. Caps Art19 leaves null still cannot fire this way.
+
 ## Validation
 
 - Stylelint on those seven files: pass.

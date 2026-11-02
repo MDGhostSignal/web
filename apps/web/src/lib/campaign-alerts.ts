@@ -1,9 +1,10 @@
 /**
  * Campaign-ending alerts — detection, snapshot, and the one-time email.
  *
- * Trigger: an ART19 campaign has elapsed 100% of its RUN TIME (not its
- * impression goal — campaigns routinely over-deliver impressions, so a
- * volume threshold would misfire). Detection runs daily from
+ * Trigger: an ART19 campaign has elapsed 100% of its run time, ART19 has
+ * marked it concluded, or delivered impressions have reached that
+ * campaign's own `maximum_impressions` cap. Further over-delivery does
+ * not send again. Detection runs daily from
  * /api/admin/campaign-alerts/sync; the crm_alerts row it inserts is both
  * the in-app record (bell + dashboard) and the fire-once dedup guard, so
  * the email below is sent exactly once as the campaign completes.
@@ -52,6 +53,14 @@ export function isCampaignConcluded(status: string | null | undefined): boolean 
   return !!status && TERMINAL_CAMPAIGN_STATUSES.has(status.trim().toLowerCase());
 }
 
+/** Delivered impressions have reached this campaign's own Art19 cap. */
+export function campaignHitImpressionCap(s: {
+  impressions: number | null;
+  goal: number | null;
+}): boolean {
+  return s.goal != null && s.goal > 0 && s.impressions != null && s.impressions >= s.goal;
+}
+
 /** Slim shape the detector needs from a campaign row. */
 export type CampaignCandidate = Pick<
   Art19CampaignRow,
@@ -74,8 +83,8 @@ function pct(n: number): number {
 }
 
 /** Build the captured snapshot for a campaign at time `nowMs`. Returns
- *  null when the campaign has neither a usable run-time window nor a
- *  terminal status to anchor completion. */
+ *  null when the campaign has neither a usable run-time window, a
+ *  terminal status, nor a reached impression cap. */
 export function buildCampaignSnapshot(
   c: CampaignCandidate,
   nowMs: number,
@@ -84,6 +93,10 @@ export function buildCampaignSnapshot(
   const end = c.end_date ? Date.parse(c.end_date) : NaN;
   const hasWindow =
     !Number.isNaN(start) && !Number.isNaN(end) && end > start;
+  const capHit = campaignHitImpressionCap({
+    impressions: c.listen_count ?? null,
+    goal: c.maximum_impressions ?? null,
+  });
 
   let runPct: number;
   let daysRemaining: number;
@@ -98,6 +111,10 @@ export function buildCampaignSnapshot(
     // no end_date), but ART19 marks it concluded — treat as fully
     // elapsed so it still trips the alert.
     runPct = 100;
+    daysRemaining = 0;
+  } else if (capHit) {
+    // Open-ended flight that filled its own impression cap.
+    runPct = 0;
     daysRemaining = 0;
   } else {
     // A live campaign with no usable window — nothing to report on yet.
@@ -136,11 +153,12 @@ export function buildCampaignSnapshot(
 
 /**
  * Pure: should this campaign have an open `campaign_ending` alert right
- * now? Qualifies once run time reaches 100% (i.e. at/after the end date),
- * and keeps qualifying up to `CAMPAIGN_ENDING_GRACE_DAYS` past the end
- * date — so a slow cron never skips the moment of completion, yet
- * long-concluded campaigns (end date older than the grace) never fire, so
- * a redeploy can't blast history. Fire-once is enforced by any existing
+ * now? Qualifies once run time reaches 100% (i.e. at/after the end date)
+ * or delivered impressions reach that campaign's own cap. Keeps
+ * qualifying up to `CAMPAIGN_ENDING_GRACE_DAYS` past the end date — so a
+ * slow cron never skips the moment of completion, yet long-concluded
+ * campaigns (end date older than the grace) never fire, so a redeploy
+ * can't blast history. Fire-once is enforced by any existing
  * campaign_ending row (open or resolved) — dismissing the in-app alert
  * must not send another email.
  */
@@ -151,7 +169,8 @@ export function detectCampaignEndingAlert(
   if (c.status === "archived_draft") return null;
   const snap = buildCampaignSnapshot(c, nowMs);
   if (!snap) return null;
-  if (snap.run_pct < CAMPAIGN_ENDING_RUN_PCT) return null;
+  const capHit = campaignHitImpressionCap(snap);
+  if (snap.run_pct < CAMPAIGN_ENDING_RUN_PCT && !capHit) return null;
 
   // Grace window: exclude campaigns that concluded longer than the grace
   // window ago, so a redeploy can't blast old history. This can only be
@@ -162,9 +181,8 @@ export function detectCampaignEndingAlert(
   const end = snap.end_date ? Date.parse(snap.end_date) : NaN;
   if (!Number.isNaN(end)) {
     if (end < nowMs - CAMPAIGN_ENDING_GRACE_DAYS * MS_PER_DAY) return null;
-  } else if (!isCampaignConcluded(c.status)) {
-    // No usable end_date and not concluded by status — buildCampaignSnapshot
-    // would already have returned null; guard defensively regardless.
+  } else if (!isCampaignConcluded(c.status) && !capHit) {
+    // No usable end_date, not concluded, and the cap is not reached.
     return null;
   }
   return { campaign_id: c.id, reason: { campaign: snap } };
@@ -258,6 +276,13 @@ export function buildCampaignEmail(s: CampaignAlertSnapshot): {
 } {
   const name = s.name ?? "Untitled campaign";
   const subject = `Campaign complete · ${name}`;
+  const capHit = campaignHitImpressionCap(s);
+  const runDone = s.run_pct >= CAMPAIGN_ENDING_RUN_PCT;
+  const lede = capHit
+    ? runDone
+      ? "This campaign has reached its impression cap and the end of its scheduled run."
+      : "This campaign has reached its impression cap."
+    : "This campaign has reached the end of its scheduled run — 100% of its run time elapsed.";
 
   const rows = metricRows(s);
   const rowHtml = rows
@@ -277,7 +302,7 @@ export function buildCampaignEmail(s: CampaignAlertSnapshot): {
     <tr><td style="padding:28px 20px 14px;border-bottom:1px solid #eee;">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:#1f8a8a;margin-bottom:6px;">Campaign complete</div>
       <h1 style="margin:0;font-size:20px;color:#1a1a1a;">${esc(name)}</h1>
-      <p style="margin:8px 0 0;font-size:14px;color:#444;">This campaign has reached the end of its scheduled run — <strong>100% of its run time</strong> elapsed.</p>
+      <p style="margin:8px 0 0;font-size:14px;color:#444;">${esc(lede)}</p>
     </td></tr>
     <tr><td style="padding:8px 0 0;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">${rowHtml}</table>
@@ -290,7 +315,7 @@ export function buildCampaignEmail(s: CampaignAlertSnapshot): {
 
   const text = [
     `Campaign complete: ${name}`,
-    `Reached the end of its scheduled run (100% of run time elapsed).`,
+    lede,
     "",
     ...rows.map(([label, value]) => `  ${label}: ${value}`),
     "",
