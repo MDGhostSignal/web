@@ -36,7 +36,13 @@ At ≤991px the mark was forced to 36px tall while its min-width stayed 57px. Th
 
 ## Campaign completion alerts
 
-Checked live data. The four Progressive October campaigns that ended 2026-11-01 have open in-app alerts, and Resend shows those emails delivered to Jack and Mike. Nine still-active campaigns have no end date, so they correctly do not notify.
+Checked live data. The four Progressive October campaigns that ended 2026-11-01 have open in-app alerts, and Resend shows those emails delivered to Jack and Mike. Nine still-active campaigns have no end date, so they correctly do not notify. Art19 does not return an impression cap for those nine.
+
+## Demo completion button
+
+Campaigns page (Active) has a row “Demo · Campaign completion” with “Preview completion notification”. It opens one in-app Campaign complete bell item and shows the email in a modal. No mail is sent. The backing row is `archived_draft` and excluded from campaign KPIs and the completion cron.
+
+Verified locally: POST returns the subject, the iframe shows 100,000 of 100,000, and the bell lists the demo.
 
 ## Validation
 

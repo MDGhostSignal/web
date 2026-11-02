@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     "end_date",
   ].join(",");
   const campRes = await supabaseRest<CampaignCandidate[]>(
-    `art19_campaigns?select=${cols}`,
+    `art19_campaigns?select=${cols}&id=neq.demo-campaign-completion`,
   );
   if (!campRes.ok) {
     return NextResponse.json({ ok: false, error: campRes.detail }, { status: campRes.status });

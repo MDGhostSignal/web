@@ -66,7 +66,7 @@ type CampaignWithShows = CampaignRow & {
 export async function GET() {
   const [campaignsRes, csRes, showsRes] = await Promise.all([
     supabaseRest<CampaignRow[]>(
-      "art19_campaigns?select=id,name,campaign_type,ad_source,status,default_cpm,current_spend,listen_count,maximum_impressions,fill_rate,advertisements_count,start_date,end_date,art19_updated_at",
+      "art19_campaigns?select=id,name,campaign_type,ad_source,status,default_cpm,current_spend,listen_count,maximum_impressions,fill_rate,advertisements_count,start_date,end_date,art19_updated_at&id=neq.demo-campaign-completion",
     ),
     supabaseRest<CampaignSeriesRow[]>(
       "art19_campaign_series?select=id,campaign_id,show_id,cpm,current_spend,listen_count,maximum_impressions,status,brand_approval_status,live_reads_enabled,spots_enabled,rss_enabled",

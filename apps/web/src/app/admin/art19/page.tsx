@@ -231,13 +231,74 @@ export default function Art19Page() {
     );
   }, [shows, search]);
 
+  const [demoBusy, setDemoBusy] = useState(false);
+  const [demoNote, setDemoNote] = useState<string | null>(null);
+  const [emailPreview, setEmailPreview] = useState<{
+    subject: string;
+    html: string;
+  } | null>(null);
+
+  const previewCompletion = useCallback(async () => {
+    setDemoBusy(true);
+    setDemoNote(null);
+    try {
+      const res = await fetch("/api/admin/campaign-alerts/demo", {
+        method: "POST",
+      });
+      const body = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        subject?: string;
+        html?: string;
+      };
+      if (!res.ok || !body.ok || !body.html || !body.subject) {
+        setDemoNote(body.error || "Could not open the demo.");
+        return;
+      }
+      setEmailPreview({ subject: body.subject, html: body.html });
+      setDemoNote(
+        "The bell at the top now has a Campaign complete item. No email was sent.",
+      );
+    } catch {
+      setDemoNote("Could not open the demo.");
+    } finally {
+      setDemoBusy(false);
+    }
+  }, []);
+
   const filteredCampaigns = useMemo(() => {
     if (!ads) return [];
-    return ads.campaigns.filter((c) => {
+    const rows = ads.campaigns.filter((c) => {
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (sourceFilter !== "all" && c.ad_source !== sourceFilter) return false;
       return true;
     });
+    const showDemo =
+      (statusFilter === "all" || statusFilter === "active") &&
+      (sourceFilter === "all" || sourceFilter === "internal");
+    if (!showDemo) return rows;
+    const end = new Date();
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - 30);
+    const demo: Campaign = {
+      id: "demo-campaign-completion",
+      name: "Demo · Campaign completion",
+      campaign_type: "Campaigns::Billable",
+      ad_source: "internal",
+      status: "active",
+      default_cpm: 25,
+      current_spend: 2500,
+      listen_count: 100_000,
+      maximum_impressions: 100_000,
+      fill_rate: 100,
+      advertisements_count: 1,
+      start_date: start.toISOString(),
+      end_date: end.toISOString(),
+      shows: [],
+      ourSpend: 2500,
+      ourImpressions: 100_000,
+    };
+    return [demo, ...rows];
   }, [ads, statusFilter, sourceFilter]);
 
   const toggleExpand = useCallback((id: string) => {
@@ -515,6 +576,9 @@ export default function Art19Page() {
               </div>
             </div>
 
+            {demoNote && (
+              <p className={styles.demoNote}>{demoNote}</p>
+            )}
             {filteredCampaigns.length === 0 ? (
               <div className={styles.empty}>
                 <h3 className={styles.emptyTitle}>No campaigns match</h3>
@@ -561,6 +625,18 @@ export default function Art19Page() {
                             <div className={styles.campaignName}>
                               {c.name ?? "(unnamed)"}
                             </div>
+                            {c.id === "demo-campaign-completion" && (
+                              <button
+                                type="button"
+                                className={styles.demoButton}
+                                onClick={previewCompletion}
+                                disabled={demoBusy}
+                              >
+                                {demoBusy
+                                  ? "Opening…"
+                                  : "Preview completion notification"}
+                              </button>
+                            )}
                             <div className={styles.campaignSub}>
                               {c.shows.length} show{c.shows.length === 1 ? "" : "s"}
                               {c.advertisements_count != null
@@ -685,6 +761,36 @@ export default function Art19Page() {
             )}
           </div>
         </>
+      )}
+      {emailPreview && (
+        <div className={styles.previewBackdrop} role="presentation" onClick={() => setEmailPreview(null)}>
+          <div
+            className={styles.previewDialog}
+            role="dialog"
+            aria-label="Completion email preview"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.previewBar}>
+              <div>
+                <div className={styles.previewKicker}>Email preview · not sent</div>
+                <div className={styles.previewSubject}>{emailPreview.subject}</div>
+              </div>
+              <button
+                type="button"
+                className={styles.demoButton}
+                onClick={() => setEmailPreview(null)}
+              >
+                Close
+              </button>
+            </div>
+            <iframe
+              className={styles.previewFrame}
+              title="Campaign completion email"
+              sandbox=""
+              srcDoc={emailPreview.html}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
