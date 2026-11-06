@@ -22,6 +22,7 @@ const PUBLIC_ROUTES: Array<{
   { path: "/who-are-we", priority: 0.8, changeFrequency: "monthly" },
   { path: "/snowdrift", priority: 0.7, changeFrequency: "weekly" },
   { path: "/xqrq", priority: 0.8, changeFrequency: "monthly" },
+  // /experimental/xq is an unlisted feedback build. Direct URL only, not in the sitemap.
   // /rq-quiz is intentionally omitted — the RQ is members-only and not
   // publicly linked (teased via /xqrq only).
   { path: "/signal-sheet", priority: 0.6, changeFrequency: "monthly" },
