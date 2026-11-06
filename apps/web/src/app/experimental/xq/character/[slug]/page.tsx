@@ -17,6 +17,17 @@ import styles from "../../xq.module.css";
 
 type Params = { slug: string };
 
+const PLATE: Record<string, string> = {
+  steward: "/images/xq/steward.jpg",
+  shepherd: "/images/xq/shepherd.jpg",
+  conservator: "/images/xq/conservator.jpg",
+  "institution-builder": "/images/xq/builder.jpg",
+  "artisan-reformer": "/images/xq/artisan.jpg",
+  catalyst: "/images/xq/catalyst.jpg",
+  designer: "/images/xq/designer.jpg",
+  architect: "/images/xq/architect.jpg",
+};
+
 const WORK = [
   { title: "What they protect", slot: "Placeholder. One line on what this character guards." },
   { title: "Who they build for", slot: "Placeholder. One line on who the work is for." },
@@ -59,10 +70,11 @@ export default async function XqCharacterPage({
     <XqFrame>
       <header className={`${styles.hero} ${styles.typeHero}`}>
         <figure className={`${styles.plate} ${styles.typeFigure}`}>
-          <p className={styles.plateLabel}>Placeholder</p>
-          <p className={styles.plateText}>
-            Illustration for {character.name}. The new plate is not cut yet.
-          </p>
+          <img
+            className={styles.plateImage}
+            src={PLATE[character.slug]}
+            alt={`Illustration of the ${character.name}`}
+          />
         </figure>
         <div className={styles.typeCopy}>
           <p className={styles.kicker}>{character.name}</p>
