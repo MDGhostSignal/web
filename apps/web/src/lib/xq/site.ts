@@ -102,7 +102,7 @@ export const XQ_LANDING = {
   headline: "With Whom Do You Belong?",
   subhead: "Partnerships are necessary, but how do you find the right ones?",
   body: "The GHOSTSignal Conviction Quotient (XQ) helps you discover your most meaningful values and partnership style, and compares them to potential partners to discern your alignment and fit (what we call resonance). Resonance empowers partnerships that feel good, because they are good, and because they are good, they work better.",
-  quizHref: "/xq-quiz",
+  quizHref: "/xq-preview",
   quizLabel: "Take the Quiz",
 } as const;
 

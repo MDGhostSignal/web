@@ -33,7 +33,7 @@ export default function XQCharacters2Page() {
           visual languages side-by-side.
         </p>
         <div className={styles.headerLinks}>
-          <Link href="/xq-quiz" className={styles.primaryCta}>
+          <Link href="/xq-preview" className={styles.primaryCta}>
             Take the Conviction Quotient →
           </Link>
           <Link href="/xq-characters" className={styles.secondaryLink}>

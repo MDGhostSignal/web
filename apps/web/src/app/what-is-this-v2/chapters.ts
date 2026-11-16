@@ -232,7 +232,7 @@ export const CHAPTERS: ChapterDef[] = [
     height: 1.5,
     band: "day",
     actions: [
-      { href: "/xq-quiz", label: "Take the XQ", primary: true },
+      { href: "/xq-preview", label: "Take the XQ", primary: true },
       { href: "/get-in-touch", label: "Get in touch" },
       { href: "/what-is-this", label: "View live page" },
     ],

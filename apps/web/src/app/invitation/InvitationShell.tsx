@@ -191,7 +191,7 @@ export function InvitationShell({ features, quote, founders }: Props) {
                 <XQMapCard />
               </div>
               <div className={styles.ctaActions}>
-                <Link href="/xq-quiz?start=1" className={styles.ctaYellow}>
+                <Link href="/xq-preview" className={styles.ctaYellow}>
                   Take the XQ &mdash; it&rsquo;s free
                 </Link>
               </div>

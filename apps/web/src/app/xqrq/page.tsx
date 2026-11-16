@@ -119,7 +119,7 @@ export default function XqRqPage() {
                   The XQ helps you discover and codify your business values,
                   so you know your company&rsquo;s moral framework.
                 </p>
-                <Link href="/xq-quiz?start=1" className={styles.assessmentCta}>
+                <Link href="/xq-preview" className={styles.assessmentCta}>
                   Take the XQ
                 </Link>
               </div>

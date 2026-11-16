@@ -435,7 +435,7 @@ ${FOUNDERS.map(
                     <table role="presentation" cellspacing="0" cellpadding="0" align="center">
                       <tr>
                         <td bgcolor="#fbad25" style="background-color: #fbad25; border-radius: 10px;">
-                          <a href="${PROD_ORIGIN}/xq-quiz?start=1" target="_blank" style="display: inline-block; padding: 13px 28px; font-size: 14px; font-weight: 700; color: #1a1a1a; text-decoration: none;">Take the XQ &mdash; it&rsquo;s free</a>
+                          <a href="${PROD_ORIGIN}/xq-preview" target="_blank" style="display: inline-block; padding: 13px 28px; font-size: 14px; font-weight: 700; color: #1a1a1a; text-decoration: none;">Take the XQ &mdash; it&rsquo;s free</a>
                         </td>
                       </tr>
                     </table>

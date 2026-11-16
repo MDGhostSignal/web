@@ -485,7 +485,7 @@ export default function WhatIsThisPage({
                 </>
               )}
               <ScrollFadeUp index={4} duration={1.6} className={styles.elevatedCtaWrapper}>
-                <Link href="/xq-quiz" className={styles.whitepaperButton}>
+                <Link href="/xq-preview" className={styles.whitepaperButton}>
                   Find my match
                 </Link>
               </ScrollFadeUp>

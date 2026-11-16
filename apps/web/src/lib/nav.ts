@@ -10,7 +10,7 @@ export const navLinks = [
   { href: "/for-advertisers", label: "For Advertisers" },
   { href: "/who-are-we", label: "Who Are We" },
   { href: "/snowdrift", label: "SNOWDRIFT" },
-  { href: "/xq-quiz", label: "XQ Quiz" },
+  { href: "/xq-preview", label: "XQ Quiz" },
   // `cta: true` → rendered as the primary call-to-action button (solid
   // pill) rather than a plain nav link. Keep these as the last entries
   // so they sit at the right edge of the nav row; CTA pills also stay

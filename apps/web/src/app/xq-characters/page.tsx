@@ -44,7 +44,7 @@ export default function XQCharactersPage() {
           each corner is a character.
         </p>
         <div className={styles.headerLinks}>
-          <Link href="/xq-quiz" className={styles.primaryCta}>
+          <Link href="/xq-preview" className={styles.primaryCta}>
             Take the Conviction Quotient →
           </Link>
         </div>
